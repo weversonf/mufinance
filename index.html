@@ -13,11 +13,7 @@
             darkMode: 'class',
             theme: {
                 extend: {
-                    colors: {
-                        darkBg: '#020617',
-                        darkCard: '#0f172a',
-                        lightBg: '#f8fafc'
-                    }
+                    colors: { darkBg: '#020617', darkCard: '#0f172a', lightBg: '#f8fafc' }
                 }
             }
         }
@@ -25,14 +21,12 @@
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap');
-        body { font-family: 'Inter', sans-serif; transition: background-color 0.3s, color 0.3s; }
+        body { font-family: 'Inter', sans-serif; transition: background-color 0.3s; overflow-x: hidden; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         .select-none { user-select: none; -webkit-user-select: none; }
-        
-        /* Custom scrollbar para modais */
         .modal-scroll::-webkit-scrollbar { width: 4px; }
-        .modal-scroll::-webkit-scrollbar-thumb { background: #38bdf8; border-radius: 10px; }
+        .modal-scroll::-webkit-scrollbar-thumb { background: #0ea5e9; border-radius: 10px; }
     </style>
 </head>
 <body class="light select-none min-h-screen bg-lightBg text-slate-900 dark:bg-darkBg dark:text-white antialiased">
@@ -41,164 +35,225 @@
         
         <header class="flex justify-between items-center mb-8 bg-white dark:bg-slate-900/40 p-4 rounded-[25px] border border-slate-200 dark:border-slate-800 shadow-sm">
             <div class="flex items-center gap-3">
-                <div class="p-2 bg-sky-500 rounded-lg text-white">
-                    <i data-lucide="bolt"></i>
-                </div>
+                <div class="p-2 bg-sky-500 rounded-lg text-white"><i data-lucide="bolt"></i></div>
                 <h1 class="text-xl font-black uppercase italic tracking-tighter text-sky-500">Drivo&Money</h1>
             </div>
             
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2">
                 <button onclick="toggleTheme()" class="p-3 bg-slate-100 dark:bg-slate-800 rounded-2xl text-slate-600 dark:text-yellow-400">
                     <i id="theme-icon" data-lucide="sun"></i>
                 </button>
-                <div class="hidden md:flex gap-2">
-                     <button class="p-3 bg-slate-100 dark:bg-slate-800 rounded-2xl text-sky-500"><i data-lucide="user"></i></button>
-                </div>
-                <button onclick="logout()" class="p-3 bg-slate-100 dark:bg-slate-800/50 rounded-2xl text-rose-500">
+                <button onclick="handleLogout()" class="p-3 bg-slate-100 dark:bg-slate-800/50 rounded-2xl text-rose-500">
                     <i data-lucide="log-out"></i>
                 </button>
             </div>
         </header>
 
-        <main id="main-content">
-            
+        <main class="pb-24">
             <section id="tab-dashboard" class="tab-content active">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
                     <div class="bg-white dark:bg-darkCard p-6 rounded-[35px] border border-slate-200 dark:border-slate-800 shadow-sm">
-                        <div class="flex items-center gap-3 mb-4">
+                        <div class="flex items-center gap-3 mb-2">
                             <div class="p-2 bg-emerald-500/10 text-emerald-500 rounded-xl"><i data-lucide="arrow-up-circle"></i></div>
-                            <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Receitas</span>
+                            <span class="text-[10px] font-black uppercase text-slate-400">Receitas</span>
                         </div>
                         <p class="text-2xl font-black text-emerald-500" id="dash-receitas">R$ 0,00</p>
                     </div>
                     <div class="bg-white dark:bg-darkCard p-6 rounded-[35px] border border-slate-200 dark:border-slate-800 shadow-sm">
-                        <div class="flex items-center gap-3 mb-4">
+                        <div class="flex items-center gap-3 mb-2">
                             <div class="p-2 bg-rose-500/10 text-rose-500 rounded-xl"><i data-lucide="arrow-down-circle"></i></div>
-                            <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Despesas</span>
+                            <span class="text-[10px] font-black uppercase text-slate-400">Despesas</span>
                         </div>
                         <p class="text-2xl font-black text-rose-500" id="dash-despesas">R$ 0,00</p>
                     </div>
                     <div class="bg-sky-500 p-6 rounded-[35px] shadow-xl shadow-sky-500/20">
-                        <div class="flex items-center gap-3 mb-4">
+                        <div class="flex items-center gap-3 mb-2">
                             <div class="p-2 bg-white/20 text-white rounded-xl"><i data-lucide="check"></i></div>
-                            <span class="text-[10px] font-black uppercase tracking-widest text-white/60">Saldo Total</span>
+                            <span class="text-[10px] font-black uppercase text-white/60">Saldo Atual</span>
                         </div>
                         <p class="text-2xl font-black text-white" id="dash-saldo">R$ 0,00</p>
                     </div>
                 </div>
-                </section>
+            </section>
 
             <section id="tab-extrato" class="tab-content">
                 <div class="flex flex-col md:flex-row items-center justify-between mb-8 gap-4">
-                    <div class="flex bg-white dark:bg-slate-900/40 p-1 rounded-2xl border border-slate-200 dark:border-slate-800 w-full md:w-auto">
-                        <button onclick="setFilter('month')" id="btn-month" class="flex-1 md:flex-none px-6 py-2 rounded-xl text-[10px] font-black uppercase transition-all bg-sky-500 text-white">Mensal</button>
-                        <button onclick="setFilter('year')" id="btn-year" class="flex-1 md:flex-none px-6 py-2 rounded-xl text-[10px] font-black uppercase transition-all text-slate-500">Anual</button>
-                    </div>
-
-                    <div class="flex items-center gap-4 bg-white dark:bg-slate-900/40 px-6 py-3 rounded-[25px] border border-slate-200 dark:border-slate-800 shadow-sm w-full md:w-auto justify-between md:justify-start">
-                        <button onclick="changeMonth(-1)" class="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full">
-                            <i data-lucide="chevron-left" class="text-sky-500"></i>
-                        </button>
-                        <div class="text-center min-w-[120px]">
-                            <p class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-0.5" id="label-periodo">Período</p>
-                            <p class="text-sm font-black uppercase italic" id="display-periodo">Fevereiro 2026</p>
-                        </div>
-                        <button onclick="changeMonth(1)" class="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full">
-                            <i data-lucide="chevron-right" class="text-sky-500"></i>
-                        </button>
+                    <h2 class="text-lg font-black uppercase italic text-sky-500">Histórico</h2>
+                    <div class="flex items-center gap-4 bg-white dark:bg-slate-900/40 px-4 py-2 rounded-2xl border border-slate-200 dark:border-slate-800">
+                        <button onclick="changeMonth(-1)" class="p-1"><i data-lucide="chevron-left" class="text-sky-500"></i></button>
+                        <span id="display-periodo" class="text-xs font-black uppercase min-w-[100px] text-center">Fev 2026</span>
+                        <button onclick="changeMonth(1)" class="p-1"><i data-lucide="chevron-right" class="text-sky-500"></i></button>
                     </div>
                 </div>
-
-                <div class="space-y-4" id="lista-transacoes">
-                    <div class="p-10 text-center text-slate-400 font-bold uppercase text-xs">Carregando extrato...</div>
-                </div>
+                <div id="lista-transacoes" class="space-y-4"></div>
             </section>
-
-            <section id="tab-relatorio" class="tab-content">
-                <h2 class="text-2xl font-black mb-4 uppercase italic text-sky-500">Relatório Anual</h2>
-                <p class="text-slate-400">Aguardando dados do relatório...</p>
-            </section>
-
         </main>
     </div>
 
     <nav class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-slate-200 dark:border-slate-800 px-6 py-3 rounded-[30px] flex gap-8 items-center shadow-2xl z-50">
         <button onclick="showTab('dashboard')" class="nav-btn text-sky-500" data-tab="dashboard"><i data-lucide="layout-dashboard"></i></button>
         <button onclick="showTab('extrato')" class="nav-btn text-slate-400" data-tab="extrato"><i data-lucide="receipt-text"></i></button>
-        <button onclick="openModal()" class="bg-sky-500 text-white p-3 rounded-2xl shadow-lg shadow-sky-500/40 -translate-y-2 active:scale-90 transition-transform"><i data-lucide="plus"></i></button>
-        <button onclick="showTab('relatorio')" class="nav-btn text-slate-400" data-tab="relatorio"><i data-lucide="bar-chart-3"></i></button>
+        <button onclick="openModal()" class="bg-sky-500 text-white p-3 rounded-2xl shadow-lg -translate-y-2 active:scale-90 transition-all"><i data-lucide="plus"></i></button>
+        <button onclick="showTab('moto')" class="nav-btn text-slate-400" data-tab="moto"><i data-lucide="motorcycle"></i></button>
         <button onclick="showTab('perfil')" class="nav-btn text-slate-400" data-tab="perfil"><i data-lucide="user"></i></button>
     </nav>
 
     <div id="modal-lancamento" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 z-[100]">
-        <div class="bg-white dark:bg-[#0f172a] w-full max-w-md rounded-[35px] p-8 border border-slate-200 dark:border-slate-800 shadow-2xl modal-scroll overflow-y-auto max-h-[85vh]">
+        <div class="bg-white dark:bg-[#0f172a] w-full max-w-md rounded-[35px] p-8 border border-slate-200 dark:border-slate-800 shadow-2xl modal-scroll overflow-y-auto max-h-[90vh]">
             <div class="flex justify-between items-center mb-6">
-                <h3 class="text-lg font-black uppercase italic text-sky-500">Novo Lançamento</h3>
+                <h3 class="text-lg font-black uppercase italic text-sky-500">Lançamento</h3>
                 <button onclick="closeModal()" class="p-2 bg-slate-100 dark:bg-slate-800 rounded-xl"><i data-lucide="x"></i></button>
             </div>
             <form id="form-transacao" class="space-y-4">
                 <div class="flex gap-2">
-                    <button type="button" class="flex-1 py-3 rounded-xl font-black text-xs uppercase bg-rose-600 text-white">Despesa</button>
-                    <button type="button" class="flex-1 py-3 rounded-xl font-black text-xs uppercase bg-slate-100 dark:bg-slate-800 text-slate-500">Receita</button>
+                    <button type="button" onclick="setTipo('despesa')" id="btn-tipo-despesa" class="flex-1 py-3 rounded-xl font-black text-xs uppercase bg-rose-600 text-white">Despesa</button>
+                    <button type="button" onclick="setTipo('receita')" id="btn-tipo-receita" class="flex-1 py-3 rounded-xl font-black text-xs uppercase bg-slate-100 dark:bg-slate-800 text-slate-500">Receita</button>
                 </div>
-                <input type="number" placeholder="Valor R$" class="w-full p-4 bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-slate-800 rounded-[18px] text-lg font-black outline-none">
-                <input type="text" placeholder="Descrição" class="w-full p-4 bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-slate-800 rounded-[18px] text-sm outline-none">
-                <button type="submit" class="w-full py-5 rounded-[22px] font-black uppercase text-xs text-white bg-sky-600 shadow-lg">Confirmar</button>
+                <input type="number" id="valor" step="0.01" placeholder="Valor R$" class="w-full p-4 bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-slate-800 rounded-[18px] text-lg font-black outline-none focus:border-sky-500">
+                <input type="text" id="descricao" placeholder="Descrição" class="w-full p-4 bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-slate-800 rounded-[18px] text-sm outline-none focus:border-sky-500">
+                <input type="date" id="dataVencimento" class="w-full p-4 bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-slate-800 rounded-[18px] text-xs font-bold">
+                <button type="submit" id="btn-salvar" class="w-full py-5 rounded-[22px] font-black uppercase text-xs text-white bg-sky-600 shadow-lg">Confirmar</button>
             </form>
         </div>
     </div>
 
     <script type="module">
-        // Importação Firebase e lógica de dados (vinda do seu código de Extrato)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        // ... (resto dos imports do Firebase aqui)
+        import { getFirestore, collection, addDoc, onSnapshot, query, where, orderBy, Timestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-        const MONTHS = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
-        let selectedMonth = new Date().getMonth();
-        let selectedYear = new Date().getFullYear();
+        const firebaseConfig = {
+            apiKey: "AIzaSyArWGgDx0uxce8w72J_1UpKPCUJGvHs3fI",
+            authDomain: "drivo-e-money.firebaseapp.com",
+            projectId: "drivo-e-money",
+            storageBucket: "drivo-e-money.firebasestorage.app",
+            messagingSenderId: "62950568252",
+            appId: "1:62950568252:web:7638827c39b589a9046e39"
+        };
 
-        // Inicializa Lucide
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        let currentTipo = 'despesa';
+        let userId = null;
+
         lucide.createIcons();
 
-        // NAVEGAÇÃO SPA
+        // Monitorar Autenticação
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                userId = user.uid;
+                loadData();
+            } else {
+                console.log("Usuário não autenticado.");
+                // Aqui você pode redirecionar para uma página de login se quiser
+            }
+        });
+
+        // Salvar dados no Firestore
+        document.getElementById('form-transacao').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const valor = parseFloat(document.getElementById('valor').value);
+            const descricao = document.getElementById('descricao').value;
+            const dataInput = document.getElementById('dataVencimento').value;
+
+            if (!valor || !descricao || !dataInput || !userId) return alert("Preencha todos os campos!");
+
+            const btn = document.getElementById('btn-salvar');
+            btn.disabled = true; btn.innerText = "Salvando...";
+
+            try {
+                await addDoc(collection(db, "transactions"), {
+                    userId: userId,
+                    valor: valor,
+                    descricao: descricao,
+                    tipo: currentTipo,
+                    date: Timestamp.fromDate(new Date(dataInput + 'T12:00:00')),
+                    createdAt: Timestamp.now()
+                });
+                closeModal();
+                document.getElementById('form-transacao').reset();
+            } catch (err) {
+                alert("Erro ao salvar: " + err.message);
+            } finally {
+                btn.disabled = false; btn.innerText = "Confirmar";
+            }
+        });
+
+        // Carregar dados em tempo real
+        function loadData() {
+            const q = query(collection(db, "transactions"), where("userId", "==", userId), orderBy("date", "desc"));
+            onSnapshot(q, (snapshot) => {
+                const transactions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                render(transactions);
+            });
+        }
+
+        function render(transactions) {
+            const feed = document.getElementById('lista-transacoes');
+            feed.innerHTML = "";
+            let receitas = 0, despesas = 0;
+
+            transactions.forEach(t => {
+                const val = t.valor || 0;
+                if(t.tipo === 'receita') receitas += val; else despesas += val;
+
+                feed.innerHTML += `
+                    <div class="flex justify-between items-center p-5 bg-white dark:bg-slate-900/40 rounded-[25px] border border-slate-200 dark:border-slate-800">
+                        <div class="flex items-center gap-4">
+                            <div class="p-3 rounded-xl ${t.tipo === 'receita' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}">
+                                <i data-lucide="${t.tipo === 'receita' ? 'arrow-up-circle' : 'arrow-down-circle'}"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-black">${t.descricao}</p>
+                                <p class="text-[9px] uppercase opacity-40">Geral</p>
+                            </div>
+                        </div>
+                        <p class="text-sm font-black ${t.tipo === 'receita' ? 'text-emerald-500' : 'text-rose-500'}">
+                            R$ ${val.toLocaleString('pt-BR', {minimumFractionDigits:2})}
+                        </p>
+                    </div>
+                `;
+            });
+
+            document.getElementById('dash-receitas').innerText = `R$ ${receitas.toLocaleString('pt-BR', {minimumFractionDigits:2})}`;
+            document.getElementById('dash-despesas').innerText = `R$ ${despesas.toLocaleString('pt-BR', {minimumFractionDigits:2})}`;
+            document.getElementById('dash-saldo').innerText = `R$ ${(receitas - despesas).toLocaleString('pt-BR', {minimumFractionDigits:2})}`;
+            lucide.createIcons();
+        }
+
+        // Funções Globais de UI
         window.showTab = (tabId) => {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.getElementById('tab-' + tabId).classList.add('active');
-            
-            document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.classList.remove('text-sky-500');
-                btn.classList.add('text-slate-400');
-            });
-            document.querySelector(`[data-tab="${tabId}"]`).classList.add('text-sky-500');
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.replace('text-sky-500', 'text-slate-400'));
+            document.querySelector(`[data-tab="${tabId}"]`).classList.replace('text-slate-400', 'text-sky-500');
         };
 
-        // LÓGICA DO EXTRATO (Início)
-        window.changeMonth = (delta) => {
-            selectedMonth += delta;
-            if (selectedMonth > 11) { selectedMonth = 0; selectedYear++; }
-            else if (selectedMonth < 0) { selectedMonth = 11; selectedYear--; }
-            updatePeriodDisplay();
-            // Aqui chamaria a função de filtrar transações do Firebase
+        window.setTipo = (tipo) => {
+            currentTipo = tipo;
+            const btnD = document.getElementById('btn-tipo-despesa');
+            const btnR = document.getElementById('btn-tipo-receita');
+            if(tipo === 'despesa') {
+                btnD.className = "flex-1 py-3 rounded-xl font-black text-xs uppercase bg-rose-600 text-white";
+                btnR.className = "flex-1 py-3 rounded-xl font-black text-xs uppercase bg-slate-100 dark:bg-slate-800 text-slate-500";
+            } else {
+                btnR.className = "flex-1 py-3 rounded-xl font-black text-xs uppercase bg-emerald-600 text-white";
+                btnD.className = "flex-1 py-3 rounded-xl font-black text-xs uppercase bg-slate-100 dark:bg-slate-800 text-slate-500";
+            }
         };
 
-        function updatePeriodDisplay() {
-            document.getElementById('display-periodo').innerText = `${MONTHS[selectedMonth]} ${selectedYear}`;
-        }
-
-        // TEMA
         window.toggleTheme = () => {
-            const html = document.documentElement;
-            html.classList.toggle('dark');
-            const isDark = html.classList.contains('dark');
-            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            document.documentElement.classList.toggle('dark');
+            const isDark = document.documentElement.classList.contains('dark');
             document.getElementById('theme-icon').setAttribute('data-lucide', isDark ? 'sun' : 'moon');
             lucide.createIcons();
         };
 
-        // MODAL
         window.openModal = () => document.getElementById('modal-lancamento').classList.remove('hidden');
         window.closeModal = () => document.getElementById('modal-lancamento').classList.add('hidden');
-
+        window.handleLogout = () => signOut(auth).then(() => location.reload());
     </script>
 </body>
 </html>
