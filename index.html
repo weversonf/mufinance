@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Drivo & Money v24.4</title>
+    <title>Drivo & Money v24.5</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -33,7 +33,7 @@
                 <div class="p-3 bg-accentSky rounded-xl text-white shadow-lg"><i data-lucide="zap" class="w-6 h-6 fill-current"></i></div>
                 <div>
                     <h1 class="text-2xl font-black uppercase italic tracking-tighter text-accentSky leading-none">Drivo&Money</h1>
-                    <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">v24.4 • Integrado</span>
+                    <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">v24.5 • Integrado</span>
                 </div>
             </div>
             <button onclick="handleLogout()" class="p-4 bg-slate-800/50 rounded-xl text-accentRose"><i data-lucide="log-out"></i></button>
@@ -81,44 +81,34 @@
             </section>
 
             <section id="tab-drivo" class="tab-content space-y-6">
-                <h3 class="text-xs font-black uppercase tracking-widest text-accentAmber ml-2 flex items-center gap-2"><i data-lucide="gauge" class="w-4 h-4"></i> Drivo Analytics</h3>
-                <div id="drivo-stats" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <h3 class="text-xs font-black uppercase tracking-widest text-accentAmber ml-2">Drivo Analytics</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="custom-card p-6 border-l-4 border-accentAmber">
-                        <small class="text-[9px] font-black text-slate-500 uppercase">Estimativa de KM Rodados (Mês)</small>
-                        <p id="drivo-km-total" class="text-3xl font-black mt-2">0 KM</p>
+                        <small class="text-[9px] font-black text-slate-500 uppercase">KM Estimados (Mês)</small>
+                        <p id="drivo-km" class="text-3xl font-black mt-2">0 KM</p>
                     </div>
                     <div class="custom-card p-6 border-l-4 border-accentSky">
-                        <small class="text-[9px] font-black text-slate-500 uppercase">Custo Médio por KM</small>
-                        <p id="drivo-custo-km" class="text-3xl font-black mt-2 text-accentSky">R$ 0,00</p>
+                        <small class="text-[9px] font-black text-slate-500 uppercase">Custo por KM</small>
+                        <p id="drivo-custo-km" class="text-3xl font-black mt-2">R$ 0,00</p>
                     </div>
                 </div>
-                <div class="custom-card p-8">
-                    <h4 class="text-[10px] font-black uppercase text-slate-500 mb-4 tracking-widest">Histórico de Abastecimentos</h4>
-                    <div id="lista-abastecimentos" class="space-y-3"></div>
+                <div class="custom-card p-6">
+                    <h4 class="text-[10px] font-black uppercase text-slate-400 mb-4">Abastecimentos Recentes</h4>
+                    <div id="lista-drivo" class="space-y-3 text-left"></div>
                 </div>
             </section>
 
             <section id="tab-relatorio" class="tab-content space-y-6">
-                <div class="flex items-center justify-between mb-4 px-2">
-                    <h3 class="text-xs font-black uppercase tracking-widest text-accentSky">Balanço Anual</h3>
-                    <div class="flex items-center gap-4 bg-darkCard p-2 rounded-xl border border-white/5">
-                        <button onclick="changeYearRelatorio(-1)" class="text-accentSky"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
-                        <span id="relatorio-ano-display" class="text-xs font-black italic">2026</span>
-                        <button onclick="changeYearRelatorio(1)" class="text-accentSky"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
-                    </div>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="custom-card p-6 text-left border-l-4 border-accentEmerald">
-                        <small class="text-[9px] font-black text-slate-500 uppercase">Receitas no Ano</small>
-                        <p id="rel-total-rec" class="text-2xl font-black text-accentEmerald">R$ 0,00</p>
-                    </div>
-                    <div class="custom-card p-6 text-left border-l-4 border-accentRose">
-                        <small class="text-[9px] font-black text-slate-500 uppercase">Despesas no Ano</small>
-                        <p id="rel-total-des" class="text-2xl font-black text-accentRose">R$ 0,00</p>
+                <div class="flex items-center justify-between px-2">
+                    <h3 class="text-xs font-black uppercase tracking-widest text-accentSky">Relatório Anual</h3>
+                    <div class="flex items-center gap-3 bg-darkCard p-1.5 rounded-xl border border-white/5">
+                        <button onclick="changeYearRel(-1)" class="p-1 text-accentSky"><i data-lucide="chevron-left"></i></button>
+                        <span id="rel-ano-label" class="text-xs font-black italic">2026</span>
+                        <button onclick="changeYearRel(1)" class="p-1 text-accentSky"><i data-lucide="chevron-right"></i></button>
                     </div>
                 </div>
                 <div class="custom-card p-6 min-h-[400px]">
-                    <canvas id="chart-anual-geral"></canvas>
+                    <canvas id="chart-anual"></canvas>
                 </div>
             </section>
 
@@ -218,7 +208,7 @@
         </main>
     </div>
 
-    <nav class="fixed bottom-0 left-0 right-0 nav-glass px-4 py-4 flex gap-6 items-center justify-center z-50">
+    <nav class="fixed bottom-0 left-0 right-0 nav-glass px-6 py-4 flex gap-6 items-center justify-center z-50">
         <button onclick="showTab('dashboard')" class="nav-btn text-accentSky" data-tab="dashboard"><i data-lucide="layout-dashboard" class="w-5 h-5"></i></button>
         <button onclick="showTab('extrato')" class="nav-btn text-slate-500" data-tab="extrato"><i data-lucide="receipt-text" class="w-5 h-5"></i></button>
         <button onclick="showTab('relatorio')" class="nav-btn text-slate-500" data-tab="relatorio"><i data-lucide="bar-chart-3" class="w-5 h-5"></i></button>
@@ -251,6 +241,77 @@
         </div>
     </div>
 
+    <div id="modal-meta" class="hidden fixed inset-0 bg-slate-950/90 backdrop-blur-sm flex items-center justify-center p-4 z-[300]">
+        <div class="custom-card w-full max-w-md p-8 shadow-2xl">
+            <h3 id="modal-meta-title" class="text-lg font-black uppercase italic text-sky-500 mb-6 text-left">Novo Objetivo</h3>
+            <form id="form-meta" class="space-y-4">
+                <input type="hidden" id="meta-edit-id">
+                <input type="text" id="meta-nome" placeholder="Ex: Viagem" class="input-dark" required>
+                <input type="number" id="meta-objetivo" placeholder="Valor Total R$" class="input-dark" required>
+                <input type="number" id="meta-atual" placeholder="Já guardado R$" class="input-dark" value="0">
+                <button type="submit" class="w-full py-5 bg-sky-600 text-white rounded-2xl font-black uppercase text-xs">Salvar Meta</button>
+                <button type="button" onclick="closeModal()" class="w-full text-slate-500 text-[10px] font-bold mt-2 text-center uppercase">Cancelar</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="modal-banco" class="hidden fixed inset-0 bg-slate-950/90 backdrop-blur-sm flex items-center justify-center p-4 z-[400]">
+        <div class="custom-card w-full max-w-sm p-8 shadow-2xl">
+            <h3 class="text-lg font-black uppercase italic text-emerald-500 mb-6 text-left">Configurar Banco</h3>
+            <form id="form-banco" class="space-y-4">
+                <input type="hidden" id="banco-id-edit">
+                <div class="text-left">
+                    <label class="text-[9px] font-black uppercase text-slate-500 ml-1">Instituição</label>
+                    <select id="banco-nome-input" class="input-dark">
+                        <option value="Inter">Banco Inter</option>
+                        <option value="Nubank">Nubank</option>
+                        <option value="Itaú">Itaú</option>
+                        <option value="Santander">Santander</option>
+                        <option value="C6 Bank">C6 Bank</option>
+                        <option value="Bradesco">Bradesco</option>
+                        <option value="Caixa">Caixa Econômica</option>
+                        <option value="BB">Banco do Brasil</option>
+                        <option value="Outros">Outros</option>
+                    </select>
+                </div>
+                <div class="text-left">
+                    <label class="text-[9px] font-black uppercase text-slate-500 ml-1">Saldo Inicial</label>
+                    <input type="number" id="banco-saldo-input" step="0.01" placeholder="R$ 0,00" class="input-dark" required>
+                </div>
+                <button type="submit" class="w-full py-4 bg-emerald-600 text-white rounded-xl font-black uppercase text-xs">Confirmar</button>
+                <button type="button" onclick="closeModal()" class="w-full text-slate-500 text-[10px] font-bold mt-2 text-center uppercase">Cancelar</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="modal-cat" class="hidden fixed inset-0 bg-slate-950/90 backdrop-blur-sm flex items-center justify-center p-4 z-[400]">
+        <div class="custom-card w-full max-w-sm p-8 shadow-2xl">
+            <h3 id="cat-modal-title" class="text-lg font-black uppercase italic text-sky-500 mb-6 text-left">Nova Categoria</h3>
+            <form id="form-cat" class="space-y-4">
+                <input type="hidden" id="cat-tipo-modal">
+                <div class="text-left">
+                    <label class="text-[9px] font-black uppercase text-slate-500 ml-1">Nome da Categoria</label>
+                    <input type="text" id="cat-nome-input" placeholder="Ex: Mercado, Freelance..." class="input-dark" required>
+                </div>
+                <div class="text-left">
+                    <label class="text-[9px] font-black uppercase text-slate-500 ml-1">Ícone</label>
+                    <select id="cat-icone-input" class="input-dark">
+                        <option value="tag">Etiqueta</option>
+                        <option value="shopping-cart">Compras</option>
+                        <option value="fuel">Combustível</option>
+                        <option value="coffee">Alimentação</option>
+                        <option value="home">Moradia</option>
+                        <option value="trending-up">Investimento</option>
+                        <option value="heart">Saúde</option>
+                        <option value="zap">Utilidades</option>
+                    </select>
+                </div>
+                <button type="submit" class="w-full py-4 bg-sky-600 text-white rounded-xl font-black uppercase text-xs">Salvar Categoria</button>
+                <button type="button" onclick="closeModal()" class="w-full text-slate-500 text-[10px] font-bold mt-2 text-center uppercase">Cancelar</button>
+            </form>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, where, Timestamp, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -261,14 +322,17 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        let userId, transactions = [], userBancos = [], userCats = [], goals = [], userSettings = {}, donutChart, relatorioChart;
+        let userId, transactions = [], userBancos = [], userCats = [], goals = [], donutChart;
         let viewDate = new Date();
         let isYearlyView = false;
         let currentBankIdx = -1;
         let currentTipo = 'despesa';
         let currentStatus = 'efetivada';
-        let relatorioYear = new Date().getFullYear();
         const meses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+
+        // Variáveis novas (Relatório)
+        let chartAnual;
+        let selectedRelYear = new Date().getFullYear();
 
         const bancoConfigs = {
             "Inter": { cor: "#ff7a00", texto: "white" },
@@ -286,7 +350,7 @@
             if (u) { 
                 userId = u.uid; 
                 initData(); 
-                loadPerfilFull();
+                loadPerfilFull(); 
             } 
         });
 
@@ -294,7 +358,7 @@
             onSnapshot(query(collection(db, "transactions"), where("userId", "==", userId)), (snap) => {
                 transactions = snap.docs.map(d => ({id: d.id, ...d.data()})).sort((a,b) => b.dateVencimento - a.dateVencimento);
                 updateUI();
-                updateDrivo();
+                updateDrivo(); // Inserção Drivo
             });
             onSnapshot(query(collection(db, "banks"), where("userId", "==", userId)), (snap) => {
                 userBancos = snap.docs.map(d => ({id: d.id, ...d.data()}));
@@ -312,7 +376,7 @@
             });
         }
 
-        // --- SALVAR PERFIL ---
+        // --- MANTENDO LÓGICA DE PERFIL E DASHBOARD ---
         window.savePerfilSettings = async () => {
             try {
                 const data = {
@@ -327,95 +391,81 @@
                     }
                 };
                 await setDoc(doc(db, "userSettings", userId), data);
-                userSettings = data; // Atualiza local
                 alert("✅ Configurações salvas!");
-                updateDrivo();
-            } catch (error) { console.error(error); alert("Erro ao salvar."); }
+                updateDrivo(); // Atualiza drivo com novos dados de veículo
+            } catch (error) { alert("Erro ao salvar."); }
         };
 
         async function loadPerfilFull() {
             const d = await getDoc(doc(db, "userSettings", userId));
             if(d.exists()) {
-                userSettings = d.data();
-                document.getElementById('perf-nome').value = userSettings.nome || "";
-                document.getElementById('perf-uf').value = userSettings.uf || "CE";
+                const res = d.data();
+                document.getElementById('perf-nome').value = res.nome || "";
+                document.getElementById('perf-uf').value = res.uf || "CE";
                 await loadCidadesIBGE();
-                document.getElementById('perf-cidade').value = userSettings.cidade || "";
-                if(userSettings.veiculo) {
-                    document.getElementById('veic-marca').value = userSettings.veiculo.marca || "";
+                document.getElementById('perf-cidade').value = res.cidade || "";
+                if(res.veiculo) {
+                    document.getElementById('veic-marca').value = res.veiculo.marca || "";
                     updateModelosNacional();
-                    document.getElementById('veic-modelo').value = userSettings.veiculo.modelo || "";
-                    document.getElementById('veic-consumo').value = userSettings.veiculo.consumo || "";
-                    document.getElementById('veic-gas').value = userSettings.veiculo.gasolina || "";
+                    document.getElementById('veic-modelo').value = res.veiculo.modelo || "";
+                    document.getElementById('veic-consumo').value = res.veiculo.consumo || "";
+                    document.getElementById('veic-gas').value = res.veiculo.gasolina || "";
                 }
             }
         }
 
-        // --- LÓGICA DRIVO ---
+        // --- INSERÇÃO: LÓGICA DRIVO ---
         function updateDrivo() {
-            const list = document.getElementById('lista-abastecimentos');
+            const list = document.getElementById('lista-drivo');
             if(!list) return;
-            
-            const consumo = userSettings?.veiculo?.consumo || 29;
-            const precoGas = userSettings?.veiculo?.gasolina || 5.97;
-            
-            // Filtra transações da categoria 'Combustível' ou 'Abastecimento'
-            const abastecimentos = transactions.filter(t => t.categoria === 'Combustível' || t.categoria === 'Abastecimento');
-            
-            let totalGastoMes = 0;
-            const mesAtual = viewDate.getMonth();
-            const anoAtual = viewDate.getFullYear();
 
+            const consumo = parseFloat(document.getElementById('veic-consumo').value) || 29;
+            const gasPreco = parseFloat(document.getElementById('veic-gas').value) || 5.97;
+            
+            const abastecimentos = transactions.filter(t => t.categoria === 'Combustível');
+            let kmMes = 0;
+            
             list.innerHTML = abastecimentos.map(t => {
-                const dV = t.dateVencimento instanceof Timestamp ? t.dateVencimento.toDate() : new Date(t.dateVencimento);
-                if(dV.getMonth() === mesAtual && dV.getFullYear() === anoAtual) totalGastoMes += t.valor;
+                const dv = t.dateVencimento instanceof Timestamp ? t.dateVencimento.toDate() : new Date(t.dateVencimento);
+                const litros = (t.valor / gasPreco).toFixed(2);
+                const km = (litros * consumo).toFixed(0);
                 
-                const litros = (t.valor / precoGas).toFixed(2);
-                const kmEstimado = (litros * consumo).toFixed(0);
+                if(dv.getMonth() === viewDate.getMonth() && dv.getFullYear() === viewDate.getFullYear()) {
+                    kmMes += parseFloat(km);
+                }
 
-                return `
-                    <div class="flex justify-between items-center p-4 bg-slate-900/40 rounded-xl border border-white/5">
-                        <div>
-                            <p class="text-[10px] font-black uppercase text-accentAmber">Abastecimento</p>
-                            <p class="text-[12px] font-bold text-white">${dV.toLocaleDateString()}</p>
-                        </div>
-                        <div class="text-right">
-                            <p class="text-xs font-black text-white">R$ ${t.valor.toLocaleString('pt-BR')}</p>
-                            <p class="text-[9px] font-bold text-slate-500">${litros}L • ~${kmEstimado} KM</p>
-                        </div>
-                    </div>`;
+                return `<div class="p-3 bg-slate-900/50 rounded-xl border border-white/5 flex justify-between items-center">
+                    <div><p class="text-[10px] font-black uppercase text-accentAmber">${dv.toLocaleDateString()}</p><p class="text-xs font-bold">${litros}L abastecidos</p></div>
+                    <p class="text-xs font-black text-white">~ ${km} KM</p>
+                </div>`;
             }).join('');
 
-            const kmTotalMes = ((totalGastoMes / precoGas) * consumo).toFixed(0);
-            const custoPorKm = (precoGas / consumo).toFixed(2);
-
-            document.getElementById('drivo-km-total').innerText = `${kmTotalMes} KM`;
-            document.getElementById('drivo-custo-km').innerText = `R$ ${custoPorKm}`;
+            document.getElementById('drivo-km').innerText = `${kmMes} KM`;
+            document.getElementById('drivo-custo-km').innerText = `R$ ${(gasPreco / consumo).toFixed(2)}`;
         }
 
-        // --- LÓGICA RELATÓRIO ANUAL ---
-        window.changeYearRelatorio = (delta) => {
-            relatorioYear += delta;
-            document.getElementById('relatorio-ano-display').innerText = relatorioYear;
-            updateRelatorioAnual();
+        // --- INSERÇÃO: LÓGICA RELATÓRIO ---
+        window.changeYearRel = (delta) => {
+            selectedRelYear += delta;
+            document.getElementById('rel-ano-label').innerText = selectedRelYear;
+            updateAnualChart();
         };
 
-        function updateRelatorioAnual() {
+        function updateAnualChart() {
+            const ctx = document.getElementById('chart-anual');
+            if(!ctx) return;
+            
             const mesesSiglas = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
             const receitas = new Array(12).fill(0);
             const despesas = new Array(12).fill(0);
             const acumulado = new Array(12).fill(0);
-            
-            let totalRec = 0;
-            let totalDes = 0;
             let saldoPatrimonio = 0;
 
             transactions.forEach(t => {
-                const dV = t.dateVencimento instanceof Timestamp ? t.dateVencimento.toDate() : new Date(t.dateVencimento);
-                if(dV.getFullYear() === relatorioYear) {
-                    const m = dV.getMonth();
-                    if(t.tipo === 'receita') { receitas[m] += t.valor; totalRec += t.valor; }
-                    else { despesas[m] += t.valor; totalDes += t.valor; }
+                const dv = t.dateVencimento instanceof Timestamp ? t.dateVencimento.toDate() : new Date(t.dateVencimento);
+                if(dv.getFullYear() === selectedRelYear) {
+                    const m = dv.getMonth();
+                    t.tipo === 'receita' ? receitas[m] += t.valor : despesas[m] += t.valor;
                 }
             });
 
@@ -424,34 +474,25 @@
                 acumulado[i] = saldoPatrimonio;
             });
 
-            document.getElementById('rel-total-rec').innerText = `R$ ${totalRec.toLocaleString('pt-BR')}`;
-            document.getElementById('rel-total-des').innerText = `R$ ${totalDes.toLocaleString('pt-BR')}`;
-
-            const ctx = document.getElementById('chart-anual-geral').getContext('2d');
-            if(relatorioChart) relatorioChart.destroy();
-
-            relatorioChart = new Chart(ctx, {
+            if(chartAnual) chartAnual.destroy();
+            chartAnual = new Chart(ctx, {
                 data: {
                     labels: mesesSiglas,
                     datasets: [
-                        { type: 'line', label: 'Evolução Patrimonial', data: acumulado, borderColor: '#0ea5e9', borderWidth: 3, tension: 0.4, yAxisID: 'y1' },
-                        { type: 'bar', label: 'Receitas', data: receitas, backgroundColor: '#10b981', borderRadius: 4 },
-                        { type: 'bar', label: 'Despesas', data: despesas, backgroundColor: '#f43f5e', borderRadius: 4 }
+                        { type: 'line', label: 'Acumulado', data: acumulado, borderColor: '#0ea5e9', borderWidth: 3, tension: 0.4, yAxisID: 'y1' },
+                        { type: 'bar', label: 'Ganhos', data: receitas, backgroundColor: '#10b981', borderRadius: 4 },
+                        { type: 'bar', label: 'Gastos', data: despesas, backgroundColor: '#f43f5e', borderRadius: 4 }
                     ]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: { grid: { color: 'rgba(255,255,255,0.05)' } },
-                        y1: { position: 'right', grid: { display: false }, ticks: { color: '#0ea5e9' } }
-                    },
-                    plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 10, weight: 'bold' } } } }
+                options: { 
+                    responsive: true, maintainAspectRatio: false,
+                    scales: { y1: { position: 'right', grid: { display: false } } },
+                    plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', font: { weight: 'bold' } } } }
                 }
             });
         }
 
-        // --- UI E DASHBOARD (Mantido) ---
+        // --- MANTENDO LÓGICA ORIGINAL DE ABAS ---
         window.showTab = (id) => { 
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active')); 
             document.getElementById('tab-' + id).classList.add('active'); 
@@ -459,102 +500,145 @@
             const active = document.querySelector(`[data-tab="${id}"]`);
             if(active) active.classList.replace('text-slate-500', 'text-accentSky');
             lucide.createIcons(); 
-            if(id === 'relatorio') setTimeout(updateRelatorioAnual, 100);
+            if(id === 'relatorio') setTimeout(updateAnualChart, 100);
             if(id === 'drivo') updateDrivo();
         };
 
-        window.updateDonut = (tipo) => {
-            const canvas = document.getElementById('chart-rosca');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            const dataMap = {};
-            transactions.filter(t => {
-                const dV = t.dateVencimento instanceof Timestamp ? t.dateVencimento.toDate() : new Date(t.dateVencimento);
-                return t.tipo === tipo && (isYearlyView ? dV.getFullYear() === viewDate.getFullYear() : (dV.getMonth() === viewDate.getMonth() && dV.getFullYear() === viewDate.getFullYear()));
-            }).forEach(t => { const cat = t.categoria || 'Geral'; dataMap[cat] = (dataMap[cat] || 0) + t.valor; });
-            if(donutChart) donutChart.destroy();
-            donutChart = new Chart(ctx, { type: 'doughnut', data: { labels: Object.keys(dataMap), datasets: [{ data: Object.values(dataMap), backgroundColor: tipo==='despesa'?['#f43f5e','#fb923c','#facc15','#a855f7']:['#10b981','#0ea5e9'], borderWidth: 0 }]}, options: { cutout: '80%', plugins: { legend: { display: true, position: 'bottom', labels: { color: '#94a3b8', font: { size: 10, weight: '700' }, usePointStyle: true }}}} });
+        // --- MANTENDO RESTO DO CÓDIGO (METAS, BANCOS, ETC) ---
+        window.openModalMeta = () => {
+            document.getElementById('meta-edit-id').value = "";
+            document.getElementById('modal-meta-title').innerText = "Novo Objetivo";
+            document.getElementById('form-meta').reset();
+            document.getElementById('modal-meta').classList.remove('hidden');
         };
 
-        window.cycleBankDisplay = () => { currentBankIdx++; if (currentBankIdx >= userBancos.length) currentBankIdx = -1; updateUI(); };
-        window.changeMonth = (delta) => { isYearlyView = false; viewDate.setMonth(viewDate.getMonth() + delta); updateUI(); };
-        window.toggleYearlyView = () => { isYearlyView = !isYearlyView; updateUI(); };
-        window.handleLogout = () => signOut(auth).then(() => location.reload());
+        window.editGoal = (id) => {
+            const g = goals.find(x => x.id === id);
+            if(!g) return;
+            document.getElementById('meta-edit-id').value = g.id;
+            document.getElementById('modal-meta-title').innerText = "Editar Objetivo";
+            document.getElementById('meta-nome').value = g.nome;
+            document.getElementById('meta-objetivo').value = g.objetivo;
+            document.getElementById('meta-atual').value = g.atual;
+            document.getElementById('modal-meta').classList.remove('hidden');
+        };
 
+        window.addValueGoal = async (id) => {
+            const g = goals.find(x => x.id === id);
+            const val = prompt(`Quanto deseja adicionar em "${g.nome}"?`);
+            if(val && !isNaN(val)) {
+                const novoAtual = (g.atual || 0) + parseFloat(val);
+                await updateDoc(doc(db, "goals", id), { atual: novoAtual });
+            }
+        };
+
+        document.getElementById('form-meta').onsubmit = async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('meta-edit-id').value;
+            const data = {
+                userId,
+                nome: document.getElementById('meta-nome').value,
+                objetivo: parseFloat(document.getElementById('meta-objetivo').value),
+                atual: parseFloat(document.getElementById('meta-atual').value)
+            };
+            if(id) await updateDoc(doc(db, "goals", id), data);
+            else await addDoc(collection(db, "goals"), data);
+            closeModal();
+        };
+
+        window.deleteGoal = async (id) => { if(confirm("Remover esta meta?")) await deleteDoc(doc(db, "goals", id)); };
+
+        function renderGoals() {
+            const list = document.getElementById('lista-metas');
+            if(!list) return;
+            list.innerHTML = goals.map(g => {
+                const perc = g.objetivo > 0 ? Math.min(((g.atual || 0) / g.objetivo) * 100, 100).toFixed(0) : 0;
+                return `<div class="custom-card p-5 space-y-4 relative overflow-hidden text-left border-l-4 border-accentSky">
+                    <div class="flex justify-between items-start">
+                        <div class="flex items-center gap-3">
+                            <div onclick="editGoal('${g.id}')" class="p-2 bg-slate-800 rounded-lg cursor-pointer hover:bg-slate-700 text-slate-400"><i data-lucide="edit-2" class="w-4 h-4"></i></div>
+                            <div>
+                                <h4 class="text-xs font-black uppercase tracking-widest text-white mb-1">${g.nome}</h4>
+                                <p class="text-[10px] text-slate-500 font-bold">R$ ${(g.atual || 0).toLocaleString('pt-BR')} de R$ ${(g.objetivo || 0).toLocaleString('pt-BR')}</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="addValueGoal('${g.id}')" class="p-2 bg-accentSky/10 text-accentSky rounded-lg"><i data-lucide="plus" class="w-4 h-4"></i></button>
+                            <button onclick="deleteGoal('${g.id}')" class="p-2 text-slate-600 hover:text-accentRose"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden"><div class="bg-accentSky h-full transition-all duration-1000" style="width: ${perc}%"></div></div>
+                        <p class="text-[10px] font-black text-right text-accentSky">${perc}% concluído</p>
+                    </div>
+                </div>`;
+            }).join('');
+            lucide.createIcons();
+        }
+
+        window.closeModal = () => { ['modal-lancamento', 'modal-meta', 'modal-banco', 'modal-cat'].forEach(id => { const el = document.getElementById(id); if (el) el.classList.add('hidden'); }); };
+        window.openModal = () => { document.getElementById('edit-id').value = ""; document.getElementById('modal-title').innerText = "Novo Lançamento"; document.getElementById('form-transacao').reset(); document.getElementById('dataVencimento').value = new Date().toISOString().split('T')[0]; updateCatSelect(); document.getElementById('modal-lancamento').classList.remove('hidden'); };
+        window.openModalBanco = () => { document.getElementById('form-banco').reset(); document.getElementById('modal-banco').classList.remove('hidden'); };
+        window.openModalCat = (tipo) => { document.getElementById('cat-tipo-modal').value = tipo; document.getElementById('cat-modal-title').innerText = tipo === 'receita' ? "Nova Categoria: Receita" : "Nova Categoria: Despesa"; document.getElementById('form-cat').reset(); document.getElementById('modal-cat').classList.remove('hidden'); };
+
+        document.getElementById('form-banco').addEventListener('submit', async (e) => { e.preventDefault(); try { const nome = document.getElementById('banco-nome-input').value; const saldo = parseFloat(document.getElementById('banco-saldo-input').value); await addDoc(collection(db, "banks"), { userId, nome, saldoInicial: saldo, createdAt: Timestamp.now() }); closeModal(); } catch (error) { console.error(error); } });
+        document.getElementById('form-cat').addEventListener('submit', async (e) => { e.preventDefault(); try { const nome = document.getElementById('cat-nome-input').value; const icone = document.getElementById('cat-icone-input').value; const tipo = document.getElementById('cat-tipo-modal').value; await addDoc(collection(db, "categories"), { userId, nome, icone, tipo, createdAt: Timestamp.now() }); closeModal(); } catch (error) { console.error(error); } });
+        document.getElementById('form-transacao').addEventListener('submit', async (e) => { e.preventDefault(); const id = document.getElementById('edit-id').value; const data = { userId, tipo: currentTipo, status: currentStatus, valor: parseFloat(document.getElementById('valor').value), descricao: document.getElementById('descricao').value, categoria: document.getElementById('categoria-select').value, dateVencimento: Timestamp.fromDate(new Date(document.getElementById('dataVencimento').value + 'T12:00:00')) }; if (id) await updateDoc(doc(db, "transactions", id), data); else await addDoc(collection(db, "transactions"), { ...data, createdAt: Timestamp.now() }); closeModal(); });
+
+        window.renderBancosPerfil = () => { const list = document.getElementById('lista-bancos-perfil'); if(!list) return; list.innerHTML = userBancos.map(b => { const conf = bancoConfigs[b.nome] || bancoConfigs["Outros"]; return `<div class="p-4 bg-slate-900/50 rounded-2xl border-l-4 flex justify-between items-center" style="border-color: ${conf.cor}"><div><p class="text-[9px] font-black uppercase text-slate-500">${b.nome}</p><p class="text-sm font-black">R$ ${b.saldoInicial.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</p></div><button onclick="deleteBanco('${b.id}')" class="text-slate-700 hover:text-accentRose"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>`; }).join(''); lucide.createIcons(); };
+        window.renderCatsPerfil = () => { const recC = document.getElementById('list-cat-rec-perf'); const desC = document.getElementById('list-cat-des-perf'); if(!recC || !desC) return; recC.innerHTML = ""; desC.innerHTML = ""; userCats.forEach(c => { const html = `<div class="flex justify-between items-center p-3 bg-slate-900/40 rounded-xl border border-white/5"><div class="flex items-center gap-2"><i data-lucide="${c.icone || 'tag'}" class="w-3 h-3 text-slate-400"></i><span class="text-[10px] font-black uppercase">${c.nome}</span></div><button onclick="deleteCat('${c.id}')" class="text-slate-700 hover:text-accentRose"><i data-lucide="x" class="w-3 h-3"></i></button></div>`; c.tipo === 'receita' ? recC.innerHTML += html : desC.innerHTML += html; }); lucide.createIcons(); };
+        window.deleteBanco = async (id) => { if(confirm("Remover banco?")) await deleteDoc(doc(db, "banks", id)); };
+        window.deleteCat = async (id) => { if(confirm("Remover categoria?")) await deleteDoc(doc(db, "categories", id)); };
+
+        window.cycleBankDisplay = () => { currentBankIdx++; if (currentBankIdx >= userBancos.length) currentBankIdx = -1; updateUI(); };
         function updateUI() {
             const sIni = userBancos.reduce((acc, b) => acc + (b.saldoInicial || 0), 0);
             const sTrans = transactions.filter(t => t.status === 'efetivada').reduce((acc, t) => t.tipo === 'receita' ? acc + t.valor : acc - t.valor, 0);
             const consolidado = sIni + sTrans;
+            const label = document.getElementById('bank-label');
             const display = document.getElementById('dash-saldo');
+            const card = document.getElementById('card-saldo-main');
             if(currentBankIdx === -1) {
-                document.getElementById('bank-label').innerText = "Saldo Consolidado";
-                display.innerText = `R$ ${consolidado.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-                document.getElementById('card-saldo-main').style.background = "linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%)";
+                label.innerText = "Saldo Consolidado"; display.innerText = `R$ ${consolidado.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`; card.style.background = "linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%)"; display.style.color = "white";
             } else {
-                const b = userBancos[currentBankIdx];
-                const conf = bancoConfigs[b.nome] || bancoConfigs["Outros"];
-                document.getElementById('bank-label').innerText = `Saldo ${b.nome}`;
-                display.innerText = `R$ ${b.saldoInicial.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-                document.getElementById('card-saldo-main').style.background = conf.cor;
+                const b = userBancos[currentBankIdx]; const conf = bancoConfigs[b.nome] || bancoConfigs["Outros"]; label.innerText = `Saldo ${b.nome}`; display.innerText = `R$ ${b.saldoInicial.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`; card.style.background = conf.cor; display.style.color = conf.texto;
             }
-            let rPer = 0, dPer = 0;
-            const feed = document.getElementById('mini-feed');
-            const ext = document.getElementById('lista-transacoes-extrato');
+            let rPer = 0, dPer = 0; const feed = document.getElementById('mini-feed'); const ext = document.getElementById('lista-transacoes-extrato');
             if(feed && ext) {
                 feed.innerHTML = ""; ext.innerHTML = "";
                 transactions.forEach((t, i) => {
                     const dV = t.dateVencimento instanceof Timestamp ? t.dateVencimento.toDate() : new Date(t.dateVencimento);
-                    const match = isYearlyView ? dV.getFullYear() === viewDate.getFullYear() : (dV.getMonth() === viewDate.getMonth() && dV.getFullYear() === viewDate.getFullYear());
-                    if(match) {
+                    if(isYearlyView ? dV.getFullYear() === viewDate.getFullYear() : (dV.getMonth() === viewDate.getMonth() && dV.getFullYear() === viewDate.getFullYear())) {
                         t.tipo === 'receita' ? rPer += t.valor : dPer += t.valor;
                         const html = `<div class="flex justify-between items-center p-4 bg-slate-900/40 rounded-xl border border-white/5"><div class="flex items-center gap-3"><div class="p-2 rounded-lg ${t.tipo==='receita'?'bg-accentEmerald/10 text-accentEmerald':'bg-accentRose/10 text-accentRose'}"><i data-lucide="${t.status==='efetivada'?'check':'clock'}" class="w-4 h-4"></i></div><div><h4 class="text-[11px] font-black uppercase">${t.descricao}</h4><p class="text-[9px] text-slate-500">${dV.toLocaleDateString()}</p></div></div><p class="text-xs font-black ${t.tipo==='receita'?'text-accentEmerald':'text-accentRose'}">R$ ${t.valor.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</p></div>`;
-                        if(i < 5) feed.innerHTML += html;
-                        ext.innerHTML += html;
+                        if(i < 5) feed.innerHTML += html; ext.innerHTML += html;
                     }
                 });
             }
-            document.getElementById('dash-receitas').innerText = `R$ ${rPer.toLocaleString('pt-BR')}`;
-            document.getElementById('dash-despesas').innerText = `R$ ${dPer.toLocaleString('pt-BR')}`;
-            document.getElementById('display-periodo').innerText = isYearlyView ? `Ano ${viewDate.getFullYear()}` : `${meses[viewDate.getMonth()]} ${viewDate.getFullYear()}`;
-            lucide.createIcons();
-            setTimeout(() => updateDonut(currentTipo), 100);
+            document.getElementById('dash-receitas').innerText = `R$ ${rPer.toLocaleString('pt-BR')}`; document.getElementById('dash-despesas').innerText = `R$ ${dPer.toLocaleString('pt-BR')}`; document.getElementById('display-periodo').innerText = isYearlyView ? `Ano ${viewDate.getFullYear()}` : `${meses[viewDate.getMonth()]} ${viewDate.getFullYear()}`;
+            lucide.createIcons(); setTimeout(() => updateDonut(currentTipo), 100);
         }
 
-        // --- IBGE E MODELOS ---
-        async function loadEstadosIBGE() {
-            const response = await fetch('https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome');
-            const estados = await response.json();
-            const sel = document.getElementById('perf-uf');
-            if(sel) sel.innerHTML = estados.map(e => `<option value="${e.sigla}">${e.nome}</option>`).join('');
-        }
-        window.loadCidadesIBGE = async () => {
-            const uf = document.getElementById('perf-uf').value;
-            const sel = document.getElementById('perf-cidade');
-            if(!sel) return;
-            sel.innerHTML = '<option>Carregando...</option>';
-            const response = await fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios?orderBy=nome`);
-            const cidades = await response.json();
-            sel.innerHTML = cidades.map(c => `<option value="${c.nome}">${c.nome}</option>`).join('');
-            if(uf === "CE") document.getElementById('veic-gas').value = 5.97;
-        };
-        window.updateModelosNacional = () => {
-            const marca = document.getElementById('veic-marca').value;
-            const sel = document.getElementById('veic-modelo');
-            if(sel) sel.innerHTML = (dataModelosMaster[marca] || ["Outro Modelo"]).map(m => `<option value="${m}">${m}</option>`).join('');
+        window.updateDonut = (tipo) => {
+            const canvas = document.getElementById('chart-rosca'); if (!canvas) return; const ctx = canvas.getContext('2d'); const dataMap = {};
+            transactions.filter(t => { const dV = t.dateVencimento instanceof Timestamp ? t.dateVencimento.toDate() : new Date(t.dateVencimento); return t.tipo === tipo && (isYearlyView ? dV.getFullYear() === viewDate.getFullYear() : (dV.getMonth() === viewDate.getMonth() && dV.getFullYear() === viewDate.getFullYear())); }).forEach(t => { const cat = t.categoria || 'Geral'; dataMap[cat] = (dataMap[cat] || 0) + t.valor; });
+            if(donutChart) donutChart.destroy(); donutChart = new Chart(ctx, { type: 'doughnut', data: { labels: Object.keys(dataMap), datasets: [{ data: Object.values(dataMap), backgroundColor: tipo==='despesa'?['#f43f5e','#fb923c','#facc15','#a855f7']:['#10b981','#0ea5e9'], borderWidth: 0 }]}, options: { cutout: '80%', plugins: { legend: { display: true, position: 'bottom', labels: { color: '#94a3b8', font: { size: 10, weight: '700' }, usePointStyle: true }}}} });
+            document.getElementById('btn-donut-des').className = tipo==='despesa' ? "px-3 py-1.5 rounded-lg text-[9px] font-black bg-accentRose text-white" : "px-3 py-1.5 rounded-lg text-[9px] font-black text-slate-500"; document.getElementById('btn-donut-rec').className = tipo==='receita' ? "px-3 py-1.5 rounded-lg text-[9px] font-black bg-accentEmerald text-white" : "px-3 py-1.5 rounded-lg text-[9px] font-black text-slate-500";
         };
 
-        // --- AUXILIARES GERAIS ---
+        async function loadEstadosIBGE() { const response = await fetch('https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome'); const estados = await response.json(); const sel = document.getElementById('perf-uf'); if(sel) sel.innerHTML = estados.map(e => `<option value="${e.sigla}">${e.nome}</option>`).join(''); }
+        window.loadCidadesIBGE = async () => { const uf = document.getElementById('perf-uf').value; const sel = document.getElementById('perf-cidade'); if(!sel) return; sel.innerHTML = '<option>Carregando...</option>'; const response = await fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios?orderBy=nome`); const cidades = await response.json(); sel.innerHTML = cidades.map(c => `<option value="${c.nome}">${c.nome}</option>`).join(''); if(uf === "CE") document.getElementById('veic-gas').value = 5.97; };
+        const dataModelosMaster = { "Yamaha": ["Fazer FZ25", "Lander 250", "MT-03", "MT-07", "NMAX 160", "XMAX 250", "Crosser 150", "Factor 150", "R3"], "Honda Motos": ["Titan 160", "Bros 160", "CB 300F Twister", "XRE 300 Sahara", "PCX 160", "Biz 125", "NC 750X", "CB 500X"], "Toyota": ["Corolla", "Corolla Cross", "Hilux", "SW4", "Yaris Hatch", "Yaris Sedan"], "Volkswagen": ["Polo", "Golf", "T-Cross", "Nivus", "Virtus", "Saveiro", "Amarok", "Taos"], "Fiat": ["Strada", "Mobi", "Argo", "Pulse", "Fastback", "Toro", "Cronos", "Fiorino"] };
+        window.updateModelosNacional = () => { const marca = document.getElementById('veic-marca').value; const sel = document.getElementById('veic-modelo'); if(sel) sel.innerHTML = (dataModelosMaster[marca] || ["Outro Modelo"]).map(m => `<option value="${m}">${m}</option>`).join(''); };
+
         window.setTipo = (t) => { currentTipo = t; updateCatSelect(); };
         window.setStatus = (s) => { currentStatus = s; };
-        function updateCatSelect() { 
-            const sel = document.getElementById('categoria-select'); if(!sel) return; 
-            sel.innerHTML = userCats.filter(c => c.tipo === currentTipo).map(c => `<option value="${c.nome}">${c.nome}</option>`).join(''); 
-        }
+        window.changeMonth = (delta) => { isYearlyView = false; viewDate.setMonth(viewDate.getMonth() + delta); updateUI(); };
+        window.toggleYearlyView = () => { isYearlyView = !isYearlyView; updateUI(); };
+        window.handleLogout = () => signOut(auth).then(() => location.reload());
+        function updateCatSelect() { const sel = document.getElementById('categoria-select'); if(!sel) return; sel.innerHTML = userCats.filter(c => c.tipo === currentTipo).map(c => `<option value="${c.nome}">${c.nome}</option>`).join(''); }
 
-        document.addEventListener('DOMContentLoaded', () => { 
-            loadEstadosIBGE();
-            lucide.createIcons();
-        });
+        document.addEventListener('DOMContentLoaded', () => { loadEstadosIBGE(); lucide.createIcons(); });
     </script>
 </body>
 </html>
