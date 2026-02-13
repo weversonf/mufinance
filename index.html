@@ -178,6 +178,8 @@
                 goals = snap.docs.map(d => ({id: d.id, ...d.data()}));
                 renderGoals(); 
             });
+
+            
         }
 
         // Adicione este bloco aqui:
@@ -314,7 +316,7 @@ window.deleteGoal = async (id) => {
             <div class="flex justify-between items-start">
                 <div>
                     <h4 class="text-xs font-black uppercase tracking-widest text-white">${g.nome}</h4>
-                    <p class="text-[10px] text-slate-500 font-bold">R$ ${g.atual.toLocaleString()} de R$ ${g.objetivo.toLocaleString()}</p>
+                    <p class="text-[10px] text-slate-500 font-bold">R$ ${(g.atual || 0).toLocaleString('pt-BR')} de R$ ${(g.objetivo || 0).toLocaleString('pt-BR')}</p>
                 </div>
                 <button onclick="deleteGoal('${g.id}')" class="text-slate-600 hover:text-accentRose"><i data-lucide="x" class="w-4 h-4"></i></button>
             </div>
