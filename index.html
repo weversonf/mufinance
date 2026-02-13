@@ -14,7 +14,7 @@
     </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
-        * { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
+        * { -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
         input, select, textarea { user-select: text !important; }
         body { font-family: 'Inter', sans-serif; background-color: #020617; color: white; }
         .tab-content { display: none; }
@@ -34,7 +34,7 @@
                 <div class="p-3 bg-accentSky rounded-xl text-white shadow-lg"><i data-lucide="zap" class="w-6 h-6 fill-current"></i></div>
                 <div>
                     <h1 class="text-2xl font-black uppercase italic tracking-tighter text-accentSky leading-none">Drivo&Money</h1>
-                    <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">v23.2 • Categorias Inteligentes</span>
+                    <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">v23.2 • Categorias Dinâmicas</span>
                 </div>
             </div>
             <button onclick="handleLogout()" class="p-4 bg-slate-800/50 rounded-xl text-accentRose"><i data-lucide="log-out"></i></button>
@@ -61,20 +61,14 @@
                         </div>
                         <i data-lucide="wallet" class="absolute -right-4 -bottom-4 w-24 h-24 opacity-10"></i>
                     </div>
-                    <div class="custom-card p-6 border-l-4 border-l-accentEmerald">
-                        <small class="text-[10px] font-black uppercase text-slate-500">Receitas</small>
-                        <p class="text-3xl font-black mt-2 text-accentEmerald" id="dash-receitas">R$ 0,00</p>
-                    </div>
-                    <div class="custom-card p-6 border-l-4 border-l-accentRose">
-                        <small class="text-[10px] font-black uppercase text-slate-500">Despesas</small>
-                        <p class="text-3xl font-black mt-2 text-accentRose" id="dash-despesas">R$ 0,00</p>
-                    </div>
+                    <div class="custom-card p-6 border-l-4 border-l-accentEmerald"><small class="text-[10px] font-black text-slate-500 uppercase">Receitas</small><p class="text-3xl font-black mt-2 text-accentEmerald" id="dash-receitas">R$ 0,00</p></div>
+                    <div class="custom-card p-6 border-l-4 border-l-accentRose"><small class="text-[10px] font-black text-slate-500 uppercase">Despesas</small><p class="text-3xl font-black mt-2 text-accentRose" id="dash-despesas">R$ 0,00</p></div>
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
                     <div class="lg:col-span-5 custom-card p-8 text-center">
-                        <div class="flex justify-between items-center mb-6">
-                            <h3 class="text-xs font-black uppercase text-slate-400 tracking-widest text-left">Raio-X Mensal</h3>
+                        <div class="flex justify-between items-center mb-6 text-left">
+                            <h3 id="titulo-grafico" class="text-xs font-black uppercase text-slate-400 tracking-widest">Raio-X Mensal</h3>
                             <div class="flex bg-slate-800 p-1 rounded-xl">
                                 <button onclick="updateDonut('despesa')" id="btn-donut-des" class="px-3 py-1.5 rounded-lg text-[9px] font-black uppercase bg-accentRose text-white">Gastos</button>
                                 <button onclick="updateDonut('receita')" id="btn-donut-rec" class="px-3 py-1.5 rounded-lg text-[9px] font-black uppercase text-slate-500">Ganhos</button>
@@ -91,7 +85,7 @@
 
             <section id="tab-perfil" class="tab-content space-y-8">
                 <div class="space-y-4">
-                    <h3 class="text-xs font-black uppercase tracking-widest text-accentSky flex items-center gap-2"><i data-lucide="layers" class="w-4 h-4"></i> Categorias Personalizadas</h3>
+                    <h3 class="text-xs font-black uppercase tracking-widest text-accentSky flex items-center gap-2"><i data-lucide="layers" class="w-4 h-4"></i> Categorias</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="custom-card p-6">
                             <div class="flex justify-between items-center mb-4">
@@ -109,35 +103,20 @@
                         </div>
                     </div>
                 </div>
-                
-                <div class="space-y-4">
-                    <h3 class="text-xs font-black uppercase tracking-widest text-accentSky">Meus Bancos</h3>
-                    <div class="custom-card p-6 space-y-4">
-                        <button onclick="addBankPrompt()" class="w-full py-3 bg-accentSky/10 text-accentSky border border-accentSky/20 rounded-xl font-black text-[10px] uppercase">+ Adicionar Novo Banco</button>
-                        <div id="lista-bancos-perfil" class="grid grid-cols-1 gap-2 text-left"></div>
-                    </div>
-                </div>
-            </section>
-            
-            <section id="tab-extrato" class="tab-content space-y-4 text-left">
-                <div id="lista-transacoes-extrato" class="space-y-3"></div>
             </section>
         </main>
     </div>
 
     <nav class="fixed bottom-0 left-0 right-0 nav-glass px-8 py-4 flex gap-10 items-center justify-center z-50">
         <button onclick="showTab('dashboard')" class="nav-btn text-accentSky" data-tab="dashboard"><i data-lucide="layout-dashboard"></i></button>
-        <button onclick="showTab('extrato')" class="nav-btn text-slate-500" data-tab="extrato"><i data-lucide="receipt-text"></i></button>
         <button onclick="openModal()" class="bg-accentSky text-white p-4 rounded-2xl shadow-xl -translate-y-8 active:scale-90 transition-all"><i data-lucide="plus" class="w-6 h-6"></i></button>
-        <button onclick="showTab('metas')" class="nav-btn text-slate-500" data-tab="metas"><i data-lucide="target"></i></button>
         <button onclick="showTab('perfil')" class="nav-btn text-slate-500" data-tab="perfil"><i data-lucide="user"></i></button>
     </nav>
 
     <div id="modal-lancamento" class="hidden fixed inset-0 bg-slate-950/90 backdrop-blur-sm flex items-center justify-center p-4 z-[300]">
         <div class="custom-card w-full max-w-md p-8 shadow-2xl">
-            <h3 id="modal-title" class="text-lg font-black uppercase italic text-sky-500 mb-6 text-left">Lançamento</h3>
+            <h3 class="text-lg font-black uppercase italic text-sky-500 mb-6 text-left">Lançamento</h3>
             <form id="form-transacao" class="space-y-4">
-                <input type="hidden" id="edit-id">
                 <div class="flex gap-2">
                     <button type="button" onclick="setTipo('despesa')" id="btn-tipo-des" class="flex-1 py-3 rounded-xl font-black text-[10px] uppercase bg-accentRose text-white">Despesa</button>
                     <button type="button" onclick="setTipo('receita')" id="btn-tipo-rec" class="flex-1 py-3 rounded-xl font-black text-[10px] uppercase bg-slate-800 text-slate-500">Receita</button>
@@ -155,7 +134,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, where, Timestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = { apiKey: "AIzaSyArWGgDx0uxce8w72J_1UpKPCUJGvHs3fI", authDomain: "drivo-e-money.firebaseapp.com", projectId: "drivo-e-money", storageBucket: "drivo-e-money.firebasestorage.app", messagingSenderId: "62950568252", appId: "1:62950568252:web:7638827c39b589a9046e39" };
         const app = initializeApp(firebaseConfig);
@@ -184,7 +163,6 @@
             });
             onSnapshot(query(collection(db, "banks"), where("userId", "==", userId)), (snap) => {
                 userBancos = snap.docs.map(d => ({id: d.id, ...d.data()}));
-                renderBancosPerfil();
                 updateUI();
             });
             onSnapshot(query(collection(db, "categories"), where("userId", "==", userId)), async (snap) => {
@@ -198,49 +176,14 @@
             });
         }
 
-        window.addCatPrompt = async (tipo) => {
-            const n = prompt(`Nova categoria de ${tipo}:`);
-            if (n) await addDoc(collection(db, "categories"), { userId, nome: n, tipo });
-        };
-
-        window.editCat = async (id, antigo) => {
-            const n = prompt("Editar nome:", antigo);
-            if (n && n !== antigo) await updateDoc(doc(db, "categories", id), { nome: n });
-        };
-
-        window.deleteCat = async (id) => { if (confirm("Excluir categoria?")) await deleteDoc(doc(db, "categories", id)); };
-
-        function renderCats() {
-            const rec = document.getElementById('list-cat-rec');
-            const des = document.getElementById('list-cat-des');
-            rec.innerHTML = ""; des.innerHTML = "";
-            userCats.forEach(c => {
-                const html = `<div class="flex justify-between items-center p-3 bg-slate-950 rounded-xl border border-white/5"><span class="text-[10px] font-black uppercase">${c.nome}</span><div class="flex gap-2"><button onclick="editCat('${c.id}','${c.nome}')" class="text-slate-500 hover:text-accentSky"><i data-lucide="edit-2" class="w-3 h-3"></i></button><button onclick="deleteCat('${c.id}')" class="text-slate-500 hover:text-accentRose"><i data-lucide="trash-2" class="w-3 h-3"></i></button></div></div>`;
-                c.tipo === 'receita' ? rec.innerHTML += html : des.innerHTML += html;
-            });
-            lucide.createIcons();
-        }
-
-        window.setTipo = (t) => {
-            currentTipo = t;
-            document.getElementById('btn-tipo-des').className = t==='despesa' ? "flex-1 py-3 rounded-xl font-black text-[10px] uppercase bg-accentRose text-white" : "flex-1 py-3 rounded-xl font-black text-[10px] uppercase bg-slate-800 text-slate-500";
-            document.getElementById('btn-tipo-rec').className = t==='receita' ? "flex-1 py-3 rounded-xl font-black text-[10px] uppercase bg-accentEmerald text-white" : "flex-1 py-3 rounded-xl font-black text-[10px] uppercase bg-slate-800 text-slate-500";
-            updateCatSelect();
-        };
-
-        function updateCatSelect() {
-            const sel = document.getElementById('categoria-select');
-            const filtered = userCats.filter(c => c.tipo === currentTipo);
-            sel.innerHTML = filtered.map(c => `<option value="${c.nome}">${c.nome}</option>`).join('');
-        }
-
-        // LÓGICA DASHBOARD TRAVADA v23.1
+        // LÓGICA DASHBOARD TRAVADA (Restaurada da v23.1)
         function updateUI() {
             let sGlobal = 0, rPer = 0, dPer = 0;
             const feed = document.getElementById('mini-feed'); feed.innerHTML = "";
             const saldoInicial = userBancos.reduce((acc, b) => acc + (b.saldoInicial || 0), 0);
             const saldoTrans = transactions.filter(t => t.status === 'efetivada').reduce((acc, t) => t.tipo === 'receita' ? acc + t.valor : acc - t.valor, 0);
             const consolidado = saldoInicial + saldoTrans;
+
             if (currentBankIdx === -1) {
                 document.getElementById('bank-label').innerText = "Saldo Disponível";
                 document.getElementById('dash-saldo').innerText = `R$ ${consolidado.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
@@ -249,8 +192,10 @@
                 document.getElementById('bank-label').innerText = `Saldo ${b.nome}`;
                 document.getElementById('dash-saldo').innerText = `R$ ${b.saldoInicial.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
             }
+
             const display = document.getElementById('display-periodo');
             display.innerText = isYearlyView ? `Ano ${viewDate.getFullYear()}` : `${meses[viewDate.getMonth()]} ${viewDate.getFullYear()}`;
+
             transactions.forEach((t, i) => {
                 const dV = t.dateVencimento instanceof Timestamp ? t.dateVencimento.toDate() : new Date(t.dateVencimento);
                 const match = isYearlyView ? dV.getFullYear() === viewDate.getFullYear() : (dV.getMonth() === viewDate.getMonth() && dV.getFullYear() === viewDate.getFullYear());
@@ -262,17 +207,78 @@
             });
             document.getElementById('dash-receitas').innerText = `R$ ${rPer.toLocaleString('pt-BR')}`;
             document.getElementById('dash-despesas').innerText = `R$ ${dPer.toLocaleString('pt-BR')}`;
+            
             lucide.createIcons();
-            updateDonut(currentTipo);
+            setTimeout(() => updateDonut(currentTipo), 100); // Delay para garantir o canvas
         }
 
+        window.updateDonut = (tipo) => {
+            currentTipo = tipo;
+            const canvas = document.getElementById('chart-rosca');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const dataMap = {};
+            transactions.filter(t => {
+                const dV = t.dateVencimento instanceof Timestamp ? t.dateVencimento.toDate() : new Date(t.dateVencimento);
+                return t.tipo === tipo && (isYearlyView ? dV.getFullYear() === viewDate.getFullYear() : (dV.getMonth() === viewDate.getMonth() && dV.getFullYear() === viewDate.getFullYear()));
+            }).forEach(t => { const cat = t.categoria || 'Geral'; dataMap[cat] = (dataMap[cat] || 0) + t.valor; });
+            
+            if(donutChart) donutChart.destroy();
+            donutChart = new Chart(ctx, { type: 'doughnut', data: { labels: Object.keys(dataMap), datasets: [{ data: Object.values(dataMap), backgroundColor: tipo==='despesa'?['#f43f5e','#fb923c','#facc15','#a855f7']:['#10b981','#0ea5e9'], borderWidth: 0 }]}, options: { cutout: '80%', plugins: { legend: { display: true, position: 'bottom', labels: { color: '#94a3b8', font: { size: 10, weight: '700' }, usePointStyle: true }}}} });
+            
+            document.getElementById('btn-donut-des').className = tipo==='despesa' ? "px-3 py-1.5 rounded-lg text-[9px] font-black uppercase bg-accentRose text-white" : "px-3 py-1.5 rounded-lg text-[9px] font-black uppercase text-slate-500";
+            document.getElementById('btn-donut-rec').className = tipo==='receita' ? "px-3 py-1.5 rounded-lg text-[9px] font-black uppercase bg-accentEmerald text-white" : "px-3 py-1.5 rounded-lg text-[9px] font-black uppercase text-slate-500";
+        };
+
+        // LÓGICA DE CATEGORIAS
+        window.addCatPrompt = async (tipo) => {
+            const n = prompt(`Nova categoria de ${tipo}:`);
+            if (n) await addDoc(collection(db, "categories"), { userId, nome: n, tipo });
+        };
+        window.editCat = async (id, antigo) => {
+            const n = prompt("Editar nome:", antigo);
+            if (n && n !== antigo) await updateDoc(doc(db, "categories", id), { nome: n });
+        };
+        window.deleteCat = async (id) => { if (confirm("Excluir categoria?")) await deleteDoc(doc(db, "categories", id)); };
+
+        function renderCats() {
+            const rec = document.getElementById('list-cat-rec');
+            const des = document.getElementById('list-cat-des');
+            if(!rec || !des) return;
+            rec.innerHTML = ""; des.innerHTML = "";
+            userCats.forEach(c => {
+                const html = `<div class="flex justify-between items-center p-3 bg-slate-950 rounded-xl border border-white/5"><span class="text-[10px] font-black uppercase">${c.nome}</span><div class="flex gap-2"><button onclick="editCat('${c.id}','${c.nome}')" class="text-slate-500"><i data-lucide="edit-2" class="w-3 h-3"></i></button><button onclick="deleteCat('${c.id}')" class="text-slate-500"><i data-lucide="trash-2" class="w-3 h-3"></i></button></div></div>`;
+                c.tipo === 'receita' ? rec.innerHTML += html : des.innerHTML += html;
+            });
+            lucide.createIcons();
+        }
+
+        window.setTipo = (t) => {
+            currentTipo = t;
+            updateCatSelect();
+            document.getElementById('btn-tipo-des').className = t==='despesa' ? "flex-1 py-3 rounded-xl font-black text-[10px] uppercase bg-accentRose text-white" : "flex-1 py-3 rounded-xl font-black text-[10px] uppercase bg-slate-800 text-slate-500";
+            document.getElementById('btn-tipo-rec').className = t==='receita' ? "flex-1 py-3 rounded-xl font-black text-[10px] uppercase bg-accentEmerald text-white" : "flex-1 py-3 rounded-xl font-black text-[10px] uppercase bg-slate-800 text-slate-500";
+        };
+
+        function updateCatSelect() {
+            const sel = document.getElementById('categoria-select');
+            if(!sel) return;
+            const filtered = userCats.filter(c => c.tipo === currentTipo);
+            sel.innerHTML = filtered.map(c => `<option value="${c.nome}">${c.nome}</option>`).join('');
+        }
+
+        // FUNÇÕES GERAIS
         window.cycleBankDisplay = () => { currentBankIdx++; if (currentBankIdx >= userBancos.length) currentBankIdx = -1; updateUI(); };
         window.changeMonth = (delta) => { isYearlyView = false; viewDate.setMonth(viewDate.getMonth() + delta); updateUI(); };
         window.toggleYearlyView = () => { isYearlyView = !isYearlyView; updateUI(); };
-        window.showTab = (id) => { document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active')); document.getElementById('tab-' + id).classList.add('active'); lucide.createIcons(); };
-        window.openModal = () => document.getElementById('modal-lancamento').classList.remove('hidden');
+        window.showTab = (id) => { 
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.getElementById('tab-' + id).classList.add('active');
+            lucide.createIcons();
+            if(id === 'dashboard') setTimeout(() => updateDonut(currentTipo), 100);
+        };
+        window.openModal = () => { updateCatSelect(); document.getElementById('modal-lancamento').classList.remove('hidden'); };
         window.closeModal = () => document.getElementById('modal-lancamento').classList.add('hidden');
-        window.handleLogout = () => signOut(auth).then(() => location.reload());
         
         lucide.createIcons();
     </script>
