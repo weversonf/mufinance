@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Drivo & Money v23.6</title>
+    <title>Drivo & Money v23.7</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -144,7 +144,6 @@
                 <button type="button" onclick="document.getElementById('modal-meta').classList.add('hidden')" class="w-full text-slate-500 text-[10px] font-bold mt-2 text-center uppercase">Cancelar</button>
             </form>
         </div>
-    </div>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, where, Timestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -180,6 +179,25 @@
                 renderGoals(); 
             });
         }
+
+        // Adicione este bloco aqui:
+document.getElementById('form-meta').onsubmit = async (e) => {
+    e.preventDefault();
+    const data = {
+        userId,
+        nome: document.getElementById('meta-nome').value,
+        objetivo: parseFloat(document.getElementById('meta-objetivo').value),
+        atual: parseFloat(document.getElementById('meta-atual').value)
+    };
+    await addDoc(collection(db, "goals"), data);
+    document.getElementById('modal-meta').classList.add('hidden');
+    e.target.reset();
+};
+
+window.deleteGoal = async (id) => { 
+    if(confirm("Remover esta meta?")) await deleteDoc(doc(db, "goals", id)); 
+};
+        
         window.editTransaction = (id) => {
             const t = transactions.find(item => item.id === id);
             if (!t) return;
@@ -285,6 +303,30 @@
                 c.tipo === 'receita' ? rec.innerHTML += html : des.innerHTML += html;
             }); lucide.createIcons();
         }
+
+        function renderGoals() {
+    const list = document.getElementById('lista-metas');
+    if(!list) return;
+    list.innerHTML = goals.map(g => {
+        const perc = Math.min((g.atual / g.objetivo) * 100, 100).toFixed(0);
+        return `
+        <div class="custom-card p-5 space-y-3 relative overflow-hidden text-left">
+            <div class="flex justify-between items-start">
+                <div>
+                    <h4 class="text-xs font-black uppercase tracking-widest text-white">${g.nome}</h4>
+                    <p class="text-[10px] text-slate-500 font-bold">R$ ${g.atual.toLocaleString()} de R$ ${g.objetivo.toLocaleString()}</p>
+                </div>
+                <button onclick="deleteGoal('${g.id}')" class="text-slate-600 hover:text-accentRose"><i data-lucide="x" class="w-4 h-4"></i></button>
+            </div>
+            <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                <div class="bg-accentSky h-full transition-all duration-1000" style="width: ${perc}%"></div>
+            </div>
+            <p class="text-[10px] font-black text-right text-accentSky">${perc}%</p>
+        </div>`;
+    }).join('');
+    lucide.createIcons();
+}
+        
         function updateCatSelect() { const sel = document.getElementById('categoria-select'); if(!sel) return; const filtered = userCats.filter(c => c.tipo === currentTipo); sel.innerHTML = filtered.map(c => `<option value="${c.nome}">${c.nome}</option>`).join(''); }
         lucide.createIcons();
     </script>
