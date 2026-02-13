@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Drivo & Money v11</title>
+    <title>Drivo & Money v12</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -29,10 +29,10 @@
     <div id="main-app" class="max-w-6xl mx-auto p-4 md:p-8">
         <header class="flex justify-between items-center mb-8 custom-card p-5">
             <div class="flex items-center gap-4">
-                <div class="p-3 bg-accentSky rounded-xl text-white shadow-lg shadow-sky-500/20"><i data-lucide="zap" class="w-6 h-6 fill-current"></i></div>
+                <div class="p-3 bg-accentSky rounded-xl text-white shadow-lg"><i data-lucide="zap" class="w-6 h-6 fill-current"></i></div>
                 <div>
                     <h1 class="text-2xl font-black uppercase italic tracking-tighter text-accentSky leading-none">Drivo&Money</h1>
-                    <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">v11 • Dashboard Completo</span>
+                    <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">v12 • Raio-X Financeiro</span>
                 </div>
             </div>
             <button onclick="handleLogout()" class="p-4 bg-slate-800/50 rounded-xl text-accentRose"><i data-lucide="log-out"></i></button>
@@ -42,15 +42,14 @@
             <section id="tab-dashboard" class="tab-content active space-y-6">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div class="card-gradient p-6 shadow-2xl flex flex-col justify-between min-h-[140px] relative overflow-hidden">
-                        <div class="relative z-10"><small class="text-[10px] font-black uppercase opacity-80 tracking-widest">Saldo Atual</small><p class="text-3xl font-black mt-2" id="dash-saldo">R$ 0,00</p></div>
-                        <i data-lucide="wallet" class="absolute -right-4 -bottom-4 w-24 h-24 opacity-10"></i>
+                        <div class="relative z-10"><small class="text-[10px] font-black uppercase opacity-80">Saldo Atual</small><p class="text-3xl font-black mt-2" id="dash-saldo">R$ 0,00</p></div>
                     </div>
                     <div class="custom-card p-6 border-l-4 border-l-accentEmerald">
-                        <small class="text-[10px] font-black uppercase text-slate-500 tracking-widest">Receitas (Mês)</small>
+                        <small class="text-[10px] font-black uppercase text-slate-500">Receitas (Mês)</small>
                         <p class="text-3xl font-black mt-2 text-accentEmerald" id="dash-receitas">R$ 0,00</p>
                     </div>
                     <div class="custom-card p-6 border-l-4 border-l-accentRose">
-                        <small class="text-[10px] font-black uppercase text-slate-500 tracking-widest">Despesas (Mês)</small>
+                        <small class="text-[10px] font-black uppercase text-slate-500">Despesas (Mês)</small>
                         <p class="text-3xl font-black mt-2 text-accentRose" id="dash-despesas">R$ 0,00</p>
                     </div>
                 </div>
@@ -58,24 +57,23 @@
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
                     <div class="lg:col-span-5 custom-card p-8">
                         <div class="flex justify-between items-center mb-6">
-                            <h3 class="text-xs font-black uppercase text-slate-400 tracking-widest">Distribuição</h3>
+                            <h3 id="titulo-grafico" class="text-xs font-black uppercase text-slate-400 tracking-widest">Raio-X de Gastos</h3>
                             <div class="flex bg-slate-800 p-1 rounded-xl">
                                 <button onclick="updateDonut('despesa')" id="btn-donut-des" class="px-3 py-1.5 rounded-lg text-[9px] font-black uppercase bg-accentRose text-white">Gastos</button>
                                 <button onclick="updateDonut('receita')" id="btn-donut-rec" class="px-3 py-1.5 rounded-lg text-[9px] font-black uppercase text-slate-500">Ganhos</button>
                             </div>
                         </div>
-                        <div class="relative h-[250px]"><canvas id="chart-rosca"></canvas></div>
+                        <div class="relative h-[280px]"><canvas id="chart-rosca"></canvas></div>
                     </div>
 
                     <div class="lg:col-span-7 custom-card p-8">
-                        <h3 class="text-xs font-black uppercase text-slate-400 mb-6 tracking-widest">Últimos Movimentos</h3>
+                        <h3 class="text-xs font-black uppercase text-slate-400 mb-6 tracking-widest">Atividades Recentes</h3>
                         <div id="mini-feed" class="space-y-3"></div>
                     </div>
                 </div>
             </section>
 
             <section id="tab-extrato" class="tab-content space-y-4">
-                <h2 class="text-xl font-black uppercase italic text-sky-500">Extrato Detalhado</h2>
                 <div id="lista-transacoes-extrato" class="space-y-3"></div>
             </section>
         </main>
@@ -83,18 +81,27 @@
 
     <div id="modal-lancamento" class="hidden fixed inset-0 bg-slate-950/90 backdrop-blur-sm flex items-center justify-center p-4 z-[300]">
         <div class="custom-card w-full max-w-md p-8 shadow-2xl">
-            <h3 id="modal-title" class="text-lg font-black uppercase italic text-sky-500 mb-6">Novo Lançamento</h3>
+            <h3 id="modal-title" class="text-lg font-black uppercase italic text-sky-500 mb-6">Lançamento</h3>
             <form id="form-transacao" class="space-y-4">
                 <input type="hidden" id="edit-id">
                 <div class="flex gap-2">
                     <button type="button" onclick="setTipo('despesa')" id="btn-tipo-des" class="flex-1 py-3 rounded-xl font-black text-[10px] uppercase bg-accentRose text-white">Despesa</button>
                     <button type="button" onclick="setTipo('receita')" id="btn-tipo-rec" class="flex-1 py-3 rounded-xl font-black text-[10px] uppercase bg-slate-800 text-slate-500">Receita</button>
                 </div>
-                <input type="number" id="valor" step="0.01" placeholder="Valor R$" class="w-full p-4 bg-slate-950 border border-slate-800 rounded-xl text-lg font-black outline-none focus:border-sky-500 text-white" required>
+                <input type="number" id="valor" step="0.01" placeholder="Valor R$" class="w-full p-4 bg-slate-950 border border-slate-800 rounded-xl text-lg font-black outline-none text-white" required>
                 <input type="text" id="descricao" placeholder="Descrição" class="w-full p-4 bg-slate-950 border border-slate-800 rounded-xl text-sm outline-none text-white" required>
+                <select id="categoria" class="w-full p-4 bg-slate-950 border border-slate-800 rounded-xl text-sm outline-none text-white appearance-none">
+                    <option value="Geral">Geral</option>
+                    <option value="Alimentação">Alimentação</option>
+                    <option value="Fazer 250">Fazer 250 (Moto)</option>
+                    <option value="Moradia">Moradia</option>
+                    <option value="Lazer">Lazer</option>
+                    <option value="Salário">Salário</option>
+                    <option value="Outros">Outros</option>
+                </select>
                 <input type="date" id="dataVencimento" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-xs font-bold text-white" required>
-                <button type="submit" id="btn-salvar" class="w-full py-5 bg-sky-600 text-white rounded-2xl font-black uppercase text-xs">Salvar Transação</button>
-                <button type="button" onclick="closeModal()" class="w-full text-slate-500 text-[10px] font-bold uppercase mt-2">Cancelar</button>
+                <button type="submit" id="btn-salvar" class="w-full py-5 bg-sky-600 text-white rounded-2xl font-black uppercase text-xs">Salvar</button>
+                <button type="button" onclick="closeModal()" class="w-full text-slate-500 text-[10px] font-bold uppercase mt-2 text-center">Cancelar</button>
             </form>
         </div>
     </div>
@@ -143,8 +150,8 @@
 
                 const html = `<div class="flex justify-between items-center p-4 bg-slate-900/40 rounded-xl border border-white/5">
                     <div class="flex items-center gap-3">
-                        <div class="p-2 rounded-lg ${t.tipo==='receita'?'bg-accentEmerald/10 text-accentEmerald':'bg-accentRose/10 text-accentRose'}"><i data-lucide="hash" class="w-4 h-4"></i></div>
-                        <div><h4 class="text-[11px] font-black uppercase">${t.descricao}</h4><p class="text-[9px] text-slate-500">${dV.toLocaleDateString('pt-BR')}</p></div>
+                        <div class="p-2 rounded-lg ${t.tipo==='receita'?'bg-accentEmerald/10 text-accentEmerald':'bg-accentRose/10 text-accentRose'}"><i data-lucide="tag" class="w-4 h-4"></i></div>
+                        <div><h4 class="text-[11px] font-black uppercase">${t.descricao} <span class="text-[8px] text-slate-600">(${t.categoria})</span></h4><p class="text-[9px] text-slate-500">${dV.toLocaleDateString('pt-BR')}</p></div>
                     </div>
                     <div class="flex items-center gap-4">
                         <p class="text-xs font-black ${t.tipo==='receita'?'text-accentEmerald':'text-accentRose'}">R$ ${val.toLocaleString('pt-BR')}</p>
@@ -158,40 +165,42 @@
                 ext.innerHTML += html;
             });
 
-            document.getElementById('dash-saldo').innerText = `R$ ${(r - d).toLocaleString('pt-BR')}`;
-            document.getElementById('dash-receitas').innerText = `R$ ${r.toLocaleString('pt-BR')}`;
-            document.getElementById('dash-despesas').innerText = `R$ ${d.toLocaleString('pt-BR')}`;
+            document.getElementById('dash-saldo').innerText = `R$ ${(r - d).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            document.getElementById('dash-receitas').innerText = `R$ ${r.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            document.getElementById('dash-despesas').innerText = `R$ ${d.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
             lucide.createIcons();
-            updateDonut('despesa');
+            updateDonut(currentTipo);
         }
 
         window.updateDonut = (tipo) => {
+            currentTipo = tipo;
             const ctx = document.getElementById('chart-rosca').getContext('2d');
             const dataMap = {};
             transactions.filter(t => t.tipo === tipo).forEach(t => { const cat = t.categoria || 'Geral'; dataMap[cat] = (dataMap[cat] || 0) + t.valor; });
             const labels = Object.keys(dataMap); const values = Object.values(dataMap);
             
-            // Estética dos botões
+            document.getElementById('titulo-grafico').innerText = tipo === 'despesa' ? 'Raio-X de Gastos' : 'Raio-X de Ganhos';
             document.getElementById('btn-donut-des').className = tipo==='despesa' ? "px-3 py-1.5 rounded-lg text-[9px] font-black uppercase bg-accentRose text-white" : "px-3 py-1.5 rounded-lg text-[9px] font-black uppercase text-slate-500";
             document.getElementById('btn-donut-rec').className = tipo==='receita' ? "px-3 py-1.5 rounded-lg text-[9px] font-black uppercase bg-accentEmerald text-white" : "px-3 py-1.5 rounded-lg text-[9px] font-black uppercase text-slate-500";
 
             if(donutChart) donutChart.destroy();
             donutChart = new Chart(ctx, {
-                type: 'doughnut', data: { labels, datasets: [{ data: values, backgroundColor: tipo==='despesa'?['#f43f5e','#fb923c','#facc15']:['#10b981','#0ea5e9'], borderWidth: 0 }]},
-                options: { cutout: '85%', plugins: { legend: { position: 'bottom', labels: { color: '#64748b', font: { size: 9, weight: '700' }, usePointStyle: true }}}}
+                type: 'doughnut', data: { labels, datasets: [{ data: values, backgroundColor: tipo==='despesa'?['#f43f5e','#fb923c','#facc15','#a855f7','#3b82f6']:['#10b981','#0ea5e9','#6366f1'], borderWidth: 0 }]},
+                options: { cutout: '80%', plugins: { legend: { display: true, position: 'bottom', labels: { color: '#94a3b8', font: { size: 10, weight: '700' }, usePointStyle: true, padding: 20 }}}}
             });
         };
 
-        window.deleteTransaction = async (id) => { if(confirm("Apagar?")) await deleteDoc(doc(db, "transactions", id)); };
+        window.deleteTransaction = async (id) => { if(confirm("Apagar transação?")) await deleteDoc(doc(db, "transactions", id)); };
         window.editTransaction = (id) => {
             const t = transactions.find(item => item.id === id);
             document.getElementById('edit-id').value = t.id;
             document.getElementById('descricao').value = t.descricao;
             document.getElementById('valor').value = t.valor;
+            document.getElementById('categoria').value = t.categoria || "Geral";
             const dV = t.dateVencimento instanceof Timestamp ? t.dateVencimento.toDate() : new Date(t.dateVencimento);
             document.getElementById('dataVencimento').value = dV.toISOString().split('T')[0];
             setTipo(t.tipo);
-            document.getElementById('modal-title').innerText = "Editar Transação";
+            document.getElementById('modal-title').innerText = "Editar";
             document.getElementById('modal-lancamento').classList.remove('hidden');
         };
 
@@ -201,9 +210,9 @@
         document.getElementById('form-transacao').addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = document.getElementById('edit-id').value;
-            const data = { userId, tipo: currentTipo, valor: parseFloat(document.getElementById('valor').value), descricao: document.getElementById('descricao').value, dateVencimento: Timestamp.fromDate(new Date(document.getElementById('dataVencimento').value + 'T12:00:00')) };
+            const data = { userId, tipo: currentTipo, valor: parseFloat(document.getElementById('valor').value), descricao: document.getElementById('descricao').value, categoria: document.getElementById('categoria').value, dateVencimento: Timestamp.fromDate(new Date(document.getElementById('dataVencimento').value + 'T12:00:00')) };
             if(id) await updateDoc(doc(db, "transactions", id), data);
-            else await addDoc(collection(db, "transactions"), { ...data, createdAt: Timestamp.now(), categoria: 'Geral' });
+            else await addDoc(collection(db, "transactions"), { ...data, createdAt: Timestamp.now() });
             closeModal();
         });
 
