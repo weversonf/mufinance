@@ -16,6 +16,8 @@
         .tab-content.active { display: block; }
         .hidden { display: none !important; }
         input[type="number"]::-webkit-inner-spin-button { display: none; }
+        .modal-scroll::-webkit-scrollbar { width: 4px; }
+        .modal-scroll::-webkit-scrollbar-thumb { background: #0ea5e9; border-radius: 10px; }
     </style>
 </head>
 <body class="light dark min-h-screen bg-lightBg text-slate-900 dark:bg-darkBg dark:text-white antialiased">
@@ -26,65 +28,10 @@
                 <i data-lucide="bolt" class="w-10 h-10"></i>
             </div>
             <h1 class="text-3xl font-black uppercase italic tracking-tighter text-sky-500 mb-2">Drivo&Money</h1>
-            <p class="text-slate-400 text-sm mb-8 font-medium">Finanças e Moto no comando.</p>
-            
-            <button onclick="loginGoogle()" class="w-full py-4 bg-white text-slate-900 rounded-2xl font-bold flex items-center justify-center gap-3 shadow-lg hover:bg-slate-100 transition-all active:scale-95 mb-4">
+            <button onclick="loginGoogle()" class="w-full py-4 bg-white text-slate-900 rounded-2xl font-bold flex items-center justify-center gap-3 shadow-lg hover:bg-slate-100 mb-4">
                 <i data-lucide="log-in" class="w-5 h-5"></i> Entrar com Google
             </button>
-            <button onclick="showAuthTab('registro')" class="w-full py-4 bg-slate-900 text-slate-400 rounded-2xl font-bold border border-slate-800 hover:text-white transition-all">
-                Criar conta por E-mail
-            </button>
-        </div>
-    </div>
-
-    <div id="register-screen" class="hidden fixed inset-0 z-[210] bg-slate-950 text-white flex flex-col justify-center p-6 overflow-y-auto">
-        <button onclick="showAuthTab('login')" class="fixed top-8 left-6 text-slate-500 flex items-center gap-2 text-xs uppercase font-bold tracking-widest hover:text-white transition-colors">
-            <i data-lucide="chevron-left" class="w-4 h-4"></i> Voltar
-        </button>
-
-        <div class="flex flex-col items-center mb-10 mt-12">
-            <h1 class="text-3xl font-black tracking-tighter uppercase italic text-sky-500">Recrutamento</h1>
-            <p class="text-slate-500 text-[10px] font-bold tracking-[0.3em] uppercase mt-2 text-center">Crie seu perfil de elite no Mucuripe</p>
-        </div>
-
-        <div class="w-full max-w-md mx-auto bg-slate-900/40 p-8 rounded-[2.5rem] border border-slate-800/50 backdrop-blur-sm shadow-2xl">
-            <form id="form-registro" class="space-y-5">
-                <div class="space-y-1">
-                    <label class="text-[9px] uppercase font-bold text-slate-500 ml-1 tracking-widest">Username</label>
-                    <div class="relative">
-                        <i data-lucide="user" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600 w-4 h-4"></i>
-                        <input type="text" id="reg-username" placeholder="@capitao_nemo" class="w-full p-4 pl-12 bg-slate-950 border border-slate-800 rounded-2xl outline-none focus:border-sky-500 text-sm font-medium text-white" required>
-                    </div>
-                </div>
-
-                <div class="space-y-1">
-                    <label class="text-[9px] uppercase font-bold text-slate-500 ml-1 tracking-widest">E-mail</label>
-                    <div class="relative">
-                        <i data-lucide="mail" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600 w-4 h-4"></i>
-                        <input type="email" id="reg-email" placeholder="seu@email.com" class="w-full p-4 pl-12 bg-slate-950 border border-slate-800 rounded-2xl outline-none focus:border-sky-500 text-sm font-medium text-white" required>
-                    </div>
-                </div>
-
-                <div class="space-y-1">
-                    <label class="text-[9px] uppercase font-bold text-slate-500 ml-1 tracking-widest">Renda Fixa Mensal</label>
-                    <div class="relative">
-                        <i data-lucide="dollar-sign" class="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-500 w-4 h-4"></i>
-                        <input type="number" id="reg-receita" placeholder="0,00" class="w-full p-4 pl-12 bg-slate-950 border border-slate-800 rounded-2xl outline-none focus:border-emerald-500 text-lg font-bold text-white" required>
-                    </div>
-                </div>
-
-                <div class="space-y-1">
-                    <label class="text-[9px] uppercase font-bold text-slate-500 ml-1 tracking-widest">Senha</label>
-                    <div class="relative">
-                        <i data-lucide="lock" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600 w-4 h-4"></i>
-                        <input type="password" id="reg-pass" placeholder="••••••••" class="w-full p-4 pl-12 bg-slate-950 border border-slate-800 rounded-2xl outline-none focus:border-sky-500 text-sm font-medium text-white" required>
-                    </div>
-                </div>
-
-                <button type="submit" id="btn-finalizar-reg" class="w-full bg-white text-slate-950 font-black py-5 rounded-2xl shadow-xl active:scale-95 transition-all text-xs uppercase tracking-widest flex items-center justify-center gap-2">
-                    Finalizar Registro <i data-lucide="arrow-right" class="w-4 h-4"></i>
-                </button>
-            </form>
+            <button onclick="showAuthTab('registro')" class="w-full py-4 bg-slate-900 text-slate-400 rounded-2xl font-bold border border-slate-800">Criar conta</button>
         </div>
     </div>
 
@@ -118,8 +65,49 @@
                         </div>
                     </div>
                 </section>
+
                 <section id="tab-extrato" class="tab-content">
                     <div id="lista-transacoes" class="space-y-4"></div>
+                </section>
+
+                <section id="tab-perfil" class="tab-content">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="space-y-8">
+                            <form id="form-perfil-data" class="bg-white dark:bg-slate-900/40 p-8 rounded-[30px] border border-slate-200 dark:border-slate-800 shadow-xl space-y-6">
+                                <h3 class="text-xl font-black uppercase italic text-sky-500 flex items-center gap-2"><i data-lucide="user"></i> Meu Perfil</h3>
+                                <div class="space-y-4">
+                                    <input type="text" id="perf-name" placeholder="Nome Completo" class="w-full p-4 bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-slate-800 rounded-[15px] text-sm text-white">
+                                    <input type="text" id="perf-username" placeholder="Username (@)" class="w-full p-4 bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-slate-800 rounded-[15px] text-sm text-white">
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <input type="text" id="perf-estado" placeholder="UF" class="p-4 bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-slate-800 rounded-[15px] text-sm text-white">
+                                        <input type="text" id="perf-cidade" placeholder="Cidade" class="p-4 bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-slate-800 rounded-[15px] text-sm text-white">
+                                    </div>
+                                </div>
+                                <h3 class="text-xl font-black uppercase italic text-orange-500 flex items-center gap-2"><i data-lucide="car"></i> Veículo</h3>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <input type="text" id="perf-marca" placeholder="Marca" class="p-4 bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-slate-800 rounded-[15px] text-sm text-white">
+                                    <input type="text" id="perf-modelo" placeholder="Modelo" class="p-4 bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-slate-800 rounded-[15px] text-sm text-white">
+                                    <input type="number" id="perf-consumo" placeholder="Consumo" class="p-4 bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-slate-800 rounded-[15px] text-sm text-white">
+                                    <input type="number" id="perf-gasolina" placeholder="Gasolina R$" class="p-4 bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-slate-800 rounded-[15px] text-sm text-white">
+                                </div>
+                                <button type="submit" class="w-full py-5 bg-sky-600 text-white rounded-[20px] font-black uppercase text-xs">Salvar Alterações</button>
+                            </form>
+
+                            <div class="bg-rose-600 p-8 rounded-[30px] border-4 border-rose-400 shadow-2xl space-y-4">
+                                <h3 class="text-xl font-black uppercase italic text-white flex items-center gap-2"><i data-lucide="alert-triangle"></i> ZONA CRÍTICA</h3>
+                                <button onclick="openDeleteAllModal()" class="w-full py-5 bg-white text-rose-600 rounded-[15px] font-black uppercase text-xs flex items-center justify-center gap-2">
+                                    <i data-lucide="trash-2"></i> DELETAR TODAS AS TRANSAÇÕES
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="space-y-8">
+                            <div class="bg-white dark:bg-slate-900/40 p-8 rounded-[40px] border border-slate-200 dark:border-slate-800 shadow-xl">
+                                <h3 class="text-xl font-black uppercase italic text-sky-500 mb-6 flex items-center gap-2"><i data-lucide="landmark"></i> Financeiro</h3>
+                                <div id="lista-contas-perfil" class="space-y-3"></div>
+                            </div>
+                        </div>
+                    </div>
                 </section>
             </main>
         </div>
@@ -129,14 +117,24 @@
             <button onclick="showTab('extrato')" class="nav-btn text-slate-400" data-tab="extrato"><i data-lucide="receipt-text"></i></button>
             <button onclick="openModal()" class="bg-sky-500 text-white p-3 rounded-2xl shadow-lg -translate-y-2"><i data-lucide="plus"></i></button>
             <button class="text-slate-400"><i data-lucide="motorcycle"></i></button>
-            <button class="text-slate-400"><i data-lucide="user"></i></button>
+            <button onclick="showTab('perfil')" class="nav-btn text-slate-400" data-tab="perfil"><i data-lucide="user"></i></button>
         </nav>
+    </div>
+
+    <div id="modal-delete-all" class="hidden fixed inset-0 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4 z-[300]">
+        <div class="bg-white dark:bg-[#0f172a] w-full max-w-sm rounded-[30px] p-8 border border-slate-200 dark:border-slate-800 shadow-2xl text-center">
+            <h3 class="text-lg font-black uppercase italic text-rose-500 mb-4">Tem certeza?</h3>
+            <p class="text-xs font-bold text-slate-500 mb-8">Digite <strong>DELETAR TUDO</strong> para confirmar.</p>
+            <input type="text" id="confirm-delete-input" class="w-full p-4 mb-4 bg-slate-50 dark:bg-black/20 border border-slate-200 rounded-xl text-center font-black">
+            <button onclick="handleDeleteAll()" class="w-full py-4 bg-rose-500 text-white rounded-2xl font-black uppercase text-xs">Sim, excluir tudo</button>
+            <button onclick="closeDeleteAllModal()" class="w-full py-4 text-slate-500 text-[10px] font-black uppercase">Cancelar</button>
+        </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, where, orderBy, Timestamp, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        import { getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, updateDoc, collection, query, where, onSnapshot, orderBy, writeBatch, getDocs, Timestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyArWGgDx0uxce8w72J_1UpKPCUJGvHs3fI",
@@ -150,102 +148,70 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
-        const provider = new GoogleAuthProvider();
+        let userId = null;
 
         lucide.createIcons();
 
-        // NAVEGAÇÃO AUTH
-        window.showAuthTab = (tab) => {
-            if(tab === 'registro') {
-                document.getElementById('login-screen').classList.add('hidden');
-                document.getElementById('register-screen').classList.remove('hidden');
-            } else {
-                document.getElementById('register-screen').classList.add('hidden');
-                document.getElementById('login-screen').classList.remove('hidden');
-            }
-        };
-
-        // REGISTRO COM E-MAIL (RECRUTAMENTO)
-        document.getElementById('form-registro').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('reg-email').value;
-            const pass = document.getElementById('reg-pass').value;
-            const userN = document.getElementById('reg-username').value;
-            const rec = document.getElementById('reg-receita').value;
-            const btn = document.getElementById('btn-finalizar-reg');
-
-            btn.disabled = true; btn.innerText = "PROCESSANDO...";
-
-            try {
-                const cred = await createUserWithEmailAndPassword(auth, email, pass);
-                await setDoc(doc(db, "users", cred.user.uid), {
-                    username: userN.toLowerCase().replace('@', '').replace(/\s/g, ''),
-                    email: email,
-                    receitaFixa: Number(rec),
-                    cidadeBase: "Fortaleza",
-                    motoConsumo: 29,
-                    createdAt: Timestamp.now()
-                });
-                document.getElementById('register-screen').classList.add('hidden');
-            } catch (err) {
-                alert("Erro: " + err.message);
-            } finally {
-                btn.disabled = false; btn.innerText = "Finalizar Registro";
-            }
-        });
-
-        // LOGIN GOOGLE
-        window.loginGoogle = async () => {
-            try { await signInWithPopup(auth, provider); } catch (err) { alert(err.message); }
-        };
-
-        // MONITORAR LOGIN
-        onAuthStateChanged(auth, (user) => {
+        onAuthStateChanged(auth, async (user) => {
             if (user) {
+                userId = user.uid;
                 document.getElementById('login-screen').classList.add('hidden');
-                document.getElementById('register-screen').classList.add('hidden');
                 document.getElementById('main-app').classList.remove('hidden');
-                loadData(user.uid);
-            } else {
-                document.getElementById('main-app').classList.add('hidden');
-                document.getElementById('login-screen').classList.remove('hidden');
+                loadUserProfile();
+                loadData();
             }
         });
 
-        window.handleLogout = () => signOut(auth);
-
-        function loadData(uid) {
-            const q = query(collection(db, "transactions"), where("userId", "==", uid), orderBy("date", "desc"));
-            onSnapshot(q, (snapshot) => {
-                const txs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                render(txs);
-            });
+        async function loadUserProfile() {
+            const docRef = doc(db, "users", userId);
+            const userDoc = await getDoc(docRef);
+            if (userDoc.exists()) {
+                const data = userDoc.data();
+                document.getElementById('perf-name').value = data.name || '';
+                document.getElementById('perf-username').value = data.username || '';
+                document.getElementById('perf-estado').value = data.estado || '';
+                document.getElementById('perf-cidade').value = data.cidade || '';
+                document.getElementById('perf-marca').value = data.marcaVeiculo || '';
+                document.getElementById('perf-modelo').value = data.modeloVeiculo || '';
+                document.getElementById('perf-consumo').value = data.consumoVeiculo || '';
+                document.getElementById('perf-gasolina').value = data.precoCombustivel || '';
+            }
         }
 
-        function render(txs) {
-            const feed = document.getElementById('lista-transacoes');
-            feed.innerHTML = txs.length ? "" : "<p class='text-center opacity-30 py-10 uppercase text-[10px] font-black'>Nenhum Registro</p>";
-            let r = 0, d = 0;
-            txs.forEach(t => {
-                const v = t.valor || 0;
-                t.tipo === 'receita' ? r += v : d += v;
-                feed.innerHTML += `
-                    <div class="flex justify-between items-center p-4 bg-white dark:bg-slate-900/40 rounded-[20px] border border-slate-200 dark:border-slate-800">
-                        <div class="flex items-center gap-3">
-                            <div class="p-2 rounded-lg ${t.tipo === 'receita' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}">
-                                <i data-lucide="${t.tipo === 'receita' ? 'arrow-up-circle' : 'arrow-down-circle'}"></i>
-                            </div>
-                            <p class="text-xs font-black">${t.descricao}</p>
-                        </div>
-                        <p class="text-xs font-black ${t.tipo === 'receita' ? 'text-emerald-500' : 'text-rose-500'}">R$ ${v.toLocaleString('pt-BR')}</p>
-                    </div>`;
+        // Salvar Perfil
+        document.getElementById('form-perfil-data').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            btn.innerText = "SALVANDO...";
+            await updateDoc(doc(db, "users", userId), {
+                name: document.getElementById('perf-name').value,
+                username: document.getElementById('perf-username').value.toLowerCase(),
+                estado: document.getElementById('perf-estado').value,
+                cidade: document.getElementById('perf-cidade').value,
+                marcaVeiculo: document.getElementById('perf-marca').value,
+                modeloVeiculo: document.getElementById('perf-modelo').value,
+                consumoVeiculo: document.getElementById('perf-consumo').value,
+                precoCombustivel: document.getElementById('perf-gasolina').value,
             });
-            document.getElementById('dash-receitas').innerText = `R$ ${r.toLocaleString('pt-BR')}`;
-            document.getElementById('dash-despesas').innerText = `R$ ${d.toLocaleString('pt-BR')}`;
-            document.getElementById('dash-saldo').innerText = `R$ ${(r - d).toLocaleString('pt-BR')}`;
-            lucide.createIcons();
-        }
+            alert("Perfil Atualizado!");
+            btn.innerText = "Salvar Alterações";
+        });
 
+        // Deletar Tudo
+        window.handleDeleteAll = async () => {
+            const input = document.getElementById('confirm-delete-input').value;
+            if (input !== 'DELETAR TUDO') return alert("Digite a frase corretamente!");
+            
+            const q = query(collection(db, "transactions"), where("userId", "==", userId));
+            const snap = await getDocs(q);
+            const batch = writeBatch(db);
+            snap.docs.forEach(d => batch.delete(d.ref));
+            await batch.commit();
+            alert("Tudo limpo!");
+            closeDeleteAllModal();
+        };
+
+        // UI Helpers
         window.showTab = (id) => {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.getElementById('tab-' + id).classList.add('active');
@@ -253,6 +219,9 @@
             document.querySelector(`[data-tab="${id}"]`).classList.replace('text-slate-400', 'text-sky-500');
         };
 
+        window.openDeleteAllModal = () => document.getElementById('modal-delete-all').classList.remove('hidden');
+        window.closeDeleteAllModal = () => document.getElementById('modal-delete-all').classList.add('hidden');
+        window.handleLogout = () => signOut(auth).then(() => location.reload());
         window.toggleTheme = () => document.documentElement.classList.toggle('dark');
     </script>
 </body>
