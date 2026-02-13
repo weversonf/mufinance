@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Drivo & Money v23.9</title>
+    <title>Drivo & Money v24</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -33,7 +33,7 @@
                 <div class="p-3 bg-accentSky rounded-xl text-white shadow-lg"><i data-lucide="zap" class="w-6 h-6 fill-current"></i></div>
                 <div>
                     <h1 class="text-2xl font-black uppercase italic tracking-tighter text-accentSky leading-none">Drivo&Money</h1>
-                    <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">v23.9 • Lixeira na Lista</span>
+                    <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">v24 • Metas Interativas</span>
                 </div>
             </div>
             <button onclick="handleLogout()" class="p-4 bg-slate-800/50 rounded-xl text-accentRose"><i data-lucide="log-out"></i></button>
@@ -83,7 +83,7 @@
             <section id="tab-metas" class="tab-content space-y-6">
                 <div class="flex justify-between items-center px-2">
                     <h3 class="text-xs font-black uppercase tracking-widest text-accentSky">Meus Objetivos</h3>
-                    <button onclick="document.getElementById('modal-meta').classList.remove('hidden')" class="p-2 bg-accentSky/10 text-accentSky rounded-lg">
+                    <button onclick="openModalMeta()" class="p-2 bg-accentSky/10 text-accentSky rounded-lg">
                         <i data-lucide="plus-circle" class="w-5 h-5"></i>
                     </button>
                 </div>
@@ -91,18 +91,11 @@
             </section>
 
             <section id="tab-perfil" class="tab-content space-y-8">
-                <div class="space-y-4">
+                <div class="space-y-4 text-left">
                     <h3 class="text-xs font-black uppercase tracking-widest text-accentSky flex items-center gap-2"><i data-lucide="user" class="w-4 h-4"></i> Meu Perfil</h3>
                     <div class="custom-card p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                         <input type="text" id="prof-nome" placeholder="Seu Nome" class="input-dark">
                         <div class="flex gap-2"><input type="text" id="prof-handle" placeholder="@seu_id" class="input-dark flex-1"><button class="bg-accentSky px-4 rounded-xl text-[10px] font-black uppercase">Salvar</button></div>
-                    </div>
-                </div>
-                <div class="space-y-4">
-                    <h3 class="text-xs font-black uppercase text-accentSky tracking-widest">Categorias</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="custom-card p-6"><p class="text-[10px] font-black uppercase text-accentEmerald mb-4">Receitas</p><div id="list-cat-rec" class="space-y-2 text-left"></div></div>
-                        <div class="custom-card p-6"><p class="text-[10px] font-black uppercase text-accentRose mb-4">Despesas</p><div id="list-cat-des" class="space-y-2 text-left"></div></div>
                     </div>
                 </div>
             </section>
@@ -142,13 +135,14 @@
 
     <div id="modal-meta" class="hidden fixed inset-0 bg-slate-950/90 backdrop-blur-sm flex items-center justify-center p-4 z-[300]">
         <div class="custom-card w-full max-w-md p-8 shadow-2xl">
-            <h3 class="text-lg font-black uppercase italic text-sky-500 mb-6 text-left">Novo Objetivo</h3>
+            <h3 id="modal-meta-title" class="text-lg font-black uppercase italic text-sky-500 mb-6 text-left">Novo Objetivo</h3>
             <form id="form-meta" class="space-y-4">
+                <input type="hidden" id="meta-edit-id">
                 <input type="text" id="meta-nome" placeholder="Ex: Viagem" class="input-dark" required>
                 <input type="number" id="meta-objetivo" placeholder="Valor Total R$" class="input-dark" required>
                 <input type="number" id="meta-atual" placeholder="Já guardado R$" class="input-dark" value="0">
                 <button type="submit" class="w-full py-5 bg-sky-600 text-white rounded-2xl font-black uppercase text-xs">Salvar Meta</button>
-                <button type="button" onclick="document.getElementById('modal-meta').classList.add('hidden')" class="w-full text-slate-500 text-[10px] font-bold mt-2 text-center uppercase">Cancelar</button>
+                <button type="button" onclick="closeModal()" class="w-full text-slate-500 text-[10px] font-bold mt-2 text-center uppercase">Cancelar</button>
             </form>
         </div>
     </div>
@@ -184,7 +178,6 @@
             });
             onSnapshot(query(collection(db, "categories"), where("userId", "==", userId)), (snap) => {
                 userCats = snap.docs.map(d => ({id: d.id, ...d.data()}));
-                renderCats();
                 updateCatSelect();
             });
             onSnapshot(query(collection(db, "goals"), where("userId", "==", userId)), (snap) => {
@@ -193,23 +186,96 @@
             });
         }
 
+        // --- LÓGICA DE METAS ---
+        window.openModalMeta = () => {
+            document.getElementById('meta-edit-id').value = "";
+            document.getElementById('modal-meta-title').innerText = "Novo Objetivo";
+            document.getElementById('form-meta').reset();
+            document.getElementById('modal-meta').classList.remove('hidden');
+        };
+
+        window.editGoal = (id) => {
+            const g = goals.find(x => x.id === id);
+            if(!g) return;
+            document.getElementById('meta-edit-id').value = g.id;
+            document.getElementById('modal-meta-title').innerText = "Editar Objetivo";
+            document.getElementById('meta-nome').value = g.nome;
+            document.getElementById('meta-objetivo').value = g.objetivo;
+            document.getElementById('meta-atual').value = g.atual;
+            document.getElementById('modal-meta').classList.remove('hidden');
+        };
+
+        window.addValueGoal = async (id) => {
+            const g = goals.find(x => x.id === id);
+            const val = prompt(`Quanto deseja adicionar em "${g.nome}"?`);
+            if(val && !isNaN(val)) {
+                const novoAtual = (g.atual || 0) + parseFloat(val);
+                await updateDoc(doc(db, "goals", id), { atual: novoAtual });
+            }
+        };
+
         document.getElementById('form-meta').onsubmit = async (e) => {
             e.preventDefault();
+            const id = document.getElementById('meta-edit-id').value;
             const data = {
                 userId,
                 nome: document.getElementById('meta-nome').value,
                 objetivo: parseFloat(document.getElementById('meta-objetivo').value),
                 atual: parseFloat(document.getElementById('meta-atual').value)
             };
-            await addDoc(collection(db, "goals"), data);
-            document.getElementById('modal-meta').classList.add('hidden');
-            e.target.reset();
+            if(id) await updateDoc(doc(db, "goals", id), data);
+            else await addDoc(collection(db, "goals"), data);
+            closeModal();
         };
 
         window.deleteGoal = async (id) => { 
             if(confirm("Remover esta meta?")) await deleteDoc(doc(db, "goals", id)); 
         };
 
+        function renderGoals() {
+            const list = document.getElementById('lista-metas');
+            if(!list) return;
+            list.innerHTML = goals.map(g => {
+                const perc = g.objetivo > 0 ? Math.min(((g.atual || 0) / g.objetivo) * 100, 100).toFixed(0) : 0;
+                return `
+                <div class="custom-card p-5 space-y-4 relative overflow-hidden text-left border-l-4 border-accentSky">
+                    <div class="flex justify-between items-start">
+                        <div onclick="editGoal('${g.id}')" class="cursor-pointer">
+                            <h4 class="text-xs font-black uppercase tracking-widest text-white">${g.nome}</h4>
+                            <p class="text-[10px] text-slate-500 font-bold">R$ ${(g.atual || 0).toLocaleString('pt-BR')} de R$ ${(g.objetivo || 0).toLocaleString('pt-BR')}</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="addValueGoal('${g.id}')" class="p-2 bg-accentSky/10 text-accentSky rounded-lg hover:bg-accentSky/20"><i data-lucide="plus" class="w-4 h-4"></i></button>
+                            <button onclick="deleteGoal('${g.id}')" class="p-2 text-slate-600 hover:text-accentRose"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                            <div class="bg-accentSky h-full transition-all duration-1000" style="width: ${perc}%"></div>
+                        </div>
+                        <p class="text-[10px] font-black text-right text-accentSky">${perc}% concluído</p>
+                    </div>
+                </div>`;
+            }).join('');
+            lucide.createIcons();
+        }
+
+        // --- SISTEMA GERAL ---
+        window.closeModal = () => {
+            document.getElementById('modal-lancamento').classList.add('hidden');
+            document.getElementById('modal-meta').classList.add('hidden');
+        };
+
+        window.openModal = () => { 
+            document.getElementById('edit-id').value = ""; 
+            document.getElementById('modal-title').innerText = "Novo Lançamento";
+            document.getElementById('form-transacao').reset(); 
+            document.getElementById('dataVencimento').value = new Date().toISOString().split('T')[0];
+            updateCatSelect();
+            document.getElementById('modal-lancamento').classList.remove('hidden'); 
+        };
+
+        // Funções de dashboard e transações mantidas conforme sua versão anterior
         window.editTransaction = (id) => {
             const t = transactions.find(item => item.id === id);
             if (!t) return;
@@ -240,10 +306,8 @@
             const sIni = userBancos.reduce((acc, b) => acc + (b.saldoInicial || 0), 0);
             const sTrans = transactions.filter(t => t.status === 'efetivada').reduce((acc, t) => t.tipo === 'receita' ? acc + t.valor : acc - t.valor, 0);
             const consolidado = sIni + sTrans;
-
             document.getElementById('dash-saldo').innerText = `R$ ${consolidado.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
             document.getElementById('display-periodo').innerText = isYearlyView ? `Ano ${viewDate.getFullYear()}` : `${meses[viewDate.getMonth()]} ${viewDate.getFullYear()}`;
-
             transactions.forEach((t, i) => {
                 const dV = t.dateVencimento instanceof Timestamp ? t.dateVencimento.toDate() : new Date(t.dateVencimento);
                 const match = isYearlyView ? dV.getFullYear() === viewDate.getFullYear() : (dV.getMonth() === viewDate.getMonth() && dV.getFullYear() === viewDate.getFullYear());
@@ -281,15 +345,6 @@
             closeModal();
         });
 
-        window.openModal = () => { 
-            document.getElementById('edit-id').value = ""; 
-            document.getElementById('modal-title').innerText = "Novo Lançamento";
-            document.getElementById('form-transacao').reset(); 
-            document.getElementById('dataVencimento').value = new Date().toISOString().split('T')[0];
-            updateCatSelect();
-            document.getElementById('modal-lancamento').classList.remove('hidden'); 
-        };
-
         window.updateDonut = (tipo) => {
             const canvas = document.getElementById('chart-rosca');
             if (!canvas) return;
@@ -303,11 +358,6 @@
             donutChart = new Chart(ctx, { type: 'doughnut', data: { labels: Object.keys(dataMap), datasets: [{ data: Object.values(dataMap), backgroundColor: tipo==='despesa'?['#f43f5e','#fb923c','#facc15','#a855f7']:['#10b981','#0ea5e9'], borderWidth: 0 }]}, options: { cutout: '80%', plugins: { legend: { display: true, position: 'bottom', labels: { color: '#94a3b8', font: { size: 10, weight: '700' }, usePointStyle: true }}}} });
             document.getElementById('btn-donut-des').className = tipo==='despesa' ? "px-3 py-1.5 rounded-lg text-[9px] font-black bg-accentRose text-white" : "px-3 py-1.5 rounded-lg text-[9px] font-black text-slate-500";
             document.getElementById('btn-donut-rec').className = tipo==='receita' ? "px-3 py-1.5 rounded-lg text-[9px] font-black bg-accentEmerald text-white" : "px-3 py-1.5 rounded-lg text-[9px] font-black text-slate-500";
-        };
-
-        window.closeModal = () => {
-            document.getElementById('modal-lancamento').classList.add('hidden');
-            document.getElementById('modal-meta').classList.add('hidden');
         };
 
         window.setTipo = (t) => { 
@@ -326,39 +376,6 @@
         window.toggleYearlyView = () => { isYearlyView = !isYearlyView; updateUI(); };
         window.cycleBankDisplay = () => { currentBankIdx++; if (currentBankIdx >= userBancos.length) currentBankIdx = -1; updateUI(); };
         window.handleLogout = () => signOut(auth).then(() => location.reload());
-
-        function renderCats() {
-            const rec = document.getElementById('list-cat-rec'); const des = document.getElementById('list-cat-des');
-            if(!rec || !des) return;
-            rec.innerHTML = ""; des.innerHTML = "";
-            userCats.forEach(c => {
-                const html = `<div class="flex justify-between items-center p-3 bg-slate-950 rounded-xl border border-white/5"><span class="text-[10px] font-black uppercase">${c.nome}</span><div class="flex gap-2"><button class="text-slate-500"><i data-lucide="edit-2" class="w-3 h-3"></i></button><button class="text-slate-500"><i data-lucide="trash-2" class="w-3 h-3"></i></button></div></div>`;
-                c.tipo === 'receita' ? rec.innerHTML += html : des.innerHTML += html;
-            }); lucide.createIcons();
-        }
-
-        function renderGoals() {
-            const list = document.getElementById('lista-metas');
-            if(!list) return;
-            list.innerHTML = goals.map(g => {
-                const perc = g.objetivo > 0 ? Math.min(((g.atual || 0) / g.objetivo) * 100, 100).toFixed(0) : 0;
-                return `
-                <div class="custom-card p-5 space-y-3 relative overflow-hidden text-left">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <h4 class="text-xs font-black uppercase tracking-widest text-white">${g.nome}</h4>
-                            <p class="text-[10px] text-slate-500 font-bold">R$ ${(g.atual || 0).toLocaleString('pt-BR')} de R$ ${(g.objetivo || 0).toLocaleString('pt-BR')}</p>
-                        </div>
-                        <button onclick="deleteGoal('${g.id}')" class="text-slate-600 hover:text-accentRose"><i data-lucide="x" class="w-4 h-4"></i></button>
-                    </div>
-                    <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
-                        <div class="bg-accentSky h-full transition-all duration-1000" style="width: ${perc}%"></div>
-                    </div>
-                    <p class="text-[10px] font-black text-right text-accentSky">${perc}%</p>
-                </div>`;
-            }).join('');
-            lucide.createIcons();
-        }
 
         function updateCatSelect() { 
             const sel = document.getElementById('categoria-select'); 
