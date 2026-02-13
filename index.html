@@ -33,7 +33,7 @@
                 <div class="p-3 bg-accentSky rounded-xl text-white shadow-lg"><i data-lucide="zap" class="w-6 h-6 fill-current"></i></div>
                 <div>
                     <h1 class="text-2xl font-black uppercase italic tracking-tighter text-accentSky leading-none">Drivo&Money</h1>
-                    <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">v24.4 • Ícones de Edição</span>
+                    <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">v24.4 • Integrado</span>
                 </div>
             </div>
             <button onclick="handleLogout()" class="p-4 bg-slate-800/50 rounded-xl text-accentRose"><i data-lucide="log-out"></i></button>
@@ -90,94 +90,89 @@
                 <div id="lista-metas" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
             </section>
 
-            
-<section id="tab-perfil" class="tab-content space-y-8 text-left">
-    <div class="space-y-4">
-        <h3 class="text-xs font-black uppercase tracking-widest text-accentSky flex items-center gap-2"><i data-lucide="user" class="w-4 h-4"></i> Meu Perfil</h3>
-        <div class="custom-card p-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div><label class="text-[9px] font-black text-slate-500 uppercase">Nome</label><input type="text" id="perf-nome" class="input-dark"></div>
-            <div><label class="text-[9px] font-black text-slate-500 uppercase">Estado (UF)</label>
-                <select id="perf-uf" onchange="loadCidadesIBGE()" class="input-dark">
-                    <option value="">Carregando estados...</option>
-                </select>
-            </div>
-            <div><label class="text-[9px] font-black text-slate-500 uppercase">Cidade</label>
-                <select id="perf-cidade" class="input-dark"><option value="">Selecione o estado</option></select>
-            </div>
-        </div>
-    </div>
-
-    <div class="space-y-4">
-        <h3 class="text-xs font-black uppercase tracking-widest text-accentAmber flex items-center gap-2"><i data-lucide="gauge" class="w-4 h-4"></i> Meu Veículo</h3>
-        <div class="custom-card p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div><label class="text-[9px] font-black text-slate-500 uppercase">Montadora</label>
-                <select id="veic-marca" onchange="updateModelosNacional()" class="input-dark">
-                    <option value="">Selecione</option>
-                    <optgroup label="Motos">
-                        <option value="Honda Motos">Honda Motos</option><option value="Yamaha">Yamaha</option>
-                        <option value="BMW Motos">BMW Motos</option><option value="Kawasaki">Kawasaki</option>
-                        <option value="Suzuki">Suzuki</option><option value="Triumph">Triumph</option>
-                        <option value="Ducati">Ducati</option><option value="Royal Enfield">Royal Enfield</option>
-                        <option value="Shineray">Shineray</option><option value="Bajaj">Bajaj</option>
-                    </optgroup>
-                    <optgroup label="Carros">
-                        <option value="Toyota">Toyota</option><option value="Volkswagen">Volkswagen</option>
-                        <option value="Fiat">Fiat</option><option value="General Motors">Chevrolet (GM)</option>
-                        <option value="Hyundai">Hyundai</option><option value="Jeep">Jeep</option>
-                        <option value="Renault">Renault</option><option value="Nissan">Nissan</option>
-                        <option value="Honda Carros">Honda Carros</option><option value="Ford">Ford</option>
-                        <option value="BYD">BYD</option><option value="GWM">GWM</option>
-                    </optgroup>
-                </select>
-            </div>
-            <div><label class="text-[9px] font-black text-slate-500 uppercase">Modelo</label><select id="veic-modelo" class="input-dark"></select></div>
-            <div><label class="text-[9px] font-black text-slate-500 uppercase">Consumo (Km/L)</label><input type="number" id="veic-consumo" class="input-dark" placeholder="Ex: 29"></div>
-            <div><label class="text-[9px] font-black text-slate-500 uppercase">Gasolina R$</label><input type="number" step="0.01" id="veic-gas" class="input-dark"></div>
-        </div>
-    </div>
-
-    <div class="space-y-4">
-        <div class="flex justify-between items-center px-1">
-            <h3 class="text-xs font-black uppercase tracking-widest text-accentEmerald flex items-center gap-2">
-                <i data-lucide="building-2" class="w-4 h-4"></i> Meus Bancos
-            </h3>
-            <button onclick="openModalBanco()" class="p-2 bg-accentEmerald/10 text-accentEmerald rounded-lg hover:bg-accentEmerald/20 transition-all">
-                <i data-lucide="plus-circle" class="w-4 h-4"></i>
-            </button>
-        </div>
-        <div id="lista-bancos-perfil" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            </div>
-    </div>
-
-    <div class="space-y-4">
-        <h3 class="text-xs font-black uppercase tracking-widest text-accentSky flex items-center gap-2">
-            <i data-lucide="tag" class="w-4 h-4"></i> Categorias
-        </h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="custom-card p-6">
-                <div class="flex justify-between items-center mb-4">
-                    <p class="text-[10px] font-black uppercase text-accentEmerald">Receitas</p>
-                    <button onclick="openModalCat('receita')" class="text-accentEmerald"><i data-lucide="plus" class="w-4 h-4"></i></button>
+            <section id="tab-perfil" class="tab-content space-y-8 text-left">
+                <div class="space-y-4">
+                    <h3 class="text-xs font-black uppercase tracking-widest text-accentSky flex items-center gap-2"><i data-lucide="user" class="w-4 h-4"></i> Meu Perfil</h3>
+                    <div class="custom-card p-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div><label class="text-[9px] font-black text-slate-500 uppercase">Nome</label><input type="text" id="perf-nome" class="input-dark"></div>
+                        <div><label class="text-[9px] font-black text-slate-500 uppercase">Estado (UF)</label>
+                            <select id="perf-uf" onchange="loadCidadesIBGE()" class="input-dark">
+                                <option value="">Carregando estados...</option>
+                            </select>
+                        </div>
+                        <div><label class="text-[9px] font-black text-slate-500 uppercase">Cidade</label>
+                            <select id="perf-cidade" class="input-dark"><option value="">Selecione o estado</option></select>
+                        </div>
+                    </div>
                 </div>
-                <div id="list-cat-rec-perf" class="space-y-2"></div>
-            </div>
-            <div class="custom-card p-6">
-                <div class="flex justify-between items-center mb-4">
-                    <p class="text-[10px] font-black uppercase text-accentRose">Despesas</p>
-                    <button onclick="openModalCat('despesa')" class="text-accentRose"><i data-lucide="plus" class="w-4 h-4"></i></button>
+
+                <div class="space-y-4">
+                    <h3 class="text-xs font-black uppercase tracking-widest text-accentAmber flex items-center gap-2"><i data-lucide="gauge" class="w-4 h-4"></i> Meu Veículo</h3>
+                    <div class="custom-card p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div><label class="text-[9px] font-black text-slate-500 uppercase">Montadora</label>
+                            <select id="veic-marca" onchange="updateModelosNacional()" class="input-dark">
+                                <option value="">Selecione</option>
+                                <optgroup label="Motos">
+                                    <option value="Honda Motos">Honda Motos</option><option value="Yamaha">Yamaha</option>
+                                    <option value="BMW Motos">BMW Motos</option><option value="Kawasaki">Kawasaki</option>
+                                    <option value="Suzuki">Suzuki</option><option value="Triumph">Triumph</option>
+                                    <option value="Ducati">Ducati</option><option value="Royal Enfield">Royal Enfield</option>
+                                    <option value="Shineray">Shineray</option><option value="Bajaj">Bajaj</option>
+                                </optgroup>
+                                <optgroup label="Carros">
+                                    <option value="Toyota">Toyota</option><option value="Volkswagen">Volkswagen</option>
+                                    <option value="Fiat">Fiat</option><option value="General Motors">Chevrolet (GM)</option>
+                                    <option value="Hyundai">Hyundai</option><option value="Jeep">Jeep</option>
+                                    <option value="Renault">Renault</option><option value="Nissan">Nissan</option>
+                                    <option value="Honda Carros">Honda Carros</option><option value="Ford">Ford</option>
+                                    <option value="BYD">BYD</option><option value="GWM">GWM</option>
+                                </optgroup>
+                            </select>
+                        </div>
+                        <div><label class="text-[9px] font-black text-slate-500 uppercase">Modelo</label><select id="veic-modelo" class="input-dark"></select></div>
+                        <div><label class="text-[9px] font-black text-slate-500 uppercase">Consumo (Km/L)</label><input type="number" id="veic-consumo" class="input-dark" placeholder="Ex: 29"></div>
+                        <div><label class="text-[9px] font-black text-slate-500 uppercase">Gasolina R$</label><input type="number" step="0.01" id="veic-gas" class="input-dark"></div>
+                    </div>
                 </div>
-                <div id="list-cat-des-perf" class="space-y-2"></div>
-            </div>
-        </div>
-    </div>
 
-    <button onclick="savePerfilSettings()" class="w-full py-5 bg-accentSky text-white font-black uppercase italic tracking-widest rounded-2xl shadow-xl active:scale-95 transition-all mt-4 mb-10">
-        Salvar Todas as Configurações
-    </button>
-</section>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center px-1">
+                        <h3 class="text-xs font-black uppercase tracking-widest text-accentEmerald flex items-center gap-2">
+                            <i data-lucide="building-2" class="w-4 h-4"></i> Meus Bancos
+                        </h3>
+                        <button onclick="openModalBanco()" class="p-2 bg-accentEmerald/10 text-accentEmerald rounded-lg hover:bg-accentEmerald/20 transition-all">
+                            <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                    <div id="lista-bancos-perfil" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+                </div>
 
-            
-            
+                <div class="space-y-4">
+                    <h3 class="text-xs font-black uppercase tracking-widest text-accentSky flex items-center gap-2">
+                        <i data-lucide="tag" class="w-4 h-4"></i> Categorias
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="custom-card p-6">
+                            <div class="flex justify-between items-center mb-4">
+                                <p class="text-[10px] font-black uppercase text-accentEmerald">Receitas</p>
+                                <button onclick="openModalCat('receita')" class="text-accentEmerald"><i data-lucide="plus" class="w-4 h-4"></i></button>
+                            </div>
+                            <div id="list-cat-rec-perf" class="space-y-2"></div>
+                        </div>
+                        <div class="custom-card p-6">
+                            <div class="flex justify-between items-center mb-4">
+                                <p class="text-[10px] font-black uppercase text-accentRose">Despesas</p>
+                                <button onclick="openModalCat('despesa')" class="text-accentRose"><i data-lucide="plus" class="w-4 h-4"></i></button>
+                            </div>
+                            <div id="list-cat-des-perf" class="space-y-2"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="savePerfilSettings()" class="w-full py-5 bg-accentSky text-white font-black uppercase italic tracking-widest rounded-2xl shadow-xl active:scale-95 transition-all mt-4 mb-10">
+                    Salvar Todas as Configurações
+                </button>
+            </section>
         </main>
     </div>
 
@@ -226,9 +221,66 @@
         </div>
     </div>
 
+    <div id="modal-banco" class="hidden fixed inset-0 bg-slate-950/90 backdrop-blur-sm flex items-center justify-center p-4 z-[400]">
+        <div class="custom-card w-full max-w-sm p-8 shadow-2xl">
+            <h3 class="text-lg font-black uppercase italic text-emerald-500 mb-6 text-left">Configurar Banco</h3>
+            <form id="form-banco" class="space-y-4">
+                <input type="hidden" id="banco-id-edit">
+                <div class="text-left">
+                    <label class="text-[9px] font-black uppercase text-slate-500 ml-1">Instituição</label>
+                    <select id="banco-nome-input" class="input-dark">
+                        <option value="Inter">Banco Inter</option>
+                        <option value="Nubank">Nubank</option>
+                        <option value="Itaú">Itaú</option>
+                        <option value="Santander">Santander</option>
+                        <option value="C6 Bank">C6 Bank</option>
+                        <option value="Bradesco">Bradesco</option>
+                        <option value="Caixa">Caixa Econômica</option>
+                        <option value="BB">Banco do Brasil</option>
+                        <option value="Outros">Outros</option>
+                    </select>
+                </div>
+                <div class="text-left">
+                    <label class="text-[9px] font-black uppercase text-slate-500 ml-1">Saldo Inicial</label>
+                    <input type="number" id="banco-saldo-input" step="0.01" placeholder="R$ 0,00" class="input-dark" required>
+                </div>
+                <button type="submit" class="w-full py-4 bg-emerald-600 text-white rounded-xl font-black uppercase text-xs">Confirmar</button>
+                <button type="button" onclick="closeModal()" class="w-full text-slate-500 text-[10px] font-bold mt-2 text-center uppercase">Cancelar</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="modal-cat" class="hidden fixed inset-0 bg-slate-950/90 backdrop-blur-sm flex items-center justify-center p-4 z-[400]">
+        <div class="custom-card w-full max-w-sm p-8 shadow-2xl">
+            <h3 id="cat-modal-title" class="text-lg font-black uppercase italic text-sky-500 mb-6 text-left">Nova Categoria</h3>
+            <form id="form-cat" class="space-y-4">
+                <input type="hidden" id="cat-tipo-modal">
+                <div class="text-left">
+                    <label class="text-[9px] font-black uppercase text-slate-500 ml-1">Nome da Categoria</label>
+                    <input type="text" id="cat-nome-input" placeholder="Ex: Mercado, Freelance..." class="input-dark" required>
+                </div>
+                <div class="text-left">
+                    <label class="text-[9px] font-black uppercase text-slate-500 ml-1">Ícone</label>
+                    <select id="cat-icone-input" class="input-dark">
+                        <option value="tag">Etiqueta</option>
+                        <option value="shopping-cart">Compras</option>
+                        <option value="fuel">Combustível</option>
+                        <option value="coffee">Alimentação</option>
+                        <option value="home">Moradia</option>
+                        <option value="trending-up">Investimento</option>
+                        <option value="heart">Saúde</option>
+                        <option value="zap">Utilidades</option>
+                    </select>
+                </div>
+                <button type="submit" class="w-full py-4 bg-sky-600 text-white rounded-xl font-black uppercase text-xs">Salvar Categoria</button>
+                <button type="button" onclick="closeModal()" class="w-full text-slate-500 text-[10px] font-bold mt-2 text-center uppercase">Cancelar</button>
+            </form>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, where, Timestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, where, Timestamp, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = { apiKey: "AIzaSyArWGgDx0uxce8w72J_1UpKPCUJGvHs3fI", authDomain: "drivo-e-money.firebaseapp.com", projectId: "drivo-e-money", storageBucket: "drivo-e-money.firebasestorage.app", messagingSenderId: "62950568252", appId: "1:62950568252:web:7638827c39b589a9046e39" };
@@ -244,7 +296,25 @@
         let currentStatus = 'efetivada';
         const meses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 
-        onAuthStateChanged(auth, (u) => { if (u) { userId = u.uid; initData(); } });
+        const bancoConfigs = {
+            "Inter": { cor: "#ff7a00", texto: "white" },
+            "Nubank": { cor: "#8a05be", texto: "white" },
+            "Itaú": { cor: "#ec7000", texto: "white" },
+            "Santander": { cor: "#cc0000", texto: "white" },
+            "C6 Bank": { cor: "#000000", texto: "white" },
+            "Bradesco": { cor: "#ff0000", texto: "white" },
+            "Caixa": { cor: "#005ca9", texto: "white" },
+            "BB": { cor: "#f8d117", texto: "#0038a8" },
+            "Outros": { cor: "#1e293b", texto: "white" }
+        };
+
+        onAuthStateChanged(auth, (u) => { 
+            if (u) { 
+                userId = u.uid; 
+                initData(); 
+                loadPerfilFull(); 
+            } 
+        });
 
         function initData() {
             onSnapshot(query(collection(db, "transactions"), where("userId", "==", userId)), (snap) => {
@@ -253,30 +323,58 @@
             });
             onSnapshot(query(collection(db, "banks"), where("userId", "==", userId)), (snap) => {
                 userBancos = snap.docs.map(d => ({id: d.id, ...d.data()}));
+                renderBancosPerfil();
                 updateUI();
             });
             onSnapshot(query(collection(db, "categories"), where("userId", "==", userId)), (snap) => {
                 userCats = snap.docs.map(d => ({id: d.id, ...d.data()}));
+                renderCatsPerfil();
                 updateCatSelect();
             });
             onSnapshot(query(collection(db, "goals"), where("userId", "==", userId)), (snap) => {
                 goals = snap.docs.map(d => ({id: d.id, ...d.data()}));
                 renderGoals(); 
             });
+        }
 
-// Adicione dentro da função initData()
-onSnapshot(query(collection(db, "banks"), where("userId", "==", userId)), (snap) => {
-    userBancos = snap.docs.map(d => ({id: d.id, ...d.data()}));
-    renderBancosPerfil(); // Aquela função que você colou agora há pouco
-    updateUI();           // Para o Dashboard somar o saldo novo
-});
+        // --- SALVAR PERFIL ---
+        window.savePerfilSettings = async () => {
+            try {
+                const data = {
+                    nome: document.getElementById('perf-nome').value,
+                    uf: document.getElementById('perf-uf').value,
+                    cidade: document.getElementById('perf-cidade').value,
+                    veiculo: {
+                        marca: document.getElementById('veic-marca').value,
+                        modelo: document.getElementById('veic-modelo').value,
+                        consumo: parseFloat(document.getElementById('veic-consumo').value) || 0,
+                        gasolina: parseFloat(document.getElementById('veic-gas').value) || 0
+                    }
+                };
+                await setDoc(doc(db, "userSettings", userId), data);
+                alert("✅ Configurações salvas com sucesso!");
+            } catch (error) {
+                console.error("Erro ao salvar perfil:", error);
+                alert("Erro ao salvar.");
+            }
+        };
 
-onSnapshot(query(collection(db, "categories"), where("userId", "==", userId)), (snap) => {
-    userCats = snap.docs.map(d => ({id: d.id, ...d.data()}));
-    renderCatsPerfil();   // Para desenhar as categorias no Perfil
-    updateCatSelect();    // Para atualizar a lista no modal de Lançamentos
-});
-            
+        async function loadPerfilFull() {
+            const d = await getDoc(doc(db, "userSettings", userId));
+            if(d.exists()) {
+                const res = d.data();
+                document.getElementById('perf-nome').value = res.nome || "";
+                document.getElementById('perf-uf').value = res.uf || "CE";
+                await loadCidadesIBGE();
+                document.getElementById('perf-cidade').value = res.cidade || "";
+                if(res.veiculo) {
+                    document.getElementById('veic-marca').value = res.veiculo.marca || "";
+                    updateModelosNacional();
+                    document.getElementById('veic-modelo').value = res.veiculo.modelo || "";
+                    document.getElementById('veic-consumo').value = res.veiculo.consumo || "";
+                    document.getElementById('veic-gas').value = res.veiculo.gasolina || "";
+                }
+            }
         }
 
         // --- LÓGICA DE METAS ---
@@ -321,9 +419,7 @@ onSnapshot(query(collection(db, "categories"), where("userId", "==", userId)), (
             closeModal();
         };
 
-        window.deleteGoal = async (id) => { 
-            if(confirm("Remover esta meta?")) await deleteDoc(doc(db, "goals", id)); 
-        };
+        window.deleteGoal = async (id) => { if(confirm("Remover esta meta?")) await deleteDoc(doc(db, "goals", id)); };
 
         function renderGoals() {
             const list = document.getElementById('lista-metas');
@@ -358,80 +454,58 @@ onSnapshot(query(collection(db, "categories"), where("userId", "==", userId)), (
             lucide.createIcons();
         }
 
-        // --- SISTEMA GERAL ---
+        // --- MODAIS E FORMULARIOS ---
         window.closeModal = () => {
-            document.getElementById('modal-lancamento').classList.add('hidden');
-            document.getElementById('modal-meta').classList.add('hidden');
+            ['modal-lancamento', 'modal-meta', 'modal-banco', 'modal-cat'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.add('hidden');
+            });
         };
 
-        window.openModal = () => { 
-            document.getElementById('edit-id').value = ""; 
+        window.openModal = () => { 
+            document.getElementById('edit-id').value = ""; 
             document.getElementById('modal-title').innerText = "Novo Lançamento";
-            document.getElementById('form-transacao').reset(); 
+            document.getElementById('form-transacao').reset(); 
             document.getElementById('dataVencimento').value = new Date().toISOString().split('T')[0];
             updateCatSelect();
-            document.getElementById('modal-lancamento').classList.remove('hidden'); 
+            document.getElementById('modal-lancamento').classList.remove('hidden'); 
         };
 
-        window.editTransaction = (id) => {
-            const t = transactions.find(item => item.id === id);
-            if (!t) return;
-            document.getElementById('edit-id').value = t.id;
-            document.getElementById('modal-title').innerText = "Editar Registro";
-            document.getElementById('descricao').value = t.descricao;
-            document.getElementById('valor').value = t.valor;
-            setTipo(t.tipo);
-            setStatus(t.status || 'efetivada');
-            setTimeout(() => { document.getElementById('categoria-select').value = t.categoria; }, 50);
-            const dV = t.dateVencimento instanceof Timestamp ? t.dateVencimento.toDate() : new Date(t.dateVencimento);
-            document.getElementById('dataVencimento').value = dV.toISOString().split('T')[0];
-            document.getElementById('modal-lancamento').classList.remove('hidden');
+        window.openModalBanco = () => {
+            const idField = document.getElementById('banco-id-edit');
+            if(idField) idField.value = "";
+            document.getElementById('form-banco').reset();
+            document.getElementById('modal-banco').classList.remove('hidden');
         };
 
-        window.deleteTransaction = async (id) => {
-            if (confirm("Deseja apagar este registro permanentemente?")) {
-                await deleteDoc(doc(db, "transactions", id));
-            }
+        window.openModalCat = (tipo) => {
+            document.getElementById('cat-tipo-modal').value = tipo;
+            document.getElementById('cat-modal-title').innerText = tipo === 'receita' ? "Nova Categoria: Receita" : "Nova Categoria: Despesa";
+            document.getElementById('form-cat').reset();
+            document.getElementById('modal-cat').classList.remove('hidden');
         };
 
-        function updateUI() {
-            let rPer = 0, dPer = 0;
-            const feed = document.getElementById('mini-feed');
-            const ext = document.getElementById('lista-transacoes-extrato');
-            if(!feed || !ext) return;
-            feed.innerHTML = ""; ext.innerHTML = "";
-            const sIni = userBancos.reduce((acc, b) => acc + (b.saldoInicial || 0), 0);
-            const sTrans = transactions.filter(t => t.status === 'efetivada').reduce((acc, t) => t.tipo === 'receita' ? acc + t.valor : acc - t.valor, 0);
-            const consolidado = sIni + sTrans;
-            document.getElementById('dash-saldo').innerText = `R$ ${consolidado.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-            document.getElementById('display-periodo').innerText = isYearlyView ? `Ano ${viewDate.getFullYear()}` : `${meses[viewDate.getMonth()]} ${viewDate.getFullYear()}`;
-            transactions.forEach((t, i) => {
-                const dV = t.dateVencimento instanceof Timestamp ? t.dateVencimento.toDate() : new Date(t.dateVencimento);
-                const match = isYearlyView ? dV.getFullYear() === viewDate.getFullYear() : (dV.getMonth() === viewDate.getMonth() && dV.getFullYear() === viewDate.getFullYear());
-                if(match) {
-                    t.tipo === 'receita' ? rPer += t.valor : dPer += t.valor;
-                    const html = `<div class="flex justify-between items-center p-4 bg-slate-900/40 rounded-xl border border-white/5">
-                        <div class="flex items-center gap-3">
-                            <div class="p-2 rounded-lg ${t.tipo==='receita'?'bg-accentEmerald/10 text-accentEmerald':'bg-accentRose/10 text-accentRose'}"><i data-lucide="${t.status==='efetivada'?'check':'clock'}" class="w-4 h-4"></i></div>
-                            <div><h4 class="text-[11px] font-black uppercase">${t.descricao}</h4><p class="text-[9px] text-slate-500">${dV.toLocaleDateString()}</p></div>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <p class="text-xs font-black ${t.tipo==='receita'?'text-accentEmerald':'text-accentRose'}">R$ ${t.valor.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</p>
-                            <div class="flex gap-1">
-                                <button onclick="editTransaction('${t.id}')" class="p-2 text-slate-500 hover:text-accentSky"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
-                                <button onclick="deleteTransaction('${t.id}')" class="p-2 text-slate-500 hover:text-accentRose"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                            </div>
-                        </div>
-                    </div>`;
-                    if(i < 5) feed.innerHTML += html;
-                    ext.innerHTML += html;
-                }
-            });
-            document.getElementById('dash-receitas').innerText = `R$ ${rPer.toLocaleString('pt-BR')}`;
-            document.getElementById('dash-despesas').innerText = `R$ ${dPer.toLocaleString('pt-BR')}`;
-            lucide.createIcons();
-            setTimeout(() => updateDonut(currentTipo), 100);
-        }
+        document.getElementById('form-banco').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                const nome = document.getElementById('banco-nome-input').value;
+                const saldo = parseFloat(document.getElementById('banco-saldo-input').value);
+                await addDoc(collection(db, "banks"), { userId, nome, saldoInicial: saldo, createdAt: Timestamp.now() });
+                closeModal();
+                alert("Banco adicionado!");
+            } catch (error) { console.error(error); }
+        });
+
+        document.getElementById('form-cat').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                const nome = document.getElementById('cat-nome-input').value;
+                const icone = document.getElementById('cat-icone-input').value;
+                const tipo = document.getElementById('cat-tipo-modal').value;
+                await addDoc(collection(db, "categories"), { userId, nome, icone, tipo, createdAt: Timestamp.now() });
+                closeModal();
+            } catch (error) { console.error(error); }
+        });
 
         document.getElementById('form-transacao').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -442,51 +516,88 @@ onSnapshot(query(collection(db, "categories"), where("userId", "==", userId)), (
             closeModal();
         });
 
-        // --- GRAVAÇÃO DE BANCOS E CATEGORIAS NO FIREBASE ---
+        // --- RENDERIZAÇÃO PERFIL ---
+        window.renderBancosPerfil = () => {
+            const list = document.getElementById('lista-bancos-perfil');
+            if(!list) return;
+            list.innerHTML = userBancos.map(b => {
+                const conf = bancoConfigs[b.nome] || bancoConfigs["Outros"];
+                return `
+                <div class="p-4 bg-slate-900/50 rounded-2xl border-l-4 flex justify-between items-center" style="border-color: ${conf.cor}">
+                    <div><p class="text-[9px] font-black uppercase text-slate-500">${b.nome}</p><p class="text-sm font-black">R$ ${b.saldoInicial.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</p></div>
+                    <button onclick="deleteBanco('${b.id}')" class="text-slate-700 hover:text-accentRose"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                </div>`;
+            }).join('');
+            lucide.createIcons();
+        };
 
-// 1. Ouvinte para o Formulário de Bancos
-document.getElementById('form-banco').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    try {
-        const nome = document.getElementById('banco-nome-input').value;
-        const saldo = parseFloat(document.getElementById('banco-saldo-input').value);
+        window.renderCatsPerfil = () => {
+            const recC = document.getElementById('list-cat-rec-perf');
+            const desC = document.getElementById('list-cat-des-perf');
+            if(!recC || !desC) return;
+            recC.innerHTML = ""; desC.innerHTML = "";
+            userCats.forEach(c => {
+                const html = `<div class="flex justify-between items-center p-3 bg-slate-900/40 rounded-xl border border-white/5"><div class="flex items-center gap-2"><i data-lucide="${c.icone || 'tag'}" class="w-3 h-3 text-slate-400"></i><span class="text-[10px] font-black uppercase">${c.nome}</span></div><button onclick="deleteCat('${c.id}')" class="text-slate-700 hover:text-accentRose"><i data-lucide="x" class="w-3 h-3"></i></button></div>`;
+                c.tipo === 'receita' ? recC.innerHTML += html : desC.innerHTML += html;
+            });
+            lucide.createIcons();
+        };
 
-        await addDoc(collection(db, "banks"), {
-            userId: userId,
-            nome: nome,
-            saldoInicial: saldo,
-            createdAt: Timestamp.now()
-        });
-        
-        closeModal();
-        alert("Banco adicionado com sucesso!");
-    } catch (error) {
-        console.error("Erro ao salvar banco:", error);
-        alert("Erro ao salvar banco.");
-    }
-});
+        window.deleteBanco = async (id) => { if(confirm("Remover banco?")) await deleteDoc(doc(db, "banks", id)); };
+        window.deleteCat = async (id) => { if(confirm("Remover categoria?")) await deleteDoc(doc(db, "categories", id)); };
 
-// 2. Ouvinte para o Formulário de Categorias
-document.getElementById('form-cat').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    try {
-        const nome = document.getElementById('cat-nome-input').value;
-        const icone = document.getElementById('cat-icone-input').value;
-        const tipo = document.getElementById('cat-tipo-modal').value;
+        // --- UI E DASHBOARD ---
+        window.cycleBankDisplay = () => {
+            currentBankIdx++;
+            if (currentBankIdx >= userBancos.length) currentBankIdx = -1;
+            updateUI();
+        };
 
-        await addDoc(collection(db, "categories"), {
-            userId: userId,
-            nome: nome,
-            icone: icone,
-            tipo: tipo,
-            createdAt: Timestamp.now()
-        });
-        
-        closeModal();
-    } catch (error) {
-        console.error("Erro ao salvar categoria:", error);
-    }
-});
+        function updateUI() {
+            const sIni = userBancos.reduce((acc, b) => acc + (b.saldoInicial || 0), 0);
+            const sTrans = transactions.filter(t => t.status === 'efetivada').reduce((acc, t) => t.tipo === 'receita' ? acc + t.valor : acc - t.valor, 0);
+            const consolidado = sIni + sTrans;
+
+            const label = document.getElementById('bank-label');
+            const display = document.getElementById('dash-saldo');
+            const card = document.getElementById('card-saldo-main');
+
+            if(currentBankIdx === -1) {
+                label.innerText = "Saldo Consolidado";
+                display.innerText = `R$ ${consolidado.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+                card.style.background = "linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%)";
+                display.style.color = "white";
+            } else {
+                const b = userBancos[currentBankIdx];
+                const conf = bancoConfigs[b.nome] || bancoConfigs["Outros"];
+                label.innerText = `Saldo ${b.nome}`;
+                display.innerText = `R$ ${b.saldoInicial.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+                card.style.background = conf.cor;
+                display.style.color = conf.texto;
+            }
+
+            let rPer = 0, dPer = 0;
+            const feed = document.getElementById('mini-feed');
+            const ext = document.getElementById('lista-transacoes-extrato');
+            if(feed && ext) {
+                feed.innerHTML = ""; ext.innerHTML = "";
+                transactions.forEach((t, i) => {
+                    const dV = t.dateVencimento instanceof Timestamp ? t.dateVencimento.toDate() : new Date(t.dateVencimento);
+                    const match = isYearlyView ? dV.getFullYear() === viewDate.getFullYear() : (dV.getMonth() === viewDate.getMonth() && dV.getFullYear() === viewDate.getFullYear());
+                    if(match) {
+                        t.tipo === 'receita' ? rPer += t.valor : dPer += t.valor;
+                        const html = `<div class="flex justify-between items-center p-4 bg-slate-900/40 rounded-xl border border-white/5"><div class="flex items-center gap-3"><div class="p-2 rounded-lg ${t.tipo==='receita'?'bg-accentEmerald/10 text-accentEmerald':'bg-accentRose/10 text-accentRose'}"><i data-lucide="${t.status==='efetivada'?'check':'clock'}" class="w-4 h-4"></i></div><div><h4 class="text-[11px] font-black uppercase">${t.descricao}</h4><p class="text-[9px] text-slate-500">${dV.toLocaleDateString()}</p></div></div><p class="text-xs font-black ${t.tipo==='receita'?'text-accentEmerald':'text-accentRose'}">R$ ${t.valor.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</p></div>`;
+                        if(i < 5) feed.innerHTML += html;
+                        ext.innerHTML += html;
+                    }
+                });
+            }
+            document.getElementById('dash-receitas').innerText = `R$ ${rPer.toLocaleString('pt-BR')}`;
+            document.getElementById('dash-despesas').innerText = `R$ ${dPer.toLocaleString('pt-BR')}`;
+            document.getElementById('display-periodo').innerText = isYearlyView ? `Ano ${viewDate.getFullYear()}` : `${meses[viewDate.getMonth()]} ${viewDate.getFullYear()}`;
+            lucide.createIcons();
+            setTimeout(() => updateDonut(currentTipo), 100);
+        }
 
         window.updateDonut = (tipo) => {
             const canvas = document.getElementById('chart-rosca');
@@ -503,221 +614,63 @@ document.getElementById('form-cat').addEventListener('submit', async (e) => {
             document.getElementById('btn-donut-rec').className = tipo==='receita' ? "px-3 py-1.5 rounded-lg text-[9px] font-black bg-accentEmerald text-white" : "px-3 py-1.5 rounded-lg text-[9px] font-black text-slate-500";
         };
 
-        window.setTipo = (t) => { 
-            currentTipo = t; 
-            updateCatSelect(); 
-            document.getElementById('btn-tipo-des').className = t === 'despesa' ? "flex-1 py-3 rounded-xl font-black text-[10px] uppercase bg-accentRose text-white" : "flex-1 py-3 rounded-xl font-black text-[10px] uppercase bg-slate-800 text-slate-500";
-            document.getElementById('btn-tipo-rec').className = t === 'receita' ? "flex-1 py-3 rounded-xl font-black text-[10px] uppercase bg-accentEmerald text-white" : "flex-1 py-3 rounded-xl font-black text-[10px] uppercase bg-slate-800 text-slate-500";
-        };
-
-        window.setStatus = (s) => { currentStatus = s; 
-            document.getElementById('btn-st-efetivada').className = s==='efetivada' ? "flex-1 py-2 rounded-lg text-[9px] font-black uppercase bg-accentSky text-white" : "flex-1 py-2 rounded-lg text-[9px] font-black uppercase text-slate-500";
-            document.getElementById('btn-st-prevista').className = s==='prevista' ? "flex-1 py-2 rounded-lg text-[9px] font-black uppercase bg-accentAmber text-white" : "flex-1 py-2 rounded-lg text-[9px] font-black uppercase text-slate-500";
-        };
-        window.showTab = (id) => { document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active')); document.getElementById('tab-' + id).classList.add('active'); document.querySelectorAll('.nav-btn').forEach(b => b.classList.replace('text-accentSky', 'text-slate-500')); const active = document.querySelector(`[data-tab="${id}"]`); if(active) active.classList.replace('text-slate-500', 'text-accentSky'); lucide.createIcons(); if(id === 'dashboard') setTimeout(() => updateDonut(currentTipo), 100); };
-        window.changeMonth = (delta) => { isYearlyView = false; viewDate.setMonth(viewDate.getMonth() + delta); updateUI(); };
-        window.toggleYearlyView = () => { isYearlyView = !isYearlyView; updateUI(); };
-        window.cycleBankDisplay = () => { currentBankIdx++; if (currentBankIdx >= userBancos.length) currentBankIdx = -1; updateUI(); };
-        window.handleLogout = () => signOut(auth).then(() => location.reload());
-
-        function updateCatSelect() { 
-            const sel = document.getElementById('categoria-select'); 
-            if(!sel) return; 
-            const filtered = userCats.filter(c => c.tipo === currentTipo); 
-            sel.innerHTML = filtered.map(c => `<option value="${c.nome}">${c.nome}</option>`).join(''); 
+        // --- IBGE E MONTADORAS ---
+        async function loadEstadosIBGE() {
+            const response = await fetch('https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome');
+            const estados = await response.json();
+            const sel = document.getElementById('perf-uf');
+            if(sel) sel.innerHTML = estados.map(e => `<option value="${e.sigla}">${e.nome}</option>`).join('');
         }
 
-        // --- LOGICA NACIONAL v24.4 ---
+        window.loadCidadesIBGE = async () => {
+            const uf = document.getElementById('perf-uf').value;
+            const sel = document.getElementById('perf-cidade');
+            if(!sel) return;
+            sel.innerHTML = '<option>Carregando...</option>';
+            const response = await fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios?orderBy=nome`);
+            const cidades = await response.json();
+            sel.innerHTML = cidades.map(c => `<option value="${c.nome}">${c.nome}</option>`).join('');
+            if(uf === "CE") document.getElementById('veic-gas').value = 5.97;
+        };
 
-// 1. Carregar Estados do IBGE ao iniciar
-async function loadEstadosIBGE() {
-    const response = await fetch('https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome');
-    const estados = await response.json();
-    const sel = document.getElementById('perf-uf');
-    sel.innerHTML = estados.map(e => `<option value="${e.sigla}">${e.nome}</option>`).join('');
-    // Valor padrão baseado na sua localização
-    sel.value = "CE";
-    loadCidadesIBGE();
-}
+        const dataModelosMaster = {
+            "Yamaha": ["Fazer FZ25", "Lander 250", "MT-03", "MT-07", "NMAX 160", "XMAX 250", "Crosser 150", "Factor 150", "R3"],
+            "Honda Motos": ["Titan 160", "Bros 160", "CB 300F Twister", "XRE 300 Sahara", "PCX 160", "Biz 125", "NC 750X", "CB 500X"],
+            "Toyota": ["Corolla", "Corolla Cross", "Hilux", "SW4", "Yaris Hatch", "Yaris Sedan"],
+            "Volkswagen": ["Polo", "Golf", "T-Cross", "Nivus", "Virtus", "Saveiro", "Amarok", "Taos"],
+            "Fiat": ["Strada", "Mobi", "Argo", "Pulse", "Fastback", "Toro", "Cronos", "Fiorino"]
+        };
 
-// 2. Carregar Cidades do IBGE dinamicamente por Estado
-window.loadCidadesIBGE = async () => {
-    const uf = document.getElementById('perf-uf').value;
-    const sel = document.getElementById('perf-cidade');
-    sel.innerHTML = '<option>Carregando...</option>';
-    
-    const response = await fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios?orderBy=nome`);
-    const cidades = await response.json();
-    
-    sel.innerHTML = cidades.map(c => `<option value="${c.nome}">${c.nome}</option>`).join('');
-    
-    // Gasolina sugerida para o Ceará
-    if(uf === "CE") document.getElementById('veic-gas').value = 5.97;
-};
+        window.updateModelosNacional = () => {
+            const marca = document.getElementById('veic-marca').value;
+            const sel = document.getElementById('veic-modelo');
+            if(sel) sel.innerHTML = (dataModelosMaster[marca] || ["Outro Modelo"]).map(m => `<option value="${m}">${m}</option>`).join('');
+        };
 
-// 3. Modelos das Principais Montadoras
-const dataModelosMaster = {
-    "Yamaha": ["Fazer FZ25", "Lander 250", "MT-03", "MT-07", "NMAX 160", "XMAX 250", "Crosser 150", "Factor 150", "R3"],
-    "Honda Motos": ["Titan 160", "Bros 160", "CB 300F Twister", "XRE 300 Sahara", "PCX 160", "Biz 125", "NC 750X", "CB 500X"],
-    "Toyota": ["Corolla", "Corolla Cross", "Hilux", "SW4", "Yaris Hatch", "Yaris Sedan"],
-    "Volkswagen": ["Polo", "Golf", "T-Cross", "Nivus", "Virtus", "Saveiro", "Amarok", "Taos"],
-    "Fiat": ["Strada", "Mobi", "Argo", "Pulse", "Fastback", "Toro", "Cronos", "Fiorino"],
-    "General Motors": ["Onix", "Onix Plus", "Tracker", "S10", "Montana", "Spin", "Equinox"],
-    "Hyundai": ["HB20", "HB20S", "Creta", "Tucson", "Kona"],
-    "BYD": ["Dolphin", "Seal", "Song Plus", "Yuan Plus", "Dolphin Mini"],
-    "BMW Motos": ["G 310 GS", "F 850 GS", "R 1250 GS", "S 1000 RR", "F 900 R"],
-    "Royal Enfield": ["Meteor 350", "Classic 350", "Hunter 350", "Himalayan 411", "Interceptor 650"]
-};
+        // --- AUXILIARES ---
+        window.setTipo = (t) => { currentTipo = t; updateCatSelect(); };
+        window.setStatus = (s) => { currentStatus = s; };
+        window.showTab = (id) => { 
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active')); 
+            document.getElementById('tab-' + id).classList.add('active'); 
+            lucide.createIcons(); 
+        };
+        window.changeMonth = (delta) => { isYearlyView = false; viewDate.setMonth(viewDate.getMonth() + delta); updateUI(); };
+        window.toggleYearlyView = () => { isYearlyView = !isYearlyView; updateUI(); };
+        window.handleLogout = () => signOut(auth).then(() => location.reload());
 
-window.updateModelosNacional = () => {
-    const marca = document.getElementById('veic-marca').value;
-    const sel = document.getElementById('veic-modelo');
-    sel.innerHTML = (dataModelosMaster[marca] || ["Outro Modelo"])
-        .map(m => `<option value="${m}">${m}</option>`).join('');
-};
+        function updateCatSelect() { 
+            const sel = document.getElementById('categoria-select'); 
+            if(!sel) return; 
+            const filtered = userCats.filter(c => c.tipo === currentTipo); 
+            sel.innerHTML = filtered.map(c => `<option value="${c.nome}">${c.nome}</option>`).join(''); 
+        }
 
-// --- FUNÇÕES DE INTERFACE (COLAR ACIMA DA LINHA 520) ---
+        document.addEventListener('DOMContentLoaded', () => { 
+            loadEstadosIBGE();
+            lucide.createIcons();
+        });
 
-// Abrir modal de Bancos
-window.openModalBanco = () => {
-    const idField = document.getElementById('banco-id-edit');
-    if(idField) idField.value = "";
-    document.getElementById('form-banco').reset();
-    document.getElementById('modal-banco').classList.remove('hidden');
-};
-
-// Abrir modal de Categorias
-window.openModalCat = (tipo) => {
-    document.getElementById('cat-tipo-modal').value = tipo;
-    document.getElementById('cat-modal-title').innerText = tipo === 'receita' ? "Nova Categoria: Receita" : "Nova Categoria: Despesa";
-    document.getElementById('form-cat').reset();
-    document.getElementById('modal-cat').classList.remove('hidden');
-};
-
-// FUNÇÃO PARA DESENHAR OS BANCOS NO PERFIL
-window.renderBancosPerfil = () => {
-    const list = document.getElementById('lista-bancos-perfil');
-    if(!list) return;
-    
-    const cores = { "Inter": "#ff7a00", "Nubank": "#8a05be", "Itaú": "#ec7000", "Santander": "#cc0000", "C6 Bank": "#000000", "Outros": "#1e293b" };
-
-    list.innerHTML = userBancos.map(b => `
-        <div class="p-4 bg-slate-900/50 rounded-2xl border-l-4 flex justify-between items-center" style="border-color: ${cores[b.nome] || cores['Outros']}">
-            <div>
-                <p class="text-[9px] font-black uppercase text-slate-500">${b.nome}</p>
-                <p class="text-sm font-black text-white">R$ ${b.saldoInicial.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</p>
-            </div>
-            <button onclick="deleteBanco('${b.id}')" class="text-slate-700 hover:text-accentRose transition-colors">
-                <i data-lucide="trash-2" class="w-4 h-4"></i>
-            </button>
-        </div>
-    `).join('');
-    lucide.createIcons();
-};
-
-// FUNÇÃO PARA DESENHAR AS CATEGORIAS NO PERFIL
-window.renderCatsPerfil = () => {
-    const recContainer = document.getElementById('list-cat-rec-perf');
-    const desContainer = document.getElementById('list-cat-des-perf');
-    if(!recContainer || !desContainer) return;
-
-    recContainer.innerHTML = "";
-    desContainer.innerHTML = "";
-
-    userCats.forEach(c => {
-        const html = `
-            <div class="flex justify-between items-center p-3 bg-slate-900/40 rounded-xl border border-white/5">
-                <div class="flex items-center gap-2">
-                    <i data-lucide="${c.icone || 'tag'}" class="w-3 h-3 text-slate-400"></i>
-                    <span class="text-[10px] font-black uppercase text-slate-300">${c.nome}</span>
-                </div>
-                <button onclick="deleteCat('${c.id}')" class="text-slate-700 hover:text-accentRose">
-                    <i data-lucide="x" class="w-3 h-3"></i>
-                </button>
-            </div>`;
-        if(c.tipo === 'receita') recContainer.innerHTML += html;
-        else desContainer.innerHTML += html;
-    });
-    lucide.createIcons();
-};
-
-// Função para deletar Banco
-window.deleteBanco = async (id) => {
-    if(confirm("Deseja remover este banco?")) await deleteDoc(doc(db, "banks", id));
-};
-
-// Função para deletar Categoria
-window.deleteCat = async (id) => {
-    if(confirm("Deseja remover esta categoria?")) await deleteDoc(doc(db, "categories", id));
-};
-
-// --- FIM DAS FUNÇÕES ---
-        
-        // Inicialização
-document.addEventListener('DOMContentLoaded', () => {
-    loadEstadosIBGE();
-});
-
-        lucide.createIcons();
-
-
-        
     </script>
-    <div id="modal-banco" class="hidden fixed inset-0 bg-slate-950/90 backdrop-blur-sm flex items-center justify-center p-4 z-[400]">
-    <div class="custom-card w-full max-w-sm p-8 shadow-2xl">
-        <h3 class="text-lg font-black uppercase italic text-emerald-500 mb-6 text-left">Configurar Banco</h3>
-        <form id="form-banco" class="space-y-4">
-            <input type="hidden" id="banco-id-edit">
-            <div class="text-left">
-                <label class="text-[9px] font-black uppercase text-slate-500 ml-1">Instituição</label>
-                <select id="banco-nome-input" class="input-dark">
-                    <option value="Inter">Banco Inter</option>
-                    <option value="Nubank">Nubank</option>
-                    <option value="Itaú">Itaú</option>
-                    <option value="Santander">Santander</option>
-                    <option value="C6 Bank">C6 Bank</option>
-                    <option value="Bradesco">Bradesco</option>
-                    <option value="Caixa">Caixa Econômica</option>
-                    <option value="BB">Banco do Brasil</option>
-                    <option value="Outros">Outros</option>
-                </select>
-            </div>
-            <div class="text-left">
-                <label class="text-[9px] font-black uppercase text-slate-500 ml-1">Saldo Inicial</label>
-                <input type="number" id="banco-saldo-input" step="0.01" placeholder="R$ 0,00" class="input-dark" required>
-            </div>
-            <button type="submit" class="w-full py-4 bg-emerald-600 text-white rounded-xl font-black uppercase text-xs">Confirmar</button>
-            <button type="button" onclick="closeModal()" class="w-full text-slate-500 text-[10px] font-bold mt-2 text-center uppercase">Cancelar</button>
-        </form>
-    </div>
-</div>
-
-<div id="modal-cat" class="hidden fixed inset-0 bg-slate-950/90 backdrop-blur-sm flex items-center justify-center p-4 z-[400]">
-    <div class="custom-card w-full max-w-sm p-8 shadow-2xl">
-        <h3 id="cat-modal-title" class="text-lg font-black uppercase italic text-sky-500 mb-6 text-left">Nova Categoria</h3>
-        <form id="form-cat" class="space-y-4">
-            <input type="hidden" id="cat-tipo-modal">
-            <div class="text-left">
-                <label class="text-[9px] font-black uppercase text-slate-500 ml-1">Nome da Categoria</label>
-                <input type="text" id="cat-nome-input" placeholder="Ex: Mercado, Freelance..." class="input-dark" required>
-            </div>
-            <div class="text-left">
-                <label class="text-[9px] font-black uppercase text-slate-500 ml-1">Ícone</label>
-                <select id="cat-icone-input" class="input-dark">
-                    <option value="tag">Etiqueta</option>
-                    <option value="shopping-cart">Compras</option>
-                    <option value="fuel">Combustível</option>
-                    <option value="coffee">Alimentação</option>
-                    <option value="home">Moradia</option>
-                    <option value="trending-up">Investimento</option>
-                    <option value="heart">Saúde</option>
-                    <option value="zap">Utilidades</option>
-                </select>
-            </div>
-            <button type="submit" class="w-full py-4 bg-sky-600 text-white rounded-xl font-black uppercase text-xs">Salvar Categoria</button>
-            <button type="button" onclick="closeModal()" class="w-full text-slate-500 text-[10px] font-bold mt-2 text-center uppercase">Cancelar</button>
-        </form>
-    </div>
-</div>
 </body>
 </html>
