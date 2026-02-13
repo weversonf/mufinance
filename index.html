@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Drivo & Money v24.3</title>
+    <title>Drivo & Money v24.4</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -33,7 +33,7 @@
                 <div class="p-3 bg-accentSky rounded-xl text-white shadow-lg"><i data-lucide="zap" class="w-6 h-6 fill-current"></i></div>
                 <div>
                     <h1 class="text-2xl font-black uppercase italic tracking-tighter text-accentSky leading-none">Drivo&Money</h1>
-                    <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">v24.3 • Ícones de Edição</span>
+                    <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">v24.4 • Ícones de Edição</span>
                 </div>
             </div>
             <button onclick="handleLogout()" class="p-4 bg-slate-800/50 rounded-xl text-accentRose"><i data-lucide="log-out"></i></button>
@@ -263,6 +263,20 @@
                 goals = snap.docs.map(d => ({id: d.id, ...d.data()}));
                 renderGoals(); 
             });
+
+// Adicione dentro da função initData()
+onSnapshot(query(collection(db, "banks"), where("userId", "==", userId)), (snap) => {
+    userBancos = snap.docs.map(d => ({id: d.id, ...d.data()}));
+    renderBancosPerfil(); // Aquela função que você colou agora há pouco
+    updateUI();           // Para o Dashboard somar o saldo novo
+});
+
+onSnapshot(query(collection(db, "categories"), where("userId", "==", userId)), (snap) => {
+    userCats = snap.docs.map(d => ({id: d.id, ...d.data()}));
+    renderCatsPerfil();   // Para desenhar as categorias no Perfil
+    updateCatSelect();    // Para atualizar a lista no modal de Lançamentos
+});
+            
         }
 
         // --- LÓGICA DE METAS ---
@@ -428,6 +442,52 @@
             closeModal();
         });
 
+        // --- GRAVAÇÃO DE BANCOS E CATEGORIAS NO FIREBASE ---
+
+// 1. Ouvinte para o Formulário de Bancos
+document.getElementById('form-banco').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    try {
+        const nome = document.getElementById('banco-nome-input').value;
+        const saldo = parseFloat(document.getElementById('banco-saldo-input').value);
+
+        await addDoc(collection(db, "banks"), {
+            userId: userId,
+            nome: nome,
+            saldoInicial: saldo,
+            createdAt: Timestamp.now()
+        });
+        
+        closeModal();
+        alert("Banco adicionado com sucesso!");
+    } catch (error) {
+        console.error("Erro ao salvar banco:", error);
+        alert("Erro ao salvar banco.");
+    }
+});
+
+// 2. Ouvinte para o Formulário de Categorias
+document.getElementById('form-cat').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    try {
+        const nome = document.getElementById('cat-nome-input').value;
+        const icone = document.getElementById('cat-icone-input').value;
+        const tipo = document.getElementById('cat-tipo-modal').value;
+
+        await addDoc(collection(db, "categories"), {
+            userId: userId,
+            nome: nome,
+            icone: icone,
+            tipo: tipo,
+            createdAt: Timestamp.now()
+        });
+        
+        closeModal();
+    } catch (error) {
+        console.error("Erro ao salvar categoria:", error);
+    }
+});
+
         window.updateDonut = (tipo) => {
             const canvas = document.getElementById('chart-rosca');
             if (!canvas) return;
@@ -467,7 +527,7 @@
             sel.innerHTML = filtered.map(c => `<option value="${c.nome}">${c.nome}</option>`).join(''); 
         }
 
-        // --- LOGICA NACIONAL v24.3 ---
+        // --- LOGICA NACIONAL v24.4 ---
 
 // 1. Carregar Estados do IBGE ao iniciar
 async function loadEstadosIBGE() {
@@ -516,12 +576,92 @@ window.updateModelosNacional = () => {
         .map(m => `<option value="${m}">${m}</option>`).join('');
 };
 
-// Inicialização
+// --- FUNÇÕES DE INTERFACE (COLAR ACIMA DA LINHA 520) ---
+
+// Abrir modal de Bancos
+window.openModalBanco = () => {
+    const idField = document.getElementById('banco-id-edit');
+    if(idField) idField.value = "";
+    document.getElementById('form-banco').reset();
+    document.getElementById('modal-banco').classList.remove('hidden');
+};
+
+// Abrir modal de Categorias
+window.openModalCat = (tipo) => {
+    document.getElementById('cat-tipo-modal').value = tipo;
+    document.getElementById('cat-modal-title').innerText = tipo === 'receita' ? "Nova Categoria: Receita" : "Nova Categoria: Despesa";
+    document.getElementById('form-cat').reset();
+    document.getElementById('modal-cat').classList.remove('hidden');
+};
+
+// FUNÇÃO PARA DESENHAR OS BANCOS NO PERFIL
+window.renderBancosPerfil = () => {
+    const list = document.getElementById('lista-bancos-perfil');
+    if(!list) return;
+    
+    const cores = { "Inter": "#ff7a00", "Nubank": "#8a05be", "Itaú": "#ec7000", "Santander": "#cc0000", "C6 Bank": "#000000", "Outros": "#1e293b" };
+
+    list.innerHTML = userBancos.map(b => `
+        <div class="p-4 bg-slate-900/50 rounded-2xl border-l-4 flex justify-between items-center" style="border-color: ${cores[b.nome] || cores['Outros']}">
+            <div>
+                <p class="text-[9px] font-black uppercase text-slate-500">${b.nome}</p>
+                <p class="text-sm font-black text-white">R$ ${b.saldoInicial.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</p>
+            </div>
+            <button onclick="deleteBanco('${b.id}')" class="text-slate-700 hover:text-accentRose transition-colors">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>
+        </div>
+    `).join('');
+    lucide.createIcons();
+};
+
+// FUNÇÃO PARA DESENHAR AS CATEGORIAS NO PERFIL
+window.renderCatsPerfil = () => {
+    const recContainer = document.getElementById('list-cat-rec-perf');
+    const desContainer = document.getElementById('list-cat-des-perf');
+    if(!recContainer || !desContainer) return;
+
+    recContainer.innerHTML = "";
+    desContainer.innerHTML = "";
+
+    userCats.forEach(c => {
+        const html = `
+            <div class="flex justify-between items-center p-3 bg-slate-900/40 rounded-xl border border-white/5">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="${c.icone || 'tag'}" class="w-3 h-3 text-slate-400"></i>
+                    <span class="text-[10px] font-black uppercase text-slate-300">${c.nome}</span>
+                </div>
+                <button onclick="deleteCat('${c.id}')" class="text-slate-700 hover:text-accentRose">
+                    <i data-lucide="x" class="w-3 h-3"></i>
+                </button>
+            </div>`;
+        if(c.tipo === 'receita') recContainer.innerHTML += html;
+        else desContainer.innerHTML += html;
+    });
+    lucide.createIcons();
+};
+
+// Função para deletar Banco
+window.deleteBanco = async (id) => {
+    if(confirm("Deseja remover este banco?")) await deleteDoc(doc(db, "banks", id));
+};
+
+// Função para deletar Categoria
+window.deleteCat = async (id) => {
+    if(confirm("Deseja remover esta categoria?")) await deleteDoc(doc(db, "categories", id));
+};
+
+// --- FIM DAS FUNÇÕES ---
+        
+        // Inicialização
 document.addEventListener('DOMContentLoaded', () => {
     loadEstadosIBGE();
 });
 
         lucide.createIcons();
+
+
+        
     </script>
     <div id="modal-banco" class="hidden fixed inset-0 bg-slate-950/90 backdrop-blur-sm flex items-center justify-center p-4 z-[400]">
     <div class="custom-card w-full max-w-sm p-8 shadow-2xl">
