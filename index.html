@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Drivo & Money - Dashboard</title>
+    <title>Drivo & Money - Gestão Financeira</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -28,13 +28,11 @@
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         .hidden { display: none !important; }
-        
-        /* Ajuste Crítico de Contraste */
         html.dark body { background-color: #020617; color: white; }
         html.dark .custom-card { background-color: #0f172a; border-color: #1e293b; color: white; }
         html:not(.dark) .custom-card { background-color: white; border-color: #e2e8f0; color: #0f172a; }
-        
-        canvas { max-width: 100% !important; }
+        .modal-scroll::-webkit-scrollbar { width: 4px; }
+        .modal-scroll::-webkit-scrollbar-thumb { background: #0ea5e9; border-radius: 10px; }
     </style>
 </head>
 <body class="min-h-screen antialiased pb-24">
@@ -66,47 +64,26 @@
                 <section id="tab-dashboard" class="tab-content active space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div class="bg-sky-500 p-6 rounded-[35px] shadow-xl text-white relative overflow-hidden">
-                            <div class="relative z-10">
-                                <small class="text-[10px] font-black uppercase opacity-60">Saldo Atual</small>
-                                <p class="text-3xl font-black" id="dash-saldo">R$ 0,00</p>
-                            </div>
+                            <div class="relative z-10"><small class="text-[10px] font-black uppercase opacity-60 tracking-widest">Saldo Atual</small><p class="text-3xl font-black" id="dash-saldo">R$ 0,00</p></div>
                             <i data-lucide="wallet" class="absolute right-[-10px] bottom-[-10px] w-24 h-24 opacity-10"></i>
                         </div>
-                        <div class="custom-card p-6 rounded-[35px] border">
-                            <div class="flex items-center gap-3 mb-1 text-emerald-500">
-                                <i data-lucide="arrow-up-circle" class="w-4 h-4"></i>
-                                <small class="text-[10px] font-black uppercase">Receitas do Mês</small>
-                            </div>
-                            <p class="text-2xl font-black text-emerald-500" id="dash-receitas">R$ 0,00</p>
-                        </div>
-                        <div class="custom-card p-6 rounded-[35px] border">
-                            <div class="flex items-center gap-3 mb-1 text-rose-500">
-                                <i data-lucide="arrow-down-circle" class="w-4 h-4"></i>
-                                <small class="text-[10px] font-black uppercase">Despesas do Mês</small>
-                            </div>
-                            <p class="text-2xl font-black text-rose-500" id="dash-despesas">R$ 0,00</p>
-                        </div>
+                        <div class="custom-card p-6 rounded-[35px] border"><small class="text-[10px] font-black uppercase text-slate-400">Receitas do Mês</small><p class="text-2xl font-black text-emerald-500" id="dash-receitas">R$ 0,00</p></div>
+                        <div class="custom-card p-6 rounded-[35px] border"><small class="text-[10px] font-black uppercase text-slate-400">Despesas do Mês</small><p class="text-2xl font-black text-rose-500" id="dash-despesas">R$ 0,00</p></div>
                     </div>
-
+                    
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <div class="custom-card p-8 rounded-[40px] border">
-                            <div class="flex justify-between items-center mb-6">
+                             <div class="flex justify-between mb-6">
                                 <h3 class="text-xs font-black uppercase tracking-widest text-slate-400">Distribuição</h3>
                                 <div class="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
                                     <button onclick="updateDonut('despesa')" id="btn-donut-des" class="px-4 py-1.5 rounded-lg text-[9px] font-black uppercase bg-rose-500 text-white transition-all">Despesas</button>
                                     <button onclick="updateDonut('receita')" id="btn-donut-rec" class="px-4 py-1.5 rounded-lg text-[9px] font-black uppercase text-slate-500 transition-all">Receitas</button>
                                 </div>
                             </div>
-                            <div class="relative h-[250px] flex items-center justify-center">
-                                <canvas id="chart-rosca"></canvas>
-                            </div>
+                            <canvas id="chart-rosca"></canvas>
                         </div>
-
                         <div class="custom-card p-8 rounded-[40px] border">
-                            <div class="flex justify-between items-center mb-6">
-                                <h3 class="text-xs font-black uppercase tracking-widest text-slate-400">Atividades Recentes</h3>
-                                <button onclick="showTab('extrato')" class="text-[9px] font-black uppercase text-sky-500">Ver Tudo</button>
-                            </div>
+                            <h3 class="text-xs font-black uppercase tracking-widest text-slate-400 mb-6">Atividades Recentes</h3>
                             <div id="mini-feed" class="space-y-4"></div>
                         </div>
                     </div>
@@ -114,14 +91,6 @@
 
                 <section id="tab-extrato" class="tab-content">
                     <div id="lista-transacoes" class="space-y-4"></div>
-                </section>
-                
-                <section id="tab-metas" class="tab-content">
-                    <div id="lista-metas" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-                </section>
-                <section id="tab-relatorio" class="tab-content">
-                    <canvas id="chart-barras"></canvas>
-                    <canvas id="chart-linha"></canvas>
                 </section>
             </main>
         </div>
@@ -136,18 +105,38 @@
     </div>
 
     <div id="modal-lancamento" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 z-[300]">
-        <div class="custom-card w-full max-w-md rounded-[35px] p-8 border shadow-2xl">
-            <h3 class="text-lg font-black uppercase italic text-sky-500 mb-6">Novo Lançamento</h3>
+        <div class="custom-card w-full max-w-md rounded-[35px] p-8 border shadow-2xl modal-scroll overflow-y-auto max-h-[90vh]">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-lg font-black uppercase italic text-sky-500">Novo Lançamento</h3>
+                <button onclick="closeModal()" class="text-slate-500"><i data-lucide="x"></i></button>
+            </div>
+            
             <form id="form-transacao" class="space-y-4">
                 <div class="flex gap-2">
                     <button type="button" onclick="setTipo('despesa')" id="btn-tipo-des" class="flex-1 py-3 rounded-xl font-black text-xs uppercase bg-rose-600 text-white">Despesa</button>
                     <button type="button" onclick="setTipo('receita')" id="btn-tipo-rec" class="flex-1 py-3 rounded-xl font-black text-xs uppercase bg-slate-100 dark:bg-slate-800 text-slate-500">Receita</button>
                 </div>
-                <input type="number" id="valor" step="0.01" placeholder="Valor R$" class="w-full p-4 bg-slate-50 dark:bg-black/20 border border-slate-200 rounded-[18px] text-lg font-black outline-none focus:border-sky-500 dark:text-white">
-                <input type="text" id="descricao" placeholder="Descrição" class="w-full p-4 bg-slate-50 dark:bg-black/20 border border-slate-200 rounded-[18px] text-sm outline-none dark:text-white">
-                <input type="date" id="dataVencimento" class="w-full p-4 bg-slate-50 dark:bg-black/20 border border-slate-200 rounded-[18px] text-xs font-bold dark:text-white">
-                <button type="submit" class="w-full py-5 bg-sky-600 text-white rounded-[22px] font-black uppercase text-xs">Confirmar</button>
-                <button type="button" onclick="closeModal()" class="w-full text-slate-400 text-[10px] font-black uppercase mt-2">Cancelar</button>
+
+                <div class="flex bg-slate-100 dark:bg-slate-800/50 p-1 rounded-xl">
+                    <button type="button" onclick="setStatus('efetivada')" id="btn-st-efetivada" class="flex-1 py-2 rounded-lg text-[9px] font-black uppercase bg-sky-500 text-white transition-all">Efetivada</button>
+                    <button type="button" onclick="setStatus('prevista')" id="btn-st-prevista" class="flex-1 py-2 rounded-lg text-[9px] font-black uppercase text-slate-500 transition-all">Prevista</button>
+                </div>
+
+                <input type="number" id="valor" step="0.01" placeholder="Valor R$" class="w-full p-4 bg-slate-50 dark:bg-black/20 border border-slate-200 rounded-[18px] text-lg font-black outline-none focus:border-sky-500 dark:text-white" required>
+                <input type="text" id="descricao" placeholder="Descrição" class="w-full p-4 bg-slate-50 dark:bg-black/20 border border-slate-200 rounded-[18px] text-sm outline-none dark:text-white" required>
+                
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="space-y-1">
+                        <label class="text-[9px] uppercase font-black text-slate-400 ml-1">Lançamento</label>
+                        <input type="date" id="dataLancamento" class="w-full p-3 bg-slate-50 dark:bg-black/20 border border-slate-200 rounded-xl text-xs font-bold dark:text-white">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[9px] uppercase font-black text-slate-400 ml-1">Vencimento</label>
+                        <input type="date" id="dataVencimento" class="w-full p-3 bg-slate-50 dark:bg-black/20 border border-slate-200 rounded-xl text-xs font-bold dark:text-white">
+                    </div>
+                </div>
+
+                <button type="submit" id="btn-salvar" class="w-full py-5 bg-sky-600 text-white rounded-[22px] font-black uppercase text-xs shadow-lg shadow-sky-600/20">Salvar Transação</button>
             </form>
         </div>
     </div>
@@ -171,18 +160,11 @@
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
 
-        let userId, currentTipo = 'despesa', donutChart, transactions = [];
+        let userId, currentTipo = 'despesa', currentStatus = 'efetivada', transactions = [], donutChart;
 
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                userId = user.uid;
-                document.getElementById('login-screen').classList.add('hidden');
-                document.getElementById('main-app').classList.remove('hidden');
-                initData();
-            } else {
-                document.getElementById('main-app').classList.add('hidden');
-                document.getElementById('login-screen').classList.remove('hidden');
-            }
+        onAuthStateChanged(auth, (u) => {
+            if (u) { userId = u.uid; document.getElementById('login-screen').classList.add('hidden'); document.getElementById('main-app').classList.remove('hidden'); initData(); }
+            else { document.getElementById('login-screen').classList.remove('hidden'); document.getElementById('main-app').classList.add('hidden'); }
         });
 
         window.loginGoogle = () => signInWithPopup(auth, provider);
@@ -197,37 +179,39 @@
         }
 
         function updateUI() {
-            let rTotal = 0, dTotal = 0;
-            const now = new Date();
-            const feed = document.getElementById('mini-feed');
-            feed.innerHTML = "";
+            let r=0, d=0; const now = new Date();
+            const feed = document.getElementById('mini-feed'); feed.innerHTML = "";
+            const list = document.getElementById('lista-transacoes'); list.innerHTML = "";
 
             transactions.forEach((t, i) => {
                 const val = t.valor || 0;
-                const tDate = t.date instanceof Timestamp ? t.date.toDate() : new Date(t.date);
+                const date = t.dateVencimento instanceof Timestamp ? t.dateVencimento.toDate() : new Date(t.dateVencimento);
                 
-                if(tDate.getMonth() === now.getMonth() && tDate.getFullYear() === now.getFullYear()) {
-                    t.tipo === 'receita' ? rTotal += val : dTotal += val;
+                if(date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear()) {
+                    t.tipo === 'receita' ? r += val : d += val;
                 }
 
-                if(i < 5) {
-                    feed.innerHTML += `
-                        <div class="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-900/40 rounded-2xl border border-slate-100 dark:border-slate-800">
-                            <div class="flex items-center gap-3">
-                                <div class="p-2 rounded-lg ${t.tipo==='receita'?'bg-emerald-500/10 text-emerald-500':'bg-rose-500/10 text-rose-500'}">
-                                    <i data-lucide="${t.tipo==='receita'?'trending-up':'trending-down'}" class="w-4 h-4"></i>
-                                </div>
-                                <p class="text-[10px] font-black uppercase tracking-tighter">${t.descricao}</p>
+                const itemHtml = `
+                    <div class="flex justify-between items-center p-4 custom-card rounded-2xl border ${t.status === 'prevista' ? 'opacity-60 border-dashed' : ''}">
+                        <div class="flex items-center gap-3">
+                            <div class="p-2 rounded-lg ${t.tipo==='receita'?'bg-emerald-500/10 text-emerald-500':'bg-rose-500/10 text-rose-500'}">
+                                <i data-lucide="${t.status==='prevista'?'clock':'check'}" class="w-4 h-4"></i>
                             </div>
-                            <p class="text-[10px] font-black ${t.tipo==='receita'?'text-emerald-500':'text-rose-500'}">R$ ${val.toLocaleString('pt-BR')}</p>
-                        </div>`;
-                }
+                            <div>
+                                <p class="text-[10px] font-black uppercase">${t.descricao}</p>
+                                <p class="text-[8px] font-bold text-slate-400 uppercase italic">Vence: ${date.toLocaleDateString('pt-BR')}</p>
+                            </div>
+                        </div>
+                        <p class="text-xs font-black ${t.tipo==='receita'?'text-emerald-500':'text-rose-500'}">R$ ${val.toLocaleString('pt-BR')}</p>
+                    </div>`;
+
+                if(i < 5) feed.innerHTML += itemHtml;
+                list.innerHTML += itemHtml;
             });
 
-            document.getElementById('dash-receitas').innerText = `R$ ${rTotal.toLocaleString('pt-BR')}`;
-            document.getElementById('dash-despesas').innerText = `R$ ${dTotal.toLocaleString('pt-BR')}`;
-            document.getElementById('dash-saldo').innerText = `R$ ${(rTotal - dTotal).toLocaleString('pt-BR')}`;
-            
+            document.getElementById('dash-receitas').innerText = `R$ ${r.toLocaleString('pt-BR')}`;
+            document.getElementById('dash-despesas').innerText = `R$ ${d.toLocaleString('pt-BR')}`;
+            document.getElementById('dash-saldo').innerText = `R$ ${(r - d).toLocaleString('pt-BR')}`;
             lucide.createIcons();
             updateDonut('despesa');
         }
@@ -235,56 +219,23 @@
         window.updateDonut = (tipo) => {
             const ctx = document.getElementById('chart-rosca').getContext('2d');
             const dataMap = {};
-            
-            transactions.filter(t => t.tipo === tipo).forEach(t => {
-                const cat = t.categoria || 'Geral';
-                dataMap[cat] = (dataMap[cat] || 0) + t.valor;
-            });
-
-            const labels = Object.keys(dataMap);
-            const values = Object.values(dataMap);
-            const colors = tipo === 'despesa' ? ['#f43f5e', '#fb923c', '#facc15', '#a855f7'] : ['#10b981', '#0ea5e9', '#6366f1'];
-
+            transactions.filter(t => t.tipo === tipo).forEach(t => { const cat = t.categoria || 'Geral'; dataMap[cat] = (dataMap[cat] || 0) + t.valor; });
+            const labels = Object.keys(dataMap); const values = Object.values(dataMap);
             if(donutChart) donutChart.destroy();
             donutChart = new Chart(ctx, {
-                type: 'doughnut',
-                data: { labels, datasets: [{ data: values, backgroundColor: colors, borderWidth: 0, hoverOffset: 10 }]},
-                options: { 
-                    cutout: '75%', 
-                    plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 9, weight: 'bold' }, usePointStyle: true }}} 
-                }
+                type: 'doughnut', data: { labels, datasets: [{ data: values, backgroundColor: tipo==='despesa'?['#f43f5e','#fb923c','#facc15']:['#10b981','#0ea5e9'], borderWidth: 0 }]},
+                options: { cutout: '80%', plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 9, weight: 'bold' }}}}}
             });
-
-            const bD = document.getElementById('btn-donut-des');
-            const bR = document.getElementById('btn-donut-rec');
-            if(tipo === 'despesa') {
-                bD.className = "px-4 py-1.5 rounded-lg text-[9px] font-black uppercase bg-rose-500 text-white";
-                bR.className = "px-4 py-1.5 rounded-lg text-[9px] font-black uppercase text-slate-500";
-            } else {
-                bR.className = "px-4 py-1.5 rounded-lg text-[9px] font-black uppercase bg-emerald-500 text-white";
-                bD.className = "px-4 py-1.5 rounded-lg text-[9px] font-black uppercase text-slate-500";
-            }
+            document.getElementById('btn-donut-des').className = tipo==='despesa' ? "px-4 py-1.5 rounded-lg text-[9px] font-black uppercase bg-rose-500 text-white" : "px-4 py-1.5 rounded-lg text-[9px] font-black uppercase text-slate-500";
+            document.getElementById('btn-donut-rec').className = tipo==='receita' ? "px-4 py-1.5 rounded-lg text-[9px] font-black uppercase bg-emerald-500 text-white" : "px-4 py-1.5 rounded-lg text-[9px] font-black uppercase text-slate-500";
         };
 
-        window.showTab = (id) => {
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.getElementById('tab-' + id).classList.add('active');
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.replace('text-sky-500', 'text-slate-400'));
-            const activeBtn = document.querySelector(`[data-tab="${id}"]`);
-            if(activeBtn) activeBtn.classList.replace('text-slate-400', 'text-sky-500');
+        window.setStatus = (s) => {
+            currentStatus = s;
+            document.getElementById('btn-st-efetivada').className = s==='efetivada' ? "flex-1 py-2 rounded-lg text-[9px] font-black uppercase bg-sky-500 text-white" : "flex-1 py-2 rounded-lg text-[9px] font-black uppercase text-slate-500";
+            document.getElementById('btn-st-prevista').className = s==='prevista' ? "flex-1 py-2 rounded-lg text-[9px] font-black uppercase bg-amber-500 text-white" : "flex-1 py-2 rounded-lg text-[9px] font-black uppercase text-slate-500";
         };
 
-        window.toggleTheme = () => {
-            const isDark = document.documentElement.classList.toggle('dark');
-            localStorage.setItem('theme', isDark ? 'dark' : 'light');
-            document.getElementById('theme-icon').setAttribute('data-lucide', isDark ? 'sun' : 'moon');
-            lucide.createIcons();
-            updateUI();
-        };
-
-        window.openModal = () => document.getElementById('modal-lancamento').classList.remove('hidden');
-        window.closeModal = () => document.getElementById('modal-lancamento').classList.add('hidden');
-        
         window.setTipo = (t) => {
             currentTipo = t;
             document.getElementById('btn-tipo-des').className = t==='despesa' ? "flex-1 py-3 rounded-xl font-black text-xs uppercase bg-rose-600 text-white" : "flex-1 py-3 rounded-xl font-black text-xs uppercase bg-slate-100 dark:bg-slate-800 text-slate-500";
@@ -293,19 +244,41 @@
 
         document.getElementById('form-transacao').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const valor = parseFloat(document.getElementById('valor').value);
-            const descricao = document.getElementById('descricao').value;
-            const dataInput = document.getElementById('dataVencimento').value;
-            if(!valor || !descricao || !dataInput) return alert("Preencha tudo!");
-
-            await addDoc(collection(db, "transactions"), {
-                userId, valor, descricao, tipo: currentTipo,
-                date: Timestamp.fromDate(new Date(dataInput + 'T12:00:00')),
+            const btn = document.getElementById('btn-salvar'); btn.disabled = true; btn.innerText = "Gravando...";
+            
+            const payload = {
+                userId, tipo: currentTipo, status: currentStatus,
+                valor: parseFloat(document.getElementById('valor').value),
+                descricao: document.getElementById('descricao').value,
+                dateLancamento: Timestamp.fromDate(new Date(document.getElementById('dataLancamento').value + 'T12:00:00')),
+                dateVencimento: Timestamp.fromDate(new Date(document.getElementById('dataVencimento').value + 'T12:00:00')),
+                date: Timestamp.fromDate(new Date(document.getElementById('dataVencimento').value + 'T12:00:00')), // Compatibilidade com código anterior
                 createdAt: Timestamp.now(), categoria: 'Geral'
-            });
-            closeModal();
-            e.target.reset();
+            };
+
+            try {
+                await addDoc(collection(db, "transactions"), payload);
+                closeModal();
+                e.target.reset();
+            } catch (err) { alert(err.message); }
+            finally { btn.disabled = false; btn.innerText = "Salvar Transação"; }
         });
+
+        window.showTab = (id) => {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.getElementById('tab-' + id).classList.add('active');
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.replace('text-sky-500', 'text-slate-400'));
+            const active = document.querySelector(`[data-tab="${id}"]`); if(active) active.classList.replace('text-slate-400', 'text-sky-500');
+        };
+
+        window.toggleTheme = () => { const isD = document.documentElement.classList.toggle('dark'); localStorage.setItem('theme', isD?'dark':'light'); updateUI(); };
+        window.openModal = () => {
+            const d = new Date().toISOString().split('T')[0];
+            document.getElementById('dataLancamento').value = d;
+            document.getElementById('dataVencimento').value = d;
+            document.getElementById('modal-lancamento').classList.remove('hidden');
+        };
+        window.closeModal = () => document.getElementById('modal-lancamento').classList.add('hidden');
     </script>
 </body>
 </html>
