@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Drivo & Money v24.8</title>
+    <title>Drivo & Money v24.9</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -33,7 +33,7 @@
                 <div class="p-3 bg-accentSky rounded-xl text-white shadow-lg"><i data-lucide="zap" class="w-6 h-6 fill-current"></i></div>
                 <div>
                     <h1 class="text-2xl font-black uppercase italic tracking-tighter text-accentSky leading-none">Drivo&Money</h1>
-                    <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">v24.8 • Gráfico OK</span>
+                    <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">v24.9 • Completo</span>
                 </div>
             </div>
             <button onclick="handleLogout()" class="p-4 bg-slate-800/50 rounded-xl text-accentRose"><i data-lucide="log-out"></i></button>
@@ -80,15 +80,45 @@
                 </div>
             </section>
 
+            <section id="tab-extrato" class="tab-content space-y-4">
+                <h3 class="text-xs font-black uppercase tracking-widest text-accentSky ml-2">Histórico de Transações</h3>
+                <div id="lista-transacoes-extrato" class="space-y-3 text-left"></div>
+            </section>
+
+            <section id="tab-drivo" class="tab-content space-y-6">
+                <h3 class="text-xs font-black uppercase tracking-widest text-accentAmber ml-2">Drivo Analytics</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="custom-card p-6 border-l-4 border-accentAmber">
+                        <small class="text-[9px] font-black text-slate-500 uppercase">KM Estimados (Mês)</small>
+                        <p id="drivo-km" class="text-3xl font-black mt-2">0 KM</p>
+                    </div>
+                    <div class="custom-card p-6 border-l-4 border-accentSky">
+                        <small class="text-[9px] font-black text-slate-500 uppercase">Custo por KM</small>
+                        <p id="drivo-custo-km" class="text-3xl font-black mt-2">R$ 0,00</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="tab-relatorio" class="tab-content space-y-6">
+                <h3 class="text-xs font-black uppercase tracking-widest text-accentSky ml-2">Relatório Anual</h3>
+                <div class="custom-card p-6 min-h-[400px]">
+                    <canvas id="chart-anual"></canvas>
+                </div>
+            </section>
+
+            <section id="tab-metas" class="tab-content space-y-6">
+                <h3 class="text-xs font-black uppercase tracking-widest text-accentSky ml-2">Meus Objetivos</h3>
+                <div id="lista-metas" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+            </section>
+
             <section id="tab-perfil" class="tab-content space-y-8 text-left">
                 <div class="space-y-4">
                     <h3 class="text-xs font-black uppercase tracking-widest text-accentSky flex items-center gap-2"><i data-lucide="user" class="w-4 h-4"></i> Meu Perfil</h3>
-                    <div class="custom-card p-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="custom-card p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div><label class="text-[9px] font-black text-slate-500 uppercase">Nome</label><input type="text" id="perf-nome" class="input-dark"></div>
                         <div><label class="text-[9px] font-black text-slate-500 uppercase">Cidade</label><input type="text" id="perf-cidade" class="input-dark"></div>
                     </div>
                 </div>
-
                 <div class="space-y-4">
                     <h3 class="text-xs font-black uppercase tracking-widest text-accentAmber flex items-center gap-2"><i data-lucide="gauge" class="w-4 h-4"></i> Meu Veículo</h3>
                     <div class="custom-card p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -98,31 +128,29 @@
                         <div><label class="text-[9px] font-black text-slate-500 uppercase">Gasolina R$</label><input type="number" step="0.01" id="veic-gas" class="input-dark"></div>
                     </div>
                 </div>
-
                 <div class="space-y-4">
                     <div class="flex justify-between items-center px-1">
-                        <h3 class="text-xs font-black uppercase tracking-widest text-accentEmerald flex items-center gap-2">
-                            <i data-lucide="building-2" class="w-4 h-4"></i> Meus Bancos
-                        </h3>
+                        <h3 class="text-xs font-black uppercase tracking-widest text-accentEmerald flex items-center gap-2"><i data-lucide="building-2" class="w-4 h-4"></i> Meus Bancos</h3>
                         <button onclick="openModalBanco()" class="p-2 bg-accentEmerald/10 text-accentEmerald rounded-lg"><i data-lucide="plus-circle" class="w-4 h-4"></i></button>
                     </div>
                     <div id="lista-bancos-perfil" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
                 </div>
-
-                <button onclick="savePerfilSettings()" class="w-full py-5 bg-accentSky text-white font-black uppercase italic tracking-widest rounded-2xl shadow-xl mt-4 mb-10">
-                    Salvar Todas as Configurações
-                </button>
+                <button onclick="savePerfilSettings()" class="w-full py-5 bg-accentSky text-white font-black uppercase italic tracking-widest rounded-2xl shadow-xl">Salvar Tudo</button>
             </section>
         </main>
     </div>
 
     <nav class="fixed bottom-0 left-0 right-0 nav-glass px-6 py-4 flex gap-6 items-center justify-center z-50">
         <button onclick="showTab('dashboard')" class="nav-btn text-accentSky" data-tab="dashboard"><i data-lucide="layout-dashboard"></i></button>
+        <button onclick="showTab('extrato')" class="nav-btn text-slate-500" data-tab="extrato"><i data-lucide="receipt-text"></i></button>
+        <button onclick="showTab('relatorio')" class="nav-btn text-slate-500" data-tab="relatorio"><i data-lucide="bar-chart-3"></i></button>
         <button onclick="openModal()" class="bg-accentSky text-white p-4 rounded-2xl shadow-xl -translate-y-8 active:scale-90 transition-all"><i data-lucide="plus" class="w-6 h-6"></i></button>
+        <button onclick="showTab('drivo')" class="nav-btn text-slate-500" data-tab="drivo"><i data-lucide="gauge"></i></button>
+        <button onclick="showTab('metas')" class="nav-btn text-slate-500" data-tab="metas"><i data-lucide="target"></i></button>
         <button onclick="showTab('perfil')" class="nav-btn text-slate-500" data-tab="perfil"><i data-lucide="user"></i></button>
     </nav>
 
-    <div id="modal-banco" class="hidden fixed inset-0 bg-slate-950/90 backdrop-blur-sm flex items-center justify-center p-4 z-[400]"><div class="custom-card w-full max-w-sm p-8 shadow-2xl"><form id="form-banco" class="space-y-4"><select id="banco-nome-input" class="input-dark"><option value="Carteira">Carteira</option><option value="Inter">Inter</option><option value="Nubank">Nubank</option><option value="Itaú">Itaú</option><option value="Santander">Santander</option><option value="Outros">Outros</option></select><input type="number" id="banco-saldo-input" step="0.01" class="input-dark" placeholder="Saldo Inicial"><button type="submit" class="w-full py-4 bg-emerald-600 text-white rounded-xl font-black uppercase text-xs">Confirmar</button><button type="button" onclick="closeModal()" class="w-full text-slate-500 text-[10px] font-bold mt-2 uppercase">CANCELAR</button></form></div></div>
+    <div id="modal-banco" class="hidden fixed inset-0 bg-slate-950/90 backdrop-blur-sm flex items-center justify-center p-4 z-[400]"><div class="custom-card w-full max-w-sm p-8"><form id="form-banco" class="space-y-4"><select id="banco-nome-input" class="input-dark"><option value="Carteira">Carteira</option><option value="Inter">Inter</option><option value="Nubank">Nubank</option><option value="Itaú">Itaú</option><option value="Santander">Santander</option><option value="Outros">Outros</option></select><input type="number" id="banco-saldo-input" step="0.01" class="input-dark" placeholder="Saldo Inicial"><button type="submit" class="w-full py-4 bg-emerald-600 text-white rounded-xl font-black uppercase text-xs">Confirmar</button><button type="button" onclick="closeModal()" class="w-full text-slate-500 text-[10px] font-bold mt-2 uppercase">CANCELAR</button></form></div></div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -134,21 +162,14 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        let userId, transactions = [], userBancos = [], userCats = [], donutChart;
+        let userId, transactions = [], userBancos = [], donutChart, chartAnualInstance;
         let viewDate = new Date();
         let isYearlyView = false;
         let currentBankIdx = -1;
         let currentDonutType = 'despesa';
         const meses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 
-        const bancoConfigs = {
-            "Carteira": { cor: "#475569", texto: "white" },
-            "Inter": { cor: "#ff7a00", texto: "white" },
-            "Nubank": { cor: "#8a05be", texto: "white" },
-            "Itaú": { cor: "#ec7000", texto: "white" },
-            "Santander": { cor: "#cc0000", texto: "white" },
-            "Outros": { cor: "#1e293b", texto: "white" }
-        };
+        const bancoConfigs = { "Carteira": { cor: "#475569", texto: "white" }, "Inter": { cor: "#ff7a00", texto: "white" }, "Nubank": { cor: "#8a05be", texto: "white" }, "Itaú": { cor: "#ec7000", texto: "white" }, "Santander": { cor: "#cc0000", texto: "white" }, "Outros": { cor: "#1e293b", texto: "white" } };
 
         onAuthStateChanged(auth, async (u) => { 
             if (u) { 
@@ -159,17 +180,15 @@
         });
 
         async function checkDefaultBank() {
-            const q = query(collection(db, "banks"), where("userId", "==", userId));
-            const snap = await getDocs(q);
-            if (snap.empty) {
-                await addDoc(collection(db, "banks"), { userId, nome: "Carteira", saldoInicial: 0, createdAt: Timestamp.now() });
-            }
+            const snap = await getDocs(query(collection(db, "banks"), where("userId", "==", userId)));
+            if (snap.empty) await addDoc(collection(db, "banks"), { userId, nome: "Carteira", saldoInicial: 0, createdAt: Timestamp.now() });
         }
 
         function initData() {
             onSnapshot(query(collection(db, "transactions"), where("userId", "==", userId)), (snap) => {
                 transactions = snap.docs.map(d => ({id: d.id, ...d.data()}));
                 updateUI();
+                updateYearlyChart();
             });
             onSnapshot(query(collection(db, "banks"), where("userId", "==", userId)), (snap) => {
                 userBancos = snap.docs.map(d => ({id: d.id, ...d.data()}));
@@ -182,116 +201,77 @@
         }
 
         function loadPerfilData(data) {
-            document.getElementById('perf-nome').value = data.nome || "";
-            document.getElementById('perf-cidade').value = data.cidade || "";
-            document.getElementById('veic-marca').value = data.veiculoMarca || "";
-            document.getElementById('veic-modelo').value = data.veiculoModelo || "";
-            document.getElementById('veic-consumo').value = data.consumo || 0;
-            document.getElementById('veic-gas').value = data.precoGasolina || 0;
+            if(document.getElementById('perf-nome')) document.getElementById('perf-nome').value = data.nome || "";
+            if(document.getElementById('perf-cidade')) document.getElementById('perf-cidade').value = data.cidade || "";
+            if(document.getElementById('veic-marca')) document.getElementById('veic-marca').value = data.veiculoMarca || "";
+            if(document.getElementById('veic-modelo')) document.getElementById('veic-modelo').value = data.veiculoModelo || "";
+            if(document.getElementById('veic-consumo')) document.getElementById('veic-consumo').value = data.consumo || 0;
+            if(document.getElementById('veic-gas')) document.getElementById('veic-gas').value = data.precoGasolina || 0;
         }
 
         function renderBancosPerfil() {
             const container = document.getElementById('lista-bancos-perfil');
             if(!container) return;
-            container.innerHTML = userBancos.map(b => `
-                <div class="p-4 bg-slate-900/40 border border-white/5 rounded-2xl flex justify-between items-center">
-                    <div>
-                        <p class="text-[10px] font-black uppercase text-slate-500">${b.nome}</p>
-                        <p class="text-sm font-black italic">R$ ${b.saldoInicial.toLocaleString('pt-BR')}</p>
-                    </div>
-                    <button onclick="deleteBanco('${b.id}')" class="text-accentRose p-2"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                </div>
-            `).join('');
+            container.innerHTML = userBancos.map(b => `<div class="p-4 bg-slate-900/40 border border-white/5 rounded-2xl flex justify-between items-center"><div><p class="text-[10px] font-black uppercase text-slate-500">${b.nome}</p><p class="text-sm font-black italic">R$ ${b.saldoInicial.toLocaleString('pt-BR')}</p></div><button onclick="deleteBanco('${b.id}')" class="text-accentRose p-2"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>`).join('');
             lucide.createIcons();
         }
 
-        // --- LÓGICA DO GRÁFICO (RAIO-X) ---
         window.updateDonut = (tipo) => {
             currentDonutType = tipo;
             const canvas = document.getElementById('chart-rosca');
             if(!canvas) return;
-
-            // Estética dos botões
             document.getElementById('btn-donut-des').className = tipo === 'despesa' ? "px-3 py-1.5 rounded-lg text-[9px] font-black bg-accentRose text-white" : "px-3 py-1.5 rounded-lg text-[9px] font-black text-slate-500";
             document.getElementById('btn-donut-rec').className = tipo === 'receita' ? "px-3 py-1.5 rounded-lg text-[9px] font-black bg-accentEmerald text-white" : "px-3 py-1.5 rounded-lg text-[9px] font-black text-slate-500";
-
             const filtered = transactions.filter(t => {
                 const dV = t.dateVencimento instanceof Timestamp ? t.dateVencimento.toDate() : new Date(t.dateVencimento);
-                const matchDate = isYearlyView ? dV.getFullYear() === viewDate.getFullYear() : (dV.getMonth() === viewDate.getMonth() && dV.getFullYear() === viewDate.getFullYear());
-                return t.tipo === tipo && matchDate;
+                return t.tipo === tipo && (isYearlyView ? dV.getFullYear() === viewDate.getFullYear() : (dV.getMonth() === viewDate.getMonth() && dV.getFullYear() === viewDate.getFullYear()));
             });
-
             const agrupado = {};
-            filtered.forEach(t => {
-                const cat = t.categoria || "Sem Categoria";
-                agrupado[cat] = (agrupado[cat] || 0) + t.valor;
-            });
-
-            const labels = Object.keys(agrupado);
-            const data = Object.values(agrupado);
-            const colors = tipo === 'despesa' ? ['#f43f5e', '#fb7185', '#fda4af', '#fecdd3'] : ['#10b981', '#34d399', '#6ee7b7', '#a7f3d0'];
-
+            filtered.forEach(t => { agrupado[t.categoria || "Outros"] = (agrupado[t.categoria || "Outros"] || 0) + t.valor; });
             if (donutChart) donutChart.destroy();
-            donutChart = new Chart(canvas, {
-                type: 'doughnut',
-                data: {
-                    labels,
-                    datasets: [{ data, backgroundColor: colors, borderWidth: 0, hoverOffset: 10 }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 10, weight: 'bold' }, padding: 20 } } },
-                    cutout: '70%'
+            donutChart = new Chart(canvas, { type: 'doughnut', data: { labels: Object.keys(agrupado), datasets: [{ data: Object.values(agrupado), backgroundColor: tipo === 'despesa' ? ['#f43f5e', '#fb7185', '#fda4af'] : ['#10b981', '#34d399', '#6ee7b7'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 10, weight: 'bold' } } } }, cutout: '70%' } });
+        };
+
+        function updateYearlyChart() {
+            const canvas = document.getElementById('chart-anual');
+            if(!canvas) return;
+            const dataRec = Array(12).fill(0), dataDes = Array(12).fill(0);
+            transactions.forEach(t => {
+                const dV = t.dateVencimento instanceof Timestamp ? t.dateVencimento.toDate() : new Date(t.dateVencimento);
+                if(dV.getFullYear() === viewDate.getFullYear()) {
+                    if(t.tipo === 'receita') dataRec[dV.getMonth()] += t.valor; else dataDes[dV.getMonth()] += t.valor;
                 }
             });
-        };
+            if(chartAnualInstance) chartAnualInstance.destroy();
+            chartAnualInstance = new Chart(canvas, { type: 'bar', data: { labels: meses.map(m => m.substring(0,3)), datasets: [{ label: 'Receitas', data: dataRec, backgroundColor: '#10b981' }, { label: 'Despesas', data: dataDes, backgroundColor: '#f43f5e' }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b' } }, x: { grid: { display: false }, ticks: { color: '#64748b' } } }, plugins: { legend: { display: false } } } });
+        }
 
         window.updateUI = () => {
             const sIniTotal = userBancos.reduce((acc, b) => acc + (b.saldoInicial || 0), 0);
             const sTransTotal = transactions.filter(t => t.status === 'efetivada').reduce((acc, t) => t.tipo === 'receita' ? acc + t.valor : acc - t.valor, 0);
             const consolidado = sIniTotal + sTransTotal;
-
-            const display = document.getElementById('dash-saldo');
-            const label = document.getElementById('bank-label');
-            const card = document.getElementById('card-saldo-main');
-
-            if (currentBankIdx === -1) {
-                label.innerText = "Saldo Consolidado";
-                display.innerText = `R$ ${consolidado.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-                card.style.background = "linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%)";
-            } else {
-                const b = userBancos[currentBankIdx];
-                const conf = bancoConfigs[b.nome] || bancoConfigs["Outros"];
-                const sTransBanco = transactions.filter(t => t.status === 'efetivada' && t.banco === b.nome).reduce((acc, t) => t.tipo === 'receita' ? acc + t.valor : acc - t.valor, 0);
-                display.innerText = `R$ ${(b.saldoInicial + sTransBanco).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-                label.innerText = `Saldo ${b.nome}`;
-                card.style.background = conf.cor;
-            }
-
+            document.getElementById('dash-saldo').innerText = `R$ ${consolidado.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
             document.getElementById('display-periodo').innerText = isYearlyView ? viewDate.getFullYear() : `${meses[viewDate.getMonth()]} ${viewDate.getFullYear()}`;
+            
+            // Drivo KM (Exemplo simples baseado em gastos de combustível)
+            const gasTotal = transactions.filter(t => t.categoria === 'Combustível').reduce((acc, t) => acc + t.valor, 0);
+            const consumo = parseFloat(document.getElementById('veic-consumo')?.value || 29);
+            const preco = parseFloat(document.getElementById('veic-gas')?.value || 6);
+            if(document.getElementById('drivo-km')) document.getElementById('drivo-km').innerText = `${Math.round((gasTotal / preco) * consumo)} KM`;
+
             updateDonut(currentDonutType);
             lucide.createIcons();
         };
 
         window.cycleBankDisplay = () => { currentBankIdx++; if (currentBankIdx >= userBancos.length) currentBankIdx = -1; updateUI(); };
         window.showTab = (id) => { document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active')); document.getElementById('tab-' + id).classList.add('active'); lucide.createIcons(); };
-        window.savePerfilSettings = async () => {
-            await setDoc(doc(db, "users", userId), {
-                nome: document.getElementById('perf-nome').value,
-                cidade: document.getElementById('perf-cidade').value,
-                veiculoMarca: document.getElementById('veic-marca').value,
-                veiculoModelo: document.getElementById('veic-modelo').value,
-                consumo: parseFloat(document.getElementById('veic-consumo').value),
-                precoGasolina: parseFloat(document.getElementById('veic-gas').value)
-            }, { merge: true });
-            alert("Salvo!");
-        };
+        window.savePerfilSettings = async () => { await setDoc(doc(db, "users", userId), { nome: document.getElementById('perf-nome').value, cidade: document.getElementById('perf-cidade').value, veiculoMarca: document.getElementById('veic-marca').value, veiculoModelo: document.getElementById('veic-modelo').value, consumo: parseFloat(document.getElementById('veic-consumo').value), precoGasolina: parseFloat(document.getElementById('veic-gas').value) }, { merge: true }); alert("Salvo!"); };
         window.handleLogout = () => signOut(auth).then(() => location.reload());
         window.changeMonth = (d) => { isYearlyView = false; viewDate.setMonth(viewDate.getMonth() + d); updateUI(); };
         window.toggleYearlyView = () => { isYearlyView = !isYearlyView; updateUI(); };
-        window.closeModal = () => document.getElementById('modal-banco').classList.add('hidden');
         window.openModalBanco = () => document.getElementById('modal-banco').classList.remove('hidden');
+        window.closeModal = () => document.getElementById('modal-banco').classList.add('hidden');
+        window.deleteBanco = async (id) => { if(confirm("Excluir?")) await deleteDoc(doc(db, "banks", id)); };
     </script>
 </body>
 </html>
