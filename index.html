@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Drivo & Money v23.8</title>
+    <title>Drivo & Money v23.9</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -33,7 +33,7 @@
                 <div class="p-3 bg-accentSky rounded-xl text-white shadow-lg"><i data-lucide="zap" class="w-6 h-6 fill-current"></i></div>
                 <div>
                     <h1 class="text-2xl font-black uppercase italic tracking-tighter text-accentSky leading-none">Drivo&Money</h1>
-                    <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">v23.7 • Metas Ativas</span>
+                    <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">v23.9 • Lixeira na Lista</span>
                 </div>
             </div>
             <button onclick="handleLogout()" class="p-4 bg-slate-800/50 rounded-xl text-accentRose"><i data-lucide="log-out"></i></button>
@@ -305,8 +305,18 @@
             document.getElementById('btn-donut-rec').className = tipo==='receita' ? "px-3 py-1.5 rounded-lg text-[9px] font-black bg-accentEmerald text-white" : "px-3 py-1.5 rounded-lg text-[9px] font-black text-slate-500";
         };
 
-        window.closeModal = () => document.getElementById('modal-lancamento').classList.add('hidden');
-        window.setTipo = (t) => { currentTipo = t; updateCatSelect(); };
+        window.closeModal = () => {
+            document.getElementById('modal-lancamento').classList.add('hidden');
+            document.getElementById('modal-meta').classList.add('hidden');
+        };
+
+        window.setTipo = (t) => { 
+            currentTipo = t; 
+            updateCatSelect(); 
+            document.getElementById('btn-tipo-des').className = t === 'despesa' ? "flex-1 py-3 rounded-xl font-black text-[10px] uppercase bg-accentRose text-white" : "flex-1 py-3 rounded-xl font-black text-[10px] uppercase bg-slate-800 text-slate-500";
+            document.getElementById('btn-tipo-rec').className = t === 'receita' ? "flex-1 py-3 rounded-xl font-black text-[10px] uppercase bg-accentEmerald text-white" : "flex-1 py-3 rounded-xl font-black text-[10px] uppercase bg-slate-800 text-slate-500";
+        };
+
         window.setStatus = (s) => { currentStatus = s; 
             document.getElementById('btn-st-efetivada').className = s==='efetivada' ? "flex-1 py-2 rounded-lg text-[9px] font-black uppercase bg-accentSky text-white" : "flex-1 py-2 rounded-lg text-[9px] font-black uppercase text-slate-500";
             document.getElementById('btn-st-prevista').className = s==='prevista' ? "flex-1 py-2 rounded-lg text-[9px] font-black uppercase bg-accentAmber text-white" : "flex-1 py-2 rounded-lg text-[9px] font-black uppercase text-slate-500";
