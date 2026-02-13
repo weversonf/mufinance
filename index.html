@@ -4,123 +4,139 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Drivo & Money</title>
-    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    
     <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: { darkBg: '#020617', darkCard: '#0f172a', lightBg: '#f8fafc' }
-                }
-            }
-        }
+        tailwind.config = { darkMode: 'class', theme: { extend: { colors: { darkBg: '#020617', darkCard: '#0f172a', lightBg: '#f8fafc' } } } }
     </script>
-
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap');
         body { font-family: 'Inter', sans-serif; transition: background-color 0.3s; overflow-x: hidden; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-        .select-none { user-select: none; -webkit-user-select: none; }
-        .modal-scroll::-webkit-scrollbar { width: 4px; }
-        .modal-scroll::-webkit-scrollbar-thumb { background: #0ea5e9; border-radius: 10px; }
+        .hidden { display: none !important; }
+        input[type="number"]::-webkit-inner-spin-button { display: none; }
     </style>
 </head>
-<body class="light select-none min-h-screen bg-lightBg text-slate-900 dark:bg-darkBg dark:text-white antialiased">
+<body class="light dark min-h-screen bg-lightBg text-slate-900 dark:bg-darkBg dark:text-white antialiased">
 
-    <div id="app" class="max-w-6xl mx-auto p-4 md:p-8">
-        
-        <header class="flex justify-between items-center mb-8 bg-white dark:bg-slate-900/40 p-4 rounded-[25px] border border-slate-200 dark:border-slate-800 shadow-sm">
-            <div class="flex items-center gap-3">
-                <div class="p-2 bg-sky-500 rounded-lg text-white"><i data-lucide="bolt"></i></div>
-                <h1 class="text-xl font-black uppercase italic tracking-tighter text-sky-500">Drivo&Money</h1>
+    <div id="login-screen" class="fixed inset-0 z-[200] bg-slate-950 flex items-center justify-center p-6">
+        <div class="w-full max-w-sm text-center">
+            <div class="inline-flex p-4 bg-sky-500 rounded-3xl text-white mb-6 shadow-xl shadow-sky-500/20">
+                <i data-lucide="bolt" class="w-10 h-10"></i>
             </div>
+            <h1 class="text-3xl font-black uppercase italic tracking-tighter text-sky-500 mb-2">Drivo&Money</h1>
+            <p class="text-slate-400 text-sm mb-8 font-medium">Finanças e Moto no comando.</p>
             
-            <div class="flex items-center gap-2">
-                <button onclick="toggleTheme()" class="p-3 bg-slate-100 dark:bg-slate-800 rounded-2xl text-slate-600 dark:text-yellow-400">
-                    <i id="theme-icon" data-lucide="sun"></i>
-                </button>
-                <button onclick="handleLogout()" class="p-3 bg-slate-100 dark:bg-slate-800/50 rounded-2xl text-rose-500">
-                    <i data-lucide="log-out"></i>
-                </button>
-            </div>
-        </header>
-
-        <main class="pb-24">
-            <section id="tab-dashboard" class="tab-content active">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                    <div class="bg-white dark:bg-darkCard p-6 rounded-[35px] border border-slate-200 dark:border-slate-800 shadow-sm">
-                        <div class="flex items-center gap-3 mb-2">
-                            <div class="p-2 bg-emerald-500/10 text-emerald-500 rounded-xl"><i data-lucide="arrow-up-circle"></i></div>
-                            <span class="text-[10px] font-black uppercase text-slate-400">Receitas</span>
-                        </div>
-                        <p class="text-2xl font-black text-emerald-500" id="dash-receitas">R$ 0,00</p>
-                    </div>
-                    <div class="bg-white dark:bg-darkCard p-6 rounded-[35px] border border-slate-200 dark:border-slate-800 shadow-sm">
-                        <div class="flex items-center gap-3 mb-2">
-                            <div class="p-2 bg-rose-500/10 text-rose-500 rounded-xl"><i data-lucide="arrow-down-circle"></i></div>
-                            <span class="text-[10px] font-black uppercase text-slate-400">Despesas</span>
-                        </div>
-                        <p class="text-2xl font-black text-rose-500" id="dash-despesas">R$ 0,00</p>
-                    </div>
-                    <div class="bg-sky-500 p-6 rounded-[35px] shadow-xl shadow-sky-500/20">
-                        <div class="flex items-center gap-3 mb-2">
-                            <div class="p-2 bg-white/20 text-white rounded-xl"><i data-lucide="check"></i></div>
-                            <span class="text-[10px] font-black uppercase text-white/60">Saldo Atual</span>
-                        </div>
-                        <p class="text-2xl font-black text-white" id="dash-saldo">R$ 0,00</p>
-                    </div>
-                </div>
-            </section>
-
-            <section id="tab-extrato" class="tab-content">
-                <div class="flex flex-col md:flex-row items-center justify-between mb-8 gap-4">
-                    <h2 class="text-lg font-black uppercase italic text-sky-500">Histórico</h2>
-                    <div class="flex items-center gap-4 bg-white dark:bg-slate-900/40 px-4 py-2 rounded-2xl border border-slate-200 dark:border-slate-800">
-                        <button onclick="changeMonth(-1)" class="p-1"><i data-lucide="chevron-left" class="text-sky-500"></i></button>
-                        <span id="display-periodo" class="text-xs font-black uppercase min-w-[100px] text-center">Fev 2026</span>
-                        <button onclick="changeMonth(1)" class="p-1"><i data-lucide="chevron-right" class="text-sky-500"></i></button>
-                    </div>
-                </div>
-                <div id="lista-transacoes" class="space-y-4"></div>
-            </section>
-        </main>
+            <button onclick="loginGoogle()" class="w-full py-4 bg-white text-slate-900 rounded-2xl font-bold flex items-center justify-center gap-3 shadow-lg hover:bg-slate-100 transition-all active:scale-95 mb-4">
+                <i data-lucide="log-in" class="w-5 h-5"></i> Entrar com Google
+            </button>
+            <button onclick="showAuthTab('registro')" class="w-full py-4 bg-slate-900 text-slate-400 rounded-2xl font-bold border border-slate-800 hover:text-white transition-all">
+                Criar conta por E-mail
+            </button>
+        </div>
     </div>
 
-    <nav class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-slate-200 dark:border-slate-800 px-6 py-3 rounded-[30px] flex gap-8 items-center shadow-2xl z-50">
-        <button onclick="showTab('dashboard')" class="nav-btn text-sky-500" data-tab="dashboard"><i data-lucide="layout-dashboard"></i></button>
-        <button onclick="showTab('extrato')" class="nav-btn text-slate-400" data-tab="extrato"><i data-lucide="receipt-text"></i></button>
-        <button onclick="openModal()" class="bg-sky-500 text-white p-3 rounded-2xl shadow-lg -translate-y-2 active:scale-90 transition-all"><i data-lucide="plus"></i></button>
-        <button onclick="showTab('moto')" class="nav-btn text-slate-400" data-tab="moto"><i data-lucide="motorcycle"></i></button>
-        <button onclick="showTab('perfil')" class="nav-btn text-slate-400" data-tab="perfil"><i data-lucide="user"></i></button>
-    </nav>
+    <div id="register-screen" class="hidden fixed inset-0 z-[210] bg-slate-950 text-white flex flex-col justify-center p-6 overflow-y-auto">
+        <button onclick="showAuthTab('login')" class="fixed top-8 left-6 text-slate-500 flex items-center gap-2 text-xs uppercase font-bold tracking-widest hover:text-white transition-colors">
+            <i data-lucide="chevron-left" class="w-4 h-4"></i> Voltar
+        </button>
 
-    <div id="modal-lancamento" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 z-[100]">
-        <div class="bg-white dark:bg-[#0f172a] w-full max-w-md rounded-[35px] p-8 border border-slate-200 dark:border-slate-800 shadow-2xl modal-scroll overflow-y-auto max-h-[90vh]">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-lg font-black uppercase italic text-sky-500">Lançamento</h3>
-                <button onclick="closeModal()" class="p-2 bg-slate-100 dark:bg-slate-800 rounded-xl"><i data-lucide="x"></i></button>
-            </div>
-            <form id="form-transacao" class="space-y-4">
-                <div class="flex gap-2">
-                    <button type="button" onclick="setTipo('despesa')" id="btn-tipo-despesa" class="flex-1 py-3 rounded-xl font-black text-xs uppercase bg-rose-600 text-white">Despesa</button>
-                    <button type="button" onclick="setTipo('receita')" id="btn-tipo-receita" class="flex-1 py-3 rounded-xl font-black text-xs uppercase bg-slate-100 dark:bg-slate-800 text-slate-500">Receita</button>
+        <div class="flex flex-col items-center mb-10 mt-12">
+            <h1 class="text-3xl font-black tracking-tighter uppercase italic text-sky-500">Recrutamento</h1>
+            <p class="text-slate-500 text-[10px] font-bold tracking-[0.3em] uppercase mt-2 text-center">Crie seu perfil de elite no Mucuripe</p>
+        </div>
+
+        <div class="w-full max-w-md mx-auto bg-slate-900/40 p-8 rounded-[2.5rem] border border-slate-800/50 backdrop-blur-sm shadow-2xl">
+            <form id="form-registro" class="space-y-5">
+                <div class="space-y-1">
+                    <label class="text-[9px] uppercase font-bold text-slate-500 ml-1 tracking-widest">Username</label>
+                    <div class="relative">
+                        <i data-lucide="user" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600 w-4 h-4"></i>
+                        <input type="text" id="reg-username" placeholder="@capitao_nemo" class="w-full p-4 pl-12 bg-slate-950 border border-slate-800 rounded-2xl outline-none focus:border-sky-500 text-sm font-medium text-white" required>
+                    </div>
                 </div>
-                <input type="number" id="valor" step="0.01" placeholder="Valor R$" class="w-full p-4 bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-slate-800 rounded-[18px] text-lg font-black outline-none focus:border-sky-500">
-                <input type="text" id="descricao" placeholder="Descrição" class="w-full p-4 bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-slate-800 rounded-[18px] text-sm outline-none focus:border-sky-500">
-                <input type="date" id="dataVencimento" class="w-full p-4 bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-slate-800 rounded-[18px] text-xs font-bold">
-                <button type="submit" id="btn-salvar" class="w-full py-5 rounded-[22px] font-black uppercase text-xs text-white bg-sky-600 shadow-lg">Confirmar</button>
+
+                <div class="space-y-1">
+                    <label class="text-[9px] uppercase font-bold text-slate-500 ml-1 tracking-widest">E-mail</label>
+                    <div class="relative">
+                        <i data-lucide="mail" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600 w-4 h-4"></i>
+                        <input type="email" id="reg-email" placeholder="seu@email.com" class="w-full p-4 pl-12 bg-slate-950 border border-slate-800 rounded-2xl outline-none focus:border-sky-500 text-sm font-medium text-white" required>
+                    </div>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-[9px] uppercase font-bold text-slate-500 ml-1 tracking-widest">Renda Fixa Mensal</label>
+                    <div class="relative">
+                        <i data-lucide="dollar-sign" class="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-500 w-4 h-4"></i>
+                        <input type="number" id="reg-receita" placeholder="0,00" class="w-full p-4 pl-12 bg-slate-950 border border-slate-800 rounded-2xl outline-none focus:border-emerald-500 text-lg font-bold text-white" required>
+                    </div>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-[9px] uppercase font-bold text-slate-500 ml-1 tracking-widest">Senha</label>
+                    <div class="relative">
+                        <i data-lucide="lock" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600 w-4 h-4"></i>
+                        <input type="password" id="reg-pass" placeholder="••••••••" class="w-full p-4 pl-12 bg-slate-950 border border-slate-800 rounded-2xl outline-none focus:border-sky-500 text-sm font-medium text-white" required>
+                    </div>
+                </div>
+
+                <button type="submit" id="btn-finalizar-reg" class="w-full bg-white text-slate-950 font-black py-5 rounded-2xl shadow-xl active:scale-95 transition-all text-xs uppercase tracking-widest flex items-center justify-center gap-2">
+                    Finalizar Registro <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </button>
             </form>
         </div>
     </div>
 
+    <div id="main-app" class="hidden">
+        <div class="max-w-6xl mx-auto p-4 md:p-8">
+            <header class="flex justify-between items-center mb-8 bg-white dark:bg-slate-900/40 p-4 rounded-[25px] border border-slate-200 dark:border-slate-800 shadow-sm">
+                <div class="flex items-center gap-3">
+                    <div class="p-2 bg-sky-500 rounded-lg text-white"><i data-lucide="bolt"></i></div>
+                    <h1 class="text-xl font-black uppercase italic tracking-tighter text-sky-500">Drivo&Money</h1>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="toggleTheme()" class="p-3 bg-slate-100 dark:bg-slate-800 rounded-2xl text-slate-600 dark:text-yellow-400"><i id="theme-icon" data-lucide="sun"></i></button>
+                    <button onclick="handleLogout()" class="p-3 bg-slate-100 dark:bg-slate-800/50 rounded-2xl text-rose-500"><i data-lucide="log-out"></i></button>
+                </div>
+            </header>
+
+            <main class="pb-24">
+                <section id="tab-dashboard" class="tab-content active">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                        <div class="bg-white dark:bg-darkCard p-6 rounded-[35px] border border-slate-200 dark:border-slate-800">
+                            <small class="text-[10px] font-black uppercase text-slate-400">Receitas</small>
+                            <p class="text-2xl font-black text-emerald-500" id="dash-receitas">R$ 0,00</p>
+                        </div>
+                        <div class="bg-white dark:bg-darkCard p-6 rounded-[35px] border border-slate-200 dark:border-slate-800">
+                            <small class="text-[10px] font-black uppercase text-slate-400">Despesas</small>
+                            <p class="text-2xl font-black text-rose-500" id="dash-despesas">R$ 0,00</p>
+                        </div>
+                        <div class="bg-sky-500 p-6 rounded-[35px] shadow-xl text-white">
+                            <small class="text-[10px] font-black uppercase opacity-60">Saldo Atual</small>
+                            <p class="text-2xl font-black" id="dash-saldo">R$ 0,00</p>
+                        </div>
+                    </div>
+                </section>
+                <section id="tab-extrato" class="tab-content">
+                    <div id="lista-transacoes" class="space-y-4"></div>
+                </section>
+            </main>
+        </div>
+
+        <nav class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-slate-200 dark:border-slate-800 px-6 py-3 rounded-[30px] flex gap-8 items-center shadow-2xl z-50">
+            <button onclick="showTab('dashboard')" class="nav-btn text-sky-500" data-tab="dashboard"><i data-lucide="layout-dashboard"></i></button>
+            <button onclick="showTab('extrato')" class="nav-btn text-slate-400" data-tab="extrato"><i data-lucide="receipt-text"></i></button>
+            <button onclick="openModal()" class="bg-sky-500 text-white p-3 rounded-2xl shadow-lg -translate-y-2"><i data-lucide="plus"></i></button>
+            <button class="text-slate-400"><i data-lucide="motorcycle"></i></button>
+            <button class="text-slate-400"><i data-lucide="user"></i></button>
+        </nav>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, where, orderBy, Timestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, where, orderBy, Timestamp, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyArWGgDx0uxce8w72J_1UpKPCUJGvHs3fI",
@@ -134,126 +150,110 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
-
-        let currentTipo = 'despesa';
-        let userId = null;
+        const provider = new GoogleAuthProvider();
 
         lucide.createIcons();
 
-        // Monitorar Autenticação
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                userId = user.uid;
-                loadData();
+        // NAVEGAÇÃO AUTH
+        window.showAuthTab = (tab) => {
+            if(tab === 'registro') {
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('register-screen').classList.remove('hidden');
             } else {
-                console.log("Usuário não autenticado.");
-                // Aqui você pode redirecionar para uma página de login se quiser
+                document.getElementById('register-screen').classList.add('hidden');
+                document.getElementById('login-screen').classList.remove('hidden');
             }
-        });
+        };
 
-        // Salvar dados no Firestore
-        document.getElementById('form-transacao').addEventListener('submit', async (e) => {
+        // REGISTRO COM E-MAIL (RECRUTAMENTO)
+        document.getElementById('form-registro').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const valor = parseFloat(document.getElementById('valor').value);
-            const descricao = document.getElementById('descricao').value;
-            const dataInput = document.getElementById('dataVencimento').value;
+            const email = document.getElementById('reg-email').value;
+            const pass = document.getElementById('reg-pass').value;
+            const userN = document.getElementById('reg-username').value;
+            const rec = document.getElementById('reg-receita').value;
+            const btn = document.getElementById('btn-finalizar-reg');
 
-            if (!valor || !descricao || !dataInput || !userId) return alert("Preencha todos os campos!");
-
-            const btn = document.getElementById('btn-salvar');
-            btn.disabled = true; btn.innerText = "Salvando...";
+            btn.disabled = true; btn.innerText = "PROCESSANDO...";
 
             try {
-                await addDoc(collection(db, "transactions"), {
-                    userId: userId,
-                    valor: valor,
-                    descricao: descricao,
-                    tipo: currentTipo,
-                    date: Timestamp.fromDate(new Date(dataInput + 'T12:00:00')),
+                const cred = await createUserWithEmailAndPassword(auth, email, pass);
+                await setDoc(doc(db, "users", cred.user.uid), {
+                    username: userN.toLowerCase().replace('@', '').replace(/\s/g, ''),
+                    email: email,
+                    receitaFixa: Number(rec),
+                    cidadeBase: "Fortaleza",
+                    motoConsumo: 29,
                     createdAt: Timestamp.now()
                 });
-                closeModal();
-                document.getElementById('form-transacao').reset();
+                document.getElementById('register-screen').classList.add('hidden');
             } catch (err) {
-                alert("Erro ao salvar: " + err.message);
+                alert("Erro: " + err.message);
             } finally {
-                btn.disabled = false; btn.innerText = "Confirmar";
+                btn.disabled = false; btn.innerText = "Finalizar Registro";
             }
         });
 
-        // Carregar dados em tempo real
-        function loadData() {
-            const q = query(collection(db, "transactions"), where("userId", "==", userId), orderBy("date", "desc"));
+        // LOGIN GOOGLE
+        window.loginGoogle = async () => {
+            try { await signInWithPopup(auth, provider); } catch (err) { alert(err.message); }
+        };
+
+        // MONITORAR LOGIN
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('register-screen').classList.add('hidden');
+                document.getElementById('main-app').classList.remove('hidden');
+                loadData(user.uid);
+            } else {
+                document.getElementById('main-app').classList.add('hidden');
+                document.getElementById('login-screen').classList.remove('hidden');
+            }
+        });
+
+        window.handleLogout = () => signOut(auth);
+
+        function loadData(uid) {
+            const q = query(collection(db, "transactions"), where("userId", "==", uid), orderBy("date", "desc"));
             onSnapshot(q, (snapshot) => {
-                const transactions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                render(transactions);
+                const txs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                render(txs);
             });
         }
 
-        function render(transactions) {
+        function render(txs) {
             const feed = document.getElementById('lista-transacoes');
-            feed.innerHTML = "";
-            let receitas = 0, despesas = 0;
-
-            transactions.forEach(t => {
-                const val = t.valor || 0;
-                if(t.tipo === 'receita') receitas += val; else despesas += val;
-
+            feed.innerHTML = txs.length ? "" : "<p class='text-center opacity-30 py-10 uppercase text-[10px] font-black'>Nenhum Registro</p>";
+            let r = 0, d = 0;
+            txs.forEach(t => {
+                const v = t.valor || 0;
+                t.tipo === 'receita' ? r += v : d += v;
                 feed.innerHTML += `
-                    <div class="flex justify-between items-center p-5 bg-white dark:bg-slate-900/40 rounded-[25px] border border-slate-200 dark:border-slate-800">
-                        <div class="flex items-center gap-4">
-                            <div class="p-3 rounded-xl ${t.tipo === 'receita' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}">
+                    <div class="flex justify-between items-center p-4 bg-white dark:bg-slate-900/40 rounded-[20px] border border-slate-200 dark:border-slate-800">
+                        <div class="flex items-center gap-3">
+                            <div class="p-2 rounded-lg ${t.tipo === 'receita' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}">
                                 <i data-lucide="${t.tipo === 'receita' ? 'arrow-up-circle' : 'arrow-down-circle'}"></i>
                             </div>
-                            <div>
-                                <p class="text-sm font-black">${t.descricao}</p>
-                                <p class="text-[9px] uppercase opacity-40">Geral</p>
-                            </div>
+                            <p class="text-xs font-black">${t.descricao}</p>
                         </div>
-                        <p class="text-sm font-black ${t.tipo === 'receita' ? 'text-emerald-500' : 'text-rose-500'}">
-                            R$ ${val.toLocaleString('pt-BR', {minimumFractionDigits:2})}
-                        </p>
-                    </div>
-                `;
+                        <p class="text-xs font-black ${t.tipo === 'receita' ? 'text-emerald-500' : 'text-rose-500'}">R$ ${v.toLocaleString('pt-BR')}</p>
+                    </div>`;
             });
-
-            document.getElementById('dash-receitas').innerText = `R$ ${receitas.toLocaleString('pt-BR', {minimumFractionDigits:2})}`;
-            document.getElementById('dash-despesas').innerText = `R$ ${despesas.toLocaleString('pt-BR', {minimumFractionDigits:2})}`;
-            document.getElementById('dash-saldo').innerText = `R$ ${(receitas - despesas).toLocaleString('pt-BR', {minimumFractionDigits:2})}`;
+            document.getElementById('dash-receitas').innerText = `R$ ${r.toLocaleString('pt-BR')}`;
+            document.getElementById('dash-despesas').innerText = `R$ ${d.toLocaleString('pt-BR')}`;
+            document.getElementById('dash-saldo').innerText = `R$ ${(r - d).toLocaleString('pt-BR')}`;
             lucide.createIcons();
         }
 
-        // Funções Globais de UI
-        window.showTab = (tabId) => {
+        window.showTab = (id) => {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.getElementById('tab-' + tabId).classList.add('active');
-            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.replace('text-sky-500', 'text-slate-400'));
-            document.querySelector(`[data-tab="${tabId}"]`).classList.replace('text-slate-400', 'text-sky-500');
+            document.getElementById('tab-' + id).classList.add('active');
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.replace('text-sky-500', 'text-slate-400'));
+            document.querySelector(`[data-tab="${id}"]`).classList.replace('text-slate-400', 'text-sky-500');
         };
 
-        window.setTipo = (tipo) => {
-            currentTipo = tipo;
-            const btnD = document.getElementById('btn-tipo-despesa');
-            const btnR = document.getElementById('btn-tipo-receita');
-            if(tipo === 'despesa') {
-                btnD.className = "flex-1 py-3 rounded-xl font-black text-xs uppercase bg-rose-600 text-white";
-                btnR.className = "flex-1 py-3 rounded-xl font-black text-xs uppercase bg-slate-100 dark:bg-slate-800 text-slate-500";
-            } else {
-                btnR.className = "flex-1 py-3 rounded-xl font-black text-xs uppercase bg-emerald-600 text-white";
-                btnD.className = "flex-1 py-3 rounded-xl font-black text-xs uppercase bg-slate-100 dark:bg-slate-800 text-slate-500";
-            }
-        };
-
-        window.toggleTheme = () => {
-            document.documentElement.classList.toggle('dark');
-            const isDark = document.documentElement.classList.contains('dark');
-            document.getElementById('theme-icon').setAttribute('data-lucide', isDark ? 'sun' : 'moon');
-            lucide.createIcons();
-        };
-
-        window.openModal = () => document.getElementById('modal-lancamento').classList.remove('hidden');
-        window.closeModal = () => document.getElementById('modal-lancamento').classList.add('hidden');
-        window.handleLogout = () => signOut(auth).then(() => location.reload());
+        window.toggleTheme = () => document.documentElement.classList.toggle('dark');
     </script>
 </body>
 </html>
