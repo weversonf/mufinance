@@ -78,7 +78,7 @@
                             <canvas id="chart-rosca"></canvas>
                         </div>
                         <div class="custom-card p-8 rounded-[40px] border">
-                            <h3 class="text-xs font-black uppercase text-slate-400 mb-6">Atividades Recentes</h3>
+                            <h3 class="text-xs font-black uppercase text-slate-400 mb-6">Últimos Movimentos</h3>
                             <div id="mini-feed" class="space-y-4"></div>
                         </div>
                     </div>
@@ -89,18 +89,17 @@
                         <h2 class="text-2xl font-black uppercase italic text-sky-500">Extrato</h2>
                         <div class="flex items-center gap-4 bg-white dark:bg-slate-900/40 px-4 py-2 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
                             <button onclick="changeExtratoMonth(-1)" class="p-1"><i data-lucide="chevron-left" class="text-sky-500 w-5 h-5"></i></button>
-                            <span id="display-periodo-extrato" class="text-xs font-black uppercase min-w-[100px] text-center">Fev 2026</span>
+                            <span id="display-periodo-extrato" class="text-xs font-black uppercase min-w-[100px] text-center">---</span>
                             <button onclick="changeExtratoMonth(1)" class="p-1"><i data-lucide="chevron-right" class="text-sky-500 w-5 h-5"></i></button>
                         </div>
                     </div>
-                    <div id="lista-transacoes-extrato" class="space-y-4">
-                        </div>
+                    <div id="lista-transacoes-extrato" class="space-y-4"></div>
                 </section>
 
                 <section id="tab-metas" class="tab-content space-y-6">
                     <div class="flex justify-between items-center">
                         <h2 class="text-2xl font-black uppercase italic text-sky-500">Meus Cofres</h2>
-                        <button onclick="openMetaModal()" class="px-5 py-2.5 bg-sky-500 text-white rounded-2xl text-[10px] font-black uppercase shadow-lg">Novo Alvo</button>
+                        <button onclick="openMetaModal()" class="px-5 py-2.5 bg-sky-500 text-white rounded-2xl text-[10px] font-black uppercase shadow-lg">Novo Objetivo</button>
                     </div>
                     <div id="lista-metas" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
                 </section>
@@ -140,8 +139,8 @@
                 <input type="number" id="valor" step="0.01" placeholder="Valor R$" class="w-full p-4 bg-slate-50 dark:bg-black/20 border border-slate-200 rounded-[18px] text-lg font-black outline-none focus:border-sky-500 dark:text-white" required>
                 <input type="text" id="descricao" placeholder="Descrição" class="w-full p-4 bg-slate-50 dark:bg-black/20 border border-slate-200 rounded-[18px] text-sm outline-none dark:text-white" required>
                 <div class="grid grid-cols-2 gap-3">
-                    <input type="date" id="dataLancamento" class="p-3 bg-slate-50 dark:bg-black/20 border border-slate-200 rounded-xl text-xs font-bold dark:text-white">
-                    <input type="date" id="dataVencimento" class="p-3 bg-slate-50 dark:bg-black/20 border border-slate-200 rounded-xl text-xs font-bold dark:text-white">
+                    <input type="date" id="dataLancamento" class="p-3 bg-slate-50 dark:bg-black/20 border border-slate-200 rounded-xl text-xs font-bold dark:text-white" required>
+                    <input type="date" id="dataVencimento" class="p-3 bg-slate-50 dark:bg-black/20 border border-slate-200 rounded-xl text-xs font-bold dark:text-white" required>
                 </div>
                 <button type="submit" id="btn-salvar" class="w-full py-5 bg-sky-600 text-white rounded-[22px] font-black uppercase text-xs shadow-lg">Confirmar</button>
                 <button type="button" onclick="closeModal()" class="w-full text-slate-400 text-[10px] font-black uppercase mt-2">Cancelar</button>
@@ -201,14 +200,19 @@
         });
 
         window.loginGoogle = () => signInWithPopup(auth, provider);
-        window.handleLogout = () => signOut(auth);
+        window.handleLogout = () => signOut(auth).then(() => location.reload());
 
         function initData() {
+            // Consulta para transações (Exige índice)
             const q = query(collection(db, "transactions"), where("userId", "==", userId), orderBy("dateVencimento", "desc"));
             onSnapshot(q, (snap) => {
                 transactions = snap.docs.map(d => ({id: d.id, ...d.data()}));
                 updateUI();
+            }, (error) => {
+                console.error("ERRO FIREBASE (CLIQUE NO LINK ABAIXO PARA CRIAR O ÍNDICE):", error);
             });
+
+            // Consulta para metas
             const qGoals = query(collection(db, "goals"), where("userId", "==", userId));
             onSnapshot(qGoals, (snap) => { renderMetas(snap.docs.map(d => ({id: d.id, ...d.data()}))); });
         }
@@ -222,7 +226,9 @@
 
             transactions.forEach((t, i) => {
                 const val = t.valor || 0;
-                const dVenc = t.dateVencimento instanceof Timestamp ? t.dateVencimento.toDate() : new Date(t.dateVencimento);
+                let dVenc;
+                if (t.dateVencimento instanceof Timestamp) dVenc = t.dateVencimento.toDate();
+                else dVenc = new Date(t.dateVencimento);
                 
                 // Dash Mês Atual
                 if(dVenc.getMonth() === now.getMonth() && dVenc.getFullYear() === now.getFullYear()) {
@@ -241,29 +247,28 @@
                             </div>
                         </div>
                         <div class="text-right">
-                            <p class="text-xs font-black ${t.tipo==='receita'?'text-emerald-500':'text-rose-500'}">R$ ${val.toLocaleString('pt-BR')}</p>
+                            <p class="text-xs font-black ${t.tipo==='receita'?'text-emerald-500':'text-rose-500'}">R$ ${val.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</p>
                             <button onclick="deleteTx('${t.id}')" class="text-[8px] font-black uppercase text-rose-500 mt-1">Excluir</button>
                         </div>
                     </div>`;
 
-                // Render no Extrato se bater o mês filtrado
                 if(dVenc.getMonth() === extratoMonth && dVenc.getFullYear() === extratoYear) {
                     extratoContainer.innerHTML += cardHtml;
                 }
-
-                // Render no Dashboard (Sempre as 5 últimas)
                 if(i < 5) miniFeed.innerHTML += cardHtml;
             });
 
-            document.getElementById('dash-receitas').innerText = `R$ ${r.toLocaleString('pt-BR')}`;
-            document.getElementById('dash-despesas').innerText = `R$ ${d.toLocaleString('pt-BR')}`;
-            document.getElementById('dash-saldo').innerText = `R$ ${(r - d).toLocaleString('pt-BR')}`;
+            document.getElementById('dash-receitas').innerText = `R$ ${r.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            document.getElementById('dash-despesas').innerText = `R$ ${d.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            document.getElementById('dash-saldo').innerText = `R$ ${(r - d).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
             
-            if(!extratoContainer.innerHTML) extratoContainer.innerHTML = "<p class='text-center text-[10px] font-black uppercase text-slate-500 py-10'>Sem lançamentos neste período.</p>";
+            if(!extratoContainer.innerHTML) extratoContainer.innerHTML = "<p class='text-center text-[10px] font-black uppercase text-slate-500 py-10'>Sem lançamentos.</p>";
             
             lucide.createIcons();
             updateDonut('despesa');
         }
+
+        window.deleteTx = async (id) => { if(confirm("Deseja apagar?")) await deleteDoc(doc(db, "transactions", id)); };
 
         window.changeExtratoMonth = (delta) => {
             extratoMonth += delta;
@@ -272,9 +277,71 @@
             updateUI();
         }
 
-        window.deleteTx = async (id) => { if(confirm("Deseja apagar esta transação?")) await deleteDoc(doc(db, "transactions", id)); };
+        window.showTab = (id) => {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.getElementById('tab-' + id).classList.add('active');
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.replace('text-sky-500', 'text-slate-400'));
+            const active = document.querySelector(`[data-tab="${id}"]`); if(active) active.classList.replace('text-slate-400', 'text-sky-500');
+        };
 
-        // RESTO DAS FUNÇÕES (DASHBOARD, METAS, MODAIS) MANTIDAS
+        window.toggleTheme = () => {
+            const isD = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('theme', isD ? 'dark' : 'light');
+            updateUI();
+        };
+
+        window.openModal = () => {
+            const d = new Date().toISOString().split('T')[0];
+            document.getElementById('dataLancamento').value = d;
+            document.getElementById('dataVencimento').value = d;
+            document.getElementById('modal-lancamento').classList.remove('hidden');
+        };
+
+        window.closeModal = () => document.getElementById('modal-lancamento').classList.add('hidden');
+        window.openMetaModal = () => document.getElementById('modal-meta').classList.remove('hidden');
+        window.closeMetaModal = () => document.getElementById('modal-meta').classList.add('hidden');
+
+        window.setTipo = (t) => {
+            currentTipo = t;
+            document.getElementById('btn-tipo-des').className = t==='despesa' ? "flex-1 py-3 rounded-xl font-black text-xs uppercase bg-rose-600 text-white" : "flex-1 py-3 rounded-xl font-black text-xs uppercase bg-slate-100 dark:bg-slate-800 text-slate-500";
+            document.getElementById('btn-tipo-rec').className = t==='receita' ? "flex-1 py-3 rounded-xl font-black text-xs uppercase bg-emerald-600 text-white" : "flex-1 py-3 rounded-xl font-black text-xs uppercase bg-slate-100 dark:bg-slate-800 text-slate-500";
+        };
+
+        window.setStatus = (s) => {
+            currentStatus = s;
+            document.getElementById('btn-st-efetivada').className = s==='efetivada' ? "flex-1 py-2 rounded-lg text-[9px] font-black uppercase bg-sky-500 text-white" : "flex-1 py-2 rounded-lg text-[9px] font-black uppercase text-slate-500";
+            document.getElementById('btn-st-prevista').className = s==='prevista' ? "flex-1 py-2 rounded-lg text-[9px] font-black uppercase bg-amber-500 text-white" : "flex-1 py-2 rounded-lg text-[9px] font-black uppercase text-slate-500";
+        };
+
+        document.getElementById('form-transacao').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-salvar');
+            btn.disabled = true; btn.innerText = "Gravando...";
+            
+            try {
+                await addDoc(collection(db, "transactions"), {
+                    userId, tipo: currentTipo, status: currentStatus, 
+                    valor: parseFloat(document.getElementById('valor').value), 
+                    descricao: document.getElementById('descricao').value,
+                    dateLancamento: Timestamp.fromDate(new Date(document.getElementById('dataLancamento').value + 'T12:00:00')),
+                    dateVencimento: Timestamp.fromDate(new Date(document.getElementById('dataVencimento').value + 'T12:00:00')),
+                    createdAt: Timestamp.now(), categoria: 'Geral'
+                });
+                closeModal(); e.target.reset();
+            } catch (err) { alert("Erro ao salvar. Verifique o console."); }
+            finally { btn.disabled = false; btn.innerText = "Confirmar"; }
+        });
+
+        document.getElementById('form-meta').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await addDoc(collection(db, "goals"), {
+                userId, nome: document.getElementById('meta-nome').value,
+                objetivo: Number(document.getElementById('meta-objetivo').value),
+                guardado: Number(document.getElementById('meta-guardado').value)
+            });
+            closeMetaModal(); e.target.reset();
+        });
+
         function renderMetas(goals) {
             const list = document.getElementById('lista-metas');
             list.innerHTML = goals.length ? "" : "<p class='text-slate-500 p-10 text-center font-bold italic uppercase text-[10px]'>Nenhum cofre criado.</p>";
@@ -291,27 +358,6 @@
 
         window.deleteMeta = async (id) => { if(confirm("Apagar cofre?")) await deleteDoc(doc(db, "goals", id)); };
 
-        document.getElementById('form-transacao').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            await addDoc(collection(db, "transactions"), {
-                userId, tipo: currentTipo, status: currentStatus, valor: parseFloat(document.getElementById('valor').value), descricao: document.getElementById('descricao').value,
-                dateLancamento: Timestamp.fromDate(new Date(document.getElementById('dataLancamento').value + 'T12:00:00')),
-                dateVencimento: Timestamp.fromDate(new Date(document.getElementById('dataVencimento').value + 'T12:00:00')),
-                createdAt: Timestamp.now(), categoria: 'Geral'
-            });
-            closeModal(); e.target.reset();
-        });
-
-        document.getElementById('form-meta').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            await addDoc(collection(db, "goals"), {
-                userId, nome: document.getElementById('meta-nome').value,
-                objetivo: Number(document.getElementById('meta-objetivo').value),
-                guardado: Number(document.getElementById('meta-guardado').value)
-            });
-            closeMetaModal(); e.target.reset();
-        });
-
         window.updateDonut = (tipo) => {
             const ctx = document.getElementById('chart-rosca').getContext('2d');
             const dataMap = {};
@@ -324,20 +370,7 @@
             });
         };
 
-        window.showTab = (id) => {
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.getElementById('tab-' + id).classList.add('active');
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.replace('text-sky-500', 'text-slate-400'));
-            const active = document.querySelector(`[data-tab="${id}"]`); if(active) active.classList.replace('text-slate-400', 'text-sky-500');
-        };
-
-        window.toggleTheme = () => { const isD = document.documentElement.classList.toggle('dark'); localStorage.setItem('theme', isD?'dark':'light'); updateUI(); };
-        window.openModal = () => { const d = new Date().toISOString().split('T')[0]; document.getElementById('dataLancamento').value = d; document.getElementById('dataVencimento').value = d; document.getElementById('modal-lancamento').classList.remove('hidden'); };
-        window.closeModal = () => document.getElementById('modal-lancamento').classList.add('hidden');
-        window.openMetaModal = () => document.getElementById('modal-meta').classList.remove('hidden');
-        window.closeMetaModal = () => document.getElementById('modal-meta').classList.add('hidden');
-        window.setStatus = (s) => { currentStatus = s; document.getElementById('btn-st-efetivada').className = s==='efetivada' ? "flex-1 py-2 rounded-lg text-[9px] font-black uppercase bg-sky-500 text-white" : "flex-1 py-2 rounded-lg text-[9px] font-black uppercase text-slate-500"; document.getElementById('btn-st-prevista').className = s==='prevista' ? "flex-1 py-2 rounded-lg text-[9px] font-black uppercase bg-amber-500 text-white" : "flex-1 py-2 rounded-lg text-[9px] font-black uppercase text-slate-500"; };
-        window.setTipo = (t) => { currentTipo = t; document.getElementById('btn-tipo-des').className = t==='despesa' ? "flex-1 py-3 rounded-xl font-black text-xs uppercase bg-rose-600 text-white" : "flex-1 py-3 rounded-xl font-black text-xs uppercase bg-slate-100 dark:bg-slate-800 text-slate-500"; document.getElementById('btn-tipo-rec').className = t==='receita' ? "flex-1 py-3 rounded-xl font-black text-xs uppercase bg-emerald-600 text-white" : "flex-1 py-3 rounded-xl font-black text-xs uppercase bg-slate-100 dark:bg-slate-800 text-slate-500"; };
+        lucide.createIcons();
     </script>
 </body>
 </html>
