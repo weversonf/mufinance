@@ -3,18 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Drivo & Money - Central de Controle</title>
+    <title>Drivo & Money - Sistema Completo</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         tailwind.config = { 
             darkMode: 'class', 
-            theme: { 
-                extend: { 
-                    colors: { darkBg: '#020617', darkCard: '#0f172a', lightBg: '#f8fafc' } 
-                } 
-            } 
+            theme: { extend: { colors: { darkBg: '#020617', darkCard: '#0f172a', lightBg: '#f8fafc' } } } 
         }
         (function() {
             const savedTheme = localStorage.getItem('theme') || 'dark';
@@ -82,17 +78,24 @@
                             <canvas id="chart-rosca"></canvas>
                         </div>
                         <div class="custom-card p-8 rounded-[40px] border">
-                            <h3 class="text-xs font-black uppercase text-slate-400 mb-6">Últimos Movimentos</h3>
+                            <h3 class="text-xs font-black uppercase text-slate-400 mb-6">Atividades Recentes</h3>
                             <div id="mini-feed" class="space-y-4"></div>
                         </div>
                     </div>
+                </section>
+
+                <section id="tab-metas" class="tab-content space-y-6">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-2xl font-black uppercase italic text-sky-500">Meus Cofres</h2>
+                        <button onclick="openMetaModal()" class="px-5 py-2.5 bg-sky-500 text-white rounded-2xl text-[10px] font-black uppercase shadow-lg">Novo Objetivo</button>
+                    </div>
+                    <div id="lista-metas" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
                 </section>
 
                 <section id="tab-extrato" class="tab-content space-y-6">
                     <div id="lista-transacoes-completa" class="space-y-4"></div>
                 </section>
                 
-                <section id="tab-metas" class="tab-content"><div id="lista-metas" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div></section>
                 <section id="tab-relatorio" class="tab-content"></section>
                 <section id="tab-perfil" class="tab-content text-center"></section>
             </main>
@@ -109,38 +112,44 @@
 
     <div id="modal-lancamento" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 z-[300]">
         <div class="custom-card w-full max-w-md rounded-[35px] p-8 border shadow-2xl modal-scroll overflow-y-auto max-h-[90vh]">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-lg font-black uppercase italic text-sky-500">Novo Lançamento</h3>
-                <button onclick="closeModal()" class="text-slate-500"><i data-lucide="x"></i></button>
-            </div>
-            
+            <h3 class="text-lg font-black uppercase italic text-sky-500 mb-6">Novo Lançamento</h3>
             <form id="form-transacao" class="space-y-4">
                 <div class="flex gap-2">
                     <button type="button" onclick="setTipo('despesa')" id="btn-tipo-des" class="flex-1 py-3 rounded-xl font-black text-xs uppercase bg-rose-600 text-white">Despesa</button>
                     <button type="button" onclick="setTipo('receita')" id="btn-tipo-rec" class="flex-1 py-3 rounded-xl font-black text-xs uppercase bg-slate-100 dark:bg-slate-800 text-slate-500">Receita</button>
                 </div>
-
                 <div class="flex bg-slate-100 dark:bg-slate-800/50 p-1 rounded-xl">
                     <button type="button" onclick="setStatus('efetivada')" id="btn-st-efetivada" class="flex-1 py-2 rounded-lg text-[9px] font-black uppercase bg-sky-500 text-white">Efetivada</button>
                     <button type="button" onclick="setStatus('prevista')" id="btn-st-prevista" class="flex-1 py-2 rounded-lg text-[9px] font-black uppercase text-slate-500">Prevista</button>
                 </div>
-
                 <input type="number" id="valor" step="0.01" placeholder="Valor R$" class="w-full p-4 bg-slate-50 dark:bg-black/20 border border-slate-200 rounded-[18px] text-lg font-black outline-none focus:border-sky-500 dark:text-white" required>
                 <input type="text" id="descricao" placeholder="Descrição" class="w-full p-4 bg-slate-50 dark:bg-black/20 border border-slate-200 rounded-[18px] text-sm outline-none dark:text-white" required>
-                
                 <div class="grid grid-cols-2 gap-3">
                     <input type="date" id="dataLancamento" class="p-3 bg-slate-50 dark:bg-black/20 border border-slate-200 rounded-xl text-xs font-bold dark:text-white">
                     <input type="date" id="dataVencimento" class="p-3 bg-slate-50 dark:bg-black/20 border border-slate-200 rounded-xl text-xs font-bold dark:text-white">
                 </div>
+                <button type="submit" id="btn-salvar" class="w-full py-5 bg-sky-600 text-white rounded-[22px] font-black uppercase text-xs shadow-lg">Confirmar</button>
+                <button type="button" onclick="closeModal()" class="w-full text-slate-400 text-[10px] font-black uppercase mt-2">Cancelar</button>
+            </form>
+        </div>
+    </div>
 
-                <button type="submit" id="btn-salvar" class="w-full py-5 bg-sky-600 text-white rounded-[22px] font-black uppercase text-xs shadow-lg">Confirmar Lançamento</button>
+    <div id="modal-meta" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 z-[300]">
+        <div class="custom-card w-full max-w-md rounded-[35px] p-8 border shadow-2xl">
+            <h3 class="text-lg font-black uppercase italic text-sky-500 mb-6 text-center">Novo Objetivo</h3>
+            <form id="form-meta" class="space-y-4">
+                <input type="text" id="meta-nome" placeholder="Ex: Reserva, Viagem..." class="w-full p-4 bg-slate-50 dark:bg-black/20 border border-slate-200 rounded-[18px] outline-none dark:text-white" required>
+                <input type="number" id="meta-objetivo" placeholder="Meta Final R$" class="w-full p-4 bg-slate-50 dark:bg-black/20 border border-slate-200 rounded-[18px] outline-none font-bold dark:text-white" required>
+                <input type="number" id="meta-guardado" placeholder="Já tenho R$" class="w-full p-4 bg-slate-50 dark:bg-black/20 border border-slate-200 rounded-[18px] outline-none font-bold dark:text-white" required>
+                <button type="submit" class="w-full py-5 bg-sky-600 text-white rounded-[22px] font-black uppercase text-xs">Salvar Cofre</button>
+                <button type="button" onclick="closeMetaModal()" class="w-full text-slate-400 font-black text-[10px] uppercase mt-2">Cancelar</button>
             </form>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, where, orderBy, Timestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, where, orderBy, Timestamp, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = {
@@ -160,92 +169,85 @@
         let userId, currentTipo = 'despesa', currentStatus = 'efetivada', transactions = [], donutChart;
 
         onAuthStateChanged(auth, (u) => {
-            if (u) { 
-                userId = u.uid; 
-                document.getElementById('login-screen').classList.add('hidden'); 
-                document.getElementById('main-app').classList.remove('hidden'); 
-                initData(); 
-            } else { 
-                document.getElementById('login-screen').classList.remove('hidden'); 
-                document.getElementById('main-app').classList.add('hidden'); 
-            }
+            if (u) { userId = u.uid; document.getElementById('login-screen').classList.add('hidden'); document.getElementById('main-app').classList.remove('hidden'); initData(); }
+            else { document.getElementById('login-screen').classList.remove('hidden'); document.getElementById('main-app').classList.add('hidden'); }
         });
 
         window.loginGoogle = () => signInWithPopup(auth, provider);
         window.handleLogout = () => signOut(auth);
 
         function initData() {
-            // Tente carregar os dados. Se não houver índice, o erro aparecerá no console com o link de criação.
-            try {
-                const q = query(collection(db, "transactions"), where("userId", "==", userId), orderBy("dateVencimento", "desc"));
-                onSnapshot(q, (snap) => {
-                    transactions = snap.docs.map(d => ({id: d.id, ...d.data()}));
-                    updateUI();
-                }, (error) => {
-                    console.error("Erro no Firestore (Verifique índices):", error);
-                });
-            } catch (e) { console.error(e); }
+            // Transações
+            const q = query(collection(db, "transactions"), where("userId", "==", userId), orderBy("dateVencimento", "desc"));
+            onSnapshot(q, (snap) => { transactions = snap.docs.map(d => ({id: d.id, ...d.data()})); updateUI(); });
+            
+            // Metas
+            const qGoals = query(collection(db, "goals"), where("userId", "==", userId));
+            onSnapshot(qGoals, (snap) => { renderMetas(snap.docs.map(d => ({id: d.id, ...d.data()}))); });
         }
 
         function updateUI() {
             let r=0, d=0; const now = new Date();
             const miniFeed = document.getElementById('mini-feed'); miniFeed.innerHTML = "";
             const extratoCompleto = document.getElementById('lista-transacoes-completa'); extratoCompleto.innerHTML = "";
-            
+
             transactions.forEach((t, i) => {
                 const val = t.valor || 0;
                 const dVenc = t.dateVencimento instanceof Timestamp ? t.dateVencimento.toDate() : new Date(t.dateVencimento);
-                if(dVenc.getMonth() === now.getMonth() && dVenc.getFullYear() === now.getFullYear()) {
-                    t.tipo === 'receita' ? r += val : d += val;
-                }
-                const cardHtml = `
-                    <div class="flex justify-between items-center p-4 custom-card rounded-[25px] border ${t.status === 'prevista' ? 'border-dashed opacity-70' : ''}">
-                        <div class="flex items-center gap-3">
-                            <div class="p-2 rounded-lg ${t.tipo==='receita'?'bg-emerald-500/10 text-emerald-500':'bg-rose-500/10 text-rose-500'}">
-                                <i data-lucide="${t.status === 'prevista' ? 'clock' : 'check-circle'}" class="w-4 h-4"></i>
-                            </div>
-                            <div>
-                                <h4 class="text-xs font-black uppercase tracking-tight">${t.descricao}</h4>
-                                <p class="text-[8px] font-bold text-slate-400 uppercase">Vencimento: ${dVenc.toLocaleDateString('pt-BR')}</p>
-                            </div>
-                        </div>
-                        <p class="text-sm font-black ${t.tipo==='receita'?'text-emerald-500':'text-rose-500'}">R$ ${val.toLocaleString('pt-BR')}</p>
-                    </div>`;
-                extratoCompleto.innerHTML += cardHtml;
-                if(i < 5) miniFeed.innerHTML += cardHtml;
+                if(dVenc.getMonth() === now.getMonth() && dVenc.getFullYear() === now.getFullYear()) { t.tipo === 'receita' ? r += val : d += val; }
+                const card = `<div class="flex justify-between items-center p-4 custom-card rounded-2xl border ${t.status === 'prevista' ? 'border-dashed opacity-70' : ''}">
+                    <div class="flex items-center gap-3">
+                        <div class="p-2 rounded-lg ${t.tipo==='receita'?'bg-emerald-500/10 text-emerald-500':'bg-rose-500/10 text-rose-500'}"><i data-lucide="${t.status === 'prevista' ? 'clock' : 'check-circle'}" class="w-4 h-4"></i></div>
+                        <div><h4 class="text-xs font-black uppercase">${t.descricao}</h4><p class="text-[8px] font-bold text-slate-400 uppercase">${dVenc.toLocaleDateString('pt-BR')}</p></div>
+                    </div>
+                    <p class="text-sm font-black ${t.tipo==='receita'?'text-emerald-500':'text-rose-500'}">R$ ${val.toLocaleString('pt-BR')}</p>
+                </div>`;
+                extratoCompleto.innerHTML += card;
+                if(i < 5) miniFeed.innerHTML += card;
             });
-
             document.getElementById('dash-receitas').innerText = `R$ ${r.toLocaleString('pt-BR')}`;
             document.getElementById('dash-despesas').innerText = `R$ ${d.toLocaleString('pt-BR')}`;
             document.getElementById('dash-saldo').innerText = `R$ ${(r - d).toLocaleString('pt-BR')}`;
-            lucide.createIcons();
-            updateDonut('despesa');
+            lucide.createIcons(); updateDonut('despesa');
         }
+
+        function renderMetas(goals) {
+            const list = document.getElementById('lista-metas');
+            list.innerHTML = goals.length ? "" : "<p class='text-slate-500 p-10 text-center font-bold italic uppercase text-[10px]'>Nenhum cofre criado.</p>";
+            goals.forEach(m => {
+                const prog = Math.min((m.guardado / m.objetivo) * 100, 100);
+                list.innerHTML += `<div class="custom-card p-6 rounded-[30px] border">
+                    <div class="flex justify-between mb-4"><h4 class="text-[10px] font-black uppercase text-sky-500">${m.nome}</h4><button onclick="deleteMeta('${m.id}')" class="text-slate-400"><i data-lucide="trash-2" class="w-3 h-3"></i></button></div>
+                    <div class="flex justify-between items-end mb-2"><span class="text-xl font-black text-emerald-500">R$ ${m.guardado.toLocaleString('pt-BR')}</span><span class="text-[9px] font-black text-slate-400">${prog.toFixed(0)}%</span></div>
+                    <div class="h-1.5 bg-slate-100 dark:bg-slate-950 rounded-full overflow-hidden"><div class="h-full bg-sky-500" style="width: ${prog}%"></div></div>
+                </div>`;
+            });
+            lucide.createIcons();
+        }
+
+        window.deleteMeta = async (id) => { if(confirm("Apagar cofre?")) await deleteDoc(doc(db, "goals", id)); };
 
         document.getElementById('form-transacao').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const btn = document.getElementById('btn-salvar'); btn.disabled = true; btn.innerText = "Gravando...";
-            
-            const payload = {
-                userId, tipo: currentTipo, status: currentStatus,
-                valor: parseFloat(document.getElementById('valor').value),
-                descricao: document.getElementById('descricao').value,
+            await addDoc(collection(db, "transactions"), {
+                userId, tipo: currentTipo, status: currentStatus, valor: parseFloat(document.getElementById('valor').value), descricao: document.getElementById('descricao').value,
                 dateLancamento: Timestamp.fromDate(new Date(document.getElementById('dataLancamento').value + 'T12:00:00')),
                 dateVencimento: Timestamp.fromDate(new Date(document.getElementById('dataVencimento').value + 'T12:00:00')),
                 createdAt: Timestamp.now(), categoria: 'Geral'
-            };
-
-            try {
-                await addDoc(collection(db, "transactions"), payload);
-                closeModal();
-                e.target.reset();
-            } catch (err) { 
-                console.error("Erro ao salvar:", err);
-                alert("Erro ao salvar! Verifique as REGRAS do Firestore no console.");
-            } finally { btn.disabled = false; btn.innerText = "Confirmar Lançamento"; }
+            });
+            closeModal(); e.target.reset();
         });
 
-        // FUNÇÕES DE UI
+        document.getElementById('form-meta').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await addDoc(collection(db, "goals"), {
+                userId, nome: document.getElementById('meta-nome').value,
+                objetivo: Number(document.getElementById('meta-objetivo').value),
+                guardado: Number(document.getElementById('meta-guardado').value)
+            });
+            closeMetaModal(); e.target.reset();
+        });
+
         window.updateDonut = (tipo) => {
             const ctx = document.getElementById('chart-rosca').getContext('2d');
             const dataMap = {};
@@ -256,20 +258,6 @@
                 type: 'doughnut', data: { labels, datasets: [{ data: values, backgroundColor: tipo==='despesa'?['#f43f5e','#fb923c','#facc15']:['#10b981','#0ea5e9'], borderWidth: 0 }]},
                 options: { cutout: '80%', plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 9, weight: 'bold' }}}}}
             });
-            document.getElementById('btn-donut-des').className = tipo==='despesa' ? "px-4 py-1.5 rounded-lg text-[9px] font-black uppercase bg-rose-500 text-white" : "px-4 py-1.5 rounded-lg text-[9px] font-black uppercase text-slate-500";
-            document.getElementById('btn-donut-rec').className = tipo==='receita' ? "px-4 py-1.5 rounded-lg text-[9px] font-black uppercase bg-emerald-500 text-white" : "px-4 py-1.5 rounded-lg text-[9px] font-black uppercase text-slate-500";
-        };
-
-        window.setStatus = (s) => {
-            currentStatus = s;
-            document.getElementById('btn-st-efetivada').className = s==='efetivada' ? "flex-1 py-2 rounded-lg text-[9px] font-black uppercase bg-sky-500 text-white" : "flex-1 py-2 rounded-lg text-[9px] font-black uppercase text-slate-500";
-            document.getElementById('btn-st-prevista').className = s==='prevista' ? "flex-1 py-2 rounded-lg text-[9px] font-black uppercase bg-amber-500 text-white" : "flex-1 py-2 rounded-lg text-[9px] font-black uppercase text-slate-500";
-        };
-
-        window.setTipo = (t) => {
-            currentTipo = t;
-            document.getElementById('btn-tipo-des').className = t==='despesa' ? "flex-1 py-3 rounded-xl font-black text-xs uppercase bg-rose-600 text-white" : "flex-1 py-3 rounded-xl font-black text-xs uppercase bg-slate-100 dark:bg-slate-800 text-slate-500";
-            document.getElementById('btn-tipo-rec').className = t==='receita' ? "flex-1 py-3 rounded-xl font-black text-xs uppercase bg-emerald-600 text-white" : "flex-1 py-3 rounded-xl font-black text-xs uppercase bg-slate-100 dark:bg-slate-800 text-slate-500";
         };
 
         window.showTab = (id) => {
@@ -280,13 +268,12 @@
         };
 
         window.toggleTheme = () => { const isD = document.documentElement.classList.toggle('dark'); localStorage.setItem('theme', isD?'dark':'light'); updateUI(); };
-        window.openModal = () => {
-            const d = new Date().toISOString().split('T')[0];
-            document.getElementById('dataLancamento').value = d;
-            document.getElementById('dataVencimento').value = d;
-            document.getElementById('modal-lancamento').classList.remove('hidden');
-        };
+        window.openModal = () => { const d = new Date().toISOString().split('T')[0]; document.getElementById('dataLancamento').value = d; document.getElementById('dataVencimento').value = d; document.getElementById('modal-lancamento').classList.remove('hidden'); };
         window.closeModal = () => document.getElementById('modal-lancamento').classList.add('hidden');
+        window.openMetaModal = () => document.getElementById('modal-meta').classList.remove('hidden');
+        window.closeMetaModal = () => document.getElementById('modal-meta').classList.add('hidden');
+        window.setStatus = (s) => { currentStatus = s; document.getElementById('btn-st-efetivada').className = s==='efetivada' ? "flex-1 py-2 rounded-lg text-[9px] font-black uppercase bg-sky-500 text-white" : "flex-1 py-2 rounded-lg text-[9px] font-black uppercase text-slate-500"; document.getElementById('btn-st-prevista').className = s==='prevista' ? "flex-1 py-2 rounded-lg text-[9px] font-black uppercase bg-amber-500 text-white" : "flex-1 py-2 rounded-lg text-[9px] font-black uppercase text-slate-500"; };
+        window.setTipo = (t) => { currentTipo = t; document.getElementById('btn-tipo-des').className = t==='despesa' ? "flex-1 py-3 rounded-xl font-black text-xs uppercase bg-rose-600 text-white" : "flex-1 py-3 rounded-xl font-black text-xs uppercase bg-slate-100 dark:bg-slate-800 text-slate-500"; document.getElementById('btn-tipo-rec').className = t==='receita' ? "flex-1 py-3 rounded-xl font-black text-xs uppercase bg-emerald-600 text-white" : "flex-1 py-3 rounded-xl font-black text-xs uppercase bg-slate-100 dark:bg-slate-800 text-slate-500"; };
     </script>
 </body>
 </html>
