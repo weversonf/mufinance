@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Drivo & Money</title>
+    <title>Drivo & Money - Full System</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         tailwind.config = { darkMode: 'class', theme: { extend: { colors: { darkBg: '#020617', darkCard: '#0f172a', lightBg: '#f8fafc' } } } }
     </script>
@@ -15,9 +16,9 @@
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         .hidden { display: none !important; }
-        input[type="number"]::-webkit-inner-spin-button { display: none; }
         .modal-scroll::-webkit-scrollbar { width: 4px; }
         .modal-scroll::-webkit-scrollbar-thumb { background: #0ea5e9; border-radius: 10px; }
+        input[type="number"]::-webkit-inner-spin-button { display: none; }
     </style>
 </head>
 <body class="light dark min-h-screen bg-lightBg text-slate-900 dark:bg-darkBg dark:text-white antialiased">
@@ -28,10 +29,11 @@
                 <i data-lucide="bolt" class="w-10 h-10"></i>
             </div>
             <h1 class="text-3xl font-black uppercase italic tracking-tighter text-sky-500 mb-2">Drivo&Money</h1>
-            <button onclick="loginGoogle()" class="w-full py-4 bg-white text-slate-900 rounded-2xl font-bold flex items-center justify-center gap-3 shadow-lg hover:bg-slate-100 mb-4">
+            <p class="text-slate-400 text-sm mb-8">Controle total na palma da mão.</p>
+            <button onclick="loginGoogle()" class="w-full py-4 bg-white text-slate-900 rounded-2xl font-bold flex items-center justify-center gap-3 shadow-lg hover:bg-slate-100 mb-4 transition-all">
                 <i data-lucide="log-in" class="w-5 h-5"></i> Entrar com Google
             </button>
-            <button onclick="showAuthTab('registro')" class="w-full py-4 bg-slate-900 text-slate-400 rounded-2xl font-bold border border-slate-800">Criar conta</button>
+            <p class="text-[10px] uppercase font-black text-slate-600 tracking-widest">Acesso Seguro Mucuripe</p>
         </div>
     </div>
 
@@ -48,20 +50,42 @@
                 </div>
             </header>
 
-            <main class="pb-24">
+            <main class="pb-32">
                 <section id="tab-dashboard" class="tab-content active">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
                         <div class="bg-white dark:bg-darkCard p-6 rounded-[35px] border border-slate-200 dark:border-slate-800">
-                            <small class="text-[10px] font-black uppercase text-slate-400">Receitas</small>
+                            <small class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Receitas</small>
                             <p class="text-2xl font-black text-emerald-500" id="dash-receitas">R$ 0,00</p>
                         </div>
                         <div class="bg-white dark:bg-darkCard p-6 rounded-[35px] border border-slate-200 dark:border-slate-800">
-                            <small class="text-[10px] font-black uppercase text-slate-400">Despesas</small>
+                            <small class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Despesas</small>
                             <p class="text-2xl font-black text-rose-500" id="dash-despesas">R$ 0,00</p>
                         </div>
                         <div class="bg-sky-500 p-6 rounded-[35px] shadow-xl text-white">
-                            <small class="text-[10px] font-black uppercase opacity-60">Saldo Atual</small>
+                            <small class="text-[10px] font-black uppercase opacity-60 tracking-widest">Saldo</small>
                             <p class="text-2xl font-black" id="dash-saldo">R$ 0,00</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="tab-metas" class="tab-content">
+                    <div class="flex justify-between items-center mb-8">
+                        <h2 class="text-2xl font-black uppercase italic text-sky-500">Meus Cofres</h2>
+                        <button onclick="openMetaModal()" class="px-4 py-2 bg-sky-500 text-white rounded-xl text-[10px] font-black uppercase shadow-lg shadow-sky-500/20">Novo Objetivo</button>
+                    </div>
+                    <div id="lista-metas" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        </div>
+                </section>
+
+                <section id="tab-relatorio" class="tab-content">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-white dark:bg-darkCard p-8 rounded-[30px] border border-slate-200 dark:border-slate-800">
+                            <h3 class="text-xs font-black uppercase text-slate-500 mb-6">Fluxo Mensal</h3>
+                            <canvas id="chart-barras"></canvas>
+                        </div>
+                        <div class="bg-white dark:bg-darkCard p-8 rounded-[30px] border border-slate-200 dark:border-slate-800">
+                            <h3 class="text-xs font-black uppercase text-slate-500 mb-6">Acumulado Anual</h3>
+                            <canvas id="chart-linha"></canvas>
                         </div>
                     </div>
                 </section>
@@ -71,42 +95,13 @@
                 </section>
 
                 <section id="tab-perfil" class="tab-content">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div class="space-y-8">
-                            <form id="form-perfil-data" class="bg-white dark:bg-slate-900/40 p-8 rounded-[30px] border border-slate-200 dark:border-slate-800 shadow-xl space-y-6">
-                                <h3 class="text-xl font-black uppercase italic text-sky-500 flex items-center gap-2"><i data-lucide="user"></i> Meu Perfil</h3>
-                                <div class="space-y-4">
-                                    <input type="text" id="perf-name" placeholder="Nome Completo" class="w-full p-4 bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-slate-800 rounded-[15px] text-sm text-white">
-                                    <input type="text" id="perf-username" placeholder="Username (@)" class="w-full p-4 bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-slate-800 rounded-[15px] text-sm text-white">
-                                    <div class="grid grid-cols-2 gap-3">
-                                        <input type="text" id="perf-estado" placeholder="UF" class="p-4 bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-slate-800 rounded-[15px] text-sm text-white">
-                                        <input type="text" id="perf-cidade" placeholder="Cidade" class="p-4 bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-slate-800 rounded-[15px] text-sm text-white">
-                                    </div>
-                                </div>
-                                <h3 class="text-xl font-black uppercase italic text-orange-500 flex items-center gap-2"><i data-lucide="car"></i> Veículo</h3>
-                                <div class="grid grid-cols-2 gap-3">
-                                    <input type="text" id="perf-marca" placeholder="Marca" class="p-4 bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-slate-800 rounded-[15px] text-sm text-white">
-                                    <input type="text" id="perf-modelo" placeholder="Modelo" class="p-4 bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-slate-800 rounded-[15px] text-sm text-white">
-                                    <input type="number" id="perf-consumo" placeholder="Consumo" class="p-4 bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-slate-800 rounded-[15px] text-sm text-white">
-                                    <input type="number" id="perf-gasolina" placeholder="Gasolina R$" class="p-4 bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-slate-800 rounded-[15px] text-sm text-white">
-                                </div>
-                                <button type="submit" class="w-full py-5 bg-sky-600 text-white rounded-[20px] font-black uppercase text-xs">Salvar Alterações</button>
-                            </form>
-
-                            <div class="bg-rose-600 p-8 rounded-[30px] border-4 border-rose-400 shadow-2xl space-y-4">
-                                <h3 class="text-xl font-black uppercase italic text-white flex items-center gap-2"><i data-lucide="alert-triangle"></i> ZONA CRÍTICA</h3>
-                                <button onclick="openDeleteAllModal()" class="w-full py-5 bg-white text-rose-600 rounded-[15px] font-black uppercase text-xs flex items-center justify-center gap-2">
-                                    <i data-lucide="trash-2"></i> DELETAR TODAS AS TRANSAÇÕES
-                                </button>
-                            </div>
+                    <div class="bg-white dark:bg-darkCard p-8 rounded-[30px] border border-slate-200 dark:border-slate-800 max-w-xl mx-auto">
+                        <h3 class="text-xl font-black uppercase italic text-sky-500 mb-6">Configurações Perfil</h3>
+                        <div id="perfil-info" class="space-y-4">
+                            <p class="text-xs font-bold text-slate-400 uppercase">Moto: Yamaha Fazer 250 - 2023</p>
+                            <p class="text-xs font-bold text-slate-400 uppercase">Consumo Médio: 29km/L</p>
                         </div>
-
-                        <div class="space-y-8">
-                            <div class="bg-white dark:bg-slate-900/40 p-8 rounded-[40px] border border-slate-200 dark:border-slate-800 shadow-xl">
-                                <h3 class="text-xl font-black uppercase italic text-sky-500 mb-6 flex items-center gap-2"><i data-lucide="landmark"></i> Financeiro</h3>
-                                <div id="lista-contas-perfil" class="space-y-3"></div>
-                            </div>
-                        </div>
+                        <button onclick="handleLogout()" class="w-full mt-8 py-4 bg-rose-500/10 text-rose-500 rounded-2xl font-black text-xs uppercase">Sair do Sistema</button>
                     </div>
                 </section>
             </main>
@@ -116,25 +111,28 @@
             <button onclick="showTab('dashboard')" class="nav-btn text-sky-500" data-tab="dashboard"><i data-lucide="layout-dashboard"></i></button>
             <button onclick="showTab('extrato')" class="nav-btn text-slate-400" data-tab="extrato"><i data-lucide="receipt-text"></i></button>
             <button onclick="openModal()" class="bg-sky-500 text-white p-3 rounded-2xl shadow-lg -translate-y-2"><i data-lucide="plus"></i></button>
-            <button class="text-slate-400"><i data-lucide="motorcycle"></i></button>
-            <button onclick="showTab('perfil')" class="nav-btn text-slate-400" data-tab="perfil"><i data-lucide="user"></i></button>
+            <button onclick="showTab('metas')" class="nav-btn text-slate-400" data-tab="metas"><i data-lucide="target"></i></button>
+            <button onclick="showTab('relatorio')" class="nav-btn text-slate-400" data-tab="relatorio"><i data-lucide="bar-chart-3"></i></button>
         </nav>
     </div>
 
-    <div id="modal-delete-all" class="hidden fixed inset-0 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4 z-[300]">
-        <div class="bg-white dark:bg-[#0f172a] w-full max-w-sm rounded-[30px] p-8 border border-slate-200 dark:border-slate-800 shadow-2xl text-center">
-            <h3 class="text-lg font-black uppercase italic text-rose-500 mb-4">Tem certeza?</h3>
-            <p class="text-xs font-bold text-slate-500 mb-8">Digite <strong>DELETAR TUDO</strong> para confirmar.</p>
-            <input type="text" id="confirm-delete-input" class="w-full p-4 mb-4 bg-slate-50 dark:bg-black/20 border border-slate-200 rounded-xl text-center font-black">
-            <button onclick="handleDeleteAll()" class="w-full py-4 bg-rose-500 text-white rounded-2xl font-black uppercase text-xs">Sim, excluir tudo</button>
-            <button onclick="closeDeleteAllModal()" class="w-full py-4 text-slate-500 text-[10px] font-black uppercase">Cancelar</button>
+    <div id="modal-meta" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 z-[300]">
+        <div class="bg-white dark:bg-[#0f172a] w-full max-w-md rounded-[35px] p-8 border border-slate-200 dark:border-slate-800 shadow-2xl">
+            <h3 class="text-lg font-black uppercase italic text-sky-500 mb-6">Novo Alvo</h3>
+            <form id="form-meta" class="space-y-4">
+                <input type="text" id="meta-nome" placeholder="Nome do Objetivo" class="w-full p-4 bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-slate-800 rounded-[18px] outline-none">
+                <input type="number" id="meta-objetivo" placeholder="Valor Total R$" class="w-full p-4 bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-slate-800 rounded-[18px] outline-none font-bold">
+                <input type="number" id="meta-guardado" placeholder="Já guardado R$" class="w-full p-4 bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-slate-800 rounded-[18px] outline-none font-bold">
+                <button type="submit" class="w-full py-5 bg-sky-600 text-white rounded-[22px] font-black uppercase text-xs">Salvar Objetivo</button>
+                <button type="button" onclick="closeMetaModal()" class="w-full text-slate-400 font-bold text-[10px] uppercase">Cancelar</button>
+            </form>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, doc, getDoc, updateDoc, collection, query, where, onSnapshot, orderBy, writeBatch, getDocs, Timestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, where, orderBy, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyArWGgDx0uxce8w72J_1UpKPCUJGvHs3fI",
@@ -148,80 +146,118 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
-        let userId = null;
+        const provider = new GoogleAuthProvider();
 
+        let userId = null;
         lucide.createIcons();
 
-        onAuthStateChanged(auth, async (user) => {
+        // AUTH
+        window.loginGoogle = () => signInWithPopup(auth, provider);
+        onAuthStateChanged(auth, (user) => {
             if (user) {
                 userId = user.uid;
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('main-app').classList.remove('hidden');
-                loadUserProfile();
-                loadData();
+                loadAllData();
+            } else {
+                document.getElementById('main-app').classList.add('hidden');
+                document.getElementById('login-screen').classList.remove('hidden');
             }
         });
 
-        async function loadUserProfile() {
-            const docRef = doc(db, "users", userId);
-            const userDoc = await getDoc(docRef);
-            if (userDoc.exists()) {
-                const data = userDoc.data();
-                document.getElementById('perf-name').value = data.name || '';
-                document.getElementById('perf-username').value = data.username || '';
-                document.getElementById('perf-estado').value = data.estado || '';
-                document.getElementById('perf-cidade').value = data.cidade || '';
-                document.getElementById('perf-marca').value = data.marcaVeiculo || '';
-                document.getElementById('perf-modelo').value = data.modeloVeiculo || '';
-                document.getElementById('perf-consumo').value = data.consumoVeiculo || '';
-                document.getElementById('perf-gasolina').value = data.precoCombustivel || '';
-            }
+        // LOAD DATA
+        function loadAllData() {
+            // Transações
+            onSnapshot(query(collection(db, "transactions"), where("userId", "==", userId), orderBy("date", "desc")), (snap) => {
+                const txs = snap.docs.map(d => ({id: d.id, ...d.data()}));
+                renderDashboard(txs);
+            });
+            // Metas
+            onSnapshot(query(collection(db, "goals"), where("userId", "==", userId)), (snap) => {
+                const goals = snap.docs.map(d => ({id: d.id, ...d.data()}));
+                renderMetas(goals);
+            });
         }
 
-        // Salvar Perfil
-        document.getElementById('form-perfil-data').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = e.target.querySelector('button');
-            btn.innerText = "SALVANDO...";
-            await updateDoc(doc(db, "users", userId), {
-                name: document.getElementById('perf-name').value,
-                username: document.getElementById('perf-username').value.toLowerCase(),
-                estado: document.getElementById('perf-estado').value,
-                cidade: document.getElementById('perf-cidade').value,
-                marcaVeiculo: document.getElementById('perf-marca').value,
-                modeloVeiculo: document.getElementById('perf-modelo').value,
-                consumoVeiculo: document.getElementById('perf-consumo').value,
-                precoCombustivel: document.getElementById('perf-gasolina').value,
+        // RENDER METAS
+        function renderMetas(goals) {
+            const list = document.getElementById('lista-metas');
+            list.innerHTML = goals.length ? "" : "<p class='text-slate-500 p-10 text-center font-bold italic uppercase text-xs'>Nenhum objetivo traçado.</p>";
+            
+            goals.forEach(m => {
+                const progresso = Math.min((m.guardado / m.objetivo) * 100, 100);
+                list.innerHTML += `
+                    <div class="bg-white dark:bg-darkCard p-6 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-xl">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h4 class="text-sm font-black uppercase italic text-sky-500">${m.nome}</h4>
+                                <small class="text-[9px] font-black uppercase text-slate-400">Alvo: R$ ${m.objetivo.toLocaleString('pt-BR')}</small>
+                            </div>
+                            <button onclick="deleteMeta('${m.id}')" class="text-slate-300 hover:text-rose-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between items-end">
+                                <span class="text-xl font-black text-emerald-500">R$ ${m.guardado.toLocaleString('pt-BR')}</span>
+                                <span class="text-[9px] font-black text-slate-400">${progresso.toFixed(0)}%</span>
+                            </div>
+                            <div class="h-2 bg-slate-100 dark:bg-slate-950 rounded-full overflow-hidden">
+                                <div class="h-full ${progresso === 100 ? 'bg-emerald-500' : 'bg-sky-500'}" style="width: ${progresso}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
             });
-            alert("Perfil Atualizado!");
-            btn.innerText = "Salvar Alterações";
+            lucide.createIcons();
+        }
+
+        // FORM METAS
+        document.getElementById('form-meta').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await addDoc(collection(db, "goals"), {
+                userId,
+                nome: document.getElementById('meta-nome').value,
+                objetivo: Number(document.getElementById('meta-objetivo').value),
+                guardado: Number(document.getElementById('meta-guardado').value),
+                createdAt: new Date()
+            });
+            closeMetaModal();
         });
 
-        // Deletar Tudo
-        window.handleDeleteAll = async () => {
-            const input = document.getElementById('confirm-delete-input').value;
-            if (input !== 'DELETAR TUDO') return alert("Digite a frase corretamente!");
-            
-            const q = query(collection(db, "transactions"), where("userId", "==", userId));
-            const snap = await getDocs(q);
-            const batch = writeBatch(db);
-            snap.docs.forEach(d => batch.delete(d.ref));
-            await batch.commit();
-            alert("Tudo limpo!");
-            closeDeleteAllModal();
-        };
+        window.deleteMeta = async (id) => { if(confirm("Apagar este cofre?")) await deleteDoc(doc(db, "goals", id)); };
 
-        // UI Helpers
+        // DASHBOARD / UI
+        function renderDashboard(txs) {
+            const feed = document.getElementById('lista-transacoes');
+            feed.innerHTML = "";
+            let r=0, d=0;
+            txs.forEach(t => {
+                const v = t.valor || 0;
+                t.tipo === 'receita' ? r += v : d += v;
+                feed.innerHTML += `<div class="p-4 bg-white dark:bg-slate-900/40 rounded-[20px] border dark:border-slate-800 flex justify-between items-center">
+                    <div class="flex items-center gap-3">
+                        <div class="p-2 rounded-lg ${t.tipo==='receita'?'bg-emerald-500/10 text-emerald-500':'bg-rose-500/10 text-rose-500'}"><i data-lucide="${t.tipo==='receita'?'arrow-up-circle':'arrow-down-circle'}"></i></div>
+                        <p class="text-xs font-black uppercase tracking-tighter">${t.descricao}</p>
+                    </div>
+                    <p class="text-xs font-black ${t.tipo==='receita'?'text-emerald-500':'text-rose-500'}">R$ ${v.toLocaleString('pt-BR')}</p>
+                </div>`;
+            });
+            document.getElementById('dash-receitas').innerText = `R$ ${r.toLocaleString('pt-BR')}`;
+            document.getElementById('dash-despesas').innerText = `R$ ${d.toLocaleString('pt-BR')}`;
+            document.getElementById('dash-saldo').innerText = `R$ ${(r-d).toLocaleString('pt-BR')}`;
+            lucide.createIcons();
+        }
+
         window.showTab = (id) => {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.getElementById('tab-' + id).classList.add('active');
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.replace('text-sky-500', 'text-slate-400'));
-            document.querySelector(`[data-tab="${id}"]`).classList.replace('text-slate-400', 'text-sky-500');
+            const activeBtn = document.querySelector(`[data-tab="${id}"]`);
+            if(activeBtn) activeBtn.classList.replace('text-slate-400', 'text-sky-500');
         };
 
-        window.openDeleteAllModal = () => document.getElementById('modal-delete-all').classList.remove('hidden');
-        window.closeDeleteAllModal = () => document.getElementById('modal-delete-all').classList.add('hidden');
-        window.handleLogout = () => signOut(auth).then(() => location.reload());
+        window.openMetaModal = () => document.getElementById('modal-meta').classList.remove('hidden');
+        window.closeMetaModal = () => document.getElementById('modal-meta').classList.add('hidden');
+        window.handleLogout = () => signOut(auth);
         window.toggleTheme = () => document.documentElement.classList.toggle('dark');
     </script>
 </body>
