@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Drivo & Money v24.7</title>
+    <title>Drivo & Money v24.6</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -26,14 +26,14 @@
         .input-dark { background-color: #020617; border: 1px solid #1e293b; color: white; padding: 0.75rem 1rem; border-radius: 0.75rem; outline: none; width: 100%; font-size: 0.875rem; }
     </style>
 </head>
-<body class="min-h-screen antialiased pb-32 text-slate-200 text-left">
+<body class="min-h-screen antialiased pb-32 text-slate-200">
     <div id="main-app" class="max-w-6xl mx-auto p-4 md:p-8">
         <header class="flex justify-between items-center mb-8 custom-card p-5">
             <div class="flex items-center gap-4">
                 <div class="p-3 bg-accentSky rounded-xl text-white shadow-lg"><i data-lucide="zap" class="w-6 h-6 fill-current"></i></div>
                 <div>
                     <h1 class="text-2xl font-black uppercase italic tracking-tighter text-accentSky leading-none">Drivo&Money</h1>
-                    <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">v24.7 • Carteira Ativa</span>
+                    <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">v24.6 • Integrado</span>
                 </div>
             </div>
             <button onclick="handleLogout()" class="p-4 bg-slate-800/50 rounded-xl text-accentRose"><i data-lucide="log-out"></i></button>
@@ -74,7 +74,7 @@
                         <div class="relative h-[280px]"><canvas id="chart-rosca"></canvas></div>
                     </div>
                     <div class="lg:col-span-7 custom-card p-8">
-                        <h3 class="text-xs font-black uppercase text-slate-400 mb-6 tracking-widest">Últimos Movimentos</h3>
+                        <h3 class="text-xs font-black uppercase text-slate-400 mb-6 tracking-widest text-left">Últimos Movimentos</h3>
                         <div id="mini-feed" class="space-y-3"></div>
                     </div>
                 </div>
@@ -82,7 +82,7 @@
 
             <section id="tab-extrato" class="tab-content space-y-4">
                 <h3 class="text-xs font-black uppercase tracking-widest text-accentSky ml-2">Histórico de Transações</h3>
-                <div id="lista-transacoes-extrato" class="space-y-3"></div>
+                <div id="lista-transacoes-extrato" class="space-y-3 text-left"></div>
             </section>
 
             <section id="tab-drivo" class="tab-content space-y-6">
@@ -99,11 +99,70 @@
                 </div>
                 <div class="custom-card p-6">
                     <h4 class="text-[10px] font-black uppercase text-slate-400 mb-4">Abastecimentos Recentes</h4>
-                    <div id="lista-drivo" class="space-y-3"></div>
+                    <div id="lista-drivo" class="space-y-3 text-left"></div>
                 </div>
             </section>
 
-            <section id="tab-perfil" class="tab-content space-y-8">
+            <section id="tab-relatorio" class="tab-content space-y-6">
+                <div class="flex items-center justify-between px-2">
+                    <h3 class="text-xs font-black uppercase tracking-widest text-accentSky">Relatório Anual</h3>
+                    <div class="flex items-center gap-3 bg-darkCard p-1.5 rounded-xl border border-white/5">
+                        <button onclick="changeYearRel(-1)" class="p-1 text-accentSky"><i data-lucide="chevron-left"></i></button>
+                        <span id="rel-ano-label" class="text-xs font-black italic">2026</span>
+                        <button onclick="changeYearRel(1)" class="p-1 text-accentSky"><i data-lucide="chevron-right"></i></button>
+                    </div>
+                </div>
+                <div class="custom-card p-6 min-h-[400px]">
+                    <canvas id="chart-anual"></canvas>
+                </div>
+            </section>
+
+            <section id="tab-metas" class="tab-content space-y-6">
+                <div class="flex justify-between items-center px-2">
+                    <h3 class="text-xs font-black uppercase tracking-widest text-accentSky">Meus Objetivos</h3>
+                    <button onclick="openModalMeta()" class="p-2 bg-accentSky/10 text-accentSky rounded-lg">
+                        <i data-lucide="plus-circle" class="w-5 h-5"></i>
+                    </button>
+                </div>
+                <div id="lista-metas" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+            </section>
+
+            <section id="tab-perfil" class="tab-content space-y-8 text-left">
+                <div class="space-y-4">
+                    <h3 class="text-xs font-black uppercase tracking-widest text-accentSky flex items-center gap-2"><i data-lucide="user" class="w-4 h-4"></i> Meu Perfil</h3>
+                    <div class="custom-card p-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div><label class="text-[9px] font-black text-slate-500 uppercase">Nome</label><input type="text" id="perf-nome" class="input-dark"></div>
+                        <div><label class="text-[9px] font-black text-slate-500 uppercase">Estado (UF)</label>
+                            <select id="perf-uf" onchange="loadCidadesIBGE()" class="input-dark">
+                                <option value="">Carregando estados...</option>
+                            </select>
+                        </div>
+                        <div><label class="text-[9px] font-black text-slate-500 uppercase">Cidade</label>
+                            <select id="perf-cidade" class="input-dark"><option value="">Selecione o estado</option></select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <h3 class="text-xs font-black uppercase tracking-widest text-accentAmber flex items-center gap-2"><i data-lucide="gauge" class="w-4 h-4"></i> Meu Veículo</h3>
+                    <div class="custom-card p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div><label class="text-[9px] font-black text-slate-500 uppercase">Montadora</label>
+                            <select id="veic-marca" onchange="updateModelosNacional()" class="input-dark">
+                                <option value="">Selecione</option>
+                                <optgroup label="Motos">
+                                    <option value="Honda Motos">Honda Motos</option><option value="Yamaha">Yamaha</option>
+                                </optgroup>
+                                <optgroup label="Carros">
+                                    <option value="Toyota">Toyota</option><option value="Volkswagen">Volkswagen</option>
+                                </optgroup>
+                            </select>
+                        </div>
+                        <div><label class="text-[9px] font-black text-slate-500 uppercase">Modelo</label><select id="veic-modelo" class="input-dark"></select></div>
+                        <div><label class="text-[9px] font-black text-slate-500 uppercase">Consumo (Km/L)</label><input type="number" id="veic-consumo" class="input-dark"></div>
+                        <div><label class="text-[9px] font-black text-slate-500 uppercase">Gasolina R$</label><input type="number" step="0.01" id="veic-gas" class="input-dark"></div>
+                    </div>
+                </div>
+
                 <div class="space-y-4">
                     <div class="flex justify-between items-center px-1">
                         <h3 class="text-xs font-black uppercase tracking-widest text-accentEmerald flex items-center gap-2">
@@ -113,6 +172,10 @@
                     </div>
                     <div id="lista-bancos-perfil" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
                 </div>
+
+                <button onclick="savePerfilSettings()" class="w-full py-5 bg-accentSky text-white font-black uppercase italic tracking-widest rounded-2xl shadow-xl mt-4 mb-10">
+                    Salvar Todas as Configurações
+                </button>
             </section>
         </main>
     </div>
@@ -120,8 +183,10 @@
     <nav class="fixed bottom-0 left-0 right-0 nav-glass px-6 py-4 flex gap-6 items-center justify-center z-50">
         <button onclick="showTab('dashboard')" class="nav-btn text-accentSky" data-tab="dashboard"><i data-lucide="layout-dashboard"></i></button>
         <button onclick="showTab('extrato')" class="nav-btn text-slate-500" data-tab="extrato"><i data-lucide="receipt-text"></i></button>
+        <button onclick="showTab('relatorio')" class="nav-btn text-slate-500" data-tab="relatorio"><i data-lucide="bar-chart-3"></i></button>
         <button onclick="openModal()" class="bg-accentSky text-white p-4 rounded-2xl shadow-xl -translate-y-8 active:scale-90 transition-all"><i data-lucide="plus" class="w-6 h-6"></i></button>
         <button onclick="showTab('drivo')" class="nav-btn text-slate-500" data-tab="drivo"><i data-lucide="gauge"></i></button>
+        <button onclick="showTab('metas')" class="nav-btn text-slate-500" data-tab="metas"><i data-lucide="target"></i></button>
         <button onclick="showTab('perfil')" class="nav-btn text-slate-500" data-tab="perfil"><i data-lucide="user"></i></button>
     </nav>
 
@@ -134,40 +199,28 @@
                     <button type="button" onclick="setTipo('despesa')" id="btn-tipo-des" class="flex-1 py-3 rounded-xl font-black text-[10px] uppercase bg-accentRose text-white">Despesa</button>
                     <button type="button" onclick="setTipo('receita')" id="btn-tipo-rec" class="flex-1 py-3 rounded-xl font-black text-[10px] uppercase bg-slate-800 text-slate-500">Receita</button>
                 </div>
-                <input type="number" id="valor" step="0.01" placeholder="0,00" class="input-dark text-lg font-black" required>
+                <div class="flex bg-slate-800 p-1 rounded-xl">
+                    <button type="button" onclick="setStatus('efetivada')" id="btn-st-efetivada" class="flex-1 py-2 rounded-lg text-[9px] font-black uppercase bg-accentSky text-white">Efetivada</button>
+                    <button type="button" onclick="setStatus('prevista')" id="btn-st-prevista" class="flex-1 py-2 rounded-lg text-[9px] font-black uppercase text-slate-500">Prevista</button>
+                </div>
+                <input type="number" id="valor" step="0.01" placeholder="Valor R$" class="input-dark text-lg font-black" required>
                 <input type="text" id="descricao" placeholder="Descrição" class="input-dark" required>
                 <div class="grid grid-cols-2 gap-2">
-                    <select id="banco-select" class="input-dark" required></select>
-                    <select id="categoria-select" class="input-dark" required></select>
+                    <select id="banco-select" class="input-dark" required><option value="">Banco...</option></select>
+                    <select id="categoria-select" class="input-dark" required><option value="">Categoria...</option></select>
                 </div>
                 <input type="date" id="dataVencimento" class="input-dark text-xs" required>
-                <button type="submit" class="w-full py-5 bg-sky-600 text-white rounded-2xl font-black uppercase text-xs shadow-lg">Confirmar</button>
+                <button type="submit" class="w-full py-5 bg-sky-600 text-white rounded-2xl font-black uppercase text-xs">Confirmar</button>
                 <button type="button" onclick="closeModal()" class="w-full text-slate-500 text-[10px] font-bold mt-2 uppercase">CANCELAR</button>
             </form>
         </div>
     </div>
 
-    <div id="modal-banco" class="hidden fixed inset-0 bg-slate-950/90 backdrop-blur-sm flex items-center justify-center p-4 z-[400]">
-        <div class="custom-card w-full max-w-sm p-8">
-            <h3 class="text-xs font-black uppercase text-accentEmerald mb-4">Novo Banco</h3>
-            <form id="form-banco" class="space-y-4">
-                <select id="banco-nome-input" class="input-dark">
-                    <option value="Carteira">Carteira</option>
-                    <option value="Inter">Inter</option>
-                    <option value="Nubank">Nubank</option>
-                    <option value="Itaú">Itaú</option>
-                    <option value="Santander">Santander</option>
-                </select>
-                <input type="number" id="banco-saldo-input" step="0.01" class="input-dark" placeholder="Saldo Inicial">
-                <button type="submit" class="w-full py-4 bg-emerald-600 text-white rounded-xl font-black uppercase text-xs">Salvar</button>
-                <button type="button" onclick="closeModal()" class="w-full text-slate-500 text-[10px] font-bold mt-2 uppercase">Voltar</button>
-            </form>
-        </div>
-    </div>
+    <div id="modal-banco" class="hidden fixed inset-0 bg-slate-950/90 backdrop-blur-sm flex items-center justify-center p-4 z-[400]"><div class="custom-card w-full max-w-sm p-8 shadow-2xl"><form id="form-banco" class="space-y-4"><select id="banco-nome-input" class="input-dark"><option value="Inter">Inter</option><option value="Nubank">Nubank</option><option value="Itaú">Itaú</option><option value="Santander">Santander</option><option value="Outros">Outros</option></select><input type="number" id="banco-saldo-input" step="0.01" class="input-dark" placeholder="Saldo Inicial"><button type="submit" class="w-full py-4 bg-emerald-600 text-white rounded-xl font-black uppercase text-xs">Confirmar</button><button type="button" onclick="closeModal()" class="w-full text-slate-500 text-[10px] font-bold mt-2">CANCELAR</button></form></div></div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, where, Timestamp, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, where, Timestamp, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = { apiKey: "AIzaSyArWGgDx0uxce8w72J_1UpKPCUJGvHs3fI", authDomain: "drivo-e-money.firebaseapp.com", projectId: "drivo-e-money", storageBucket: "drivo-e-money.firebasestorage.app", messagingSenderId: "62950568252", appId: "1:62950568252:web:7638827c39b589a9046e39" };
@@ -175,43 +228,28 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        let userId, transactions = [], userBancos = [], userCats = [], donutChart;
+        let userId, transactions = [], userBancos = [], userCats = [], goals = [], donutChart, chartAnual;
         let viewDate = new Date();
         let isYearlyView = false;
         let currentBankIdx = -1;
         let currentTipo = 'despesa';
+        let currentStatus = 'efetivada';
+        let selectedRelYear = new Date().getFullYear();
         const meses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 
         const bancoConfigs = {
-            "Carteira": { cor: "#475569", texto: "white" },
             "Inter": { cor: "#ff7a00", texto: "white" },
             "Nubank": { cor: "#8a05be", texto: "white" },
             "Itaú": { cor: "#ec7000", texto: "white" },
             "Santander": { cor: "#cc0000", texto: "white" },
+            "C6 Bank": { cor: "#000000", texto: "white" },
+            "Bradesco": { cor: "#ff0000", texto: "white" },
+            "Caixa": { cor: "#005ca9", texto: "white" },
+            "BB": { cor: "#f8d117", texto: "#0038a8" },
             "Outros": { cor: "#1e293b", texto: "white" }
         };
 
-        onAuthStateChanged(auth, async (u) => { 
-            if (u) { 
-                userId = u.uid; 
-                await checkDefaultBank();
-                initData(); 
-            } 
-        });
-
-        // --- AJUSTE: CRIA CONTA CARTEIRA SE NÃO EXISTIR ---
-        async function checkDefaultBank() {
-            const q = query(collection(db, "banks"), where("userId", "==", userId));
-            const snap = await getDocs(q);
-            if (snap.empty) {
-                await addDoc(collection(db, "banks"), {
-                    userId: userId,
-                    nome: "Carteira",
-                    saldoInicial: 0,
-                    createdAt: Timestamp.now()
-                });
-            }
-        }
+        onAuthStateChanged(auth, (u) => { if (u) { userId = u.uid; initData(); } });
 
         function initData() {
             onSnapshot(query(collection(db, "transactions"), where("userId", "==", userId)), (snap) => {
@@ -223,17 +261,26 @@
                 updateBancoSelect();
                 updateUI();
             });
+            onSnapshot(query(collection(db, "categories"), where("userId", "==", userId)), (snap) => {
+                userCats = snap.docs.map(d => ({id: d.id, ...d.data()}));
+                updateCatSelect();
+            });
         }
 
+        // --- CORREÇÃO DO SALDO ROTATIVO ---
         window.cycleBankDisplay = () => {
-            currentBankIdx++;
-            if (currentBankIdx >= userBancos.length) currentBankIdx = -1;
+            if (userBancos.length === 0) { currentBankIdx = -1; } 
+            else {
+                currentBankIdx++;
+                if (currentBankIdx >= userBancos.length) currentBankIdx = -1;
+            }
             updateUI();
         };
 
         function updateUI() {
+            // Cálculos Consolidados
             const sIniTotal = userBancos.reduce((acc, b) => acc + (b.saldoInicial || 0), 0);
-            const sTransTotal = transactions.reduce((acc, t) => t.tipo === 'receita' ? acc + t.valor : acc - t.valor, 0);
+            const sTransTotal = transactions.filter(t => t.status === 'efetivada').reduce((acc, t) => t.tipo === 'receita' ? acc + t.valor : acc - t.valor, 0);
             const consolidado = sIniTotal + sTransTotal;
 
             const label = document.getElementById('bank-label');
@@ -244,69 +291,55 @@
                 label.innerText = "Saldo Consolidado";
                 display.innerText = `R$ ${consolidado.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
                 card.style.background = "linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%)";
+                display.style.color = "white";
             } else {
                 const b = userBancos[currentBankIdx];
                 const conf = bancoConfigs[b.nome] || bancoConfigs["Outros"];
-                const sTransBanco = transactions.filter(t => t.banco === b.nome).reduce((acc, t) => t.tipo === 'receita' ? acc + t.valor : acc - t.valor, 0);
+                const sTransBanco = transactions.filter(t => t.status === 'efetivada' && t.banco === b.nome).reduce((acc, t) => t.tipo === 'receita' ? acc + t.valor : acc - t.valor, 0);
                 const saldoRealBanco = (b.saldoInicial || 0) + sTransBanco;
+
                 label.innerText = `Saldo ${b.nome}`;
                 display.innerText = `R$ ${saldoRealBanco.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
                 card.style.background = conf.cor;
+                display.style.color = conf.texto;
             }
 
+            // Renderização de Listas e Totais Mensais
             let rPer = 0, dPer = 0;
             const feed = document.getElementById('mini-feed');
             const ext = document.getElementById('lista-transacoes-extrato');
-            feed.innerHTML = ""; ext.innerHTML = "";
-
-            transactions.forEach((t, i) => {
-                const dV = t.dateVencimento instanceof Timestamp ? t.dateVencimento.toDate() : new Date(t.dateVencimento);
-                if(isYearlyView ? dV.getFullYear() === viewDate.getFullYear() : (dV.getMonth() === viewDate.getMonth() && dV.getFullYear() === viewDate.getFullYear())) {
-                    t.tipo === 'receita' ? rPer += t.valor : dPer += t.valor;
-                    const html = `<div class="flex justify-between items-center p-4 bg-slate-900/40 rounded-xl border border-white/5"><div class="flex items-center gap-3"><div class="p-2 rounded-lg ${t.tipo==='receita'?'bg-accentEmerald/10 text-accentEmerald':'bg-accentRose/10 text-accentRose'}"><i data-lucide="arrow-right-left" class="w-4 h-4"></i></div><div><h4 class="text-[11px] font-black uppercase">${t.descricao}</h4><p class="text-[9px] text-slate-500">${dV.toLocaleDateString()} • ${t.banco}</p></div></div><div class="flex items-center gap-3"><p class="text-xs font-black ${t.tipo==='receita'?'text-accentEmerald':'text-accentRose'}">R$ ${t.valor.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</p><button onclick="deleteTransaction('${t.id}')" class="p-2 text-slate-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div></div>`;
-                    if(i < 5) feed.innerHTML += html; ext.innerHTML += html;
-                }
-            });
-
+            if(feed && ext) {
+                feed.innerHTML = ""; ext.innerHTML = "";
+                transactions.forEach((t, i) => {
+                    const dV = t.dateVencimento instanceof Timestamp ? t.dateVencimento.toDate() : new Date(t.dateVencimento);
+                    if(isYearlyView ? dV.getFullYear() === viewDate.getFullYear() : (dV.getMonth() === viewDate.getMonth() && dV.getFullYear() === viewDate.getFullYear())) {
+                        t.tipo === 'receita' ? rPer += t.valor : dPer += t.valor;
+                        const html = `<div class="flex justify-between items-center p-4 bg-slate-900/40 rounded-xl border border-white/5"><div class="flex items-center gap-3"><div class="p-2 rounded-lg ${t.tipo==='receita'?'bg-accentEmerald/10 text-accentEmerald':'bg-accentRose/10 text-accentRose'}"><i data-lucide="${t.status==='efetivada'?'check':'clock'}" class="w-4 h-4"></i></div><div><h4 class="text-[11px] font-black uppercase">${t.descricao}</h4><p class="text-[9px] text-slate-500">${dV.toLocaleDateString()} • ${t.banco || 'Sem Banco'}</p></div></div><div class="flex items-center gap-3"><p class="text-xs font-black ${t.tipo==='receita'?'text-accentEmerald':'text-accentRose'}">R$ ${t.valor.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</p><div class="flex gap-1"><button onclick="editTransaction('${t.id}')" class="p-2 text-slate-500"><i data-lucide="edit-3" class="w-4 h-4"></i></button><button onclick="deleteTransaction('${t.id}')" class="p-2 text-slate-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div></div></div>`;
+                        if(i < 5) feed.innerHTML += html; ext.innerHTML += html;
+                    }
+                });
+            }
             document.getElementById('dash-receitas').innerText = `R$ ${rPer.toLocaleString('pt-BR')}`;
             document.getElementById('dash-despesas').innerText = `R$ ${dPer.toLocaleString('pt-BR')}`;
-            document.getElementById('display-periodo').innerText = isYearlyView ? viewDate.getFullYear() : `${meses[viewDate.getMonth()]} ${viewDate.getFullYear()}`;
+            document.getElementById('display-periodo').innerText = isYearlyView ? `Ano ${viewDate.getFullYear()}` : `${meses[viewDate.getMonth()]} ${viewDate.getFullYear()}`;
             lucide.createIcons();
+            setTimeout(() => updateDonut(currentTipo), 100);
         }
 
-        function updateBancoSelect() {
-            const sel = document.getElementById('banco-select');
-            sel.innerHTML = userBancos.map(b => `<option value="${b.nome}">${b.nome}</option>`).join('');
-        }
-
-        window.setTipo = (t) => {
-            currentTipo = t;
-            document.getElementById('btn-tipo-des').className = t === 'despesa' ? "flex-1 py-3 rounded-xl font-black text-[10px] uppercase bg-accentRose text-white" : "flex-1 py-3 rounded-xl font-black text-[10px] uppercase bg-slate-800 text-slate-500";
-            document.getElementById('btn-tipo-rec').className = t === 'receita' ? "flex-1 py-3 rounded-xl font-black text-[10px] uppercase bg-accentEmerald text-white" : "flex-1 py-3 rounded-xl font-black text-[10px] uppercase bg-slate-800 text-slate-500";
-        };
-
-        document.getElementById('form-transacao').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            await addDoc(collection(db, "transactions"), {
-                userId,
-                tipo: currentTipo,
-                valor: parseFloat(document.getElementById('valor').value),
-                descricao: document.getElementById('descricao').value,
-                banco: document.getElementById('banco-select').value,
-                dateVencimento: Timestamp.fromDate(new Date(document.getElementById('dataVencimento').value + 'T12:00:00')),
-                createdAt: Timestamp.now()
-            });
-            closeModal();
-        });
-
-        window.deleteTransaction = async (id) => { if (confirm("Apagar?")) await deleteDoc(doc(db, "transactions", id)); };
-        window.showTab = (id) => { document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active')); document.getElementById('tab-' + id).classList.add('active'); lucide.createIcons(); };
-        window.openModal = () => { document.getElementById('form-transacao').reset(); document.getElementById('dataVencimento').value = new Date().toISOString().split('T')[0]; document.getElementById('modal-lancamento').classList.remove('hidden'); };
-        window.openModalBanco = () => document.getElementById('modal-banco').classList.remove('hidden');
-        window.closeModal = () => { document.getElementById('modal-lancamento').classList.add('hidden'); document.getElementById('modal-banco').classList.add('hidden'); };
-        window.handleLogout = () => signOut(auth).then(() => location.reload());
-        window.changeMonth = (d) => { viewDate.setMonth(viewDate.getMonth() + d); updateUI(); };
+        // --- DEMAIS FUNÇÕES (MANTIDAS) ---
+        window.setTipo = (t) => { currentTipo = t; updateCatSelect(); document.getElementById('btn-tipo-des').className = t === 'despesa' ? "flex-1 py-3 rounded-xl font-black text-[10px] uppercase bg-accentRose text-white" : "flex-1 py-3 rounded-xl font-black text-[10px] uppercase bg-slate-800 text-slate-500"; document.getElementById('btn-tipo-rec').className = t === 'receita' ? "flex-1 py-3 rounded-xl font-black text-[10px] uppercase bg-accentEmerald text-white" : "flex-1 py-3 rounded-xl font-black text-[10px] uppercase bg-slate-800 text-slate-500"; };
+        window.setStatus = (s) => { currentStatus = s; document.getElementById('btn-st-efetivada').className = s === 'efetivada' ? "flex-1 py-2 rounded-lg text-[9px] font-black uppercase bg-accentSky text-white" : "flex-1 py-2 rounded-lg text-[9px] font-black uppercase text-slate-500"; document.getElementById('btn-st-prevista').className = s === 'prevista' ? "flex-1 py-2 rounded-lg text-[9px] font-black uppercase bg-accentAmber text-white" : "flex-1 py-2 rounded-lg text-[9px] font-black uppercase text-slate-500"; };
+        function updateBancoSelect() { const sel = document.getElementById('banco-select'); if(sel) sel.innerHTML = '<option value="">Banco...</option>' + userBancos.map(b => `<option value="${b.nome}">${b.nome}</option>`).join(''); }
+        function updateCatSelect() { const sel = document.getElementById('categoria-select'); if(sel) sel.innerHTML = '<option value="">Categoria...</option>' + userCats.filter(c => c.tipo === currentTipo).map(c => `<option value="${c.nome}">${c.nome}</option>`).join(''); }
+        document.getElementById('form-transacao').addEventListener('submit', async (e) => { e.preventDefault(); const id = document.getElementById('edit-id').value; const data = { userId, tipo: currentTipo, status: currentStatus, valor: parseFloat(document.getElementById('valor').value), descricao: document.getElementById('descricao').value, categoria: document.getElementById('categoria-select').value, banco: document.getElementById('banco-select').value, dateVencimento: Timestamp.fromDate(new Date(document.getElementById('dataVencimento').value + 'T12:00:00')) }; if (id) await updateDoc(doc(db, "transactions", id), data); else await addDoc(collection(db, "transactions"), { ...data, createdAt: Timestamp.now() }); closeModal(); });
+        window.editTransaction = (id) => { const t = transactions.find(item => item.id === id); if (!t) return; document.getElementById('edit-id').value = t.id; document.getElementById('modal-title').innerText = "Editar Registro"; document.getElementById('descricao').value = t.descricao; document.getElementById('valor').value = t.valor; setTipo(t.tipo); setStatus(t.status || 'efetivada'); setTimeout(() => { document.getElementById('categoria-select').value = t.categoria; document.getElementById('banco-select').value = t.banco || ""; }, 100); const dV = t.dateVencimento instanceof Timestamp ? t.dateVencimento.toDate() : new Date(t.dateVencimento); document.getElementById('dataVencimento').value = dV.toISOString().split('T')[0]; document.getElementById('modal-lancamento').classList.remove('hidden'); };
+        window.deleteTransaction = async (id) => { if (confirm("Apagar permanentemente?")) await deleteDoc(doc(db, "transactions", id)); };
+        window.showTab = (id) => { document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active')); document.getElementById('tab-' + id).classList.add('active'); document.querySelectorAll('.nav-btn').forEach(b => b.classList.replace('text-accentSky', 'text-slate-500')); const active = document.querySelector(`[data-tab="${id}"]`); if(active) active.classList.replace('text-slate-500', 'text-accentSky'); lucide.createIcons(); };
+        window.changeMonth = (delta) => { isYearlyView = false; viewDate.setMonth(viewDate.getMonth() + delta); updateUI(); };
         window.toggleYearlyView = () => { isYearlyView = !isYearlyView; updateUI(); };
+        window.closeModal = () => { ['modal-lancamento', 'modal-banco'].forEach(id => { const el = document.getElementById(id); if (el) el.classList.add('hidden'); }); };
+        window.openModal = () => { document.getElementById('edit-id').value = ""; document.getElementById('form-transacao').reset(); document.getElementById('dataVencimento').value = new Date().toISOString().split('T')[0]; updateCatSelect(); updateBancoSelect(); document.getElementById('modal-lancamento').classList.remove('hidden'); };
+        window.handleLogout = () => signOut(auth).then(() => location.reload());
     </script>
 </body>
 </html>
