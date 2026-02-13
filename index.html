@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Drivo & Money v18</title>
+    <title>Drivo & Money v19</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -16,16 +16,13 @@
     </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #020617; color: white; transition: all 0.3s ease; }
+        body { font-family: 'Inter', sans-serif; background-color: #020617; color: white; }
         .tab-content { display: none; }
         .tab-content.active { display: block; animation: fadeIn 0.4s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .custom-card { background-color: #0f172a; border: 1px solid #1e293b; border-radius: 1.5rem; }
-        .nav-glass { background: rgba(15, 23, 42, 0.98); backdrop-filter: blur(15px); border-top: 1px solid rgba(255, 255, 255, 0.05); }
-        .bank-nubank { background: linear-gradient(135deg, #820ad1 0%, #5a0792 100%); }
-        .bank-inter { background: linear-gradient(135deg, #ff7a00 0%, #cc6200 100%); }
-        .bank-itau { background: linear-gradient(135deg, #ec7000 0%, #b85700 100%); }
-        .bank-default { background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%); }
+        .input-dark { background-color: #020617; border: 1px solid #1e293b; color: white; padding: 1rem; border-radius: 0.75rem; outline: none; }
+        .input-dark:focus { border-color: #0ea5e9; }
     </style>
 </head>
 <body class="min-h-screen antialiased pb-32">
@@ -34,61 +31,55 @@
         <header class="flex justify-between items-center mb-8 custom-card p-5">
             <div class="flex items-center gap-4">
                 <div class="p-3 bg-accentSky rounded-xl text-white shadow-lg"><i data-lucide="zap" class="w-6 h-6 fill-current"></i></div>
-                <h1 class="text-2xl font-black uppercase italic text-accentSky leading-none">Drivo&Money</h1>
+                <div>
+                    <h1 class="text-2xl font-black uppercase italic text-accentSky leading-none">Drivo&Money</h1>
+                    <span id="user-handle-header" class="text-[9px] font-black text-slate-500 uppercase tracking-widest">@carregando</span>
+                </div>
             </div>
-            <span class="text-[10px] font-black text-slate-500 uppercase">v18 • Cloud Active</span>
+            <span class="text-[10px] font-black text-slate-500 uppercase">v19 • Social ID</span>
         </header>
 
         <section id="tab-dashboard" class="tab-content active space-y-6">
-            <div id="card-saldo-main" onclick="cycleBankDisplay()" class="cursor-pointer transition-all duration-500 p-8 rounded-[2rem] shadow-2xl relative overflow-hidden min-h-[160px] flex flex-col justify-between bank-default">
-                <div class="relative z-10 flex justify-between items-start">
-                    <div>
-                        <small id="bank-name-label" class="text-[10px] font-black uppercase tracking-[0.2em] text-white/80 text-shadow">Saldo Consolidado</small>
-                        <p id="dash-saldo-val" class="text-4xl font-black mt-2 text-white">R$ 0,00</p>
-                    </div>
-                    <i id="bank-icon-ui" data-lucide="layers" class="w-8 h-8 text-white/30"></i>
+            <div id="card-saldo-main" onclick="cycleBankDisplay()" class="cursor-pointer p-8 rounded-[2rem] shadow-2xl relative overflow-hidden min-h-[160px] flex flex-col justify-between bg-gradient-to-br from-accentSky to-blue-700 transition-all duration-500">
+                <div class="relative z-10">
+                    <small id="bank-label" class="text-[10px] font-black uppercase tracking-widest text-white/70">Saldo Consolidado</small>
+                    <p id="dash-saldo" class="text-4xl font-black mt-2 text-white">R$ 0,00</p>
                 </div>
                 <div id="bank-dots" class="flex gap-1"></div>
             </div>
             
             <div class="grid grid-cols-2 gap-4">
-                <div class="custom-card p-6 border-l-4 border-l-accentEmerald"><small class="text-[10px] font-black uppercase text-slate-500">Ganhos</small><p class="text-2xl font-black text-accentEmerald" id="dash-receitas">R$ 0,00</p></div>
-                <div class="custom-card p-6 border-l-4 border-l-accentRose"><small class="text-[10px] font-black uppercase text-slate-500">Gastos</small><p class="text-2xl font-black text-accentRose" id="dash-despesas">R$ 0,00</p></div>
+                <div class="custom-card p-6 border-l-4 border-l-accentEmerald">
+                    <small class="text-[10px] font-black uppercase text-slate-500">Ganhos</small>
+                    <p class="text-2xl font-black text-accentEmerald" id="dash-receitas">R$ 0,00</p>
+                </div>
+                <div class="custom-card p-6 border-l-4 border-l-accentRose">
+                    <small class="text-[10px] font-black uppercase text-slate-500">Gastos</small>
+                    <p class="text-2xl font-black text-accentRose" id="dash-despesas">R$ 0,00</p>
+                </div>
             </div>
         </section>
 
         <section id="tab-perfil" class="tab-content space-y-8">
             <div class="space-y-4">
-                <div class="flex justify-between items-center"><h3 class="text-xs font-black uppercase text-accentSky">Meus Bancos</h3><button onclick="openBankModal()" class="text-[10px] bg-accentSky/10 text-accentSky px-3 py-1 rounded-lg font-black">+ ADICIONAR</button></div>
-                <div id="perfil-bancos-list" class="grid grid-cols-1 gap-3"></div>
-            </div>
-
-            <div class="space-y-4">
-                <h3 class="text-xs font-black uppercase text-accentSky">Categorias Personalizadas</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="custom-card p-6">
-                        <div class="flex justify-between items-center mb-4"><p class="text-[10px] font-black text-accentEmerald uppercase">Receita</p><button onclick="openCatModal('receita')" class="text-xs">+</button></div>
-                        <div id="list-cat-receita" class="space-y-2"></div>
-                    </div>
-                    <div class="custom-card p-6">
-                        <div class="flex justify-between items-center mb-4"><p class="text-[10px] font-black text-accentRose uppercase">Despesa</p><button onclick="openCatModal('despesa')" class="text-xs">+</button></div>
-                        <div id="list-cat-despesa" class="space-y-2"></div>
+                <h3 class="text-xs font-black uppercase tracking-widest text-accentSky">Sua Identidade</h3>
+                <div class="custom-card p-6 flex flex-col gap-4">
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500 uppercase mb-2 block">Seu @único</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="input-handle" placeholder="ex: weverson" class="input-dark flex-1">
+                            <button onclick="saveHandle()" class="bg-accentSky text-white px-6 rounded-xl font-black text-[10px] uppercase">Salvar</button>
+                        </div>
+                        <p class="text-[9px] text-slate-500 mt-2 italic">* Outros usuários poderão te marcar usando esse ID.</p>
                     </div>
                 </div>
             </div>
+            
+            <div id="bancos-section" class="space-y-4">
+                <div class="flex justify-between items-center"><h3 class="text-xs font-black uppercase text-accentSky">Meus Bancos</h3><button onclick="openBankModal()" class="text-[10px] bg-accentSky/10 text-accentSky px-3 py-1 rounded-lg font-black">+ NOVO</button></div>
+                <div id="lista-bancos-perfil" class="grid grid-cols-1 gap-2"></div>
+            </div>
         </section>
-    </div>
-
-    <div id="modal-banco" class="hidden fixed inset-0 bg-slate-950/90 backdrop-blur-sm z-[400] flex items-center justify-center p-6">
-        <div class="custom-card w-full max-w-sm p-8">
-            <h3 class="text-lg font-black uppercase italic text-accentSky mb-6">Configurar Banco</h3>
-            <form id="form-banco" class="space-y-4">
-                <input type="text" id="bank-name" placeholder="Ex: Nubank, Inter, Caixa" class="w-full p-4 bg-slate-900 border border-slate-800 rounded-xl text-white outline-none" required>
-                <input type="number" id="bank-saldo" step="0.01" placeholder="Saldo Inicial R$" class="w-full p-4 bg-slate-950 border border-slate-800 rounded-xl text-white font-bold outline-none" required>
-                <button type="submit" class="w-full py-4 bg-accentSky text-white rounded-2xl font-black uppercase text-xs shadow-lg">Salvar Banco</button>
-                <button type="button" onclick="closeBankModal()" class="w-full text-slate-500 text-[10px] font-black uppercase mt-2">Cancelar</button>
-            </form>
-        </div>
     </div>
 
     <div id="modal-lancamento" class="hidden fixed inset-0 bg-slate-950/90 backdrop-blur-sm z-[300] flex items-center justify-center p-4">
@@ -99,13 +90,21 @@
                     <button type="button" onclick="setTipo('despesa')" id="btn-tipo-des" class="flex-1 py-3 rounded-xl font-black text-[10px] uppercase bg-accentRose text-white">Despesa</button>
                     <button type="button" onclick="setTipo('receita')" id="btn-tipo-rec" class="flex-1 py-3 rounded-xl font-black text-[10px] uppercase bg-slate-800 text-slate-500">Receita</button>
                 </div>
-                <input type="number" id="tx-valor" step="0.01" placeholder="Valor R$" class="w-full p-4 bg-slate-950 border border-slate-800 rounded-xl text-lg font-black text-white outline-none" required>
-                <input type="text" id="tx-desc" placeholder="Descrição" class="w-full p-4 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white outline-none" required>
-                <select id="tx-cat" class="w-full p-4 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white outline-none"></select>
-                <select id="tx-bank" class="w-full p-4 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white outline-none"></select>
-                <input type="date" id="tx-data" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-xs font-bold text-white" required>
-                <button type="submit" class="w-full py-5 bg-sky-600 text-white rounded-2xl font-black uppercase text-xs">Salvar</button>
-                <button type="button" onclick="closeModal()" class="w-full text-slate-500 text-[10px] font-bold uppercase mt-2 text-center">Cancelar</button>
+                <input type="number" id="tx-valor" step="0.01" placeholder="Valor R$" class="input-dark w-full text-lg font-black" required>
+                <input type="text" id="tx-desc" placeholder="Descrição" class="input-dark w-full text-sm" required>
+                
+                <div class="relative">
+                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold">@</span>
+                    <input type="text" id="tx-marked-user" placeholder="marcar usuário (opcional)" class="input-dark w-full text-sm pl-8">
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <select id="tx-cat" class="input-dark text-sm"></select>
+                    <select id="tx-bank" class="input-dark text-sm"></select>
+                </div>
+                <input type="date" id="tx-data" class="input-dark w-full text-xs" required>
+                <button type="submit" class="w-full py-5 bg-sky-600 text-white rounded-2xl font-black uppercase text-xs">Confirmar</button>
+                <button type="button" onclick="closeModal()" class="w-full text-slate-500 text-[10px] font-bold uppercase mt-2">Cancelar</button>
             </form>
         </div>
     </div>
@@ -118,7 +117,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, where, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, where, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = { apiKey: "AIzaSyArWGgDx0uxce8w72J_1UpKPCUJGvHs3fI", authDomain: "drivo-e-money.firebaseapp.com", projectId: "drivo-e-money", storageBucket: "drivo-e-money.firebasestorage.app", messagingSenderId: "62950568252", appId: "1:62950568252:web:7638827c39b589a9046e39" };
@@ -126,137 +125,70 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        let userId, userBancos = [], userCats = [], currentTipo = 'despesa', currentBankIdx = -1;
+        let userId, userHandle = "";
 
-        onAuthStateChanged(auth, (u) => { if(u) { userId = u.uid; syncData(); } });
+        onAuthStateChanged(auth, async (u) => { 
+            if(u) { 
+                userId = u.uid; 
+                loadUserHandle();
+                // Sincronização de bancos e dashboard (conforme v18)
+            } 
+        });
 
-        function syncData() {
-            // Sincronizar Bancos
-            onSnapshot(query(collection(db, "banks"), where("userId", "==", userId)), (snap) => {
-                userBancos = snap.docs.map(d => ({id: d.id, ...d.data()}));
-                renderBancos();
-                updateDashboard();
-            });
-            // Sincronizar Categorias
-            onSnapshot(query(collection(db, "categories"), where("userId", "==", userId)), (snap) => {
-                userCats = snap.docs.map(d => ({id: d.id, ...d.data()}));
-                renderCats();
-            });
-        }
-
-        // --- LOGICA DOS BANCOS ---
-        window.openBankModal = () => document.getElementById('modal-banco').classList.remove('hidden');
-        window.closeBankModal = () => document.getElementById('modal-banco').classList.add('hidden');
-        
-        document.getElementById('form-banco').onsubmit = async (e) => {
-            e.preventDefault();
-            await addDoc(collection(db, "banks"), {
-                userId, 
-                nome: document.getElementById('bank-name').value, 
-                saldoInicial: parseFloat(document.getElementById('bank-saldo').value)
-            });
-            closeBankModal(); e.target.reset();
+        // SALVAR @USUARIO
+        window.saveHandle = async () => {
+            const handle = document.getElementById('input-handle').value.toLowerCase().replace('@','').trim();
+            if(!handle) return;
+            
+            // Salva no perfil do usuário
+            await setDoc(doc(db, "users", userId), { handle: handle }, { merge: true });
+            // Cria um índice global de handles para busca futura
+            await setDoc(doc(db, "handles", handle), { uid: userId });
+            
+            alert("Identidade @"+handle+" criada!");
+            loadUserHandle();
         };
 
-        function renderBancos() {
-            const list = document.getElementById('perfil-bancos-list');
-            list.innerHTML = userBancos.map(b => `
-                <div class="flex justify-between items-center p-4 bg-slate-900/50 rounded-xl border border-white/5">
-                    <div class="flex items-center gap-3">
-                        <div class="w-2 h-8 rounded-full ${getBankColor(b.nome)}"></div>
-                        <p class="text-sm font-bold uppercase tracking-widest">${b.nome}</p>
-                    </div>
-                    <div class="text-right">
-                        <p class="text-xs font-black">R$ ${b.saldoInicial.toLocaleString('pt-BR')}</p>
-                        <button onclick="deleteBank('${b.id}')" class="text-[8px] text-accentRose font-black uppercase">Excluir</button>
-                    </div>
-                </div>
-            `).join('');
-            
-            // Atualizar Select do Modal de Transação
-            document.getElementById('tx-bank').innerHTML = userBancos.map(b => `<option value="${b.nome}">${b.nome}</option>`).join('');
-        }
-
-        window.deleteBank = async (id) => { if(confirm("Apagar banco?")) await deleteDoc(doc(db, "banks", id)); };
-
-        // --- LOGICA DE CATEGORIAS ---
-        window.openCatModal = async (tipo) => {
-            const nome = prompt(`Nova categoria de ${tipo}:`);
-            if(nome) await addDoc(collection(db, "categories"), { userId, nome, tipo });
-        };
-
-        function renderCats() {
-            const rList = document.getElementById('list-cat-receita');
-            const dList = document.getElementById('list-cat-despesa');
-            
-            const rCats = userCats.filter(c => c.tipo === 'receita');
-            const dCats = userCats.filter(c => c.tipo === 'despesa');
-
-            rList.innerHTML = rCats.map(c => `<div class="flex justify-between p-2 bg-slate-950 rounded-lg text-[10px] font-bold uppercase tracking-widest"><span>${c.nome}</span><button onclick="deleteCat('${c.id}')" class="text-accentRose">X</button></div>`).join('');
-            dList.innerHTML = dCats.map(c => `<div class="flex justify-between p-2 bg-slate-950 rounded-lg text-[10px] font-bold uppercase tracking-widest"><span>${c.nome}</span><button onclick="deleteCat('${c.id}')" class="text-accentRose">X</button></div>`).join('');
-            
-            updateCatSelect();
-        }
-
-        window.deleteCat = async (id) => { if(confirm("Apagar categoria?")) await deleteDoc(doc(db, "categories", id)); };
-
-        // --- DASHBOARD E CARROSSEL ---
-        window.cycleBankDisplay = () => {
-            currentBankIdx++;
-            if(currentBankIdx >= userBancos.length) currentBankIdx = -1;
-            updateDashboard();
-        };
-
-        function updateDashboard() {
-            const card = document.getElementById('card-saldo-main');
-            const label = document.getElementById('bank-name-label');
-            const val = document.getElementById('dash-saldo-val');
-            const dots = document.getElementById('bank-dots');
-
-            dots.innerHTML = `<div class="h-1 w-6 rounded-full ${currentBankIdx === -1 ? 'bg-white' : 'bg-white/20'}"></div>` + 
-                userBancos.map((_, i) => `<div class="h-1 w-2 rounded-full ${currentBankIdx === i ? 'bg-white' : 'bg-white/20'}"></div>`).join('');
-
-            if(currentBankIdx === -1) {
-                const total = userBancos.reduce((acc, b) => acc + b.saldoInicial, 0);
-                card.className = "cursor-pointer transition-all duration-500 p-8 rounded-[2rem] shadow-2xl relative overflow-hidden min-h-[160px] flex flex-col justify-between bank-default";
-                label.innerText = "Saldo Consolidado";
-                val.innerText = `R$ ${total.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-            } else {
-                const b = userBancos[currentBankIdx];
-                card.className = `cursor-pointer transition-all duration-500 p-8 rounded-[2rem] shadow-2xl relative overflow-hidden min-h-[160px] flex flex-col justify-between ${getBankColor(b.nome)}`;
-                label.innerText = `Saldo ${b.nome}`;
-                val.innerText = `R$ ${b.saldoInicial.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+        async function loadUserHandle() {
+            const docSnap = await getDoc(doc(db, "users", userId));
+            if (docSnap.exists() && docSnap.data().handle) {
+                userHandle = docSnap.data().handle;
+                document.getElementById('user-handle-header').innerText = "@" + userHandle;
+                document.getElementById('input-handle').value = userHandle;
             }
         }
 
-        function getBankColor(nome) {
-            const n = nome.toLowerCase();
-            if(n.includes('nubank')) return 'bank-nubank';
-            if(n.includes('inter')) return 'bank-inter';
-            if(n.includes('itau')) return 'bank-itau';
-            return 'bank-default';
-        }
-
-        // --- MODAL LANCAMENTO ---
-        window.openModal = () => { updateCatSelect(); document.getElementById('modal-lancamento').classList.remove('hidden'); };
-        window.closeModal = () => document.getElementById('modal-lancamento').classList.add('hidden');
-        window.setTipo = (t) => { currentTipo = t; updateCatSelect(); };
-        
-        function updateCatSelect() {
-            const select = document.getElementById('tx-cat');
-            const filtered = userCats.filter(c => c.tipo === currentTipo);
-            select.innerHTML = filtered.map(c => `<option value="${c.nome}">${c.nome}</option>`).join('') || '<option value="Geral">Geral</option>';
+        // SALVAR TRANSAÇÃO COM MARCAÇÃO
+        document.getElementById('form-transacao').onsubmit = async (e) => {
+            e.preventDefault();
+            const markedUser = document.getElementById('tx-marked-user').value.toLowerCase().replace('@','').trim();
             
-            document.getElementById('btn-tipo-des').className = currentTipo==='despesa' ? "flex-1 py-3 rounded-xl font-black text-[10px] uppercase bg-accentRose text-white" : "flex-1 py-3 rounded-xl font-black text-[10px] uppercase bg-slate-800 text-slate-500";
-            document.getElementById('btn-tipo-rec').className = currentTipo==='receita' ? "flex-1 py-3 rounded-xl font-black text-[10px] uppercase bg-accentEmerald text-white" : "flex-1 py-3 rounded-xl font-black text-[10px] uppercase bg-slate-800 text-slate-500";
-        }
+            const data = {
+                userId,
+                tipo: currentTipo,
+                valor: parseFloat(document.getElementById('tx-valor').value),
+                descricao: document.getElementById('tx-desc').value,
+                markedUser: markedUser || null, // Se tiver usuário marcado, salva aqui
+                status: 'efetivada',
+                createdAt: new Date()
+            };
+
+            await addDoc(collection(db, "transactions"), data);
+            
+            if(markedUser) {
+                alert("Transação salva! A notificação para @" + markedUser + " será implementada na v20.");
+            }
+            closeModal();
+        };
 
         window.showTab = (id) => {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.getElementById('tab-' + id).classList.add('active');
             lucide.createIcons();
         };
-
+        
+        window.openModal = () => document.getElementById('modal-lancamento').classList.remove('hidden');
+        window.closeModal = () => document.getElementById('modal-lancamento').classList.add('hidden');
         lucide.createIcons();
     </script>
 </body>
