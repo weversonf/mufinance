@@ -17,8 +17,8 @@
             theme: { 
                 extend: { 
                     colors: { 
-                        darkBg: '#0f172a', 
-                        darkCard: '#1e293b', 
+                        darkBg: '#020617', 
+                        darkCard: '#0f172a', 
                         accentSky: '#0ea5e9',
                         accentEmerald: '#10b981',
                         accentRose: '#f43f5e'
@@ -55,7 +55,7 @@
 </head>
 <body class="min-h-screen bg-slate-50 dark:bg-darkBg text-slate-900 dark:text-white antialiased pb-32">
 
-    <div id="login-screen" class="fixed inset-0 z-[200] bg-darkBg flex items-center justify-center p-6">
+    <div id="login-screen" class="fixed inset-0 z-[200] bg-slate-950 flex items-center justify-center p-6">
         <div class="w-full max-w-sm text-center">
             <div class="inline-flex p-5 bg-accentSky rounded-[2rem] text-white mb-6 shadow-2xl shadow-sky-500/20">
                 <i data-lucide="zap" class="w-12 h-12 fill-current"></i>
@@ -63,33 +63,32 @@
             <h1 class="text-4xl font-black uppercase italic tracking-tighter text-white mb-1">Drivo&Money</h1>
             <p class="text-slate-400 text-xs font-bold uppercase tracking-widest mb-10">Version 05 • Fortaleza</p>
             <button onclick="loginGoogle()" class="w-full py-5 bg-white text-slate-900 rounded-3xl font-black flex items-center justify-center gap-3 shadow-xl hover:scale-105 transition-all active:scale-95">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/action/done.svg" class="w-5 h-5 hidden" id="google-icon">
                 Entrar com Google
             </button>
         </div>
     </div>
 
     <div id="main-app" class="hidden max-w-6xl mx-auto p-4 md:p-8">
-        <header class="flex justify-between items-center mb-10 glass p-5 rounded-4xl border border-white/10 shadow-2xl">
+        <header class="flex justify-between items-center mb-10 bg-white dark:bg-darkCard p-5 rounded-4xl border border-slate-200 dark:border-slate-800 shadow-sm">
             <div class="flex items-center gap-4">
                 <div class="p-3 bg-accentSky rounded-2xl text-white shadow-lg shadow-sky-500/30">
                     <i data-lucide="zap" class="w-6 h-6 fill-current"></i>
                 </div>
                 <div>
-                    <h1 class="text-2xl font-black uppercase italic tracking-tighter leading-none">Drivo&Money</h1>
-                    <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">v05 • Release</span>
+                    <h1 class="text-2xl font-black uppercase italic tracking-tighter leading-none text-accentSky">Drivo&Money</h1>
+                    <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">v05 • Original Colors</span>
                 </div>
             </div>
             <div class="flex items-center gap-3">
-                <button onclick="toggleTheme()" class="p-4 glass rounded-2xl text-yellow-400"><i id="theme-icon" data-lucide="sun"></i></button>
-                <button onclick="handleLogout()" class="px-6 py-4 bg-accentRose/10 text-accentRose rounded-2xl font-black text-[10px] uppercase border border-accentRose/20 hover:bg-accentRose hover:text-white transition-all">Logout</button>
+                <button onclick="toggleTheme()" class="p-4 bg-slate-100 dark:bg-slate-800 rounded-2xl text-yellow-400"><i id="theme-icon" data-lucide="sun"></i></button>
+                <button onclick="handleLogout()" class="p-3 bg-slate-100 dark:bg-slate-800/50 rounded-2xl text-rose-500"><i data-lucide="log-out"></i></button>
             </div>
         </header>
 
         <main>
             <section id="tab-dashboard" class="tab-content active space-y-8">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="card-gradient p-8 rounded-5xl shadow-2xl shadow-sky-500/20 flex flex-col justify-between min-h-[220px] relative overflow-hidden">
+                    <div class="card-gradient p-8 rounded-5xl shadow-2xl shadow-sky-500/20 flex flex-col justify-between min-h-[220px] relative overflow-hidden text-white">
                         <div class="relative z-10">
                             <div class="flex justify-between items-start">
                                 <small class="text-xs font-bold uppercase opacity-80 tracking-widest">Saldo Atual</small>
@@ -97,61 +96,51 @@
                             </div>
                             <p class="text-5xl font-black mt-4 tracking-tighter" id="dash-saldo">R$ 0,00</p>
                         </div>
-                        <div class="relative z-10 flex gap-4 mt-6">
-                             <div class="glass flex-1 p-4 rounded-3xl">
-                                <small class="text-[9px] font-bold uppercase opacity-60 block">Receitas</small>
-                                <span class="text-lg font-black" id="dash-rec-mini">R$ 0,00</span>
-                             </div>
-                        </div>
                         <i data-lucide="zap" class="absolute -right-8 -bottom-8 w-48 h-48 opacity-10 rotate-12"></i>
                     </div>
 
-                    <div class="glass p-8 rounded-5xl border border-white/5 flex flex-col justify-between min-h-[220px]">
+                    <div class="bg-white dark:bg-darkCard p-8 rounded-5xl border border-slate-200 dark:border-slate-800 flex flex-col justify-between min-h-[220px]">
                         <div>
                             <div class="flex justify-between items-start">
-                                <small class="text-xs font-bold uppercase text-slate-500 tracking-widest">Despesas do Mês</small>
+                                <small class="text-xs font-bold uppercase text-slate-400 tracking-widest">Despesas do Mês</small>
                                 <div class="p-2 bg-accentRose/10 text-accentRose rounded-xl"><i data-lucide="trending-down" class="w-4 h-4"></i></div>
                             </div>
                             <p class="text-5xl font-black mt-4 tracking-tighter text-accentRose" id="dash-despesas">R$ 0,00</p>
                         </div>
                         <div class="mt-6 flex items-center gap-2">
-                            <span class="flex h-2 w-2 rounded-full bg-accentRose"></span>
-                            <small class="text-[10px] font-black uppercase text-slate-500">Média diária: R$ <span id="dash-media-dia">0,00</span></small>
+                            <small class="text-[10px] font-black uppercase text-accentEmerald">Ganhos: <span id="dash-rec-mini">R$ 0,00</span></small>
                         </div>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                    <div class="lg:col-span-4 glass p-8 rounded-5xl border border-white/5">
+                    <div class="lg:col-span-4 bg-white dark:bg-darkCard p-8 rounded-5xl border border-slate-200 dark:border-slate-800">
                         <div class="flex justify-between items-center mb-8">
-                            <h3 class="text-xs font-black uppercase tracking-widest text-slate-500">Categorias</h3>
-                            <button onclick="updateDonut('despesa')" class="text-[10px] font-black text-accentSky uppercase">Ver Tudo</button>
+                            <h3 class="text-xs font-black uppercase text-slate-400">Categorias</h3>
+                            <div class="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
+                                <button onclick="updateDonut('despesa')" id="btn-donut-des" class="px-3 py-1.5 rounded-lg text-[9px] font-black uppercase bg-accentRose text-white">Gastos</button>
+                                <button onclick="updateDonut('receita')" id="btn-donut-rec" class="px-3 py-1.5 rounded-lg text-[9px] font-black uppercase text-slate-500">Ganhos</button>
+                            </div>
                         </div>
-                        <div class="relative h-[280px]">
+                        <div class="relative h-[250px]">
                             <canvas id="chart-rosca"></canvas>
                         </div>
                     </div>
 
-                    <div class="lg:col-span-8 glass p-8 rounded-5xl border border-white/5">
-                        <div class="flex justify-between items-center mb-8">
-                            <h3 class="text-xs font-black uppercase tracking-widest text-slate-500">Últimos Movimentos</h3>
-                            <span class="px-3 py-1 bg-accentSky/10 text-accentSky rounded-full text-[9px] font-black uppercase">Recentes</span>
-                        </div>
+                    <div class="lg:col-span-8 bg-white dark:bg-darkCard p-8 rounded-5xl border border-slate-200 dark:border-slate-800">
+                        <h3 class="text-xs font-black uppercase text-slate-400 mb-8">Atividades Recentes</h3>
                         <div id="mini-feed" class="space-y-4"></div>
                     </div>
                 </div>
             </section>
 
             <section id="tab-extrato" class="tab-content">
-                <div class="flex items-center justify-between mb-8">
-                    <h2 class="text-3xl font-black uppercase italic tracking-tighter">Extrato <span class="text-accentSky">Geral</span></h2>
-                </div>
                 <div id="lista-transacoes-extrato" class="space-y-4"></div>
             </section>
         </main>
     </div>
 
-    <nav id="nav-bar" class="hidden fixed bottom-8 left-1/2 -translate-x-1/2 glass border border-white/10 px-8 py-4 rounded-[2.5rem] flex gap-10 items-center shadow-2xl z-50">
+    <nav id="nav-bar" class="hidden fixed bottom-8 left-1/2 -translate-x-1/2 bg-white/90 dark:bg-darkCard/90 backdrop-blur-xl border border-slate-200 dark:border-slate-800 px-8 py-4 rounded-[2.5rem] flex gap-10 items-center shadow-2xl z-50">
         <button onclick="showTab('dashboard')" class="nav-btn text-accentSky" data-tab="dashboard"><i data-lucide="layout-dashboard"></i></button>
         <button onclick="showTab('extrato')" class="nav-btn text-slate-500" data-tab="extrato"><i data-lucide="receipt-text"></i></button>
         <button onclick="openModal()" class="bg-accentSky text-white p-4 rounded-3xl shadow-xl shadow-sky-500/40 -translate-y-6 active:scale-90 transition-all"><i data-lucide="plus" class="w-8 h-8"></i></button>
@@ -164,7 +153,6 @@
         import { getFirestore, collection, addDoc, onSnapshot, query, where, orderBy, Timestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-        // CONFIGURAÇÃO FIREBASE (As chaves permanecem as mesmas que você já configurou)
         const firebaseConfig = {
             apiKey: "AIzaSyArWGgDx0uxce8w72J_1UpKPCUJGvHs3fI",
             authDomain: "drivo-e-money.firebaseapp.com",
@@ -210,25 +198,16 @@
             transactions.forEach((t, i) => {
                 const val = t.valor || 0;
                 const dVenc = t.dateVencimento instanceof Timestamp ? t.dateVencimento.toDate() : new Date(t.dateVencimento);
-                
                 if(dVenc.getMonth() === now.getMonth() && dVenc.getFullYear() === now.getFullYear()) {
                     t.tipo === 'receita' ? r += val : d += val;
                 }
-
-                const cardHtml = `
-                    <div class="flex justify-between items-center p-6 glass rounded-4xl border border-white/5">
-                        <div class="flex items-center gap-5">
-                            <div class="p-3 rounded-2xl ${t.tipo==='receita'?'bg-accentEmerald/10 text-accentEmerald':'bg-accentRose/10 text-accentRose'}">
-                                <i data-lucide="${t.status === 'prevista' ? 'clock' : 'check'}" class="w-5 h-5"></i>
-                            </div>
-                            <div>
-                                <h4 class="text-xs font-black uppercase tracking-tight">${t.descricao}</h4>
-                                <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">${dVenc.toLocaleDateString('pt-BR')}</p>
-                            </div>
-                        </div>
-                        <p class="text-sm font-black ${t.tipo==='receita'?'text-accentEmerald':'text-accentRose'}">R$ ${val.toLocaleString('pt-BR')}</p>
-                    </div>`;
-
+                const cardHtml = `<div class="flex justify-between items-center p-4 bg-slate-50 dark:bg-slate-900/50 rounded-3xl border border-slate-100 dark:border-white/5">
+                    <div class="flex items-center gap-4">
+                        <div class="p-2 rounded-xl ${t.tipo==='receita'?'bg-accentEmerald/10 text-accentEmerald':'bg-accentRose/10 text-accentRose'}"><i data-lucide="${t.status === 'prevista' ? 'clock' : 'check'}" class="w-4 h-4"></i></div>
+                        <div><h4 class="text-[10px] font-black uppercase">${t.descricao}</h4><p class="text-[8px] font-bold text-slate-500">${dVenc.toLocaleDateString('pt-BR')}</p></div>
+                    </div>
+                    <p class="text-xs font-black ${t.tipo==='receita'?'text-accentEmerald':'text-accentRose'}">R$ ${val.toLocaleString('pt-BR')}</p>
+                </div>`;
                 if(i < 5) miniFeed.innerHTML += cardHtml;
                 extratoContainer.innerHTML += cardHtml;
             });
@@ -236,8 +215,6 @@
             document.getElementById('dash-saldo').innerText = `R$ ${(r - d).toLocaleString('pt-BR')}`;
             document.getElementById('dash-rec-mini').innerText = `R$ ${r.toLocaleString('pt-BR')}`;
             document.getElementById('dash-despesas').innerText = `R$ ${d.toLocaleString('pt-BR')}`;
-            document.getElementById('dash-media-dia').innerText = (d / 30).toLocaleString('pt-BR', {maximumFractionDigits: 2});
-            
             lucide.createIcons();
             updateDonut('despesa');
         }
@@ -250,7 +227,7 @@
             if(donutChart) donutChart.destroy();
             donutChart = new Chart(ctx, {
                 type: 'doughnut', data: { labels, datasets: [{ data: values, backgroundColor: ['#0ea5e9','#10b981','#f43f5e','#facc15'], borderWidth: 0 }]},
-                options: { cutout: '85%', plugins: { legend: { position: 'bottom', labels: { color: '#64748b', font: { size: 10, weight: '700' }, usePointStyle: true }}}}
+                options: { cutout: '85%', plugins: { legend: { position: 'bottom', labels: { color: '#64748b', font: { size: 9, weight: '700' }, usePointStyle: true }}}}
             });
         };
 
