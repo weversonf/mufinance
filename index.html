@@ -3,15 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Drivo & Money v17</title>
+    <title>Drivo & Money v16</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        tailwind.config = { 
-            darkMode: 'class', 
-            theme: { extend: { colors: { darkBg: '#020617', darkCard: '#0f172a', accentSky: '#0ea5e9', accentEmerald: '#10b981', accentRose: '#f43f5e', nubank: '#820ad1', inter: '#ff7a00', itau: '#ec7000', santander: '#cc0000' } } } 
-        }
+        tailwind.config = { darkMode: 'class', theme: { extend: { colors: { darkBg: '#020617', darkCard: '#0f172a', accentSky: '#0ea5e9', accentEmerald: '#10b981', accentRose: '#f43f5e', accentAmber: '#f59e0b' } } } }
         document.documentElement.classList.add('dark');
     </script>
     <style>
@@ -21,193 +19,150 @@
         .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .custom-card { background-color: #0f172a; border: 1px solid #1e293b; border-radius: 1.5rem; }
+        .card-gradient { background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%); border-radius: 1.5rem; }
         .nav-glass { background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px); border-top: 1px solid rgba(255, 255, 255, 0.05); }
     </style>
 </head>
 <body class="min-h-screen antialiased pb-32">
 
-    <div id="main-app" class="max-w-4xl mx-auto p-4 md:p-8">
+    <div id="main-app" class="max-w-6xl mx-auto p-4 md:p-8">
         <header class="flex justify-between items-center mb-8 custom-card p-5">
             <div class="flex items-center gap-4">
                 <div class="p-3 bg-accentSky rounded-xl text-white shadow-lg"><i data-lucide="zap" class="w-6 h-6 fill-current"></i></div>
-                <h1 class="text-2xl font-black uppercase italic text-accentSky leading-none">Drivo&Money</h1>
+                <div>
+                    <h1 class="text-2xl font-black uppercase italic tracking-tighter text-accentSky leading-none">Drivo&Money</h1>
+                    <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">v16 • Perfil & Garagem</span>
+                </div>
             </div>
-            <span class="text-[10px] font-black text-slate-500 uppercase">v17 • Premium</span>
+            <button onclick="handleLogout()" class="p-4 bg-slate-800/50 rounded-xl text-accentRose"><i data-lucide="log-out"></i></button>
         </header>
 
-        <section id="tab-dashboard" class="tab-content active space-y-6">
-            <div id="card-saldo-container" onclick="toggleBankBalance()" class="cursor-pointer transition-all duration-500 p-8 rounded-[2rem] shadow-2xl relative overflow-hidden min-h-[160px] flex flex-col justify-between bg-gradient-to-br from-accentSky to-blue-700">
-                <div class="relative z-10 flex justify-between items-start">
-                    <div>
-                        <small id="bank-label" class="text-[10px] font-black uppercase tracking-[0.2em] text-white/80">Saldo Consolidado</small>
-                        <p id="dash-saldo" class="text-4xl font-black mt-2 text-white">R$ 0,00</p>
+        <main>
+            <section id="tab-dashboard" class="tab-content active space-y-6">
+                <p class="text-center text-slate-500 py-10 font-bold uppercase text-xs tracking-widest">Carregando dados do Dashboard...</p>
+            </section>
+
+            <section id="tab-extrato" class="tab-content">
+                <div id="lista-transacoes-extrato" class="space-y-3"></div>
+            </section>
+
+            <section id="tab-perfil" class="tab-content space-y-6">
+                <div class="custom-card p-8 text-center relative overflow-hidden">
+                    <div class="relative z-10">
+                        <div id="user-photo" class="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-accentSky p-1 bg-darkBg overflow-hidden">
+                            <i data-lucide="user" class="w-full h-full text-slate-700"></i>
+                        </div>
+                        <h2 id="user-name-display" class="text-2xl font-black uppercase italic tracking-tight">Weverson Feitosa</h2>
+                        <p class="text-accentSky font-bold text-[10px] uppercase tracking-[0.2em] mb-4">Marketing Analyst @ Makro Engenharia</p>
+                        <div class="flex justify-center gap-2">
+                            <span class="px-4 py-1.5 bg-slate-800 rounded-full text-[9px] font-black uppercase"><i data-lucide="map-pin" class="w-3 h-3 inline mr-1"></i> Fortaleza, CE</span>
+                        </div>
                     </div>
-                    <i id="bank-icon" data-lucide="layers" class="w-8 h-8 text-white/20"></i>
                 </div>
-                <div class="flex gap-1">
-                    <div class="h-1 w-8 bg-white rounded-full"></div>
-                    <div class="h-1 w-2 bg-white/30 rounded-full"></div>
-                    <div class="h-1 w-2 bg-white/30 rounded-full"></div>
-                </div>
-            </div>
 
-            <div class="grid grid-cols-2 gap-4">
-                <div class="custom-card p-6 border-l-4 border-l-accentEmerald">
-                    <small class="text-[10px] font-black uppercase text-slate-500">Receitas</small>
-                    <p class="text-2xl font-black mt-1 text-accentEmerald" id="dash-receitas">R$ 0,00</p>
-                </div>
-                <div class="custom-card p-6 border-l-4 border-l-accentRose">
-                    <small class="text-[10px] font-black uppercase text-slate-500">Despesas</small>
-                    <p class="text-2xl font-black mt-1 text-accentRose" id="dash-despesas">R$ 0,00</p>
-                </div>
-            </div>
-        </section>
-
-        <section id="tab-perfil" class="tab-content space-y-8">
-            <div class="space-y-4">
-                <h3 class="text-xs font-black uppercase tracking-widest text-accentSky flex items-center gap-2">
-                    <i data-lucide="user" class="w-4 h-4"></i> Meu Perfil
-                </h3>
-                <div class="custom-card p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <input type="text" id="pref-nome" placeholder="Nome Completo" class="bg-darkBg p-4 rounded-xl border border-white/5 outline-none focus:border-accentSky transition-all">
-                    <select id="pref-estado" onchange="updateCities()" class="bg-darkBg p-4 rounded-xl border border-white/5 outline-none">
-                        <option value="">Selecione o Estado</option>
-                        <option value="CE">Ceará</option>
-                        <option value="SP">São Paulo</option>
-                    </select>
-                    <select id="pref-cidade" onchange="updateGasPrice()" class="bg-darkBg p-4 rounded-xl border border-white/5 outline-none">
-                        <option value="">Selecione a Cidade</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="space-y-4">
-                <h3 class="text-xs font-black uppercase tracking-widest text-accentSky flex items-center gap-2">
-                    <i data-lucide="bike" class="w-4 h-4"></i> Meu Veículo
-                </h3>
-                <div class="custom-card p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <select id="veh-marca" onchange="updateModels()" class="bg-darkBg p-4 rounded-xl border border-white/5 outline-none">
-                        <option value="">Marca/Montadora</option>
-                        <option value="yamaha">Yamaha</option>
-                        <option value="honda">Honda</option>
-                        <option value="toyota">Toyota</option>
-                    </select>
-                    <select id="veh-modelo" class="bg-darkBg p-4 rounded-xl border border-white/5 outline-none">
-                        <option value="">Modelo</option>
-                    </select>
-                    <input type="number" id="veh-consumo" placeholder="Consumo (Km/L)" class="bg-darkBg p-4 rounded-xl border border-white/5 outline-none">
-                    <input type="number" id="veh-gas-price" step="0.01" placeholder="Preço Gasolina R$" class="bg-darkBg p-4 rounded-xl border border-accentSky outline-none">
-                </div>
-            </div>
-
-            <div class="space-y-4">
-                <div class="flex justify-between items-center">
-                    <h3 class="text-xs font-black uppercase tracking-widest text-accentSky flex items-center gap-2">
-                        <i data-lucide="landmark" class="w-4 h-4"></i> Meus Bancos
-                    </h3>
-                    <button onclick="openBankModal()" class="text-[10px] font-black uppercase bg-accentSky/10 text-accentSky px-3 py-1 rounded-lg">+ Novo</button>
-                </div>
-                <div id="lista-bancos" class="grid grid-cols-1 gap-3">
-                    </div>
-            </div>
-
-            <div class="space-y-4">
-                <h3 class="text-xs font-black uppercase tracking-widest text-accentSky flex items-center gap-2">
-                    <i data-lucide="layers" class="w-4 h-4"></i> Categorias
-                </h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="custom-card p-6">
-                        <p class="text-[10px] font-black uppercase text-accentEmerald mb-4">Receitas</p>
-                        <div id="cat-receita-list" class="space-y-2"></div>
+                    <div class="custom-card p-6 border-t-4 border-t-accentSky">
+                        <div class="flex justify-between items-start mb-6">
+                            <div>
+                                <h3 class="text-xs font-black uppercase text-slate-500 tracking-widest">Minha Garagem</h3>
+                                <p class="text-xl font-black italic uppercase">Yamaha Fazer 250</p>
+                            </div>
+                            <div class="p-3 bg-accentSky/10 text-accentSky rounded-2xl"><i data-lucide="bike"></i></div>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="flex justify-between border-b border-white/5 pb-2">
+                                <span class="text-[10px] font-bold text-slate-500 uppercase">Ano/Modelo</span>
+                                <span class="text-sm font-black">2023 / 2023</span>
+                            </div>
+                            <div class="flex justify-between border-b border-white/5 pb-2">
+                                <span class="text-[10px] font-bold text-slate-500 uppercase">Consumo Médio</span>
+                                <span class="text-sm font-black text-accentEmerald">29 km/L</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-[10px] font-bold text-slate-500 uppercase">Gastos Totais (Fazer)</span>
+                                <span id="gasto-moto-total" class="text-sm font-black text-accentRose text-accentRose">R$ 0,00</span>
+                            </div>
+                        </div>
                     </div>
+
                     <div class="custom-card p-6">
-                        <p class="text-[10px] font-black uppercase text-accentRose mb-4">Despesas</p>
-                        <div id="cat-despesa-list" class="space-y-2"></div>
+                        <h3 class="text-xs font-black uppercase text-slate-500 tracking-widest mb-6">Preferências</h3>
+                        <div class="space-y-3">
+                            <button class="w-full p-4 bg-slate-800/50 hover:bg-slate-800 rounded-2xl text-left flex items-center justify-between transition-all">
+                                <span class="text-[10px] font-black uppercase tracking-widest">Meta de Hidratação (3.5L)</span>
+                                <i data-lucide="droplets" class="w-4 h-4 text-accentSky"></i>
+                            </button>
+                            <button class="w-full p-4 bg-slate-800/50 hover:bg-slate-800 rounded-2xl text-left flex items-center justify-between transition-all">
+                                <span class="text-[10px] font-black uppercase tracking-widest">Exportar Dados (CSV)</span>
+                                <i data-lucide="download" class="w-4 h-4 text-slate-500"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </section>
+            </section>
+        </main>
     </div>
 
     <nav class="fixed bottom-0 left-0 right-0 nav-glass px-8 py-4 flex gap-10 items-center justify-center z-50">
         <button onclick="showTab('dashboard')" class="nav-btn text-accentSky" data-tab="dashboard"><i data-lucide="layout-dashboard"></i></button>
-        <button onclick="openModal()" class="bg-accentSky text-white p-4 rounded-2xl shadow-xl -translate-y-8"><i data-lucide="plus"></i></button>
+        <button onclick="showTab('extrato')" class="nav-btn text-slate-500" data-tab="extrato"><i data-lucide="receipt-text"></i></button>
+        <button onclick="openModal()" class="bg-accentSky text-white p-4 rounded-2xl shadow-xl -translate-y-8 active:scale-90 transition-all"><i data-lucide="plus" class="w-6 h-6"></i></button>
+        <button onclick="showTab('metas')" class="nav-btn text-slate-500" data-tab="metas"><i data-lucide="target"></i></button>
         <button onclick="showTab('perfil')" class="nav-btn text-slate-500" data-tab="perfil"><i data-lucide="user"></i></button>
     </nav>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, where, Timestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-        // Firebase Config (Omitido para brevidade, mas deve ser mantido)
-        
-        let bancos = [
-            { id: 1, nome: 'Nubank', saldo: 20, cor: 'bg-purple-700', icon: 'credit-card' },
-            { id: 2, nome: 'Inter', saldo: 50, cor: 'bg-orange-500', icon: 'landmark' }
-        ];
-        let currentBankIdx = -1; // -1 = Consolidado
+        const firebaseConfig = { apiKey: "AIzaSyArWGgDx0uxce8w72J_1UpKPCUJGvHs3fI", authDomain: "drivo-e-money.firebaseapp.com", projectId: "drivo-e-money", storageBucket: "drivo-e-money.firebasestorage.app", messagingSenderId: "62950568252", appId: "1:62950568252:web:7638827c39b589a9046e39" };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
 
-        window.toggleBankBalance = () => {
-            currentBankIdx++;
-            if(currentBankIdx >= bancos.length) currentBankIdx = -1;
-            
-            const card = document.getElementById('card-saldo-container');
-            const label = document.getElementById('bank-label');
-            const saldoDisplay = document.getElementById('dash-saldo');
+        let userId, transactions = [];
 
-            if(currentBankIdx === -1) {
-                const total = bancos.reduce((acc, b) => acc + b.saldo, 0);
-                card.className = "cursor-pointer transition-all duration-500 p-8 rounded-[2rem] shadow-2xl relative overflow-hidden min-h-[160px] flex flex-col justify-between bg-gradient-to-br from-accentSky to-blue-700";
-                label.innerText = "Saldo Consolidado";
-                saldoDisplay.innerText = `R$ ${total.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-            } else {
-                const b = bancos[currentBankIdx];
-                card.className = `cursor-pointer transition-all duration-500 p-8 rounded-[2rem] shadow-2xl relative overflow-hidden min-h-[160px] flex flex-col justify-between ${b.cor}`;
-                label.innerText = `Saldo ${b.nome}`;
-                saldoDisplay.innerText = `R$ ${b.saldo.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-            }
-        };
+        onAuthStateChanged(auth, (u) => { 
+            if (u) { 
+                userId = u.uid; 
+                document.getElementById('user-name-display').innerText = u.displayName;
+                if(u.photoURL) document.getElementById('user-photo').innerHTML = `<img src="${u.photoURL}" class="w-full h-full object-cover">`;
+                initData(); 
+            } 
+        });
 
-        window.updateCities = () => {
-            const estado = document.getElementById('pref-estado').value;
-            const cidadeSelect = document.getElementById('pref-cidade');
-            cidadeSelect.innerHTML = '<option value="">Carregando...</option>';
-            
-            if(estado === 'CE') {
-                const cidades = ['Fortaleza', 'Caucaia', 'Sobral', 'Canindé'];
-                cidadeSelect.innerHTML = cidades.map(c => `<option value="${c}">${c}</option>`).join('');
-            }
-        };
+        window.handleLogout = () => signOut(auth).then(() => location.reload());
 
-        window.updateGasPrice = () => {
-            const cidade = document.getElementById('pref-cidade').value;
-            const gasInput = document.getElementById('veh-gas-price');
-            // Mock de preço automático
-            if(cidade === 'Fortaleza') gasInput.value = 5.97;
-            else gasInput.value = 6.15;
-        };
+        function initData() {
+            const q = query(collection(db, "transactions"), where("userId", "==", userId));
+            onSnapshot(q, (snap) => {
+                transactions = snap.docs.map(d => ({id: d.id, ...d.data()}));
+                updateProfileStats();
+                // Aqui você integraria o updateUI do Dashboard v15
+            });
+        }
 
-        window.updateModels = () => {
-            const marca = document.getElementById('veh-marca').value;
-            const modeloSelect = document.getElementById('veh-modelo');
-            const modelos = {
-                yamaha: ['Fazer 250', 'Lander 250', 'MT-03'],
-                honda: ['CG 160', 'CB 300F', 'Civic'],
-                toyota: ['Corolla', 'Hilux']
-            };
-            modeloSelect.innerHTML = modelos[marca]?.map(m => `<option value="${m}">${m}</option>`).join('') || '<option>Selecione Marca</option>';
-        };
+        function updateProfileStats() {
+            let gastoMoto = 0;
+            transactions.forEach(t => {
+                if(t.categoria === "Fazer 250" && t.tipo === "despesa") {
+                    gastoMoto += (t.valor || 0);
+                }
+            });
+            document.getElementById('gasto-moto-total').innerText = `R$ ${gastoMoto.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+        }
 
         window.showTab = (id) => {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.getElementById('tab-' + id).classList.add('active');
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.replace('text-accentSky', 'text-slate-500'));
+            const active = document.querySelector(`[data-tab="${id}"]`); 
+            if(active) active.classList.replace('text-slate-500', 'text-accentSky');
             lucide.createIcons();
         };
 
-        // Render Inicial
-        updateCities();
-        toggleBankBalance();
         lucide.createIcons();
     </script>
 </body>
