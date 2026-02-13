@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Drivo & Money v24.2</title>
+    <title>Drivo & Money v24.3</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -33,7 +33,7 @@
                 <div class="p-3 bg-accentSky rounded-xl text-white shadow-lg"><i data-lucide="zap" class="w-6 h-6 fill-current"></i></div>
                 <div>
                     <h1 class="text-2xl font-black uppercase italic tracking-tighter text-accentSky leading-none">Drivo&Money</h1>
-                    <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">v24.2 • Ícones de Edição</span>
+                    <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">v24.3 • Ícones de Edição</span>
                 </div>
             </div>
             <button onclick="handleLogout()" class="p-4 bg-slate-800/50 rounded-xl text-accentRose"><i data-lucide="log-out"></i></button>
@@ -136,7 +136,44 @@
         </div>
     </div>
 
-    <button onclick="savePerfilSettings()" class="w-full py-5 bg-accentSky text-white font-black uppercase italic tracking-widest rounded-2xl shadow-xl active:scale-95 transition-all">Salvar Todas as Configurações</button>
+    <div class="space-y-4">
+        <div class="flex justify-between items-center px-1">
+            <h3 class="text-xs font-black uppercase tracking-widest text-accentEmerald flex items-center gap-2">
+                <i data-lucide="building-2" class="w-4 h-4"></i> Meus Bancos
+            </h3>
+            <button onclick="openModalBanco()" class="p-2 bg-accentEmerald/10 text-accentEmerald rounded-lg hover:bg-accentEmerald/20 transition-all">
+                <i data-lucide="plus-circle" class="w-4 h-4"></i>
+            </button>
+        </div>
+        <div id="lista-bancos-perfil" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            </div>
+    </div>
+
+    <div class="space-y-4">
+        <h3 class="text-xs font-black uppercase tracking-widest text-accentSky flex items-center gap-2">
+            <i data-lucide="tag" class="w-4 h-4"></i> Categorias
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="custom-card p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <p class="text-[10px] font-black uppercase text-accentEmerald">Receitas</p>
+                    <button onclick="openModalCat('receita')" class="text-accentEmerald"><i data-lucide="plus" class="w-4 h-4"></i></button>
+                </div>
+                <div id="list-cat-rec-perf" class="space-y-2"></div>
+            </div>
+            <div class="custom-card p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <p class="text-[10px] font-black uppercase text-accentRose">Despesas</p>
+                    <button onclick="openModalCat('despesa')" class="text-accentRose"><i data-lucide="plus" class="w-4 h-4"></i></button>
+                </div>
+                <div id="list-cat-des-perf" class="space-y-2"></div>
+            </div>
+        </div>
+    </div>
+
+    <button onclick="savePerfilSettings()" class="w-full py-5 bg-accentSky text-white font-black uppercase italic tracking-widest rounded-2xl shadow-xl active:scale-95 transition-all mt-4 mb-10">
+        Salvar Todas as Configurações
+    </button>
 </section>
 
             
@@ -430,7 +467,7 @@
             sel.innerHTML = filtered.map(c => `<option value="${c.nome}">${c.nome}</option>`).join(''); 
         }
 
-        // --- LOGICA NACIONAL v24.2 ---
+        // --- LOGICA NACIONAL v24.3 ---
 
 // 1. Carregar Estados do IBGE ao iniciar
 async function loadEstadosIBGE() {
@@ -486,5 +523,61 @@ document.addEventListener('DOMContentLoaded', () => {
 
         lucide.createIcons();
     </script>
+    <div id="modal-banco" class="hidden fixed inset-0 bg-slate-950/90 backdrop-blur-sm flex items-center justify-center p-4 z-[400]">
+    <div class="custom-card w-full max-w-sm p-8 shadow-2xl">
+        <h3 class="text-lg font-black uppercase italic text-emerald-500 mb-6 text-left">Configurar Banco</h3>
+        <form id="form-banco" class="space-y-4">
+            <input type="hidden" id="banco-id-edit">
+            <div class="text-left">
+                <label class="text-[9px] font-black uppercase text-slate-500 ml-1">Instituição</label>
+                <select id="banco-nome-input" class="input-dark">
+                    <option value="Inter">Banco Inter</option>
+                    <option value="Nubank">Nubank</option>
+                    <option value="Itaú">Itaú</option>
+                    <option value="Santander">Santander</option>
+                    <option value="C6 Bank">C6 Bank</option>
+                    <option value="Bradesco">Bradesco</option>
+                    <option value="Caixa">Caixa Econômica</option>
+                    <option value="BB">Banco do Brasil</option>
+                    <option value="Outros">Outros</option>
+                </select>
+            </div>
+            <div class="text-left">
+                <label class="text-[9px] font-black uppercase text-slate-500 ml-1">Saldo Inicial</label>
+                <input type="number" id="banco-saldo-input" step="0.01" placeholder="R$ 0,00" class="input-dark" required>
+            </div>
+            <button type="submit" class="w-full py-4 bg-emerald-600 text-white rounded-xl font-black uppercase text-xs">Confirmar</button>
+            <button type="button" onclick="closeModal()" class="w-full text-slate-500 text-[10px] font-bold mt-2 text-center uppercase">Cancelar</button>
+        </form>
+    </div>
+</div>
+
+<div id="modal-cat" class="hidden fixed inset-0 bg-slate-950/90 backdrop-blur-sm flex items-center justify-center p-4 z-[400]">
+    <div class="custom-card w-full max-w-sm p-8 shadow-2xl">
+        <h3 id="cat-modal-title" class="text-lg font-black uppercase italic text-sky-500 mb-6 text-left">Nova Categoria</h3>
+        <form id="form-cat" class="space-y-4">
+            <input type="hidden" id="cat-tipo-modal">
+            <div class="text-left">
+                <label class="text-[9px] font-black uppercase text-slate-500 ml-1">Nome da Categoria</label>
+                <input type="text" id="cat-nome-input" placeholder="Ex: Mercado, Freelance..." class="input-dark" required>
+            </div>
+            <div class="text-left">
+                <label class="text-[9px] font-black uppercase text-slate-500 ml-1">Ícone</label>
+                <select id="cat-icone-input" class="input-dark">
+                    <option value="tag">Etiqueta</option>
+                    <option value="shopping-cart">Compras</option>
+                    <option value="fuel">Combustível</option>
+                    <option value="coffee">Alimentação</option>
+                    <option value="home">Moradia</option>
+                    <option value="trending-up">Investimento</option>
+                    <option value="heart">Saúde</option>
+                    <option value="zap">Utilidades</option>
+                </select>
+            </div>
+            <button type="submit" class="w-full py-4 bg-sky-600 text-white rounded-xl font-black uppercase text-xs">Salvar Categoria</button>
+            <button type="button" onclick="closeModal()" class="w-full text-slate-500 text-[10px] font-bold mt-2 text-center uppercase">Cancelar</button>
+        </form>
+    </div>
+</div>
 </body>
 </html>
