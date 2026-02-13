@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Drivo & Money v24.7</title>
+    <title>Drivo & Money v24.8</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -33,7 +33,7 @@
                 <div class="p-3 bg-accentSky rounded-xl text-white shadow-lg"><i data-lucide="zap" class="w-6 h-6 fill-current"></i></div>
                 <div>
                     <h1 class="text-2xl font-black uppercase italic tracking-tighter text-accentSky leading-none">Drivo&Money</h1>
-                    <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">v24.7 • Integrado</span>
+                    <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">v24.8 • Gráfico OK</span>
                 </div>
             </div>
             <button onclick="handleLogout()" class="p-4 bg-slate-800/50 rounded-xl text-accentRose"><i data-lucide="log-out"></i></button>
@@ -80,75 +80,19 @@
                 </div>
             </section>
 
-            <section id="tab-extrato" class="tab-content space-y-4">
-                <h3 class="text-xs font-black uppercase tracking-widest text-accentSky ml-2">Histórico de Transações</h3>
-                <div id="lista-transacoes-extrato" class="space-y-3 text-left"></div>
-            </section>
-
-            <section id="tab-drivo" class="tab-content space-y-6">
-                <h3 class="text-xs font-black uppercase tracking-widest text-accentAmber ml-2">Drivo Analytics</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="custom-card p-6 border-l-4 border-accentAmber">
-                        <small class="text-[9px] font-black text-slate-500 uppercase">KM Estimados (Mês)</small>
-                        <p id="drivo-km" class="text-3xl font-black mt-2">0 KM</p>
-                    </div>
-                    <div class="custom-card p-6 border-l-4 border-accentSky">
-                        <small class="text-[9px] font-black text-slate-500 uppercase">Custo por KM</small>
-                        <p id="drivo-custo-km" class="text-3xl font-black mt-2">R$ 0,00</p>
-                    </div>
-                </div>
-                <div class="custom-card p-6">
-                    <h4 class="text-[10px] font-black uppercase text-slate-400 mb-4">Abastecimentos Recentes</h4>
-                    <div id="lista-drivo" class="space-y-3 text-left"></div>
-                </div>
-            </section>
-
-            <section id="tab-relatorio" class="tab-content space-y-6">
-                <div class="flex items-center justify-between px-2">
-                    <h3 class="text-xs font-black uppercase tracking-widest text-accentSky">Relatório Anual</h3>
-                    <div class="flex items-center gap-3 bg-darkCard p-1.5 rounded-xl border border-white/5">
-                        <button onclick="changeYearRel(-1)" class="p-1 text-accentSky"><i data-lucide="chevron-left"></i></button>
-                        <span id="rel-ano-label" class="text-xs font-black italic">2026</span>
-                        <button onclick="changeYearRel(1)" class="p-1 text-accentSky"><i data-lucide="chevron-right"></i></button>
-                    </div>
-                </div>
-                <div class="custom-card p-6 min-h-[400px]">
-                    <canvas id="chart-anual"></canvas>
-                </div>
-            </section>
-
-            <section id="tab-metas" class="tab-content space-y-6">
-                <div class="flex justify-between items-center px-2">
-                    <h3 class="text-xs font-black uppercase tracking-widest text-accentSky">Meus Objetivos</h3>
-                    <button onclick="openModalMeta()" class="p-2 bg-accentSky/10 text-accentSky rounded-lg">
-                        <i data-lucide="plus-circle" class="w-5 h-5"></i>
-                    </button>
-                </div>
-                <div id="lista-metas" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-            </section>
-
             <section id="tab-perfil" class="tab-content space-y-8 text-left">
                 <div class="space-y-4">
                     <h3 class="text-xs font-black uppercase tracking-widest text-accentSky flex items-center gap-2"><i data-lucide="user" class="w-4 h-4"></i> Meu Perfil</h3>
                     <div class="custom-card p-6 grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div><label class="text-[9px] font-black text-slate-500 uppercase">Nome</label><input type="text" id="perf-nome" class="input-dark"></div>
-                        <div><label class="text-[9px] font-black text-slate-500 uppercase">Estado (UF)</label>
-                            <select id="perf-uf" class="input-dark">
-                                <option value="CE">Ceará</option>
-                            </select>
-                        </div>
-                        <div><label class="text-[9px] font-black text-slate-500 uppercase">Cidade</label>
-                            <input type="text" id="perf-cidade" class="input-dark">
-                        </div>
+                        <div><label class="text-[9px] font-black text-slate-500 uppercase">Cidade</label><input type="text" id="perf-cidade" class="input-dark"></div>
                     </div>
                 </div>
 
                 <div class="space-y-4">
                     <h3 class="text-xs font-black uppercase tracking-widest text-accentAmber flex items-center gap-2"><i data-lucide="gauge" class="w-4 h-4"></i> Meu Veículo</h3>
                     <div class="custom-card p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div><label class="text-[9px] font-black text-slate-500 uppercase">Montadora</label>
-                            <input type="text" id="veic-marca" class="input-dark">
-                        </div>
+                        <div><label class="text-[9px] font-black text-slate-500 uppercase">Montadora</label><input type="text" id="veic-marca" class="input-dark"></div>
                         <div><label class="text-[9px] font-black text-slate-500 uppercase">Modelo</label><input type="text" id="veic-modelo" class="input-dark"></div>
                         <div><label class="text-[9px] font-black text-slate-500 uppercase">Consumo (Km/L)</label><input type="number" id="veic-consumo" class="input-dark"></div>
                         <div><label class="text-[9px] font-black text-slate-500 uppercase">Gasolina R$</label><input type="number" step="0.01" id="veic-gas" class="input-dark"></div>
@@ -174,39 +118,9 @@
 
     <nav class="fixed bottom-0 left-0 right-0 nav-glass px-6 py-4 flex gap-6 items-center justify-center z-50">
         <button onclick="showTab('dashboard')" class="nav-btn text-accentSky" data-tab="dashboard"><i data-lucide="layout-dashboard"></i></button>
-        <button onclick="showTab('extrato')" class="nav-btn text-slate-500" data-tab="extrato"><i data-lucide="receipt-text"></i></button>
-        <button onclick="showTab('relatorio')" class="nav-btn text-slate-500" data-tab="relatorio"><i data-lucide="bar-chart-3"></i></button>
         <button onclick="openModal()" class="bg-accentSky text-white p-4 rounded-2xl shadow-xl -translate-y-8 active:scale-90 transition-all"><i data-lucide="plus" class="w-6 h-6"></i></button>
-        <button onclick="showTab('drivo')" class="nav-btn text-slate-500" data-tab="drivo"><i data-lucide="gauge"></i></button>
-        <button onclick="showTab('metas')" class="nav-btn text-slate-500" data-tab="metas"><i data-lucide="target"></i></button>
         <button onclick="showTab('perfil')" class="nav-btn text-slate-500" data-tab="perfil"><i data-lucide="user"></i></button>
     </nav>
-
-    <div id="modal-lancamento" class="hidden fixed inset-0 bg-slate-950/90 backdrop-blur-sm flex items-center justify-center p-4 z-[300]">
-        <div class="custom-card w-full max-w-md p-8 shadow-2xl">
-            <h3 id="modal-title" class="text-lg font-black uppercase italic text-sky-500 mb-6">Lançamento</h3>
-            <form id="form-transacao" class="space-y-4">
-                <input type="hidden" id="edit-id">
-                <div class="flex gap-2">
-                    <button type="button" onclick="setTipo('despesa')" id="btn-tipo-des" class="flex-1 py-3 rounded-xl font-black text-[10px] uppercase bg-accentRose text-white">Despesa</button>
-                    <button type="button" onclick="setTipo('receita')" id="btn-tipo-rec" class="flex-1 py-3 rounded-xl font-black text-[10px] uppercase bg-slate-800 text-slate-500">Receita</button>
-                </div>
-                <div class="flex bg-slate-800 p-1 rounded-xl">
-                    <button type="button" onclick="setStatus('efetivada')" id="btn-st-efetivada" class="flex-1 py-2 rounded-lg text-[9px] font-black uppercase bg-accentSky text-white">Efetivada</button>
-                    <button type="button" onclick="setStatus('prevista')" id="btn-st-prevista" class="flex-1 py-2 rounded-lg text-[9px] font-black uppercase text-slate-500">Prevista</button>
-                </div>
-                <input type="number" id="valor" step="0.01" placeholder="Valor R$" class="input-dark text-lg font-black" required>
-                <input type="text" id="descricao" placeholder="Descrição" class="input-dark" required>
-                <div class="grid grid-cols-2 gap-2">
-                    <select id="banco-select" class="input-dark" required><option value="">Banco...</option></select>
-                    <select id="categoria-select" class="input-dark" required><option value="">Categoria...</option></select>
-                </div>
-                <input type="date" id="dataVencimento" class="input-dark text-xs" required>
-                <button type="submit" class="w-full py-5 bg-sky-600 text-white rounded-2xl font-black uppercase text-xs">Confirmar</button>
-                <button type="button" onclick="closeModal()" class="w-full text-slate-500 text-[10px] font-bold mt-2 uppercase">CANCELAR</button>
-            </form>
-        </div>
-    </div>
 
     <div id="modal-banco" class="hidden fixed inset-0 bg-slate-950/90 backdrop-blur-sm flex items-center justify-center p-4 z-[400]"><div class="custom-card w-full max-w-sm p-8 shadow-2xl"><form id="form-banco" class="space-y-4"><select id="banco-nome-input" class="input-dark"><option value="Carteira">Carteira</option><option value="Inter">Inter</option><option value="Nubank">Nubank</option><option value="Itaú">Itaú</option><option value="Santander">Santander</option><option value="Outros">Outros</option></select><input type="number" id="banco-saldo-input" step="0.01" class="input-dark" placeholder="Saldo Inicial"><button type="submit" class="w-full py-4 bg-emerald-600 text-white rounded-xl font-black uppercase text-xs">Confirmar</button><button type="button" onclick="closeModal()" class="w-full text-slate-500 text-[10px] font-bold mt-2 uppercase">CANCELAR</button></form></div></div>
 
@@ -220,12 +134,11 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        let userId, transactions = [], userBancos = [], userCats = [], goals = [], donutChart, chartAnual;
+        let userId, transactions = [], userBancos = [], userCats = [], donutChart;
         let viewDate = new Date();
         let isYearlyView = false;
         let currentBankIdx = -1;
-        let currentTipo = 'despesa';
-        let currentStatus = 'efetivada';
+        let currentDonutType = 'despesa';
         const meses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 
         const bancoConfigs = {
@@ -234,22 +147,17 @@
             "Nubank": { cor: "#8a05be", texto: "white" },
             "Itaú": { cor: "#ec7000", texto: "white" },
             "Santander": { cor: "#cc0000", texto: "white" },
-            "C6 Bank": { cor: "#000000", texto: "white" },
-            "Bradesco": { cor: "#ff0000", texto: "white" },
-            "Caixa": { cor: "#005ca9", texto: "white" },
-            "BB": { cor: "#f8d117", texto: "#0038a8" },
             "Outros": { cor: "#1e293b", texto: "white" }
         };
 
         onAuthStateChanged(auth, async (u) => { 
             if (u) { 
                 userId = u.uid; 
-                await checkDefaultBank(); // Ajuste: Verifica conta padrão
+                await checkDefaultBank();
                 initData(); 
             } 
         });
 
-        // VERIFICA E CRIA CONTA CARTEIRA PADRÃO
         async function checkDefaultBank() {
             const q = query(collection(db, "banks"), where("userId", "==", userId));
             const snap = await getDocs(q);
@@ -265,23 +173,21 @@
             });
             onSnapshot(query(collection(db, "banks"), where("userId", "==", userId)), (snap) => {
                 userBancos = snap.docs.map(d => ({id: d.id, ...d.data()}));
-                updateBancoSelect();
-                renderBancosPerfil(); // Ajuste: Renderiza bancos no perfil
+                renderBancosPerfil();
                 updateUI();
             });
             onSnapshot(doc(db, "users", userId), (snap) => {
-                if(snap.exists()) loadPerfilData(snap.data()); // Ajuste: Carrega dados do perfil (nome, veículo)
+                if(snap.exists()) loadPerfilData(snap.data());
             });
         }
 
-        // --- FUNÇÕES DE PERFIL (PUXANDO DADOS) ---
         function loadPerfilData(data) {
-            if(document.getElementById('perf-nome')) document.getElementById('perf-nome').value = data.nome || "";
-            if(document.getElementById('perf-cidade')) document.getElementById('perf-cidade').value = data.cidade || "";
-            if(document.getElementById('veic-marca')) document.getElementById('veic-marca').value = data.veiculoMarca || "";
-            if(document.getElementById('veic-modelo')) document.getElementById('veic-modelo').value = data.veiculoModelo || "";
-            if(document.getElementById('veic-consumo')) document.getElementById('veic-consumo').value = data.consumo || 0;
-            if(document.getElementById('veic-gas')) document.getElementById('veic-gas').value = data.precoGasolina || 0;
+            document.getElementById('perf-nome').value = data.nome || "";
+            document.getElementById('perf-cidade').value = data.cidade || "";
+            document.getElementById('veic-marca').value = data.veiculoMarca || "";
+            document.getElementById('veic-modelo').value = data.veiculoModelo || "";
+            document.getElementById('veic-consumo').value = data.consumo || 0;
+            document.getElementById('veic-gas').value = data.precoGasolina || 0;
         }
 
         function renderBancosPerfil() {
@@ -299,34 +205,55 @@
             lucide.createIcons();
         }
 
-        window.savePerfilSettings = async () => {
-            await setDoc(doc(db, "users", userId), {
-                nome: document.getElementById('perf-nome').value,
-                cidade: document.getElementById('perf-cidade').value,
-                veiculoMarca: document.getElementById('veic-marca').value,
-                veiculoModelo: document.getElementById('veic-modelo').value,
-                consumo: parseFloat(document.getElementById('veic-consumo').value),
-                precoGasolina: parseFloat(document.getElementById('veic-gas').value)
-            }, { merge: true });
-            alert("Configurações salvas!");
+        // --- LÓGICA DO GRÁFICO (RAIO-X) ---
+        window.updateDonut = (tipo) => {
+            currentDonutType = tipo;
+            const canvas = document.getElementById('chart-rosca');
+            if(!canvas) return;
+
+            // Estética dos botões
+            document.getElementById('btn-donut-des').className = tipo === 'despesa' ? "px-3 py-1.5 rounded-lg text-[9px] font-black bg-accentRose text-white" : "px-3 py-1.5 rounded-lg text-[9px] font-black text-slate-500";
+            document.getElementById('btn-donut-rec').className = tipo === 'receita' ? "px-3 py-1.5 rounded-lg text-[9px] font-black bg-accentEmerald text-white" : "px-3 py-1.5 rounded-lg text-[9px] font-black text-slate-500";
+
+            const filtered = transactions.filter(t => {
+                const dV = t.dateVencimento instanceof Timestamp ? t.dateVencimento.toDate() : new Date(t.dateVencimento);
+                const matchDate = isYearlyView ? dV.getFullYear() === viewDate.getFullYear() : (dV.getMonth() === viewDate.getMonth() && dV.getFullYear() === viewDate.getFullYear());
+                return t.tipo === tipo && matchDate;
+            });
+
+            const agrupado = {};
+            filtered.forEach(t => {
+                const cat = t.categoria || "Sem Categoria";
+                agrupado[cat] = (agrupado[cat] || 0) + t.valor;
+            });
+
+            const labels = Object.keys(agrupado);
+            const data = Object.values(agrupado);
+            const colors = tipo === 'despesa' ? ['#f43f5e', '#fb7185', '#fda4af', '#fecdd3'] : ['#10b981', '#34d399', '#6ee7b7', '#a7f3d0'];
+
+            if (donutChart) donutChart.destroy();
+            donutChart = new Chart(canvas, {
+                type: 'doughnut',
+                data: {
+                    labels,
+                    datasets: [{ data, backgroundColor: colors, borderWidth: 0, hoverOffset: 10 }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 10, weight: 'bold' }, padding: 20 } } },
+                    cutout: '70%'
+                }
+            });
         };
 
-        window.deleteBanco = async (id) => { if(confirm("Excluir este banco?")) await deleteDoc(doc(db, "banks", id)); };
-
-        // --- LÓGICA DE SALDO E DASHBOARD ---
-        window.cycleBankDisplay = () => {
-            currentBankIdx++;
-            if (currentBankIdx >= userBancos.length) currentBankIdx = -1;
-            updateUI();
-        };
-
-        function updateUI() {
+        window.updateUI = () => {
             const sIniTotal = userBancos.reduce((acc, b) => acc + (b.saldoInicial || 0), 0);
             const sTransTotal = transactions.filter(t => t.status === 'efetivada').reduce((acc, t) => t.tipo === 'receita' ? acc + t.valor : acc - t.valor, 0);
             const consolidado = sIniTotal + sTransTotal;
 
-            const label = document.getElementById('bank-label');
             const display = document.getElementById('dash-saldo');
+            const label = document.getElementById('bank-label');
             const card = document.getElementById('card-saldo-main');
 
             if (currentBankIdx === -1) {
@@ -337,57 +264,34 @@
                 const b = userBancos[currentBankIdx];
                 const conf = bancoConfigs[b.nome] || bancoConfigs["Outros"];
                 const sTransBanco = transactions.filter(t => t.status === 'efetivada' && t.banco === b.nome).reduce((acc, t) => t.tipo === 'receita' ? acc + t.valor : acc - t.valor, 0);
-                const saldoRealBanco = (b.saldoInicial || 0) + sTransBanco;
+                display.innerText = `R$ ${(b.saldoInicial + sTransBanco).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
                 label.innerText = `Saldo ${b.nome}`;
-                display.innerText = `R$ ${saldoRealBanco.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
                 card.style.background = conf.cor;
             }
 
-            let rPer = 0, dPer = 0;
-            const feed = document.getElementById('mini-feed');
-            const ext = document.getElementById('lista-transacoes-extrato');
-            if(feed && ext) {
-                feed.innerHTML = ""; ext.innerHTML = "";
-                transactions.forEach((t, i) => {
-                    const dV = t.dateVencimento instanceof Timestamp ? t.dateVencimento.toDate() : new Date(t.dateVencimento);
-                    if(isYearlyView ? dV.getFullYear() === viewDate.getFullYear() : (dV.getMonth() === viewDate.getMonth() && dV.getFullYear() === viewDate.getFullYear())) {
-                        t.tipo === 'receita' ? rPer += t.valor : dPer += t.valor;
-                        const html = `<div class="flex justify-between items-center p-4 bg-slate-900/40 rounded-xl border border-white/5"><div class="flex items-center gap-3"><div class="p-2 rounded-lg ${t.tipo==='receita'?'bg-accentEmerald/10 text-accentEmerald':'bg-accentRose/10 text-accentRose'}"><i data-lucide="${t.status==='efetivada'?'check':'clock'}" class="w-4 h-4"></i></div><div><h4 class="text-[11px] font-black uppercase">${t.descricao}</h4><p class="text-[9px] text-slate-500">${dV.toLocaleDateString()} • ${t.banco || 'Sem Banco'}</p></div></div><div class="flex items-center gap-3"><p class="text-xs font-black ${t.tipo==='receita'?'text-accentEmerald':'text-accentRose'}">R$ ${t.valor.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</p><div class="flex gap-1"><button onclick="editTransaction('${t.id}')" class="p-2 text-slate-500"><i data-lucide="edit-3" class="w-4 h-4"></i></button><button onclick="deleteTransaction('${t.id}')" class="p-2 text-slate-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div></div></div>`;
-                        if(i < 5) feed.innerHTML += html; ext.innerHTML += html;
-                    }
-                });
-            }
-            document.getElementById('dash-receitas').innerText = `R$ ${rPer.toLocaleString('pt-BR')}`;
-            document.getElementById('dash-despesas').innerText = `R$ ${dPer.toLocaleString('pt-BR')}`;
-            document.getElementById('display-periodo').innerText = isYearlyView ? `Ano ${viewDate.getFullYear()}` : `${meses[viewDate.getMonth()]} ${viewDate.getFullYear()}`;
+            document.getElementById('display-periodo').innerText = isYearlyView ? viewDate.getFullYear() : `${meses[viewDate.getMonth()]} ${viewDate.getFullYear()}`;
+            updateDonut(currentDonutType);
             lucide.createIcons();
-        }
+        };
 
-        // --- DEMAIS FUNÇÕES DE APOIO ---
-        function updateBancoSelect() { const sel = document.getElementById('banco-select'); if(sel) sel.innerHTML = '<option value="">Banco...</option>' + userBancos.map(b => `<option value="${b.nome}">${b.nome}</option>`).join(''); }
-        function updateCatSelect() { const sel = document.getElementById('categoria-select'); if(sel) sel.innerHTML = '<option value="">Categoria...</option>' + userCats.filter(c => c.tipo === currentTipo).map(c => `<option value="${c.nome}">${c.nome}</option>`).join(''); }
-        
-        window.openModalBanco = () => document.getElementById('modal-banco').classList.remove('hidden');
-        document.getElementById('form-banco').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            await addDoc(collection(db, "banks"), {
-                userId,
-                nome: document.getElementById('banco-nome-input').value,
-                saldoInicial: parseFloat(document.getElementById('banco-saldo-input').value),
-                createdAt: Timestamp.now()
-            });
-            closeModal();
-        });
-
-        document.getElementById('form-transacao').addEventListener('submit', async (e) => { e.preventDefault(); const id = document.getElementById('edit-id').value; const data = { userId, tipo: currentTipo, status: currentStatus, valor: parseFloat(document.getElementById('valor').value), descricao: document.getElementById('descricao').value, categoria: document.getElementById('categoria-select').value, banco: document.getElementById('banco-select').value, dateVencimento: Timestamp.fromDate(new Date(document.getElementById('dataVencimento').value + 'T12:00:00')) }; if (id) await updateDoc(doc(db, "transactions", id), data); else await addDoc(collection(db, "transactions"), { ...data, createdAt: Timestamp.now() }); closeModal(); });
+        window.cycleBankDisplay = () => { currentBankIdx++; if (currentBankIdx >= userBancos.length) currentBankIdx = -1; updateUI(); };
         window.showTab = (id) => { document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active')); document.getElementById('tab-' + id).classList.add('active'); lucide.createIcons(); };
-        window.closeModal = () => { ['modal-lancamento', 'modal-banco'].forEach(id => { const el = document.getElementById(id); if (el) el.classList.add('hidden'); }); };
-        window.openModal = () => { document.getElementById('edit-id').value = ""; document.getElementById('form-transacao').reset(); document.getElementById('dataVencimento').value = new Date().toISOString().split('T')[0]; document.getElementById('modal-lancamento').classList.remove('hidden'); };
+        window.savePerfilSettings = async () => {
+            await setDoc(doc(db, "users", userId), {
+                nome: document.getElementById('perf-nome').value,
+                cidade: document.getElementById('perf-cidade').value,
+                veiculoMarca: document.getElementById('veic-marca').value,
+                veiculoModelo: document.getElementById('veic-modelo').value,
+                consumo: parseFloat(document.getElementById('veic-consumo').value),
+                precoGasolina: parseFloat(document.getElementById('veic-gas').value)
+            }, { merge: true });
+            alert("Salvo!");
+        };
         window.handleLogout = () => signOut(auth).then(() => location.reload());
-        window.changeMonth = (delta) => { isYearlyView = false; viewDate.setMonth(viewDate.getMonth() + delta); updateUI(); };
+        window.changeMonth = (d) => { isYearlyView = false; viewDate.setMonth(viewDate.getMonth() + d); updateUI(); };
         window.toggleYearlyView = () => { isYearlyView = !isYearlyView; updateUI(); };
-        window.setTipo = (t) => { currentTipo = t; updateCatSelect(); };
-        window.setStatus = (s) => { currentStatus = s; };
+        window.closeModal = () => document.getElementById('modal-banco').classList.add('hidden');
+        window.openModalBanco = () => document.getElementById('modal-banco').classList.remove('hidden');
     </script>
 </body>
 </html>
