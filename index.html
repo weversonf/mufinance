@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Drivo & Money v12</title>
+    <title>Drivo & Money v13</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        tailwind.config = { darkMode: 'class', theme: { extend: { colors: { darkBg: '#020617', darkCard: '#0f172a', accentSky: '#0ea5e9', accentEmerald: '#10b981', accentRose: '#f43f5e' } } } }
+        tailwind.config = { darkMode: 'class', theme: { extend: { colors: { darkBg: '#020617', darkCard: '#0f172a', accentSky: '#0ea5e9', accentEmerald: '#10b981', accentRose: '#f43f5e', accentAmber: '#f59e0b' } } } }
         document.documentElement.classList.add('dark');
     </script>
     <style>
@@ -32,7 +32,7 @@
                 <div class="p-3 bg-accentSky rounded-xl text-white shadow-lg"><i data-lucide="zap" class="w-6 h-6 fill-current"></i></div>
                 <div>
                     <h1 class="text-2xl font-black uppercase italic tracking-tighter text-accentSky leading-none">Drivo&Money</h1>
-                    <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">v12 • Raio-X Financeiro</span>
+                    <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">v13 • Gestão de Fluxo</span>
                 </div>
             </div>
             <button onclick="handleLogout()" class="p-4 bg-slate-800/50 rounded-xl text-accentRose"><i data-lucide="log-out"></i></button>
@@ -65,7 +65,6 @@
                         </div>
                         <div class="relative h-[280px]"><canvas id="chart-rosca"></canvas></div>
                     </div>
-
                     <div class="lg:col-span-7 custom-card p-8">
                         <h3 class="text-xs font-black uppercase text-slate-400 mb-6 tracking-widest">Atividades Recentes</h3>
                         <div id="mini-feed" class="space-y-3"></div>
@@ -88,6 +87,10 @@
                     <button type="button" onclick="setTipo('despesa')" id="btn-tipo-des" class="flex-1 py-3 rounded-xl font-black text-[10px] uppercase bg-accentRose text-white">Despesa</button>
                     <button type="button" onclick="setTipo('receita')" id="btn-tipo-rec" class="flex-1 py-3 rounded-xl font-black text-[10px] uppercase bg-slate-800 text-slate-500">Receita</button>
                 </div>
+                <div class="flex bg-slate-800 p-1 rounded-xl">
+                    <button type="button" onclick="setStatus('efetivada')" id="btn-st-efetivada" class="flex-1 py-2 rounded-lg text-[9px] font-black uppercase bg-accentSky text-white">Efetivada</button>
+                    <button type="button" onclick="setStatus('prevista')" id="btn-st-prevista" class="flex-1 py-2 rounded-lg text-[9px] font-black uppercase text-slate-500">Prevista</button>
+                </div>
                 <input type="number" id="valor" step="0.01" placeholder="Valor R$" class="w-full p-4 bg-slate-950 border border-slate-800 rounded-xl text-lg font-black outline-none text-white" required>
                 <input type="text" id="descricao" placeholder="Descrição" class="w-full p-4 bg-slate-950 border border-slate-800 rounded-xl text-sm outline-none text-white" required>
                 <select id="categoria" class="w-full p-4 bg-slate-950 border border-slate-800 rounded-xl text-sm outline-none text-white appearance-none">
@@ -97,7 +100,6 @@
                     <option value="Moradia">Moradia</option>
                     <option value="Lazer">Lazer</option>
                     <option value="Salário">Salário</option>
-                    <option value="Outros">Outros</option>
                 </select>
                 <input type="date" id="dataVencimento" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-xs font-bold text-white" required>
                 <button type="submit" id="btn-salvar" class="w-full py-5 bg-sky-600 text-white rounded-2xl font-black uppercase text-xs">Salvar</button>
@@ -125,7 +127,7 @@
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
 
-        let userId, currentTipo = 'despesa', transactions = [], donutChart;
+        let userId, currentTipo = 'despesa', currentStatus = 'efetivada', transactions = [], donutChart;
 
         onAuthStateChanged(auth, (u) => { if (u) { userId = u.uid; initData(); } });
         window.handleLogout = () => signOut(auth).then(() => location.reload());
@@ -148,13 +150,19 @@
                 const dV = t.dateVencimento instanceof Timestamp ? t.dateVencimento.toDate() : new Date(t.dateVencimento);
                 if(dV.getMonth() === now.getMonth() && dV.getFullYear() === now.getFullYear()) { t.tipo === 'receita' ? r += val : d += val; }
 
-                const html = `<div class="flex justify-between items-center p-4 bg-slate-900/40 rounded-xl border border-white/5">
+                const isPrevista = t.status === 'prevista';
+                const html = `<div class="flex justify-between items-center p-4 ${isPrevista ? 'bg-slate-800/20' : 'bg-slate-900/40'} rounded-xl border ${isPrevista ? 'border-amber-500/20' : 'border-white/5'}">
                     <div class="flex items-center gap-3">
-                        <div class="p-2 rounded-lg ${t.tipo==='receita'?'bg-accentEmerald/10 text-accentEmerald':'bg-accentRose/10 text-accentRose'}"><i data-lucide="tag" class="w-4 h-4"></i></div>
-                        <div><h4 class="text-[11px] font-black uppercase">${t.descricao} <span class="text-[8px] text-slate-600">(${t.categoria})</span></h4><p class="text-[9px] text-slate-500">${dV.toLocaleDateString('pt-BR')}</p></div>
+                        <div class="p-2 rounded-lg ${isPrevista ? 'bg-accentAmber/10 text-accentAmber' : (t.tipo==='receita'?'bg-accentEmerald/10 text-accentEmerald':'bg-accentRose/10 text-accentRose')}">
+                            <i data-lucide="${isPrevista ? 'clock' : 'check-circle'}" class="w-4 h-4"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-[11px] font-black uppercase ${isPrevista ? 'text-slate-300' : ''}">${t.descricao}</h4>
+                            <p class="text-[9px] text-slate-500">${dV.toLocaleDateString('pt-BR')} • ${t.categoria}</p>
+                        </div>
                     </div>
                     <div class="flex items-center gap-4">
-                        <p class="text-xs font-black ${t.tipo==='receita'?'text-accentEmerald':'text-accentRose'}">R$ ${val.toLocaleString('pt-BR')}</p>
+                        <p class="text-xs font-black ${t.tipo==='receita'?'text-accentEmerald':'text-accentRose'}">R$ ${val.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</p>
                         <div class="flex gap-1">
                             <button onclick="editTransaction('${t.id}')" class="p-2 hover:text-accentSky"><i data-lucide="edit-2" class="w-3 h-3"></i></button>
                             <button onclick="deleteTransaction('${t.id}')" class="p-2 hover:text-accentRose"><i data-lucide="trash-2" class="w-3 h-3"></i></button>
@@ -190,7 +198,7 @@
             });
         };
 
-        window.deleteTransaction = async (id) => { if(confirm("Apagar transação?")) await deleteDoc(doc(db, "transactions", id)); };
+        window.deleteTransaction = async (id) => { if(confirm("Apagar?")) await deleteDoc(doc(db, "transactions", id)); };
         window.editTransaction = (id) => {
             const t = transactions.find(item => item.id === id);
             document.getElementById('edit-id').value = t.id;
@@ -200,17 +208,18 @@
             const dV = t.dateVencimento instanceof Timestamp ? t.dateVencimento.toDate() : new Date(t.dateVencimento);
             document.getElementById('dataVencimento').value = dV.toISOString().split('T')[0];
             setTipo(t.tipo);
+            setStatus(t.status || 'efetivada');
             document.getElementById('modal-title').innerText = "Editar";
             document.getElementById('modal-lancamento').classList.remove('hidden');
         };
 
-        window.openModal = () => { document.getElementById('edit-id').value = ""; document.getElementById('form-transacao').reset(); document.getElementById('dataVencimento').value = new Date().toISOString().split('T')[0]; document.getElementById('modal-title').innerText = "Novo Lançamento"; document.getElementById('modal-lancamento').classList.remove('hidden'); };
+        window.openModal = () => { document.getElementById('edit-id').value = ""; document.getElementById('form-transacao').reset(); setStatus('efetivada'); document.getElementById('dataVencimento').value = new Date().toISOString().split('T')[0]; document.getElementById('modal-title').innerText = "Novo Lançamento"; document.getElementById('modal-lancamento').classList.remove('hidden'); };
         window.closeModal = () => document.getElementById('modal-lancamento').classList.add('hidden');
 
         document.getElementById('form-transacao').addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = document.getElementById('edit-id').value;
-            const data = { userId, tipo: currentTipo, valor: parseFloat(document.getElementById('valor').value), descricao: document.getElementById('descricao').value, categoria: document.getElementById('categoria').value, dateVencimento: Timestamp.fromDate(new Date(document.getElementById('dataVencimento').value + 'T12:00:00')) };
+            const data = { userId, tipo: currentTipo, status: currentStatus, valor: parseFloat(document.getElementById('valor').value), descricao: document.getElementById('descricao').value, categoria: document.getElementById('categoria').value, dateVencimento: Timestamp.fromDate(new Date(document.getElementById('dataVencimento').value + 'T12:00:00')) };
             if(id) await updateDoc(doc(db, "transactions", id), data);
             else await addDoc(collection(db, "transactions"), { ...data, createdAt: Timestamp.now() });
             closeModal();
@@ -220,6 +229,12 @@
             currentTipo = t;
             document.getElementById('btn-tipo-des').className = t==='despesa' ? "flex-1 py-3 rounded-xl font-black text-[10px] uppercase bg-accentRose text-white" : "flex-1 py-3 rounded-xl font-black text-[10px] uppercase bg-slate-800 text-slate-500";
             document.getElementById('btn-tipo-rec').className = t==='receita' ? "flex-1 py-3 rounded-xl font-black text-[10px] uppercase bg-accentEmerald text-white" : "flex-1 py-3 rounded-xl font-black text-[10px] uppercase bg-slate-800 text-slate-500";
+        };
+
+        window.setStatus = (s) => {
+            currentStatus = s;
+            document.getElementById('btn-st-efetivada').className = s==='efetivada' ? "flex-1 py-2 rounded-lg text-[9px] font-black uppercase bg-accentSky text-white" : "flex-1 py-2 rounded-lg text-[9px] font-black uppercase text-slate-500";
+            document.getElementById('btn-st-prevista').className = s==='prevista' ? "flex-1 py-2 rounded-lg text-[9px] font-black uppercase bg-accentAmber text-white" : "flex-1 py-2 rounded-lg text-[9px] font-black uppercase text-slate-500";
         };
 
         window.showTab = (id) => {
