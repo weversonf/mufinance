@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Drivo & Money v23</title>
+    <title>Drivo & Money v23.1</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -14,6 +14,11 @@
     </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
+        
+        /* BLOQUEIO DE SELEÇÃO DE TEXTO E NÚMEROS */
+        * { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
+        input, select, textarea { user-select: text !important; }
+
         body { font-family: 'Inter', sans-serif; background-color: #020617; color: white; }
         .tab-content { display: none; }
         .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
@@ -33,37 +38,39 @@
                 <div class="p-3 bg-accentSky rounded-xl text-white shadow-lg"><i data-lucide="zap" class="w-6 h-6 fill-current"></i></div>
                 <div>
                     <h1 class="text-2xl font-black uppercase italic tracking-tighter text-accentSky leading-none">Drivo&Money</h1>
-                    <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">v23 • Perfil Expandido</span>
+                    <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">v23.1 • Stable Dashboard</span>
                 </div>
             </div>
             <button onclick="handleLogout()" class="p-4 bg-slate-800/50 rounded-xl text-accentRose"><i data-lucide="log-out"></i></button>
         </header>
 
         <main>
-            <section id="tab-dashboard" class="tab-content active space-y-6">
-                <div class="flex flex-col md:flex-row items-center justify-between mb-6 gap-4">
-                    <div class="flex items-center gap-4 bg-darkCard p-2 rounded-2xl border border-white/5">
-                        <button onclick="changeMonth(-1)" class="p-2 hover:bg-white/5 rounded-xl transition-all"><i data-lucide="chevron-left" class="w-5 h-5 text-accentSky"></i></button>
-                        <div class="text-center min-w-[120px]">
-                            <p id="display-periodo" class="text-xs font-black uppercase tracking-widest">---</p>
-                        </div>
-                        <button onclick="changeMonth(1)" class="p-2 hover:bg-white/5 rounded-xl transition-all"><i data-lucide="chevron-right" class="w-5 h-5 text-accentSky"></i></button>
+            <div class="flex flex-col md:flex-row items-center justify-between mb-6 gap-4">
+                <div class="flex items-center gap-4 bg-darkCard p-2 rounded-2xl border border-white/5">
+                    <button onclick="changeMonth(-1)" class="p-2 hover:bg-white/5 rounded-xl transition-all"><i data-lucide="chevron-left" class="w-5 h-5 text-accentSky"></i></button>
+                    <div class="text-center min-w-[120px]">
+                        <p id="display-periodo" class="text-xs font-black uppercase tracking-widest">---</p>
                     </div>
-                    <button onclick="toggleYearlyView()" id="btn-yearly" class="px-6 py-3 rounded-2xl bg-slate-800 text-[10px] font-black uppercase tracking-widest hover:bg-slate-700 border border-white/5">Ver Ano Todo</button>
+                    <button onclick="changeMonth(1)" class="p-2 hover:bg-white/5 rounded-xl transition-all"><i data-lucide="chevron-right" class="w-5 h-5 text-accentSky"></i></button>
                 </div>
+                <button onclick="toggleYearlyView()" id="btn-yearly" class="px-6 py-3 rounded-2xl bg-slate-800 text-[10px] font-black uppercase tracking-widest hover:bg-slate-700 border border-white/5">Ver Ano Todo</button>
+            </div>
 
+            <section id="tab-dashboard" class="tab-content active space-y-6">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="card-gradient p-6 shadow-2xl flex flex-col justify-between min-h-[140px] relative overflow-hidden cursor-pointer" onclick="cycleBankDisplay()">
+                    <div id="card-saldo-main" onclick="cycleBankDisplay()" class="card-gradient p-6 shadow-2xl flex flex-col justify-between min-h-[140px] relative overflow-hidden cursor-pointer active:scale-95 transition-all">
                         <div class="relative z-10">
                             <small id="bank-label" class="text-[10px] font-black uppercase tracking-widest text-white/80">Saldo Disponível</small>
                             <p class="text-3xl font-black mt-2 text-white" id="dash-saldo">R$ 0,00</p>
                         </div>
                         <i data-lucide="wallet" class="absolute -right-4 -bottom-4 w-24 h-24 opacity-10"></i>
                     </div>
+
                     <div class="custom-card p-6 border-l-4 border-l-accentEmerald">
                         <small id="label-receita" class="text-[10px] font-black uppercase text-slate-500">Receitas</small>
                         <p class="text-3xl font-black mt-2 text-accentEmerald" id="dash-receitas">R$ 0,00</p>
                     </div>
+
                     <div class="custom-card p-6 border-l-4 border-l-accentRose">
                         <small id="label-despesa" class="text-[10px] font-black uppercase text-slate-500">Despesas</small>
                         <p class="text-3xl font-black mt-2 text-accentRose" id="dash-despesas">R$ 0,00</p>
@@ -71,9 +78,9 @@
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                    <div class="lg:col-span-5 custom-card p-8">
+                    <div class="lg:col-span-5 custom-card p-8 text-center">
                         <div class="flex justify-between items-center mb-6">
-                            <h3 id="titulo-grafico" class="text-xs font-black uppercase text-slate-400 tracking-widest">Raio-X Mensal</h3>
+                            <h3 id="titulo-grafico" class="text-xs font-black uppercase text-slate-400 tracking-widest text-left">Raio-X Mensal</h3>
                             <div class="flex bg-slate-800 p-1 rounded-xl">
                                 <button onclick="updateDonut('despesa')" id="btn-donut-des" class="px-3 py-1.5 rounded-lg text-[9px] font-black uppercase bg-accentRose text-white">Gastos</button>
                                 <button onclick="updateDonut('receita')" id="btn-donut-rec" class="px-3 py-1.5 rounded-lg text-[9px] font-black uppercase text-slate-500">Ganhos</button>
@@ -83,7 +90,7 @@
                     </div>
                     <div class="lg:col-span-7 custom-card p-8">
                         <h3 class="text-xs font-black uppercase text-slate-400 mb-6 tracking-widest text-left">Últimos Movimentos</h3>
-                        <div id="mini-feed" class="space-y-3"></div>
+                        <div id="mini-feed" class="space-y-3 text-left"></div>
                     </div>
                 </div>
             </section>
@@ -115,9 +122,9 @@
                 <div class="space-y-4">
                     <div class="flex justify-between items-center">
                         <h3 class="text-xs font-black uppercase tracking-widest text-accentSky">Meus Bancos</h3>
-                        <button onclick="alert('Configuração de bancos em breve')" class="text-[10px] font-black uppercase bg-accentSky/10 text-accentSky px-3 py-1 rounded-lg font-black">+ ADICIONAR</button>
+                        <button onclick="addBankPrompt()" class="text-[10px] font-black uppercase bg-accentSky/10 text-accentSky px-3 py-1 rounded-lg font-black">+ ADICIONAR</button>
                     </div>
-                    <div id="lista-bancos-perfil" class="grid grid-cols-1 gap-2"></div>
+                    <div id="lista-bancos-perfil" class="grid grid-cols-1 gap-2 text-left"></div>
                 </div>
 
                 <div class="space-y-4">
@@ -128,8 +135,8 @@
                     </div>
                 </div>
             </section>
-            
-            <section id="tab-extrato" class="tab-content space-y-4">
+
+            <section id="tab-extrato" class="tab-content space-y-4 text-left">
                 <div id="lista-transacoes-extrato" class="space-y-3"></div>
             </section>
         </main>
@@ -145,7 +152,7 @@
 
     <div id="modal-lancamento" class="hidden fixed inset-0 bg-slate-950/90 backdrop-blur-sm flex items-center justify-center p-4 z-[300]">
         <div class="custom-card w-full max-w-md p-8 shadow-2xl">
-            <h3 id="modal-title" class="text-lg font-black uppercase italic text-sky-500 mb-6">Lançamento</h3>
+            <h3 id="modal-title" class="text-lg font-black uppercase italic text-sky-500 mb-6 text-left">Lançamento</h3>
             <form id="form-transacao" class="space-y-4">
                 <input type="hidden" id="edit-id">
                 <div class="flex gap-2">
@@ -156,12 +163,12 @@
                     <button type="button" onclick="setStatus('efetivada')" id="btn-st-efetivada" class="flex-1 py-2 rounded-lg text-[9px] font-black uppercase bg-accentSky text-white">Efetivada</button>
                     <button type="button" onclick="setStatus('prevista')" id="btn-st-prevista" class="flex-1 py-2 rounded-lg text-[9px] font-black uppercase text-slate-500">Prevista</button>
                 </div>
-                <input type="number" id="valor" step="0.01" placeholder="Valor R$" class="w-full p-4 bg-slate-950 border border-slate-800 rounded-xl text-lg font-black outline-none text-white" required>
-                <input type="text" id="descricao" placeholder="Descrição" class="w-full p-4 bg-slate-950 border border-slate-800 rounded-xl text-sm outline-none text-white" required>
-                <select id="categoria" class="w-full p-4 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white"><option value="Geral">Geral</option><option value="Alimentação">Alimentação</option><option value="Fazer 250">Fazer 250 (Moto)</option><option value="Salário">Salário</option><option value="Lazer">Lazer</option></select>
-                <input type="date" id="dataVencimento" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-xs font-bold text-white" required>
+                <input type="number" id="valor" step="0.01" placeholder="Valor R$" class="input-dark text-lg font-black" required>
+                <input type="text" id="descricao" placeholder="Descrição" class="input-dark" required>
+                <select id="categoria" class="input-dark"><option value="Geral">Geral</option><option value="Alimentação">Alimentação</option><option value="Fazer 250">Fazer 250 (Moto)</option><option value="Salário">Salário</option></select>
+                <input type="date" id="dataVencimento" class="input-dark text-xs" required>
                 <button type="submit" class="w-full py-5 bg-sky-600 text-white rounded-2xl font-black uppercase text-xs">Confirmar</button>
-                <button type="button" onclick="closeModal()" class="w-full text-slate-500 text-[10px] font-bold mt-2">CANCELAR</button>
+                <button type="button" onclick="closeModal()" class="w-full text-slate-500 text-[10px] font-bold mt-2 text-center">CANCELAR</button>
             </form>
         </div>
     </div>
@@ -177,82 +184,88 @@
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
 
-        let userId, currentTipo = 'despesa', currentStatus = 'efetivada', transactions = [], donutChart;
+        let userId, currentTipo = 'despesa', currentStatus = 'efetivada', transactions = [], userBancos = [], donutChart;
         let viewDate = new Date();
         let isYearlyView = false;
+        let currentBankIdx = -1;
         const meses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 
         onAuthStateChanged(auth, (u) => { if (u) { userId = u.uid; initData(); } });
         window.handleLogout = () => signOut(auth).then(() => location.reload());
 
         function initData() {
-            const q = query(collection(db, "transactions"), where("userId", "==", userId));
-            onSnapshot(q, (snap) => {
+            onSnapshot(query(collection(db, "transactions"), where("userId", "==", userId)), (snap) => {
                 transactions = snap.docs.map(d => ({id: d.id, ...d.data()})).sort((a,b) => b.dateVencimento - a.dateVencimento);
+                updateUI();
+            });
+            onSnapshot(query(collection(db, "banks"), where("userId", "==", userId)), (snap) => {
+                userBancos = snap.docs.map(d => ({id: d.id, ...d.data()}));
+                renderBancosPerfil();
                 updateUI();
             });
         }
 
-        window.changeMonth = (delta) => { isYearlyView = false; viewDate.setMonth(viewDate.getMonth() + delta); updateUI(); };
-        window.toggleYearlyView = () => { isYearlyView = !isYearlyView; updateUI(); };
+        window.cycleBankDisplay = () => {
+            currentBankIdx++;
+            if (currentBankIdx >= userBancos.length) currentBankIdx = -1;
+            updateUI();
+        };
 
         function updateUI() {
-            let saldoReal = 0, rPeriodo = 0, dPeriodo = 0;
+            let sReal = 0, rPer = 0, dPer = 0;
             const feed = document.getElementById('mini-feed'); feed.innerHTML = "";
             const ext = document.getElementById('lista-transacoes-extrato'); ext.innerHTML = "";
-            const display = document.getElementById('display-periodo');
-            const btnYearly = document.getElementById('btn-yearly');
 
-            if (isYearlyView) {
-                display.innerText = `Ano ${viewDate.getFullYear()}`;
-                btnYearly.classList.replace('bg-slate-800', 'bg-accentSky');
-                document.getElementById('label-receita').innerText = "Receitas (Ano)";
-                document.getElementById('label-despesa').innerText = "Despesas (Ano)";
+            // Cálculo Saldo Consolidado
+            const saldoInicial = userBancos.reduce((acc, b) => acc + (b.saldoInicial || 0), 0);
+            const saldoTransacoes = transactions.filter(t => t.status === 'efetivada').reduce((acc, t) => t.tipo === 'receita' ? acc + t.valor : acc - t.valor, 0);
+            const consolidado = saldoInicial + saldoTransacoes;
+
+            if (currentBankIdx === -1) {
+                document.getElementById('bank-label').innerText = "Saldo Consolidado";
+                document.getElementById('dash-saldo').innerText = `R$ ${consolidado.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
             } else {
-                display.innerText = `${meses[viewDate.getMonth()]} ${viewDate.getFullYear()}`;
-                btnYearly.classList.replace('bg-accentSky', 'bg-slate-800');
-                document.getElementById('label-receita').innerText = `Receitas (${meses[viewDate.getMonth()].substring(0,3)})`;
-                document.getElementById('label-despesa').innerText = `Despesas (${meses[viewDate.getMonth()].substring(0,3)})`;
+                const b = userBancos[currentBankIdx];
+                document.getElementById('bank-label').innerText = `Saldo ${b.nome}`;
+                // Aqui no futuro filtramos por transações vinculadas ao banco
+                document.getElementById('dash-saldo').innerText = `R$ ${b.saldoInicial.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
             }
 
-            transactions.forEach((t) => {
-                const val = t.valor || 0;
+            const display = document.getElementById('display-periodo');
+            display.innerText = isYearlyView ? `Ano ${viewDate.getFullYear()}` : `${meses[viewDate.getMonth()]} ${viewDate.getFullYear()}`;
+
+            transactions.forEach((t, i) => {
                 const dV = t.dateVencimento instanceof Timestamp ? t.dateVencimento.toDate() : new Date(t.dateVencimento);
-                const isEfetivada = t.status === 'efetivada';
-                if(isEfetivada) { t.tipo === 'receita' ? saldoReal += val : saldoReal -= val; }
-                const matchMonth = dV.getMonth() === viewDate.getMonth() && dV.getFullYear() === viewDate.getFullYear();
-                const matchYear = dV.getFullYear() === viewDate.getFullYear();
-                const showInView = isYearlyView ? matchYear : matchMonth;
-                if(showInView) {
-                    t.tipo === 'receita' ? rPeriodo += val : dPeriodo += val;
-                    const html = `<div class="flex justify-between items-center p-4 ${!isEfetivada ? 'bg-slate-800/20' : 'bg-slate-900/40'} rounded-xl border border-white/5">
-                        <div class="flex items-center gap-3">
-                            <div class="p-2 rounded-lg ${!isEfetivada ? 'bg-accentAmber/10 text-accentAmber' : (t.tipo==='receita'?'bg-accentEmerald/10 text-accentEmerald':'bg-accentRose/10 text-accentRose')}"><i data-lucide="${!isEfetivada ? 'clock' : 'check-circle'}" class="w-4 h-4"></i></div>
-                            <div><h4 class="text-[11px] font-black uppercase">${t.descricao}</h4><p class="text-[9px] text-slate-500">${dV.toLocaleDateString('pt-BR')}</p></div>
-                        </div>
-                        <div class="flex items-center gap-4">
-                            <p class="text-xs font-black ${t.tipo==='receita'?'text-accentEmerald':'text-accentRose'}">R$ ${val.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</p>
-                            <div class="flex gap-1"><button onclick="editTransaction('${t.id}')" class="p-2 hover:text-accentSky"><i data-lucide="edit-2" class="w-3 h-3"></i></button></div>
-                        </div>
-                    </div>`;
-                    feed.innerHTML += html; ext.innerHTML += html;
+                const match = isYearlyView ? dV.getFullYear() === viewDate.getFullYear() : (dV.getMonth() === viewDate.getMonth() && dV.getFullYear() === viewDate.getFullYear());
+                if(match) {
+                    t.tipo === 'receita' ? rPer += t.valor : dPer += t.valor;
+                    const html = `<div class="flex justify-between items-center p-4 ${t.status!=='efetivada' ? 'bg-slate-800/20' : 'bg-slate-900/40'} rounded-xl border border-white/5"><div class="flex items-center gap-3"><div class="p-2 rounded-lg ${t.status!=='efetivada' ? 'bg-accentAmber/10 text-accentAmber' : (t.tipo==='receita'?'bg-accentEmerald/10 text-accentEmerald':'bg-accentRose/10 text-accentRose')}"><i data-lucide="${t.status!=='efetivada' ? 'clock' : 'check-circle'}" class="w-4 h-4"></i></div><div><h4 class="text-[11px] font-black uppercase">${t.descricao}</h4><p class="text-[9px] text-slate-500">${dV.toLocaleDateString()}</p></div></div><p class="text-xs font-black ${t.tipo==='receita'?'text-accentEmerald':'text-accentRose'}">R$ ${t.valor.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</p></div>`;
+                    if(i < 5) feed.innerHTML += html;
+                    ext.innerHTML += html;
                 }
             });
-            document.getElementById('dash-saldo').innerText = `R$ ${saldoReal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-            document.getElementById('dash-receitas').innerText = `R$ ${rPeriodo.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-            document.getElementById('dash-despesas').innerText = `R$ ${dPeriodo.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            document.getElementById('dash-receitas').innerText = `R$ ${rPer.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            document.getElementById('dash-despesas').innerText = `R$ ${dPer.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
             lucide.createIcons();
             updateDonut(currentTipo);
         }
 
+        window.addBankPrompt = async () => {
+            const n = prompt("Nome do Banco:"); const s = prompt("Saldo Inicial:");
+            if(n && s) await addDoc(collection(db, "banks"), { userId, nome: n, saldoInicial: parseFloat(s) });
+        };
+
+        function renderBancosPerfil() {
+            const list = document.getElementById('lista-bancos-perfil');
+            list.innerHTML = userBancos.map(b => `<div class="flex justify-between p-4 bg-slate-950 rounded-xl border border-white/5"><p class="text-[10px] font-black uppercase">${b.nome}</p><p class="text-xs font-black">R$ ${b.saldoInicial.toLocaleString()}</p></div>`).join('');
+            lucide.createIcons();
+        }
+
         window.updateDonut = (tipo) => {
-            currentTipo = tipo;
-            const ctx = document.getElementById('chart-rosca').getContext('2d');
-            const dataMap = {};
+            currentTipo = tipo; const ctx = document.getElementById('chart-rosca').getContext('2d'); const dataMap = {};
             transactions.filter(t => {
                 const dV = t.dateVencimento instanceof Timestamp ? t.dateVencimento.toDate() : new Date(t.dateVencimento);
-                const match = isYearlyView ? dV.getFullYear() === viewDate.getFullYear() : (dV.getMonth() === viewDate.getMonth() && dV.getFullYear() === viewDate.getFullYear());
-                return t.tipo === tipo && match;
+                return t.tipo === tipo && (isYearlyView ? dV.getFullYear() === viewDate.getFullYear() : (dV.getMonth() === viewDate.getMonth() && dV.getFullYear() === viewDate.getFullYear()));
             }).forEach(t => { const cat = t.categoria || 'Geral'; dataMap[cat] = (dataMap[cat] || 0) + t.valor; });
             if(donutChart) donutChart.destroy();
             donutChart = new Chart(ctx, { type: 'doughnut', data: { labels: Object.keys(dataMap), datasets: [{ data: Object.values(dataMap), backgroundColor: tipo==='despesa'?['#f43f5e','#fb923c','#facc15','#a855f7']:['#10b981','#0ea5e9'], borderWidth: 0 }]}, options: { cutout: '80%', plugins: { legend: { display: true, position: 'bottom', labels: { color: '#94a3b8', font: { size: 10, weight: '700' }, usePointStyle: true }}}} });
@@ -260,32 +273,14 @@
             document.getElementById('btn-donut-rec').className = tipo==='receita' ? "px-3 py-1.5 rounded-lg text-[9px] font-black uppercase bg-accentEmerald text-white" : "px-3 py-1.5 rounded-lg text-[9px] font-black uppercase text-slate-500";
         };
 
-        window.editTransaction = (id) => {
-            const t = transactions.find(item => item.id === id);
-            document.getElementById('edit-id').value = t.id;
-            document.getElementById('descricao').value = t.descricao;
-            document.getElementById('valor').value = t.valor;
-            document.getElementById('categoria').value = t.categoria || "Geral";
-            const dV = t.dateVencimento instanceof Timestamp ? t.dateVencimento.toDate() : new Date(t.dateVencimento);
-            document.getElementById('dataVencimento').value = dV.toISOString().split('T')[0];
-            setTipo(t.tipo); setStatus(t.status || 'efetivada');
-            document.getElementById('modal-lancamento').classList.remove('hidden');
-        };
-
-        window.openModal = () => { document.getElementById('edit-id').value = ""; document.getElementById('form-transacao').reset(); document.getElementById('dataVencimento').value = new Date().toISOString().split('T')[0]; document.getElementById('modal-lancamento').classList.remove('hidden'); };
+        window.changeMonth = (delta) => { isYearlyView = false; viewDate.setMonth(viewDate.getMonth() + delta); updateUI(); };
+        window.toggleYearlyView = () => { isYearlyView = !isYearlyView; updateUI(); };
+        window.showTab = (id) => { document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active')); document.getElementById('tab-' + id).classList.add('active'); lucide.createIcons(); };
+        window.openModal = () => document.getElementById('modal-lancamento').classList.remove('hidden');
         window.closeModal = () => document.getElementById('modal-lancamento').classList.add('hidden');
-        window.setTipo = (t) => { currentTipo = t; document.getElementById('btn-tipo-des').className = t==='despesa' ? "flex-1 py-3 rounded-xl font-black text-[10px] uppercase bg-accentRose text-white" : "flex-1 py-3 rounded-xl font-black text-[10px] uppercase bg-slate-800 text-slate-500"; document.getElementById('btn-tipo-rec').className = t==='receita' ? "flex-1 py-3 rounded-xl font-black text-[10px] uppercase bg-accentEmerald text-white" : "flex-1 py-3 rounded-xl font-black text-[10px] uppercase bg-slate-800 text-slate-500"; };
-        window.setStatus = (s) => { currentStatus = s; document.getElementById('btn-st-efetivada').className = s==='efetivada' ? "flex-1 py-2 rounded-lg text-[9px] font-black uppercase bg-accentSky text-white" : "flex-1 py-2 rounded-lg text-[9px] font-black uppercase text-slate-500"; document.getElementById('btn-st-prevista').className = s==='prevista' ? "flex-1 py-2 rounded-lg text-[9px] font-black uppercase bg-accentAmber text-white" : "flex-1 py-2 rounded-lg text-[9px] font-black uppercase text-slate-500"; };
-        window.showTab = (id) => { document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active')); document.getElementById('tab-' + id).classList.add('active'); document.querySelectorAll('.nav-btn').forEach(b => b.classList.replace('text-accentSky', 'text-slate-500')); const active = document.querySelector(`[data-tab="${id}"]`); if(active) active.classList.replace('text-slate-500', 'text-accentSky'); lucide.createIcons(); };
+        window.setTipo = (t) => { currentTipo = t; updateUI(); };
+        window.setStatus = (s) => { currentStatus = s; };
 
-        document.getElementById('form-transacao').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const id = document.getElementById('edit-id').value;
-            const data = { userId, tipo: currentTipo, status: currentStatus, valor: parseFloat(document.getElementById('valor').value), descricao: document.getElementById('descricao').value, categoria: document.getElementById('categoria').value, dateVencimento: Timestamp.fromDate(new Date(document.getElementById('dataVencimento').value + 'T12:00:00')) };
-            if(id) await updateDoc(doc(db, "transactions", id), data);
-            else await addDoc(collection(db, "transactions"), { ...data, createdAt: Timestamp.now() });
-            closeModal();
-        });
         lucide.createIcons();
     </script>
 </body>
