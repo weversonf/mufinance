@@ -214,16 +214,19 @@
         const app = initializeApp(firebaseConfig); const db = getFirestore(app); const auth = getAuth(app);
 
         let userId, dataGlobal = [], userBancos = [], donutChart, chartTipo = 'despesa', bancoIndiceAtivo = -1;
+        
+        // --- CATEGORIAS PADRÕES CORRIGIDAS ---
         let userSettings = { 
             catDespesa: [{n:'Alimentação'}, {n:'Lazer'}, {n:'Transporte'}, {n:'Saúde'}], 
             catReceita: [{n:'Salário'}, {n:'Investimento'}, {n:'Extra'}] 
         };
+        // -------------------------------------
+
         let currentMode = 'mensal', currentDate = new Date();
         const mesesNomes = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
 
         onAuthStateChanged(auth, u => { if (u) { userId = u.uid; document.getElementById('app-container').classList.replace('hidden', 'flex'); loadProfile(); startListener(); } else { window.location.reload(); } });
 
-        /* UI NAVEGAÇÃO */
         window.toggleSidebar = () => {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('sidebar-overlay');
@@ -264,7 +267,6 @@
             lucide.createIcons(); 
         };
 
-        /* FIREBASE */
         function startListener() {
             onSnapshot(query(collection(db, "transactions"), where("userId", "==", userId)), (snap) => { dataGlobal = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })); updateAll(); });
             onSnapshot(query(collection(db, "banks"), where("userId", "==", userId)), (snap) => { 
@@ -284,7 +286,6 @@
             });
         }
 
-        /* RENDERS TRANSAÇÕES */
         const itemTransacao = (t) => `
             <div class="flex justify-between items-center p-4 bg-white dark:bg-darkCard rounded-2xl border border-slate-100 dark:border-slate-800 group transition-all">
                 <div class="flex items-center gap-4">
@@ -306,8 +307,6 @@
             const dT = f.filter(t => t.tipo === 'despesa').reduce((a,b) => a+b.valor,0);
             const valS = document.getElementById('dash-saldo');
             const labelS = document.getElementById('label-saldo');
-            const ind = document.getElementById('indicadores-banco');
-
             if(valS) {
                 if(bancoIndiceAtivo === -1) { 
                     valS.innerText = `R$ ${(rT-dT).toLocaleString('pt-BR', {minimumFractionDigits:2})}`; 
@@ -323,10 +322,6 @@
                     }
                 }
             }
-            if(ind) {
-                ind.innerHTML = `<div class="w-3 h-1 rounded-full ${bancoIndiceAtivo===-1?'bg-white':'bg-white/20'}"></div>` + 
-                    userBancos.map((_,i) => `<div class="w-1.5 h-1 rounded-full ${bancoIndiceAtivo===i?'bg-white':'bg-white/20'}"></div>`).join('');
-            }
             if(document.getElementById('dash-receitas')) document.getElementById('dash-receitas').innerText = `R$ ${rT.toLocaleString('pt-BR')}`;
             if(document.getElementById('dash-despesas')) document.getElementById('dash-despesas').innerText = `R$ ${dT.toLocaleString('pt-BR')}`;
             renderDonut(f);
@@ -340,7 +335,6 @@
             if(el) { el.innerHTML = f.map(t => itemTransacao(t)).join(''); lucide.createIcons(); }
         };
 
-        /* LÓGICA GRÁFICO (FIX AQUI) */
         window.setChartTipo = (tipo) => {
             chartTipo = tipo;
             const pD = document.getElementById('pill-des');
@@ -370,25 +364,31 @@
             }); 
         }
 
-        /* CONFIGURAÇÕES */
+        /* --- CONFIGURAÇÕES (BLOCO CORRIGIDO) --- */
         async function loadProfile() { 
             const snap = await getDoc(doc(db, "users", userId)); 
             if(snap.exists()) { 
                 const data = snap.data();
-                userSettings.catDespesa = data.catDespesa || userSettings.catDespesa;
-                userSettings.catReceita = data.catReceita || userSettings.catReceita;
-                if(document.getElementById('perf-nome')) document.getElementById('perf-nome').value = data.nome||""; 
-                if(document.getElementById('perf-user')) document.getElementById('perf-user').value = data.usuario||""; 
+                // Carrega do banco se existirem dados salvos, senão mantém os padrões de userSettings
+                if(data.catDespesa && data.catDespesa.length > 0) userSettings.catDespesa = data.catDespesa;
+                if(data.catReceita && data.catReceita.length > 0) userSettings.catReceita = data.catReceita;
+                
+                if(document.getElementById('perf-nome')) document.getElementById('perf-nome').value = data.nome || ""; 
+                if(document.getElementById('perf-user')) document.getElementById('perf-user').value = data.usuario || ""; 
             } 
-            renderConfigAssets(); updateCatSelect(); 
+            renderConfigAssets(); 
+            updateCatSelect(); 
         }
 
         function renderConfigAssets() {
-            const chip = (c, type) => `
+            const chip = (c, type) => {
+                const nome = c.n || c; // Fallback se o objeto não for estruturado corretamente
+                return `
                 <div class="bg-slate-100 dark:bg-slate-800 px-3 py-2 rounded-xl flex items-center gap-2 border border-slate-200 dark:border-slate-700 shadow-sm transition-all hover:bg-white dark:hover:bg-slate-700">
-                    <span class="text-[10px] font-bold uppercase text-slate-600 dark:text-slate-300">${c.n}</span>
-                    <button onclick="removeCategory('${c.n}', '${type}')" class="text-rose-500/50 hover:text-rose-500 transition-colors border-none bg-transparent cursor-pointer"><i data-lucide="x-circle" class="w-3 h-3"></i></button>
+                    <span class="text-[10px] font-bold uppercase text-slate-600 dark:text-slate-300">${nome}</span>
+                    <button onclick="removeCategory('${nome}', '${type}')" class="text-rose-500/50 hover:text-rose-500 transition-colors border-none bg-transparent cursor-pointer"><i data-lucide="x-circle" class="w-3 h-3"></i></button>
                 </div>`;
+            };
             const dList = document.getElementById('cat-despesa-list');
             const rList = document.getElementById('cat-receita-list');
             if(dList) dList.innerHTML = userSettings.catDespesa.map(c => chip(c, 'despesa')).join('');
@@ -398,19 +398,38 @@
 
         window.addCategoryPrompt = (type) => {
             const nome = prompt(`Nova categoria de ${type}:`);
-            if(nome) {
+            if(nome && nome.trim() !== "") {
                 const target = type === 'despesa' ? userSettings.catDespesa : userSettings.catReceita;
-                if(!target.find(c => c.n.toLowerCase() === nome.toLowerCase())) { target.push({ n: nome }); renderConfigAssets(); updateCatSelect(); }
+                const limpo = nome.trim();
+                if(!target.find(c => (c.n || c).toLowerCase() === limpo.toLowerCase())) { 
+                    target.push({ n: limpo }); 
+                    renderConfigAssets(); 
+                    updateCatSelect(); 
+                }
             }
         };
 
         window.removeCategory = (nome, type) => {
             if(confirm(`Remover categoria "${nome}"?`)) {
-                if(type === 'despesa') userSettings.catDespesa = userSettings.catDespesa.filter(c => c.n !== nome);
-                else userSettings.catReceita = userSettings.catReceita.filter(c => c.n !== nome);
-                renderConfigAssets(); updateCatSelect();
+                if(type === 'despesa') userSettings.catDespesa = userSettings.catDespesa.filter(c => (c.n || c) !== nome);
+                else userSettings.catReceita = userSettings.catReceita.filter(c => (c.n || c) !== nome);
+                renderConfigAssets(); 
+                updateCatSelect();
             }
         };
+
+        window.updateCatSelect = () => { 
+            const tEl = document.getElementById('inp-tipo'); 
+            const cEl = document.getElementById('inp-cat'); 
+            if(tEl && cEl) { 
+                const cats = tEl.value === 'despesa' ? userSettings.catDespesa : userSettings.catReceita; 
+                cEl.innerHTML = cats.map(c => {
+                    const nome = c.n || c;
+                    return `<option value="${nome}">${nome}</option>`;
+                }).join(''); 
+            } 
+        };
+        // -------------------------------------
 
         function renderBankList() {
             const el = document.getElementById('lista-bancos-config');
@@ -420,7 +439,13 @@
         window.saveSettings = async () => {
             const n = document.getElementById('perf-nome').value;
             const u = document.getElementById('perf-user').value;
-            await setDoc(doc(db, "users", userId), { ...userSettings, nome: n, usuario: u }, { merge: true });
+            // Salva o objeto completo no Firebase para persistência
+            await setDoc(doc(db, "users", userId), { 
+                catDespesa: userSettings.catDespesa,
+                catReceita: userSettings.catReceita,
+                nome: n, 
+                usuario: u 
+            }, { merge: true });
             alert("Configurações salvas!");
         };
 
@@ -436,7 +461,6 @@
         window.editTransaction = (id) => { const t = dataGlobal.find(x => x.id === id); if(!t) return; document.getElementById('edit-id').value = t.id; document.getElementById('inp-valor').value = t.valor; document.getElementById('inp-desc').value = t.descricao; document.getElementById('inp-tipo').value = t.tipo; document.getElementById('inp-data').value = new Date(t.date.seconds * 1000).toISOString().split('T')[0]; updateCatSelect(); document.getElementById('inp-cat').value = t.categoria; document.getElementById('inp-banco').value = t.banco; document.getElementById('modal-title').innerText = "Editar Lançamento"; document.getElementById('modal-lancamento').classList.remove('hidden'); };
         window.handlePlusButton = () => { document.getElementById('edit-id').value = ''; document.getElementById('form-registro').reset(); document.getElementById('modal-title').innerText = "Novo Lançamento"; document.getElementById('modal-lancamento').classList.remove('hidden'); updateCatSelect(); };
         window.closeModal = () => document.getElementById('modal-lancamento').classList.add('hidden');
-        window.updateCatSelect = () => { const tEl = document.getElementById('inp-tipo'); const cEl = document.getElementById('inp-cat'); if(tEl && cEl) { const cats = tEl.value === 'despesa' ? userSettings.catDespesa : userSettings.catReceita; cEl.innerHTML = cats.map(c => `<option value="${c.n}">${c.n}</option>`).join(''); } };
         function updateBankSelects() { const el = document.getElementById('inp-banco'); if(el) el.innerHTML = userBancos.map(b => `<option value="${b.nome}">${b.nome}</option>`).join(''); }
 
         lucide.createIcons();
