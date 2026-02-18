@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MuFinance v26.2 | Dashboard Fix</title>
+    <title>MuFinance v25.5 | Lighthouse</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -11,25 +11,32 @@
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #F8FAFC; color: #1E293B; overflow-x: hidden; }
         .sidebar-active { background-color: #F1F5F9; color: #0EA5E9; border-right: 4px solid #0EA5E9; }
-        .card-branco { background: white; border-radius: 2rem; border: 1px solid #E2E8F0; box-shadow: 0 4px 12px -2px rgba(0,0,0,0.05); height: 100%; }
+        .card-branco { background: white; border-radius: 2rem; border: 1px solid #E2E8F0; box-shadow: 0 4px 12px -2px rgba(0,0,0,0.05); }
         .tab-content { display: none; }
         .tab-content.active { display: block; animation: fadeIn 0.4s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .modal-dark { background-color: #0F172A; border-radius: 2.5rem; color: white; }
+        .input-dark { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 1rem; padding: 1rem; outline: none; width: 100%; }
+        #auth-screen { background: radial-gradient(circle at top right, #0F172A, #020617); }
         #sidebar { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); width: 280px; }
         #sidebar.collapsed { width: 90px; }
         #sidebar.collapsed .sidebar-text, #sidebar.collapsed .logo-text { display: none; }
-        .input-light { @apply w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-sky-500 text-sm font-medium transition-all; }
-        
-        /* Ajuste do Gráfico para não estourar */
-        .chart-container { position: relative; height: 300px; width: 100%; }
+        #sidebar.collapsed .sidebar-item { justify-content: center; padding: 1rem 0; }
     </style>
 </head>
 <body class="min-h-screen">
 
-    <div id="toast-success" class="fixed top-8 left-1/2 -translate-x-1/2 z-[200] transform -translate-y-20 opacity-0 pointer-events-none transition-all duration-500">
-        <div class="bg-slate-900 text-white px-8 py-4 rounded-3xl shadow-2xl flex items-center gap-4 border border-white/10">
-            <div class="bg-sky-500 p-1.5 rounded-full"><i data-lucide="check" class="w-4 h-4 text-white stroke-[4]"></i></div>
-            <span class="font-black uppercase tracking-[0.2em] text-[10px]" id="toast-msg">Sucesso!</span>
+    <div id="auth-screen" class="hidden min-h-screen flex items-center justify-center p-6">
+        <div class="bg-white p-10 rounded-[3rem] w-full max-w-md shadow-2xl text-center">
+            <div class="w-16 h-16 bg-sky-600 rounded-2xl flex items-center justify-center text-white mx-auto mb-6 shadow-lg shadow-sky-200">
+                <i data-lucide="zap" class="w-8 h-8 fill-current"></i>
+            </div>
+            <h2 class="text-3xl font-black text-slate-800 tracking-tighter mb-2 italic">MuFinance</h2>
+            <div class="space-y-4">
+                <input type="email" id="login-email" placeholder="E-mail" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-sky-500 font-medium">
+                <input type="password" id="login-pass" placeholder="Senha" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-sky-500 font-medium">
+                <button onclick="handleLogin()" class="w-full py-5 bg-slate-900 text-white font-black uppercase tracking-[0.2em] text-xs rounded-2xl shadow-xl hover:bg-slate-800 transition-all">Entrar</button>
+            </div>
         </div>
     </div>
 
@@ -44,86 +51,115 @@
             </div>
             <nav class="flex-1 space-y-2">
                 <button onclick="switchTab('dashboard')" id="btn-dashboard" class="sidebar-item w-full flex items-center gap-4 p-4 rounded-xl font-bold text-sm sidebar-active"><i data-lucide="layout-dashboard" class="w-5 h-5"></i> <span class="sidebar-text">Dashboard</span></button>
-                <button onclick="switchTab('extrato')" id="btn-extrato" class="sidebar-item w-full flex items-center gap-4 p-4 rounded-xl font-bold text-sm text-slate-500 hover:bg-slate-50"><i data-lucide="receipt" class="w-5 h-5"></i> <span class="sidebar-text">Extrato</span></button>
-                <button onclick="switchTab('perfil')" id="btn-perfil" class="sidebar-item w-full flex items-center gap-4 p-4 rounded-xl font-bold text-sm text-slate-500 hover:bg-slate-50"><i data-lucide="settings" class="w-5 h-5"></i> <span class="sidebar-text">Configurações</span></button>
+                <button onclick="switchTab('extrato')" id="btn-extrato" class="sidebar-item w-full flex items-center gap-4 p-4 rounded-xl font-bold text-sm text-slate-500 hover:bg-slate-50 transition-all"><i data-lucide="receipt" class="w-5 h-5"></i> <span class="sidebar-text">Extrato</span></button>
+                <button onclick="switchTab('drivo')" id="btn-drivo" class="sidebar-item w-full flex items-center gap-4 p-4 rounded-xl font-bold text-sm text-slate-500 hover:bg-slate-50 transition-all"><i data-lucide="gauge" class="w-5 h-5"></i> <span class="sidebar-text">Drivo KM</span></button>
             </nav>
-            <button onclick="handleLogout()" class="flex items-center gap-3 p-4 text-rose-500 font-bold text-sm hover:bg-rose-50 rounded-xl mt-auto"><i data-lucide="log-out" class="w-5 h-5"></i> <span class="sidebar-text">Sair</span></button>
+            <button onclick="handleLogout()" class="flex items-center gap-3 p-4 text-rose-500 font-bold text-sm hover:bg-rose-50 rounded-xl transition-all"><i data-lucide="log-out" class="w-5 h-5"></i> <span class="sidebar-text">Sair</span></button>
         </aside>
 
-        <main class="flex-1 p-6 lg:p-12 pb-32 overflow-y-auto">
+        <main class="flex-1 p-6 lg:p-12 pb-32">
             <header class="flex justify-between items-center mb-10">
-                <h1 id="tab-title" class="text-3xl font-extrabold text-slate-800 tracking-tight leading-none italic">Dashboard</h1>
-                <div class="w-12 h-12 rounded-2xl bg-slate-200 border-2 border-white shadow-sm overflow-hidden"><img src="https://ui-avatars.com/api/?name=W&background=0ea5e9&color=fff"></div>
+                <div><h1 id="tab-title" class="text-3xl font-extrabold text-slate-800 tracking-tight leading-none">Dashboard</h1></div>
+                <div class="w-12 h-12 rounded-2xl bg-slate-200 border-2 border-white shadow-sm overflow-hidden"><img src="https://ui-avatars.com/api/?name=User&background=0ea5e9&color=fff"></div>
             </header>
 
             <div id="content-dashboard" class="tab-content active space-y-8">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="bg-slate-900 p-8 rounded-[2.5rem] shadow-xl text-white relative flex flex-col justify-between min-h-[160px]">
-                        <div><p class="text-[10px] font-black uppercase tracking-widest opacity-60">Saldo Consolidado</p><h2 class="text-4xl font-extrabold mt-2 tracking-tighter" id="dash-saldo">R$ 0,00</h2></div>
+                    <div class="bg-slate-900 p-8 rounded-[2.5rem] shadow-xl text-white relative overflow-hidden flex flex-col justify-between min-h-[160px]">
+                        <div class="relative z-10"><p class="text-[10px] font-black uppercase tracking-widest opacity-60">Saldo em Caixa</p><h2 class="text-4xl font-extrabold mt-2 tracking-tighter" id="dash-saldo">R$ 0,00</h2></div>
                         <i data-lucide="wallet" class="absolute -right-6 -bottom-6 w-32 h-32 opacity-10 rotate-12"></i>
                     </div>
-                    <div class="card-branco p-8 border-l-8 border-l-emerald-500 flex flex-col justify-center"><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Receitas</p><h3 class="text-3xl font-extrabold text-slate-800" id="dash-receitas">R$ 0,00</h3></div>
-                    <div class="card-branco p-8 border-l-8 border-l-rose-500 flex flex-col justify-center"><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Despesas</p><h3 class="text-3xl font-extrabold text-slate-800" id="dash-despesas">R$ 0,00</h3></div>
+                    <div class="card-branco p-8 border-l-8 border-l-emerald-500"><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Receitas</p><h3 class="text-3xl font-extrabold text-slate-800" id="dash-receitas">R$ 0,00</h3></div>
+                    <div class="card-branco p-8 border-l-8 border-l-rose-500"><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Despesas</p><h3 class="text-3xl font-extrabold text-slate-800" id="dash-despesas">R$ 0,00</h3></div>
                 </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-                    <div class="card-branco p-8">
-                        <h3 class="text-xs font-black uppercase text-slate-400 mb-6 tracking-widest text-center">Distribuição de Gastos</h3>
-                        <div class="chart-container">
-                            <canvas id="chart-rosca"></canvas>
-                        </div>
-                    </div>
-                    <div class="card-branco p-8">
-                        <h3 class="text-xs font-black uppercase text-slate-400 mb-6 tracking-widest">Feed Recente</h3>
-                        <div id="mini-feed" class="space-y-4"></div>
-                    </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="card-branco p-8"><h3 class="text-xs font-black uppercase text-slate-400 mb-8 tracking-widest text-center">Distribuição</h3><div class="h-[280px]"><canvas id="chart-rosca"></canvas></div></div>
+                    <div class="card-branco p-8"><h3 class="text-xs font-black uppercase text-slate-400 mb-6 tracking-widest">Feed Recente</h3><div id="mini-feed" class="space-y-4"></div></div>
                 </div>
             </div>
 
             <div id="content-extrato" class="tab-content space-y-6">
+                <div class="flex flex-col md:flex-row justify-between items-center gap-4 bg-white p-6 rounded-3xl border border-slate-200">
+                    <h3 class="font-black text-slate-800 uppercase text-xs tracking-widest">Filtro de Período</h3>
+                    <input type="month" id="filter-month" onchange="renderExtratoFull()" class="p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:border-sky-500">
+                </div>
                 <div id="extrato-lista" class="space-y-3"></div>
             </div>
 
-            <div id="content-perfil" class="tab-content space-y-8 pb-20">
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <div class="card-branco p-8 space-y-4">
-                        <h3 class="text-xs font-black uppercase text-slate-400 mb-6 tracking-widest">Configurações Gerais</h3>
-                        <input type="text" id="perf-nome" placeholder="Seu Nome" class="input-light">
-                        <div class="grid grid-cols-2 gap-4">
-                            <input type="number" id="veic-consumo" placeholder="KM/L" class="input-light">
-                            <input type="number" step="0.01" id="veic-gas" placeholder="Preço Gasolina" class="input-light">
-                        </div>
-                        <button onclick="saveSettings()" class="w-full py-5 bg-slate-900 text-white font-black uppercase tracking-widest rounded-3xl shadow-xl">Salvar</button>
-                    </div>
+            <div id="content-drivo" class="tab-content space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="card-branco p-10 border-l-8 border-amber-500 text-center"><p class="text-xs font-black text-slate-400 uppercase mb-2">KM Estimados (Fazer 250)</p><h2 class="text-6xl font-black text-slate-800" id="drivo-km">0 KM</h2></div>
+                    <div class="card-branco p-10 border-l-8 border-sky-500 text-center"><p class="text-xs font-black text-slate-400 uppercase mb-2">Custo por KM</p><h2 class="text-6xl font-black text-slate-800" id="drivo-custo">R$ 0,00</h2></div>
                 </div>
             </div>
         </main>
-        
+
         <button onclick="openModal()" class="fixed bottom-8 right-8 bg-sky-600 text-white w-16 h-16 rounded-2xl shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-50">
             <i data-lucide="plus" class="w-8 h-8 stroke-[3]"></i>
         </button>
     </div>
 
+    <div id="modal-lancamento" class="hidden fixed inset-0 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4 z-[100]">
+        <div class="modal-dark w-full max-w-md p-8 shadow-2xl border border-white/5 space-y-6">
+            <div class="flex gap-2 mb-4">
+                <button onclick="setTipo('despesa')" id="btn-tipo-des" class="flex-1 py-4 bg-rose-600 text-white rounded-2xl font-black text-[10px] uppercase transition-all">Despesa</button>
+                <button onclick="setTipo('receita')" id="btn-tipo-rec" class="flex-1 py-4 bg-slate-800 text-slate-500 rounded-2xl font-black text-[10px] uppercase transition-all">Receita</button>
+            </div>
+            <form id="form-registro" class="space-y-4">
+                <div class="bg-black/20 p-8 rounded-[2rem] text-center border border-white/5"><input type="number" step="0.01" id="inp-valor" class="bg-transparent text-5xl font-black text-white text-center outline-none w-full" placeholder="0,00" required></div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="text-[9px] font-black text-slate-500 uppercase ml-2">Lançamento</label><input type="date" id="inp-data-lan" class="input-dark text-xs"></div>
+                    <div><label class="text-[9px] font-black text-sky-500 uppercase ml-2">Vencimento</label><input type="date" id="inp-data-ven" class="input-dark text-xs border-sky-500/30"></div>
+                </div>
+                <div class="flex items-center justify-between p-4 bg-black/20 rounded-2xl border border-white/5"><span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Efetivado?</span><button type="button" onclick="toggleStatus()" id="btn-status-check" class="px-6 py-2 bg-emerald-600 text-white rounded-lg text-[9px] font-black">SIM</button></div>
+                <select id="inp-cat" class="input-dark text-xs font-bold uppercase"></select>
+                <input type="text" id="inp-desc" placeholder="Descrição" class="input-dark text-sm">
+                <button type="submit" class="w-full py-5 bg-sky-600 text-white rounded-2xl font-black uppercase text-xs tracking-[0.2em] shadow-xl hover:bg-sky-500 transition-all">SALVAR</button>
+                <button type="button" onclick="closeModal()" class="w-full text-[10px] font-black text-slate-500 uppercase text-center mt-2">Fechar</button>
+            </form>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, query, where, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, where, Timestamp, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = { apiKey: "AIzaSyArWGgDx0uxce8w72J_1UpKPCUJGvHs3fI", authDomain: "drivo-e-money.firebaseapp.com", projectId: "drivo-e-money", storageBucket: "drivo-e-money.firebasestorage.app", messagingSenderId: "62950568252", appId: "1:62950568252:web:7638827c39b589a9046e39" };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        let userId, dataGlobal = [], donutChart;
+        let userId, currentTipo = 'despesa', statusRealizado = true, donutChart, dataGlobal = [];
+        const catMap = { despesa: ['Combustível', 'Comida', 'Lazer', 'Fixo', 'Saúde', 'Outros'], receita: ['Salário', 'Freelance', 'Venda', 'Investimento', 'Outros'] };
 
         onAuthStateChanged(auth, u => {
             if (u) {
                 userId = u.uid;
+                document.getElementById('auth-screen').classList.add('hidden');
                 document.getElementById('app-container').classList.remove('hidden');
                 document.getElementById('app-container').classList.add('flex');
+                document.getElementById('filter-month').value = new Date().toISOString().slice(0, 7);
                 startListener();
-            } else { window.location.href = "index.html"; }
+            } else {
+                document.getElementById('app-container').classList.add('hidden');
+                document.getElementById('auth-screen').classList.remove('hidden');
+            }
         });
+
+        window.handleLogin = () => signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-pass').value).catch(() => alert("Erro!"));
+        window.handleLogout = () => signOut(auth);
+        window.toggleSidebar = () => { document.getElementById('sidebar').classList.toggle('collapsed'); lucide.createIcons(); };
+
+        window.switchTab = (id) => {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('sidebar-active'));
+            document.getElementById('content-' + id).classList.add('active');
+            document.getElementById('btn-' + id).classList.add('sidebar-active');
+            document.getElementById('tab-title').innerText = id.charAt(0).toUpperCase() + id.slice(1);
+            if(id === 'extrato') renderExtratoFull();
+            lucide.createIcons();
+        };
 
         function startListener() {
             onSnapshot(query(collection(db, "transactions"), where("userId", "==", userId)), (snap) => {
@@ -133,82 +169,101 @@
         }
 
         function updateDash() {
-            const rec = dataGlobal.filter(t => t.tipo === 'receita').reduce((a, b) => a + b.valor, 0);
-            const des = dataGlobal.filter(t => t.tipo === 'despesa').reduce((a, b) => a + b.valor, 0);
-            
+            const rec = dataGlobal.filter(t => t.tipo === 'receita' && t.status === 'realizado').reduce((a, b) => a + b.valor, 0);
+            const des = dataGlobal.filter(t => t.tipo === 'despesa' && t.status === 'realizado').reduce((a, b) => a + b.valor, 0);
             document.getElementById('dash-saldo').innerText = `R$ ${(rec - des).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
-            document.getElementById('dash-receitas').innerText = `R$ ${rec.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
-            document.getElementById('dash-despesas').innerText = `R$ ${des.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
-            
+            document.getElementById('dash-receitas').innerText = `R$ ${rec.toLocaleString('pt-BR')}`;
+            document.getElementById('dash-despesas').innerText = `R$ ${des.toLocaleString('pt-BR')}`;
+            const gas = dataGlobal.filter(t => t.categoria === 'Combustível').reduce((a, b) => a + b.valor, 0);
+            document.getElementById('drivo-km').innerText = `${Math.round((gas / 6.10) * 29)} KM`;
             renderMiniFeed();
             renderDonut();
         }
 
-        function renderDonut() {
-            const ctx = document.getElementById('chart-rosca').getContext('2d');
-            const cats = {};
-            dataGlobal.filter(t => t.tipo === 'despesa').forEach(t => {
-                cats[t.categoria] = (cats[t.categoria] || 0) + t.valor;
-            });
-
-            if (donutChart) donutChart.destroy();
-            
-            donutChart = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: Object.keys(cats),
-                    datasets: [{
-                        data: Object.values(cats),
-                        backgroundColor: ['#0EA5E9', '#10B981', '#F59E0B', '#F43F5E', '#6366F1'],
-                        borderWidth: 0,
-                        hoverOffset: 20
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '75%',
-                    plugins: {
-                        legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20, font: { weight: 'bold', size: 11 } } }
-                    }
-                }
-            });
-        }
-
         function renderMiniFeed() {
-            const sorted = [...dataGlobal].sort((a,b) => (b.date?.seconds || 0) - (a.date?.seconds || 0)).slice(0, 4);
+            const sorted = [...dataGlobal].sort((a,b) => b.date?.seconds - a.date?.seconds).slice(0, 4);
             document.getElementById('mini-feed').innerHTML = sorted.map(t => `
-                <div class="flex justify-between items-center p-4 bg-slate-50 rounded-2xl transition-all border border-transparent hover:border-slate-200">
+                <div class="flex justify-between items-center p-4 bg-slate-50 rounded-2xl">
                     <div class="flex items-center gap-4">
-                        <div class="p-2 bg-white rounded-lg border border-slate-100 shadow-sm">
-                            <i data-lucide="${t.tipo === 'receita' ? 'arrow-up' : 'arrow-down'}" class="w-4 h-4 ${t.tipo === 'receita' ? 'text-emerald-500' : 'text-rose-500'}"></i>
-                        </div>
-                        <div>
-                            <p class="font-bold text-sm text-slate-800">${t.descricao || 'Sem descrição'}</p>
-                            <p class="text-[9px] font-black text-slate-400 uppercase tracking-tighter">${t.categoria}</p>
-                        </div>
+                        <div class="p-2 bg-white rounded-lg border border-slate-200"><i data-lucide="${t.tipo === 'receita' ? 'arrow-up' : 'arrow-down'}" class="w-4 h-4 ${t.tipo === 'receita' ? 'text-emerald-500' : 'text-rose-500'}"></i></div>
+                        <div><p class="font-bold text-sm text-slate-800">${t.descricao}</p><p class="text-[9px] font-black text-slate-400 uppercase">${t.categoria}</p></div>
                     </div>
-                    <p class="font-black text-sm text-slate-900">R$ ${parseFloat(t.valor).toFixed(2)}</p>
+                    <p class="font-black text-sm">R$ ${t.valor.toFixed(2)}</p>
                 </div>
             `).join('');
             lucide.createIcons();
         }
 
-        window.switchTab = (id) => {
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('sidebar-active'));
-            document.getElementById('content-' + id).classList.add('active');
-            document.getElementById('btn-' + id).classList.add('sidebar-active');
+        window.renderExtratoFull = () => {
+            const filterVal = document.getElementById('filter-month').value; // yyyy-mm
+            const container = document.getElementById('extrato-lista');
+            
+            const filtered = dataGlobal.filter(t => {
+                const d = new Date(t.date?.seconds * 1000);
+                const monthStr = d.toISOString().slice(0, 7);
+                return monthStr === filterVal;
+            }).sort((a,b) => b.date?.seconds - a.date?.seconds).slice(0, 20);
+
+            if(filtered.length === 0) {
+                container.innerHTML = `<p class="text-center text-slate-400 py-10 font-bold">Nenhuma transação neste período.</p>`;
+                return;
+            }
+
+            container.innerHTML = filtered.map(t => `
+                <div class="flex justify-between items-center p-5 bg-white rounded-3xl border border-slate-100 shadow-sm hover:border-sky-200 transition-all">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 flex items-center justify-center rounded-xl ${t.tipo === 'receita' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}">
+                            <i data-lucide="${t.tipo === 'receita' ? 'trending-up' : 'trending-down'}"></i>
+                        </div>
+                        <div>
+                            <p class="font-bold text-slate-800 text-sm">${t.descricao}</p>
+                            <p class="text-[10px] text-slate-400 font-bold uppercase">${new Date(t.date?.seconds * 1000).toLocaleDateString('pt-BR')} • ${t.categoria}</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-black text-sm ${t.tipo === 'receita' ? 'text-emerald-600' : 'text-slate-800'}">${t.tipo === 'receita' ? '+' : '-'} R$ ${t.valor.toLocaleString('pt-BR', {minimumFractionDigits:2})}</p>
+                        <span class="text-[9px] font-black px-2 py-0.5 rounded-full ${t.status === 'realizado' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}">${t.status.toUpperCase()}</span>
+                    </div>
+                </div>
+            `).join('');
             lucide.createIcons();
         };
 
-        window.toggleSidebar = () => {
-            document.getElementById('sidebar').classList.toggle('collapsed');
+        function renderDonut() {
+            const ctx = document.getElementById('chart-rosca').getContext('2d');
+            const cats = {};
+            dataGlobal.filter(t => t.tipo === 'despesa').forEach(t => cats[t.categoria] = (cats[t.categoria] || 0) + t.valor);
+            if (donutChart) donutChart.destroy();
+            donutChart = new Chart(ctx, { type: 'doughnut', data: { labels: Object.keys(cats), datasets: [{ data: Object.values(cats), backgroundColor: ['#0EA5E9', '#10B981', '#F59E0B', '#F43F5E', '#6366F1'], borderWidth: 0 }] }, options: { cutout: '80%', plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, font: { weight: 'bold', size: 10 } } } } } });
+        }
+
+        window.openModal = () => {
+            document.getElementById('inp-data-lan').value = new Date().toISOString().split('T')[0];
+            document.getElementById('inp-data-ven').value = new Date().toISOString().split('T')[0];
+            updateCatSelect();
+            document.getElementById('modal-lancamento').classList.remove('hidden');
         };
+        window.closeModal = () => document.getElementById('modal-lancamento').classList.add('hidden');
+        window.setTipo = (t) => { currentTipo = t; updateCatSelect(); 
+            document.getElementById('btn-tipo-des').className = t === 'despesa' ? 'flex-1 py-4 bg-rose-600 text-white rounded-2xl font-black text-[10px] uppercase' : 'flex-1 py-4 bg-slate-800 text-slate-500 rounded-2xl font-black text-[10px] uppercase';
+            document.getElementById('btn-tipo-rec').className = t === 'receita' ? 'flex-1 py-4 bg-emerald-600 text-white rounded-2xl font-black text-[10px] uppercase' : 'flex-1 py-4 bg-slate-800 text-slate-500 rounded-2xl font-black text-[10px] uppercase';
+        };
+        function updateCatSelect() { document.getElementById('inp-cat').innerHTML = catMap[currentTipo].map(c => `<option value="${c}">${c}</option>`).join(''); }
+        window.toggleStatus = () => { statusRealizado = !statusRealizado; document.getElementById('btn-status-check').innerText = statusRealizado ? 'SIM' : 'NÃO'; document.getElementById('btn-status-check').className = statusRealizado ? 'px-6 py-2 bg-emerald-600 text-white rounded-lg text-[9px] font-black' : 'px-6 py-2 bg-slate-700 text-slate-400 rounded-lg text-[9px] font-black'; };
 
-        window.handleLogout = () => signOut(auth).then(() => window.location.reload());
-
-        lucide.createIcons();
+        document.getElementById('form-registro').onsubmit = async (e) => {
+            e.preventDefault();
+            await addDoc(collection(db, "transactions"), {
+                userId,
+                valor: parseFloat(document.getElementById('inp-valor').value),
+                descricao: document.getElementById('inp-desc').value,
+                categoria: document.getElementById('inp-cat').value,
+                tipo: currentTipo,
+                status: statusRealizado ? 'realizado' : 'pendente',
+                date: Timestamp.fromDate(new Date(document.getElementById('inp-data-ven').value + 'T12:00:00'))
+            });
+            closeModal(); e.target.reset();
+        };
     </script>
 </body>
 </html>
