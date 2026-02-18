@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MuFinance v27.16 | Picker Integrado</title>
+    <title>MuFinance v27.17</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -25,7 +25,6 @@
         @media (max-width: 1024px) { #sidebar { position: fixed; transform: translateX(-100%); z-index: 100; } #sidebar.open { transform: translateX(0); } }
         .input-standard { @apply w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-2xl border-none outline-none focus:ring-2 ring-brand transition-all font-bold text-sm; }
         
-        /* ESTILO DO PICKER */
         .picker-container { position: relative; display: inline-block; }
         .picker-dropdown { 
             display: none; position: absolute; top: 110%; right: 0;
@@ -78,7 +77,6 @@
                         <span id="display-periodo" class="text-sm font-black uppercase tracking-widest">Fevereiro/26</span>
                         <i data-lucide="chevron-down" class="w-4 h-4 opacity-30"></i>
                     </button>
-                    
                     <div id="picker-dropdown" class="picker-dropdown">
                         <div class="flex justify-between items-center mb-4 px-2">
                             <button onclick="changeYear(-1)" class="p-1 hover:text-brand"><i data-lucide="chevron-left"></i></button>
@@ -98,7 +96,6 @@
                         <div class="relative z-10 text-center">
                             <h2 class="text-3xl lg:text-4xl font-extrabold tracking-tighter" id="dash-saldo">R$ 0,00</h2>
                             <p class="text-[9px] font-black uppercase tracking-widest opacity-60 mt-1" id="label-saldo">Saldo Consolidado</p>
-                            <div class="flex justify-center gap-1.5 mt-4" id="indicadores-banco"></div>
                         </div>
                     </div>
                     <div class="bg-white dark:bg-darkCard p-5 rounded-[2rem] border-l-8 border-emerald-500 shadow-sm flex flex-col justify-center min-h-[140px]"><p class="text-[9px] font-black opacity-50 uppercase tracking-widest mb-1">Receitas</p><h3 class="text-xl lg:text-2xl font-extrabold text-emerald-500" id="dash-receitas">R$ 0,00</h3></div>
@@ -109,8 +106,8 @@
                         <div class="flex justify-between items-center mb-8">
                             <h3 class="text-xs font-black uppercase opacity-60 tracking-widest italic">Distribuição</h3>
                             <div class="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl shadow-inner">
-                                <button onclick="setChartTipo('despesa')" id="pill-des" class="px-4 py-1.5 text-[9px] font-black uppercase rounded-lg bg-slate-900 text-white dark:bg-brand">Despesas</button>
-                                <button onclick="setChartTipo('receita')" id="pill-rec" class="px-4 py-1.5 text-[9px] font-black uppercase rounded-lg text-slate-400">Receitas</button>
+                                <button onclick="setChartTipo('despesa')" id="pill-des" class="px-4 py-1.5 text-[9px] font-black uppercase rounded-lg bg-slate-900 text-white dark:bg-brand transition-all">Despesas</button>
+                                <button onclick="setChartTipo('receita')" id="pill-rec" class="px-4 py-1.5 text-[9px] font-black uppercase rounded-lg text-slate-400 transition-all">Receitas</button>
                             </div>
                         </div>
                         <div class="h-[250px] relative w-full flex justify-center"><canvas id="chart-rosca"></canvas></div>
@@ -132,7 +129,7 @@
 
             <div id="content-perfil" class="tab-content space-y-8 pb-20">
                 <div class="bg-white dark:bg-darkCard p-8 rounded-[2rem] shadow-sm">
-                    <h3 class="text-xs font-black uppercase opacity-60 tracking-widest mb-6">Configurações</h3>
+                    <h3 class="text-xs font-black uppercase mb-6">Configurações</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <input type="text" id="perf-nome" placeholder="Nome" class="input-standard">
                         <input type="text" id="perf-user" placeholder="Usuário" class="input-standard">
@@ -181,6 +178,22 @@
             renderPickerUI(); updateDash(); renderExtratoFull();
         }
 
+        /* LÓGICA DO GRÁFICO (CORREÇÃO AQUI) */
+        window.setChartTipo = (tipo) => {
+            chartTipo = tipo;
+            const pillDes = document.getElementById('pill-des');
+            const pillRec = document.getElementById('pill-rec');
+            
+            if (tipo === 'despesa') {
+                pillDes.className = "px-4 py-1.5 text-[9px] font-black uppercase rounded-lg bg-slate-900 text-white dark:bg-brand transition-all";
+                pillRec.className = "px-4 py-1.5 text-[9px] font-black uppercase rounded-lg text-slate-400 transition-all";
+            } else {
+                pillRec.className = "px-4 py-1.5 text-[9px] font-black uppercase rounded-lg bg-slate-900 text-white dark:bg-brand transition-all";
+                pillDes.className = "px-4 py-1.5 text-[9px] font-black uppercase rounded-lg text-slate-400 transition-all";
+            }
+            renderDonut(getFiltered());
+        };
+
         window.switchTab = (id) => { 
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active')); 
             document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('sidebar-active'));
@@ -209,16 +222,7 @@
             const f = getFiltered();
             const rT = f.filter(t => t.tipo === 'receita').reduce((a,b) => a+b.valor,0);
             const dT = f.filter(t => t.tipo === 'despesa').reduce((a,b) => a+b.valor,0);
-            const valS = document.getElementById('dash-saldo');
-            const labelS = document.getElementById('label-saldo');
-
-            if(bancoIndiceAtivo === -1) { valS.innerText = `R$ ${(rT-dT).toLocaleString('pt-BR', {minimumFractionDigits:2})}`; labelS.innerText = "Saldo Consolidado"; document.getElementById('card-saldo-principal').style.backgroundColor = '#0F172A'; }
-            else { 
-                const b = userBancos[bancoIndiceAtivo];
-                const bSaldo = f.filter(t => t.banco === b.nome).reduce((a,v) => v.tipo==='receita'?a+v.valor:a-v.valor,0);
-                valS.innerText = `R$ ${bSaldo.toLocaleString('pt-BR', {minimumFractionDigits:2})}`; labelS.innerText = b.nome;
-                document.getElementById('card-saldo-principal').style.backgroundColor = b.cor;
-            }
+            document.getElementById('dash-saldo').innerText = `R$ ${(rT-dT).toLocaleString('pt-BR', {minimumFractionDigits:2})}`;
             document.getElementById('dash-receitas').innerText = `R$ ${rT.toLocaleString('pt-BR')}`;
             document.getElementById('dash-despesas').innerText = `R$ ${dT.toLocaleString('pt-BR')}`;
             renderDonut(f); renderMiniFeed(f);
@@ -229,12 +233,12 @@
             document.getElementById('extrato-lista').innerHTML = f.map(t => `
                 <div class="flex justify-between items-center p-5 bg-white dark:bg-darkCard rounded-2xl border border-slate-100 dark:border-slate-800 group transition-all">
                     <div class="flex items-center gap-4">
-                        <div class="w-10 h-10 flex items-center justify-center rounded-xl ${t.tipo==='receita'?'bg-emerald-50 text-emerald-600':'bg-rose-50 text-rose-600'}"><i data-lucide="${t.tipo==='receita'?'trending-up':'trending-down'}"></i></div>
+                        <div class="w-10 h-10 flex items-center justify-center rounded-xl ${t.tipo==='receita'?'bg-emerald-50 text-emerald-600':'bg-rose-50 text-rose-600'} flex-shrink-0"><i data-lucide="${t.tipo==='receita'?'trending-up':'trending-down'}"></i></div>
                         <div><p class="font-bold text-sm uppercase">${t.descricao}</p><p class="text-[9px] opacity-40 uppercase font-black">${t.categoria} • ${t.banco}</p></div>
                     </div>
                     <div class="flex items-center gap-4">
                         <p class="font-black text-sm">R$ ${t.valor.toFixed(2)}</p>
-                        <button onclick="deleteTransaction('${t.id}')" class="text-rose-500 opacity-0 group-hover:opacity-100"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                        <button onclick="deleteTransaction('${t.id}')" class="text-rose-500 opacity-0 group-hover:opacity-100 transition-all"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                     </div>
                 </div>`).join('');
             lucide.createIcons();
@@ -245,7 +249,20 @@
         async function loadProfile() { const snap = await getDoc(doc(db, "users", userId)); if(snap.exists()) { userSettings = snap.data(); document.getElementById('perf-nome').value = snap.data().nome||""; document.getElementById('perf-user').value = snap.data().usuario||""; } updateCatSelect(); }
         window.saveSettings = async () => { await setDoc(doc(db, "users", userId), { ...userSettings, nome: document.getElementById('perf-nome').value, usuario: document.getElementById('perf-user').value }, { merge: true }); alert("Salvo!"); };
         window.handleLogout = () => signOut(auth).then(() => window.location.reload());
-        function renderDonut(f) { const ctx = document.getElementById('chart-rosca'); if(!ctx) return; const cats = {}; f.filter(t => t.tipo === chartTipo).forEach(t => cats[t.categoria] = (cats[t.categoria] || 0) + t.valor); if (donutChart) donutChart.destroy(); donutChart = new Chart(ctx.getContext('2d'), { type: 'doughnut', data: { labels: Object.keys(cats), datasets: [{ data: Object.values(cats), backgroundColor: ['#0EA5E9', '#10B981', '#F59E0B', '#F43F5E', '#8B5CF6'], borderWidth: 0 }] }, options: { cutout: '85%', maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom', labels: { usePointStyle: true, font: { size: 10, weight: '700' }, color: '#94a3b8' } } } } }); }
+        
+        function renderDonut(f) { 
+            const ctx = document.getElementById('chart-rosca'); 
+            if(!ctx) return; 
+            const cats = {}; 
+            f.filter(t => t.tipo === chartTipo).forEach(t => cats[t.categoria] = (cats[t.categoria] || 0) + t.valor);
+            if (donutChart) donutChart.destroy(); 
+            donutChart = new Chart(ctx.getContext('2d'), { 
+                type: 'doughnut', 
+                data: { labels: Object.keys(cats), datasets: [{ data: Object.values(cats), backgroundColor: ['#0EA5E9', '#10B981', '#F59E0B', '#F43F5E', '#8B5CF6'], borderWidth: 0 }] }, 
+                options: { cutout: '85%', maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom', labels: { usePointStyle: true, font: { size: 10, weight: '700' }, color: '#94a3b8' } } } } 
+            }); 
+        }
+
         function renderMiniFeed(f) { const s = [...f].sort((a,b)=>b.date.seconds-a.date.seconds).slice(0,4); document.getElementById('mini-feed').innerHTML = s.map(t=>`<div class="flex justify-between items-center p-4 bg-slate-50 dark:bg-slate-900/50 rounded-2xl group transition-all"><p class="font-bold text-xs uppercase">${t.descricao}</p><div class="flex items-center gap-3"><p class="font-black text-xs">R$ ${t.valor.toFixed(2)}</p></div></div>`).join(''); lucide.createIcons(); }
         window.handlePlusButton = () => { document.getElementById('form-registro').reset(); document.getElementById('modal-lancamento').classList.remove('hidden'); };
         window.closeModal = () => document.getElementById('modal-lancamento').classList.add('hidden');
