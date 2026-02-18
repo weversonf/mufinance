@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MuFinance v27.7.2</title>
+    <title>MuFinance v27.7.1 | Restore Data</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -29,9 +29,7 @@
         .tab-content { display: none; }
         .tab-content.active { display: block; animation: fadeIn 0.4s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
         #card-saldo-principal { transition: background-color 0.8s ease; }
-        
         input, select { user-select: text !important; }
         .dark input, .dark select { background-color: #334155; color: white; border-color: #475569; }
     </style>
@@ -85,8 +83,8 @@
                         <div class="flex justify-between items-center mb-8">
                             <h3 class="text-xs font-black uppercase opacity-60 tracking-widest">Distribuição</h3>
                             <div class="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
-                                <button onclick="setChartTipo('despesa')" id="pill-des" class="px-4 py-1.5 text-[9px] font-black uppercase rounded-lg bg-slate-900 text-white dark:bg-brand transition-all">Despesas</button>
-                                <button onclick="setChartTipo('receita')" id="pill-rec" class="px-4 py-1.5 text-[9px] font-black uppercase rounded-lg text-slate-400 transition-all">Receitas</button>
+                                <button onclick="setChartTipo('despesa')" id="pill-des" class="px-4 py-1.5 text-[9px] font-black uppercase rounded-lg bg-slate-900 text-white dark:bg-brand">Despesas</button>
+                                <button onclick="setChartTipo('receita')" id="pill-rec" class="px-4 py-1.5 text-[9px] font-black uppercase rounded-lg text-slate-400">Receitas</button>
                             </div>
                         </div>
                         <div class="h-[220px] relative"><canvas id="chart-rosca"></canvas></div>
@@ -98,33 +96,37 @@
                 </div>
             </div>
 
+            <div id="content-extrato" class="tab-content space-y-6">
+                <div class="flex flex-col md:flex-row justify-between items-center p-6 bg-white dark:bg-darkCard rounded-[2rem] shadow-sm gap-4">
+                    <h3 class="text-xs font-black uppercase opacity-60 tracking-widest">Filtro Mensal</h3>
+                    <input type="month" id="filter-month" onchange="renderExtratoFull()" class="p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 outline-none">
+                </div>
+                <div id="extrato-lista" class="space-y-3"></div>
+            </div>
+
             <div id="content-perfil" class="tab-content space-y-8 pb-20">
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     <div class="bg-white dark:bg-darkCard p-8 rounded-[2rem] shadow-sm flex justify-between items-center">
                         <div><h3 class="text-xs font-black uppercase opacity-60 tracking-widest">Aparência</h3><p class="text-[10px] font-bold opacity-40 uppercase">Alternar Modo Noturno</p></div>
                         <button onclick="toggleDarkMode()" class="p-4 bg-slate-100 dark:bg-slate-800 rounded-2xl transition-all"><div id="dark-status-icon"><i data-lucide="moon"></i></div></button>
                     </div>
-                    <div class="bg-white dark:bg-darkCard p-8 rounded-[2rem] shadow-sm space-y-4">
-                        <h3 class="text-xs font-black uppercase opacity-60 tracking-widest">Veículo</h3>
-                        <div class="flex gap-4"><input type="number" id="veic-consumo" placeholder="KM/L" class="w-full p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border dark:border-slate-700"></div>
+                    <div class="bg-white dark:bg-darkCard p-8 rounded-[2rem] shadow-sm lg:col-span-2">
+                        <h3 class="text-xs font-black uppercase opacity-60 mb-4 tracking-widest">Categorias Despesa</h3>
+                        <div id="cat-despesa-list" class="flex flex-wrap gap-2"></div>
                     </div>
                     <div class="bg-white dark:bg-darkCard p-8 rounded-[2rem] shadow-sm lg:col-span-2">
-                        <div class="flex justify-between items-center mb-6"><h3 class="text-xs font-black uppercase opacity-60 tracking-widest">Bancos</h3><button onclick="openBankModal()" class="bg-brand text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase">Novo Banco</button></div>
-                        <div id="lista-bancos-config" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+                        <h3 class="text-xs font-black uppercase opacity-60 mb-4 tracking-widest">Categorias Receita</h3>
+                        <div id="cat-receita-list" class="flex flex-wrap gap-2"></div>
                     </div>
-                    <div class="bg-white dark:bg-darkCard p-8 rounded-[2rem] shadow-sm"><h3 class="text-xs font-black uppercase opacity-60 mb-4 tracking-widest">Categorias Despesa</h3><div id="cat-despesa-list" class="flex flex-wrap gap-2"></div></div>
-                    <div class="bg-white dark:bg-darkCard p-8 rounded-[2rem] shadow-sm"><h3 class="text-xs font-black uppercase opacity-60 mb-4 tracking-widest">Categorias Receita</h3><div id="cat-receita-list" class="flex flex-wrap gap-2"></div></div>
                 </div>
                 <button onclick="saveSettings()" class="w-full py-5 bg-brand text-white font-black uppercase rounded-3xl shadow-lg">Salvar Tudo</button>
             </div>
         </main>
-
-        <button onclick="handlePlusButton()" class="fixed bottom-8 right-8 bg-brand text-white w-16 h-16 rounded-2xl shadow-2xl flex items-center justify-center z-50 transition-transform active:scale-90"><i data-lucide="plus"></i></button>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, where, Timestamp, doc, getDoc, setDoc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, query, where, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = { apiKey: "AIzaSyArWGgDx0uxce8w72J_1UpKPCUJGvHs3fI", authDomain: "drivo-e-money.firebaseapp.com", projectId: "drivo-e-money", storageBucket: "drivo-e-money.firebasestorage.app", messagingSenderId: "62950568252", appId: "1:62950568252:web:7638827c39b589a9046e39" };
@@ -134,20 +136,101 @@
 
         let userId, dataGlobal = [], userBancos = [], donutChart, currentTipo = 'despesa', chartTipo = 'despesa', bancoIndiceAtivo = -1;
         
+        // Categorias Padrão
         let userSettings = {
             catDespesa: [{n: 'Combustível', i: 'fuel'}, {n: 'Manutenção', i: 'wrench'}, {n: 'Alimentação', i: 'utensils'}, {n: 'Moradia', i: 'home'}, {n: 'Lazer', i: 'palmtree'}],
             catReceita: [{n: 'Salário', i: 'briefcase'}, {n: 'Freelance', i: 'zap'}, {n: 'Outros', i: 'plus-circle'}]
         };
 
         onAuthStateChanged(auth, u => {
-            if (u) { userId = u.uid; document.getElementById('app-container').classList.replace('hidden', 'flex'); loadProfile(); startListener(); }
-            else { window.location.reload(); }
+            if (u) { 
+                userId = u.uid; 
+                document.getElementById('app-container').classList.replace('hidden', 'flex'); 
+                document.getElementById('filter-month').value = new Date().toISOString().slice(0, 7);
+                loadProfile(); 
+                startListener(); 
+            } else { window.location.reload(); }
         });
 
-        // CORREÇÃO CIRÚRGICA NAS CATEGORIAS
+        // RESTAURANDO A LÓGICA DE DADOS
+        function startListener() { 
+            onSnapshot(query(collection(db, "transactions"), where("userId", "==", userId)), (snap) => { 
+                dataGlobal = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })); 
+                updateDash(); 
+                renderExtratoFull();
+            }); 
+            onSnapshot(query(collection(db, "banks"), where("userId", "==", userId)), (snap) => { 
+                userBancos = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })); 
+                updateDash(); 
+            }); 
+        }
+
+        function updateDash() {
+            const ef = dataGlobal.filter(t => t.status === 'realizado');
+            const rT = ef.filter(t => t.tipo === 'receita').reduce((a,b) => a+b.valor,0);
+            const dT = ef.filter(t => t.tipo === 'despesa').reduce((a,b) => a+b.valor,0);
+            
+            document.getElementById('dash-receitas').innerText = `R$ ${rT.toLocaleString('pt-BR')}`;
+            document.getElementById('dash-despesas').innerText = `R$ ${dT.toLocaleString('pt-BR')}`;
+            
+            const valS = document.getElementById('dash-saldo');
+            if(bancoIndiceAtivo === -1) {
+                valS.innerText = `R$ ${(rT-dT).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+                document.getElementById('card-saldo-principal').style.backgroundColor = '#0F172A';
+            } else {
+                const b = userBancos[bancoIndiceAtivo];
+                const bSaldo = ef.filter(t => t.banco === b.nome).reduce((a,v) => v.tipo==='receita'?a+v.valor:a-v.valor,0);
+                valS.innerText = `R$ ${bSaldo.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+                document.getElementById('card-saldo-principal').style.backgroundColor = b.cor;
+            }
+            renderDonut(); 
+            renderMiniFeed();
+        }
+
+        function renderMiniFeed() {
+            const sorted = [...dataGlobal].sort((a,b) => b.date.seconds - a.date.seconds).slice(0, 4);
+            document.getElementById('mini-feed').innerHTML = sorted.map(t => `
+                <div class="flex justify-between items-center p-4 bg-slate-50 dark:bg-slate-900/50 rounded-2xl">
+                    <div class="flex items-center gap-4">
+                        <i data-lucide="${t.tipo === 'receita' ? 'arrow-up' : 'arrow-down'}" class="w-4 h-4 ${t.tipo === 'receita' ? 'text-emerald-500' : 'text-rose-500'}"></i>
+                        <p class="font-bold text-xs">${t.descricao}</p>
+                    </div>
+                    <p class="font-black text-xs">R$ ${t.valor.toFixed(2)}</p>
+                </div>`).join('');
+            lucide.createIcons();
+        }
+
+        function renderExtratoFull() {
+            const container = document.getElementById('extrato-lista');
+            const month = document.getElementById('filter-month').value;
+            const filtered = dataGlobal.filter(t => new Date(t.date?.seconds * 1000).toISOString().slice(0, 7) === month);
+            container.innerHTML = filtered.map(t => `
+                <div class="flex justify-between items-center p-5 bg-white dark:bg-darkCard rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 flex items-center justify-center rounded-xl ${t.tipo === 'receita' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}">
+                            <i data-lucide="${t.tipo === 'receita' ? 'trending-up' : 'trending-down'}"></i>
+                        </div>
+                        <div>
+                            <p class="font-bold text-sm">${t.descricao}</p>
+                            <p class="text-[10px] opacity-40 font-black uppercase">${t.categoria}</p>
+                        </div>
+                    </div>
+                    <p class="font-black text-sm">R$ ${t.valor.toFixed(2)}</p>
+                </div>`).join('');
+            lucide.createIcons();
+        }
+
+        function renderDonut() {
+            const ctx = document.getElementById('chart-rosca').getContext('2d');
+            const cats = {};
+            dataGlobal.filter(t => t.tipo === chartTipo && t.status === 'realizado').forEach(t => cats[t.categoria] = (cats[t.categoria] || 0) + t.valor);
+            if (donutChart) donutChart.destroy();
+            donutChart = new Chart(ctx, { type: 'doughnut', data: { labels: Object.keys(cats), datasets: [{ data: Object.values(cats), backgroundColor: ['#0EA5E9', '#10B981', '#F59E0B', '#F43F5E', '#8B5CF6'], borderWidth: 0 }] }, options: { cutout: '85%', maintainAspectRatio: false, plugins: { legend: { display: false } } } });
+        }
+
         function renderConfigAssets() {
             const chip = (c) => {
-                const name = typeof c === 'object' ? c.n : c; // Trata se for objeto ou texto antigo
+                const name = typeof c === 'object' ? c.n : c;
                 const icon = typeof c === 'object' ? c.i : 'tag';
                 return `<div class="bg-slate-100 dark:bg-slate-800 p-3 rounded-xl flex items-center gap-2 border border-slate-200/50 dark:border-slate-700">
                     <i data-lucide="${icon}" class="w-3 h-3 opacity-40 text-brand"></i>
@@ -159,20 +242,10 @@
             lucide.createIcons();
         }
 
-        async function loadProfile() { 
-            const snap = await getDoc(doc(db, "users", userId)); 
-            if(snap.exists()) { userSettings = {...userSettings, ...snap.data()}; } 
-            renderConfigAssets(); 
-        }
-
-        function startListener() { onSnapshot(query(collection(db, "transactions"), where("userId", "==", userId)), (snap) => { dataGlobal = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })); updateDash(); }); onSnapshot(query(collection(db, "banks"), where("userId", "==", userId)), (snap) => { userBancos = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })); renderBankList(); updateDash(); }); }
-        
-        // MANTENDO EXATAMENTE O RESTANTE DA v27.7.2
+        async function loadProfile() { const snap = await getDoc(doc(db, "users", userId)); if(snap.exists()) { userSettings = {...userSettings, ...snap.data()}; } renderConfigAssets(); }
         window.switchTab = (id) => { document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active')); document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('sidebar-active')); document.getElementById('content-' + id).classList.add('active'); document.getElementById('btn-' + id).classList.add('sidebar-active'); lucide.createIcons(); };
         window.toggleDarkMode = () => { document.documentElement.classList.toggle('dark'); const isDark = document.documentElement.classList.contains('dark'); document.getElementById('dark-status-icon').innerHTML = isDark ? '<i data-lucide="sun" class="w-5 h-5 text-amber-400"></i>' : '<i data-lucide="moon" class="w-5 h-5"></i>'; lucide.createIcons(); };
-        window.updateDash = () => { /* Lógica de update dash original... */ renderDonut(); renderMiniFeed(); };
-        function renderDonut() { const ctx = document.getElementById('chart-rosca').getContext('2d'); const cats = {}; dataGlobal.filter(t => t.tipo === chartTipo && t.status === 'realizado').forEach(t => cats[t.categoria] = (cats[t.categoria] || 0) + t.valor); if (donutChart) donutChart.destroy(); donutChart = new Chart(ctx, { type: 'doughnut', data: { labels: Object.keys(cats), datasets: [{ data: Object.values(cats), backgroundColor: ['#0EA5E9', '#10B981', '#F59E0B', '#F43F5E', '#8B5CF6'], borderWidth: 0 }] }, options: { cutout: '85%', maintainAspectRatio: false, plugins: { legend: { display: false } } } }); }
-        window.saveSettings = async () => { await setDoc(doc(db, "users", userId), { ...userSettings }, { merge: true }); alert("Salvo!"); };
+        window.rotacionarSaldo = () => { bancoIndiceAtivo = (bancoIndiceAtivo >= userBancos.length - 1) ? -1 : bancoIndiceAtivo + 1; updateDash(); };
         window.handleLogout = () => signOut(auth).then(() => window.location.reload());
         lucide.createIcons();
     </script>
