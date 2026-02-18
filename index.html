@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MuFinance v27.12</title>
+    <title>MuFinance v27.13</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -26,6 +26,9 @@
         .sidebar-collapsed .sidebar-text, .sidebar-collapsed .logo-text, .sidebar-collapsed #btn-close-sidebar { display: none; }
         @media (max-width: 1024px) { #sidebar { position: fixed; transform: translateX(-100%); z-index: 100; } #sidebar.open { transform: translateX(0); } }
         .input-standard { @apply w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-2xl border-none outline-none focus:ring-2 ring-brand transition-all font-bold text-sm; }
+        .filter-pill { @apply px-4 py-2 rounded-xl font-black text-[10px] uppercase transition-all; }
+        .filter-active { @apply bg-brand text-white shadow-lg shadow-brand/20; }
+        .filter-inactive { @apply bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-600; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 dark:bg-darkBg dark:text-slate-100 min-h-screen">
@@ -45,10 +48,6 @@
             <nav class="flex-1 space-y-1">
                 <button onclick="switchTab('dashboard')" class="sidebar-item w-full flex items-center gap-4 p-4 rounded-xl font-bold text-sm text-slate-500 sidebar-active transition-all"><i data-lucide="layout-dashboard" class="w-5 h-5 flex-shrink-0"></i> <span class="sidebar-text">Dashboard</span></button>
                 <button onclick="switchTab('extrato')" class="sidebar-item w-full flex items-center gap-4 p-4 rounded-xl font-bold text-sm text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"><i data-lucide="receipt" class="w-5 h-5 flex-shrink-0"></i> <span class="sidebar-text">Transações</span></button>
-                <button onclick="switchTab('metas')" class="sidebar-item w-full flex items-center gap-4 p-4 rounded-xl font-bold text-sm text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"><i data-lucide="target" class="w-5 h-5 flex-shrink-0"></i> <span class="sidebar-text">Metas</span></button>
-                <button onclick="switchTab('relatorios')" class="sidebar-item w-full flex items-center gap-4 p-4 rounded-xl font-bold text-sm text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"><i data-lucide="pie-chart" class="w-5 h-5 flex-shrink-0"></i> <span class="sidebar-text">Relatórios</span></button>
-                <button onclick="switchTab('drivo')" class="sidebar-item w-full flex items-center gap-4 p-4 rounded-xl font-bold text-sm text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"><i data-lucide="gauge" class="w-5 h-5 flex-shrink-0"></i> <span class="sidebar-text">Drivo KM</span></button>
-                <hr class="my-4 opacity-10">
                 <button onclick="switchTab('perfil')" class="sidebar-item w-full flex items-center gap-4 p-4 rounded-xl font-bold text-sm text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"><i data-lucide="settings" class="w-5 h-5 flex-shrink-0"></i> <span class="sidebar-text">Configurações</span></button>
             </nav>
             <button onclick="handleLogout()" class="flex items-center gap-3 p-4 text-rose-500 font-bold text-sm mt-auto"><i data-lucide="log-out" class="w-5 h-5 flex-shrink-0"></i> <span class="sidebar-text">Sair</span></button>
@@ -56,38 +55,38 @@
 
         <main class="flex-1 p-4 lg:p-12 pb-32 overflow-y-auto w-full">
             
-            <header class="flex justify-between items-center mb-10">
+            <header class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
                 <div class="flex items-center gap-4">
-                    <button onclick="toggleSidebar()" class="w-12 h-12 flex items-center justify-center bg-white dark:bg-darkCard rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 text-slate-500 hover:text-brand transition-colors"><i data-lucide="menu"></i></button>
-                    <h1 id="tab-title" class="text-2xl lg:text-3xl font-extrabold italic uppercase tracking-tighter">Dashboard</h1>
+                    <button onclick="toggleSidebar()" class="w-12 h-12 flex items-center justify-center bg-white dark:bg-darkCard rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 text-slate-500"><i data-lucide="menu"></i></button>
+                    <div>
+                        <h1 id="tab-title" class="text-2xl font-extrabold italic uppercase tracking-tighter">Dashboard</h1>
+                        <div class="flex gap-2 mt-2">
+                            <button onclick="setTimeMode('mensal')" id="btn-mode-mensal" class="filter-pill filter-active">Mensal</button>
+                            <button onclick="setTimeMode('anual')" id="btn-mode-anual" class="filter-pill filter-inactive">Anual</button>
+                        </div>
+                    </div>
                 </div>
-                <div class="w-12 h-12 rounded-2xl bg-slate-200 border-2 border-white shadow-sm overflow-hidden flex-shrink-0"><img id="user-avatar" src="https://ui-avatars.com/api/?name=W&background=0ea5e9&color=fff"></div>
+
+                <div class="flex items-center gap-4 bg-white dark:bg-darkCard p-2 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800">
+                    <button onclick="changePeriod(-1)" class="w-10 h-10 flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-all text-brand"><i data-lucide="chevron-left"></i></button>
+                    <span id="display-periodo" class="text-sm font-black uppercase tracking-widest min-w-[140px] text-center">Fevereiro/26</span>
+                    <button onclick="changePeriod(1)" class="w-10 h-10 flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-all text-brand"><i data-lucide="chevron-right"></i></button>
+                </div>
             </header>
 
             <div id="content-dashboard" class="tab-content active space-y-8">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div onclick="rotacionarSaldo()" id="card-saldo-principal" class="bg-slate-900 p-6 rounded-[2.5rem] shadow-xl text-white relative flex flex-col justify-center min-h-[160px] cursor-pointer active:scale-95 transition-all">
-                        <div class="relative z-10 text-center">
-                            <h2 class="text-3xl lg:text-4xl font-extrabold tracking-tighter" id="dash-saldo">R$ 0,00</h2>
-                            <p class="text-[9px] font-black uppercase tracking-widest opacity-60 mt-1" id="label-saldo">Saldo Consolidado</p>
-                            <div class="flex justify-center gap-1.5 mt-4" id="indicadores-banco"></div>
-                        </div>
-                        <i data-lucide="wallet" class="absolute -right-4 -bottom-4 w-24 h-24 opacity-10 rotate-12"></i>
+                    <div id="card-saldo-principal" class="bg-slate-900 p-6 rounded-[2.5rem] shadow-xl text-white relative flex flex-col justify-center min-h-[160px]">
+                        <h2 class="text-3xl lg:text-4xl font-extrabold tracking-tighter" id="dash-saldo">R$ 0,00</h2>
+                        <p class="text-[9px] font-black uppercase tracking-widest opacity-60 mt-1">Saldo no Período</p>
                     </div>
-                    <div class="bg-white dark:bg-darkCard p-5 rounded-[2rem] border-l-8 border-emerald-500 shadow-sm flex flex-col justify-center min-h-[140px]">
-                        <p class="text-[9px] font-black opacity-50 uppercase tracking-widest mb-1">Receitas</p>
-                        <h3 class="text-xl lg:text-2xl font-extrabold text-emerald-500" id="dash-receitas">R$ 0,00</h3>
-                    </div>
-                    <div class="bg-white dark:bg-darkCard p-5 rounded-[2rem] border-l-8 border-rose-500 shadow-sm flex flex-col justify-center min-h-[140px]">
-                        <p class="text-[9px] font-black opacity-50 uppercase tracking-widest mb-1">Despesas</p>
-                        <h3 class="text-xl lg:text-2xl font-extrabold text-rose-500" id="dash-despesas">R$ 0,00</h3>
-                    </div>
+                    <div class="bg-white dark:bg-darkCard p-5 rounded-[2rem] border-l-8 border-emerald-500 shadow-sm flex flex-col justify-center min-h-[140px]"><p class="text-[9px] font-black opacity-50 uppercase tracking-widest mb-1">Receitas</p><h3 class="text-xl lg:text-2xl font-extrabold text-emerald-500" id="dash-receitas">R$ 0,00</h3></div>
+                    <div class="bg-white dark:bg-darkCard p-5 rounded-[2rem] border-l-8 border-rose-500 shadow-sm flex flex-col justify-center min-h-[140px]"><p class="text-[9px] font-black opacity-50 uppercase tracking-widest mb-1">Despesas</p><h3 class="text-xl lg:text-2xl font-extrabold text-rose-500" id="dash-despesas">R$ 0,00</h3></div>
                 </div>
-
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     <div class="bg-white dark:bg-darkCard p-8 rounded-[2rem] shadow-sm">
                         <div class="flex justify-between items-center mb-8">
-                            <h3 class="text-xs font-black uppercase opacity-60 tracking-widest italic">Distribuição</h3>
+                            <h3 class="text-xs font-black uppercase opacity-60">Distribuição</h3>
                             <div class="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
                                 <button onclick="setChartTipo('despesa')" id="pill-des" class="px-4 py-1.5 text-[9px] font-black uppercase rounded-lg bg-slate-900 text-white dark:bg-brand">Despesas</button>
                                 <button onclick="setChartTipo('receita')" id="pill-rec" class="px-4 py-1.5 text-[9px] font-black uppercase rounded-lg text-slate-400">Receitas</button>
@@ -95,67 +94,35 @@
                         </div>
                         <div class="h-[250px] relative w-full flex justify-center"><canvas id="chart-rosca"></canvas></div>
                     </div>
-                    <div class="bg-white dark:bg-darkCard p-8 rounded-[2rem] shadow-sm"><h3 class="text-xs font-black uppercase opacity-60 mb-6 tracking-widest">Feed Recente</h3><div id="mini-feed" class="space-y-4"></div></div>
+                    <div class="bg-white dark:bg-darkCard p-8 rounded-[2rem] shadow-sm"><h3 class="text-xs font-black uppercase opacity-60 mb-6 tracking-widest">Feed do Período</h3><div id="mini-feed" class="space-y-4"></div></div>
                 </div>
             </div>
 
             <div id="content-extrato" class="tab-content space-y-6">
-                <div class="flex justify-between items-center p-6 bg-white dark:bg-darkCard rounded-[2rem] shadow-sm">
-                    <h3 class="text-xs font-black uppercase opacity-60 tracking-widest">Filtro Mensal</h3>
-                    <input type="month" id="filter-month" onchange="renderExtratoFull()" class="bg-slate-50 dark:bg-slate-800 p-2 rounded-xl border-none outline-none font-bold text-brand text-sm">
-                </div>
-                <div id="extrato-lista" class="space-y-3"></div>
+                <div id="extrato-lista" class="space-y-3 pb-20"></div>
             </div>
 
-            <div id="content-drivo" class="tab-content space-y-6">
-                <div class="bg-slate-900 p-8 rounded-[2.5rem] shadow-xl text-white flex justify-between items-center overflow-hidden relative">
-                    <div class="relative z-10"><p class="text-[10px] font-black uppercase opacity-60 tracking-widest mb-1">Estimativa de Autonomia</p><h2 class="text-4xl font-extrabold" id="drivo-km-total">0 KM</h2></div>
-                    <i data-lucide="gauge" class="w-24 h-24 absolute -right-4 -bottom-4 opacity-10 rotate-12"></i>
+            <div id="content-perfil" class="tab-content space-y-8">
+                <div class="bg-white dark:bg-darkCard p-8 rounded-[2rem] shadow-sm">
+                    <h3 class="text-xs font-black uppercase opacity-60 mb-6">Configurações de Perfil</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input type="text" id="perf-nome" placeholder="Nome" class="input-standard">
+                        <input type="text" id="perf-user" placeholder="Usuário" class="input-standard">
+                    </div>
+                    <button onclick="saveSettings()" class="w-full mt-6 py-4 bg-brand text-white font-black uppercase rounded-2xl shadow-lg">Salvar Alterações</button>
                 </div>
-                <div id="drivo-timeline" class="space-y-4"></div>
-            </div>
-
-            <div id="content-perfil" class="tab-content space-y-8 pb-20">
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="bg-white dark:bg-darkCard p-8 rounded-[2rem] shadow-sm space-y-6">
-                        <h3 class="text-xs font-black uppercase opacity-60 tracking-widest">Perfil</h3>
-                        <div class="grid grid-cols-2 gap-4">
-                            <input type="text" id="perf-nome" placeholder="Nome" class="input-standard">
-                            <input type="text" id="perf-user" placeholder="Usuário" class="input-standard">
-                            <input type="text" id="perf-cidade" placeholder="Cidade" class="input-standard">
-                            <input type="text" id="perf-uf" placeholder="UF" class="input-standard">
-                        </div>
-                    </div>
-                    <div class="bg-white dark:bg-darkCard p-8 rounded-[2rem] shadow-sm space-y-4">
-                        <h3 class="text-xs font-black uppercase opacity-60 tracking-widest">Veículo e Tema</h3>
-                        <div class="flex items-center justify-between">
-                            <input type="number" id="veic-consumo" class="input-standard !w-32" placeholder="KM/L">
-                            <button onclick="toggleDarkMode()" class="p-4 bg-slate-100 dark:bg-slate-800 rounded-2xl transition-all"><i data-lucide="moon" id="dark-status-icon"></i></button>
-                        </div>
-                    </div>
-                    <div class="bg-white dark:bg-darkCard p-8 rounded-[2rem] shadow-sm lg:col-span-2">
-                        <div class="flex justify-between items-center mb-6"><h3 class="text-xs font-black uppercase opacity-60 tracking-widest">Bancos</h3><button onclick="openBankModal()" class="bg-brand text-white px-4 py-2 rounded-xl text-[10px] font-black">NOVO BANCO</button></div>
-                        <div id="lista-bancos-config" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
-                    </div>
-                    <div class="bg-white dark:bg-darkCard p-8 rounded-[2rem] shadow-sm"><div class="flex justify-between mb-4"><h3 class="text-xs font-black uppercase opacity-60">Categorias Despesa</h3><button onclick="addCategoryPrompt('despesa')" class="text-brand"><i data-lucide="plus-circle"></i></button></div><div id="cat-despesa-list" class="flex flex-wrap gap-2"></div></div>
-                    <div class="bg-white dark:bg-darkCard p-8 rounded-[2rem] shadow-sm"><div class="flex justify-between mb-4"><h3 class="text-xs font-black uppercase opacity-60">Categorias Receita</h3><button onclick="addCategoryPrompt('receita')" class="text-brand"><i data-lucide="plus-circle"></i></button></div><div id="cat-receita-list" class="flex flex-wrap gap-2"></div></div>
-                </div>
-                <button onclick="saveSettings()" class="w-full py-5 bg-brand text-white font-black uppercase rounded-3xl shadow-lg">Salvar Tudo</button>
             </div>
             
-            <div id="content-metas" class="tab-content py-20 text-center opacity-30"><i data-lucide="target" class="w-16 h-16 mx-auto mb-4"></i><p class="font-bold">Módulo em Desenvolvimento</p></div>
-            <div id="content-relatorios" class="tab-content py-20 text-center opacity-30"><i data-lucide="pie-chart" class="w-16 h-16 mx-auto mb-4"></i><p class="font-bold">Módulo em Desenvolvimento</p></div>
         </main>
-        <button onclick="handlePlusButton()" class="fixed bottom-8 right-8 bg-brand text-white w-16 h-16 rounded-2xl shadow-2xl flex items-center justify-center z-50 transition-transform active:scale-90 shadow-brand/50"><i data-lucide="plus"></i></button>
+        <button onclick="handlePlusButton()" class="fixed bottom-8 right-8 bg-brand text-white w-16 h-16 rounded-2xl shadow-2xl flex items-center justify-center z-50 transition-transform active:scale-90"><i data-lucide="plus"></i></button>
     </div>
 
     <div id="modal-lancamento" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-[110]">
         <div class="bg-white dark:bg-darkCard w-full max-w-md rounded-[2.5rem] p-8 space-y-6 shadow-2xl border border-white/10">
-            <h3 id="modal-title" class="text-xs font-black uppercase text-brand text-center tracking-widest">Lançamento</h3>
+            <h3 id="modal-title" class="text-xs font-black uppercase text-brand text-center tracking-widest">Novo Lançamento</h3>
             <form id="form-registro" class="space-y-4">
                 <input type="hidden" id="edit-id">
-                <div class="space-y-1"><p class="text-[10px] font-bold opacity-30 uppercase ml-2">Valor</p>
-                <input type="number" step="0.01" id="inp-valor" placeholder="R$ 0,00" class="input-standard text-center text-3xl h-20" required></div>
+                <input type="number" step="0.01" id="inp-valor" placeholder="R$ 0,00" class="input-standard text-center text-3xl h-20" required>
                 <input type="text" id="inp-desc" placeholder="Descrição" class="input-standard" required>
                 <div class="grid grid-cols-2 gap-4">
                     <select id="inp-tipo" class="input-standard cursor-pointer" onchange="updateCatSelect()">
@@ -176,21 +143,6 @@
         </div>
     </div>
 
-    <div id="modal-banco" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-[110]">
-        <div class="bg-white dark:bg-darkCard w-full max-w-sm rounded-[2.5rem] p-8 space-y-6">
-            <h3 class="text-xs font-black uppercase text-brand text-center">Novo Banco</h3>
-            <input type="text" id="modal-bank-name" placeholder="Nome do Banco" class="input-standard">
-            <div id="bank-color-grid" class="grid grid-cols-4 gap-2">
-                <div onclick="selectBankColor('#8A05BE', this)" class="w-10 h-10 rounded-xl bg-[#8A05BE] cursor-pointer border-2 border-transparent"></div>
-                <div onclick="selectBankColor('#FF6200', this)" class="w-10 h-10 rounded-xl bg-[#FF6200] cursor-pointer border-2 border-transparent"></div>
-                <div onclick="selectBankColor('#005CA9', this)" class="w-10 h-10 rounded-xl bg-[#005CA9] cursor-pointer border-2 border-transparent"></div>
-                <div onclick="selectBankColor('#111111', this)" class="w-10 h-10 rounded-xl bg-[#111111] cursor-pointer border-2 border-transparent"></div>
-            </div>
-            <input type="hidden" id="modal-bank-color-val">
-            <div class="flex gap-2"><button onclick="closeBankModal()" class="flex-1 font-bold text-xs opacity-40 uppercase">Fechar</button><button onclick="saveBankModal()" class="flex-1 py-3 bg-brand text-white rounded-xl font-black text-xs uppercase">Salvar</button></div>
-        </div>
-    </div>
-
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, where, Timestamp, doc, getDoc, setDoc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -201,80 +153,127 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        let userId, dataGlobal = [], userBancos = [], donutChart, currentTipo = 'despesa', chartTipo = 'despesa', bancoIndiceAtivo = -1;
+        let userId, dataGlobal = [], userBancos = [], donutChart, chartTipo = 'despesa';
         let userSettings = { catDespesa: [], catReceita: [] };
 
+        // [CONTROLE DE TEMPO]
+        let currentMode = 'mensal'; // 'mensal' ou 'anual'
+        let currentDate = new Date(); // Data base para navegação
+
         onAuthStateChanged(auth, u => {
-            if (u) { userId = u.uid; document.getElementById('app-container').classList.replace('hidden', 'flex'); document.getElementById('filter-month').value = new Date().toISOString().slice(0, 7); loadProfile(); startListener(); }
+            if (u) { userId = u.uid; document.getElementById('app-container').classList.replace('hidden', 'flex'); loadProfile(); startListener(); }
             else { window.location.reload(); }
         });
 
-        /* [JS] MENU E TECLADO */
-        document.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.key === 'b') { e.preventDefault(); toggleSidebar(); } });
-        window.toggleSidebar = () => { const s = document.getElementById('sidebar'); if (window.innerWidth >= 1024) s.classList.toggle('sidebar-collapsed'); else { s.classList.toggle('open'); document.getElementById('sidebar-overlay').classList.toggle('hidden'); } lucide.createIcons(); };
-
-        window.switchTab = id => {
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('sidebar-active'));
-            document.getElementById('content-'+id).classList.add('active');
-            if (window.innerWidth < 1024) toggleSidebar();
-            if(id==='dashboard') renderDonut();
-            lucide.createIcons();
+        /* [JS] LÓGICA DE NAVEGAÇÃO DE PERÍODO */
+        window.setTimeMode = (mode) => {
+            currentMode = mode;
+            document.getElementById('btn-mode-mensal').className = mode === 'mensal' ? "filter-pill filter-active" : "filter-pill filter-inactive";
+            document.getElementById('btn-mode-anual').className = mode === 'anual' ? "filter-pill filter-active" : "filter-pill filter-inactive";
+            updatePeriodDisplay();
+            updateAllViews();
         };
+
+        window.changePeriod = (delta) => {
+            if (currentMode === 'mensal') {
+                currentDate.setMonth(currentDate.getMonth() + delta);
+            } else {
+                currentDate.setFullYear(currentDate.getFullYear() + delta);
+            }
+            updatePeriodDisplay();
+            updateAllViews();
+        };
+
+        function updatePeriodDisplay() {
+            const meses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+            const display = document.getElementById('display-periodo');
+            if (currentMode === 'mensal') {
+                display.innerText = `${meses[currentDate.getMonth()]}/${currentDate.getFullYear().toString().slice(-2)}`;
+            } else {
+                display.innerText = currentDate.getFullYear();
+            }
+        }
+
+        function updateAllViews() {
+            updateDash();
+            renderExtratoFull();
+        }
 
         /* [JS] FIREBASE SYNC */
         function startListener() {
-            onSnapshot(query(collection(db, "transactions"), where("userId", "==", userId)), (snap) => { dataGlobal = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })); updateDash(); renderExtratoFull(); renderDrivo(); });
-            onSnapshot(query(collection(db, "banks"), where("userId", "==", userId)), (snap) => { userBancos = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })); renderBankList(); updateDash(); updateBankSelects(); });
+            onSnapshot(query(collection(db, "transactions"), where("userId", "==", userId)), (snap) => { 
+                dataGlobal = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })); 
+                updatePeriodDisplay();
+                updateAllViews(); 
+            });
+            onSnapshot(query(collection(db, "banks"), where("userId", "==", userId)), (snap) => { 
+                userBancos = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })); 
+                updateBankSelects();
+            });
         }
 
-        /* [JS] DASHBOARD & TRANSACTIONS */
-        window.updateDash = () => {
-            const ef = dataGlobal.filter(t => t.status === 'realizado');
-            const rT = ef.filter(t => t.tipo === 'receita').reduce((a,b) => a+b.valor,0);
-            const dT = ef.filter(t => t.tipo === 'despesa').reduce((a,b) => a+b.valor,0);
-            const valS = document.getElementById('dash-saldo');
-            const labelS = document.getElementById('label-saldo');
+        /* [JS] FILTRAGEM DINÂMICA POR DATA */
+        function getFilteredData() {
+            return dataGlobal.filter(t => {
+                const tDate = new Date(t.date.seconds * 1000);
+                if (currentMode === 'mensal') {
+                    return tDate.getMonth() === currentDate.getMonth() && tDate.getFullYear() === currentDate.getFullYear();
+                } else {
+                    return tDate.getFullYear() === currentDate.getFullYear();
+                }
+            });
+        }
 
-            if(bancoIndiceAtivo === -1) { 
-                valS.innerText = `R$ ${(rT-dT).toLocaleString('pt-BR', {minimumFractionDigits:2})}`; 
-                labelS.innerText = "Saldo Consolidado";
-                document.getElementById('card-saldo-principal').style.backgroundColor = '#0F172A'; 
-            }
-            else { 
-                const b = userBancos[bancoIndiceAtivo]; 
-                const bSaldo = ef.filter(t => t.banco === b.nome).reduce((a,v) => v.tipo==='receita'?a+v.valor:a-v.valor,0); 
-                valS.innerText = `R$ ${bSaldo.toLocaleString('pt-BR', {minimumFractionDigits:2})}`; 
-                labelS.innerText = b.nome; // MUDA O NOME DA CONTA AQUI
-                document.getElementById('card-saldo-principal').style.backgroundColor = b.cor; 
-            }
+        window.updateDash = () => {
+            const filtered = getFilteredData();
+            const rT = filtered.filter(t => t.tipo === 'receita').reduce((a,b) => a+b.valor,0);
+            const dT = filtered.filter(t => t.tipo === 'despesa').reduce((a,b) => a+b.valor,0);
+            
+            document.getElementById('dash-saldo').innerText = `R$ ${(rT-dT).toLocaleString('pt-BR', {minimumFractionDigits:2})}`;
             document.getElementById('dash-receitas').innerText = `R$ ${rT.toLocaleString('pt-BR')}`;
             document.getElementById('dash-despesas').innerText = `R$ ${dT.toLocaleString('pt-BR')}`;
-            document.getElementById('indicadores-banco').innerHTML = `<div class="w-3 h-1 rounded-full ${bancoIndiceAtivo===-1?'bg-white':'bg-white/20'}"></div>` + userBancos.map((_,i)=>`<div class="w-1.5 h-1 rounded-full ${bancoIndiceAtivo===i?'bg-white':'bg-white/20'}"></div>`).join('');
-            renderDonut(); renderMiniFeed();
+            
+            renderDonut(filtered); 
+            renderMiniFeed(filtered);
         };
 
         window.renderExtratoFull = () => {
-            const m = document.getElementById('filter-month').value;
-            const filtered = dataGlobal.filter(t => new Date(t.date?.seconds * 1000).toISOString().slice(0, 7) === m);
+            const filtered = getFilteredData().sort((a,b)=>b.date.seconds-a.date.seconds);
             document.getElementById('extrato-lista').innerHTML = filtered.map(t => `
                 <div class="flex justify-between items-center p-5 bg-white dark:bg-darkCard rounded-2xl border border-slate-100 dark:border-slate-800 group transition-all">
                     <div class="flex items-center gap-4">
                         <div class="w-10 h-10 flex items-center justify-center rounded-xl ${t.tipo==='receita'?'bg-emerald-50 text-emerald-600':'bg-rose-50 text-rose-600'}"><i data-lucide="${t.tipo==='receita'?'trending-up':'trending-down'}"></i></div>
-                        <div><p class="font-bold text-sm">${t.descricao}</p><p class="text-[10px] opacity-40 uppercase font-black">${t.categoria}</p></div>
+                        <div>
+                            <p class="font-bold text-sm">${t.descricao}</p>
+                            <p class="text-[9px] font-black uppercase text-slate-400">${t.categoria} • ${t.banco}</p>
+                        </div>
                     </div>
                     <div class="flex items-center gap-4">
                         <p class="font-black text-sm">R$ ${t.valor.toFixed(2)}</p>
                         <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                            <button onclick="editTransaction('${t.id}')" class="text-brand hover:scale-110"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
-                            <button onclick="deleteTransaction('${t.id}')" class="text-rose-500 hover:scale-110"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                            <button onclick="editTransaction('${t.id}')" class="text-brand"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
+                            <button onclick="deleteTransaction('${t.id}')" class="text-rose-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                         </div>
                     </div>
                 </div>`).join('');
             lucide.createIcons();
         };
 
-        /* [JS] EDIÇÃO DE TRANSAÇÃO */
+        /* [JS] DEMAIS FUNÇÕES DE APOIO */
+        function renderDonut(filtered) {
+            const ctx = document.getElementById('chart-rosca');
+            if(!ctx) return;
+            const cats = {};
+            filtered.filter(t => t.tipo === chartTipo).forEach(t => cats[t.categoria] = (cats[t.categoria] || 0) + t.valor);
+            if (donutChart) donutChart.destroy();
+            donutChart = new Chart(ctx.getContext('2d'), {
+                type: 'doughnut',
+                data: { labels: Object.keys(cats), datasets: [{ data: Object.values(cats), backgroundColor: ['#0EA5E9', '#10B981', '#F59E0B', '#F43F5E', '#8B5CF6'], borderWidth: 0 }] },
+                options: { cutout: '85%', maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom', labels: { usePointStyle: true, font: { size: 10, weight: '700' }, color: '#94a3b8' } } } }
+            });
+        }
+
+        window.setChartTipo = (tipo) => { chartTipo = tipo; updateDash(); };
         window.editTransaction = (id) => {
             const t = dataGlobal.find(x => x.id === id);
             if(!t) return;
@@ -317,122 +316,30 @@
             closeModal();
         };
 
-        /* [JS] CATEGORIAS E BANCOS */
         window.updateCatSelect = () => {
             const tipo = document.getElementById('inp-tipo').value;
             const cats = userSettings[tipo === 'despesa' ? 'catDespesa' : 'catReceita'];
             document.getElementById('inp-cat').innerHTML = cats.map(c => `<option value="${c.n||c}">${c.n||c}</option>`).join('');
         };
         function updateBankSelects() { document.getElementById('inp-banco').innerHTML = userBancos.map(b => `<option value="${b.nome}">${b.nome}</option>`).join(''); }
-
-        function renderDrivo() {
-            const events = dataGlobal.filter(t => t.categoria === 'Combustível');
-            const cons = parseFloat(document.getElementById('veic-consumo').value) || 29;
-            let total = 0;
-            document.getElementById('drivo-timeline').innerHTML = events.map(t => { const km = Math.round((t.valor / 6.10) * cons); total += km; return `<div class="bg-white dark:bg-darkCard p-4 rounded-2xl flex justify-between"><div><p class="font-bold text-xs">${t.descricao}</p></div><p class="font-black text-xs text-brand">+${km} KM</p></div>`; }).join('');
-            document.getElementById('drivo-km-total').innerText = `${total} KM`;
-            lucide.createIcons();
-        }
-
-        function renderConfigAssets() {
-            const chip = (c, type) => `<div class="bg-slate-100 dark:bg-slate-800 px-3 py-2 rounded-xl flex items-center gap-2 border border-slate-200 dark:border-slate-700 transition-all"><span class="text-[10px] font-bold uppercase">${typeof c === 'object' ? c.n : c}</span><button onclick="removeCategory('${typeof c === 'object' ? c.n : c}', '${type}')" class="text-rose-500/50 hover:text-rose-500"><i data-lucide="x-circle" class="w-3 h-3"></i></button></div>`;
-            document.getElementById('cat-despesa-list').innerHTML = (userSettings.catDespesa || []).map(c => chip(c, 'despesa')).join('');
-            document.getElementById('cat-receita-list').innerHTML = (userSettings.catReceita || []).map(c => chip(c, 'receita')).join('');
-            lucide.createIcons();
-        }
-
-        function renderBankList() {
-            document.getElementById('lista-bancos-config').innerHTML = userBancos.map(b => `<div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-2xl flex justify-between items-center group">
-                <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full" style="background:${b.cor}"></div><span class="font-bold text-xs uppercase">${b.nome}</span></div>
-                <button onclick="deleteBank('${b.id}')" class="text-rose-500 opacity-0 group-hover:opacity-100 transition-all"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>`).join('');
-            lucide.createIcons();
-        }
-
-        window.rotacionarSaldo = () => { bancoIndiceAtivo = (bancoIndiceAtivo >= userBancos.length - 1) ? -1 : bancoIndiceAtivo + 1; updateDash(); };
-        window.deleteTransaction = async id => { if(confirm("Apagar?")) await deleteDoc(doc(db, "transactions", id)); };
-        window.addCategoryPrompt = type => { const n = prompt("Nome da Categoria:"); if(n) { if(type==='despesa') userSettings.catDespesa.push({n, i:'tag'}); else userSettings.catReceita.push({n, i:'tag'}); renderConfigAssets(); } };
-        window.removeCategory = (n, t) => { if(t==='despesa') userSettings.catDespesa = userSettings.catDespesa.filter(c => (c.n||c)!==n); else userSettings.catReceita = userSettings.catReceita.filter(c => (c.n||c)!==n); renderConfigAssets(); };
-        window.openBankModal = () => document.getElementById('modal-banco').classList.remove('hidden');
-        window.closeBankModal = () => document.getElementById('modal-banco').classList.add('hidden');
-        window.selectBankColor = (h, el) => { document.querySelectorAll('#bank-color-grid div').forEach(d => d.style.borderColor='transparent'); el.style.borderColor='#0EA5E9'; document.getElementById('modal-bank-color-val').value=h; };
-        window.saveBankModal = async () => { const n = document.getElementById('modal-bank-name').value; const c = document.getElementById('modal-bank-color-val').value; if(n && c) { await addDoc(collection(db, "banks"), { userId, nome: n, cor: c }); closeBankModal(); document.getElementById('modal-bank-name').value=''; } };
-        window.deleteBank = async id => { if(confirm("Apagar banco?")) await deleteDoc(doc(db, "banks", id)); };
-
-        async function loadProfile() { const snap = await getDoc(doc(db, "users", userId)); if(snap.exists()) { userSettings = snap.data(); document.getElementById('perf-nome').value = snap.data().nome||""; document.getElementById('perf-user').value = snap.data().usuario||""; document.getElementById('perf-cidade').value = snap.data().cidade||""; document.getElementById('perf-uf').value = snap.data().uf||""; document.getElementById('veic-consumo').value = snap.data().consumo||29; } renderConfigAssets(); updateCatSelect(); }
-        window.saveSettings = async () => { await setDoc(doc(db, "users", userId), { ...userSettings, nome: document.getElementById('perf-nome').value, usuario: document.getElementById('perf-user').value, cidade: document.getElementById('perf-cidade').value, uf: document.getElementById('perf-uf').value, consumo: parseFloat(document.getElementById('veic-consumo').value) }, { merge: true }); alert("Configurações Salvas!"); };
-        
-        window.handleLogout = () => signOut(auth).then(() => window.location.reload());
-        window.toggleDarkMode = () => { document.documentElement.classList.toggle('dark'); lucide.createIcons(); };
         window.closeModal = () => document.getElementById('modal-lancamento').classList.add('hidden');
-
-        // [LOGICA: CORREÇÃO GRAFICO DISTRIBUIÇÃO]
-        window.setChartTipo = (tipo) => {
-            chartTipo = tipo;
-            const btnDes = document.getElementById('pill-des');
-            const btnRec = document.getElementById('pill-rec');
-            if (tipo === 'despesa') {
-                btnDes.className = "px-4 py-1.5 text-[9px] font-black uppercase rounded-lg bg-slate-900 text-white dark:bg-brand transition-all";
-                btnRec.className = "px-4 py-1.5 text-[9px] font-black uppercase rounded-lg text-slate-400 transition-all";
-            } else {
-                btnRec.className = "px-4 py-1.5 text-[9px] font-black uppercase rounded-lg bg-slate-900 text-white dark:bg-brand transition-all";
-                btnDes.className = "px-4 py-1.5 text-[9px] font-black uppercase rounded-lg text-slate-400 transition-all";
-            }
-            renderDonut();
-        };
-
-        function renderDonut() { 
-            const ctx = document.getElementById('chart-rosca'); 
-            if(!ctx) return; 
-            const cats = {}; 
-            dataGlobal.filter(t => t.tipo === chartTipo && t.status === 'realizado').forEach(t => {
-                const label = t.categoria || "Outros";
-                cats[label] = (cats[label] || 0) + t.valor;
-            }); 
-            if (donutChart) donutChart.destroy(); 
-            donutChart = new Chart(ctx.getContext('2d'), { 
-                type: 'doughnut', 
-                data: { 
-                    labels: Object.keys(cats), 
-                    datasets: [{ data: Object.values(cats), backgroundColor: ['#0EA5E9', '#10B981', '#F59E0B', '#F43F5E', '#8B5CF6'], borderWidth: 0 }] 
-                }, 
-                options: { 
-                    cutout: '85%', 
-                    maintainAspectRatio: false, 
-                    plugins: { 
-                        legend: { 
-                            display: true,
-                            position: 'bottom',
-                            labels: {
-                                usePointStyle: true,
-                                padding: 20,
-                                font: { size: 10, weight: '700' },
-                                color: '#94a3b8'
-                            }
-                        } 
-                    } 
-                } 
-            }); 
-        }
-
-        function renderMiniFeed() { 
-            const s = [...dataGlobal].sort((a,b)=>b.date.seconds-a.date.seconds).slice(0,4); 
-            document.getElementById('mini-feed').innerHTML = s.map(t=>`
-                <div class="flex justify-between items-center p-4 bg-slate-50 dark:bg-slate-900/50 rounded-2xl group transition-all">
-                    <div class="flex items-center gap-4">
-                        <i data-lucide="${t.tipo==='receita'?'arrow-up':'arrow-down'}" class="w-4 h-4 ${t.tipo==='receita'?'text-emerald-500':'text-rose-500'}"></i>
-                        <p class="font-bold text-xs">${t.descricao}</p>
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <p class="font-black text-xs">R$ ${t.valor.toFixed(2)}</p>
-                        <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                            <button onclick="editTransaction('${t.id}')" class="text-brand"><i data-lucide="edit-3" class="w-3.5 h-3.5"></i></button>
-                            <button onclick="deleteTransaction('${t.id}')" class="text-rose-500"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
-                        </div>
-                    </div>
-                </div>`).join(''); 
+        window.deleteTransaction = async id => { if(confirm("Apagar?")) await deleteDoc(doc(db, "transactions", id)); };
+        async function loadProfile() { const snap = await getDoc(doc(db, "users", userId)); if(snap.exists()) { userSettings = snap.data(); document.getElementById('perf-nome').value = snap.data().nome||""; document.getElementById('perf-user').value = snap.data().usuario||""; } updateCatSelect(); }
+        window.switchTab = (id) => { 
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active')); 
+            document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('sidebar-active'));
+            document.getElementById('content-'+id).classList.add('active'); 
+            document.getElementById('tab-title').innerText = id;
+            if(id==='dashboard') renderDonut(getFilteredData()); 
             lucide.createIcons(); 
+        };
+        window.toggleSidebar = () => { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('sidebar-overlay').classList.toggle('hidden'); lucide.createIcons(); };
+        window.handleLogout = () => signOut(auth).then(() => window.location.reload());
+        function renderMiniFeed(filtered) { 
+            const s = [...filtered].sort((a,b)=>b.date.seconds-a.date.seconds).slice(0,4); 
+            document.getElementById('mini-feed').innerHTML = s.map(t=>`<div class="flex justify-between items-center p-4 bg-slate-50 dark:bg-slate-900/50 rounded-2xl group transition-all"><p class="font-bold text-xs">${t.descricao}</p><div class="flex items-center gap-3"><p class="font-black text-xs">R$ ${t.valor.toFixed(2)}</p><button onclick="editTransaction('${t.id}')" class="text-brand opacity-0 group-hover:opacity-100"><i data-lucide="edit-3" class="w-3 h-3"></i></button></div></div>`).join(''); 
+            lucide.createIcons();
         }
-        
         lucide.createIcons();
     </script>
 </body>
