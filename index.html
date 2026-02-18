@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MuFinance v27.7.1</title>
+    <title>MuFinance v27.7.2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -189,9 +189,21 @@
         const auth = getAuth(app);
 
         let userId, dataGlobal = [], userBancos = [], donutChart, currentTipo = 'despesa', chartTipo = 'despesa', bancoIndiceAtivo = -1, statusRealizado = true;
+        
+        // --- CATEGORIAS PADRÃO ---
         let userSettings = {
-            catDespesa: [{n: 'Combustível', i: 'fuel'}, {n: 'Manutenção', i: 'wrench'}, {n: 'Alimentação', i: 'utensils'}, {n: 'Moradia', i: 'home'}],
-            catReceita: [{n: 'Salário', i: 'briefcase'}, {n: 'Freelance', i: 'zap'}]
+            catDespesa: [
+                {n: 'Combustível', i: 'fuel'},
+                {n: 'Manutenção', i: 'wrench'},
+                {n: 'Alimentação', i: 'utensils'},
+                {n: 'Moradia', i: 'home'},
+                {n: 'Lazer', i: 'palmtree'}
+            ],
+            catReceita: [
+                {n: 'Salário', i: 'briefcase'},
+                {n: 'Freelance', i: 'zap'},
+                {n: 'Outros', i: 'plus-circle'}
+            ]
         };
 
         onAuthStateChanged(auth, u => {
@@ -295,7 +307,7 @@
 
         // CATEGORIAS
         function renderConfigAssets() {
-            const chip = (c) => `<div class="bg-slate-100 dark:bg-slate-800 p-3 rounded-xl flex items-center gap-2 border border-slate-200/50 dark:border-slate-700"><i data-lucide="${c.i || 'tag'}" class="w-3 h-3 opacity-40"></i><span class="text-[9px] font-black uppercase text-slate-700 dark:text-slate-200">${c.n}</span></div>`;
+            const chip = (c) => `<div class="bg-slate-100 dark:bg-slate-800 p-3 rounded-xl flex items-center gap-2 border border-slate-200/50 dark:border-slate-700"><i data-lucide="${c.i || 'tag'}" class="w-3 h-3 opacity-40 text-brand"></i><span class="text-[9px] font-black uppercase text-slate-700 dark:text-slate-200">${c.n}</span></div>`;
             document.getElementById('cat-despesa-list').innerHTML = (userSettings.catDespesa || []).map(c => chip(c)).join('');
             document.getElementById('cat-receita-list').innerHTML = (userSettings.catReceita || []).map(c => chip(c)).join('');
             lucide.createIcons();
