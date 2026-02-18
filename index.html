@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MuFinance v27.16.7</title>
+    <title>MuFinance v27.16.8 | Sidebar Fix</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -21,10 +21,18 @@
         .tab-content { display: none; }
         .tab-content.active { display: block; animation: fadeIn 0.4s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        #sidebar { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s ease; }
-        @media (max-width: 1024px) { #sidebar { position: fixed; transform: translateX(-100%); z-index: 100; } #sidebar.open { transform: translateX(0); } }
-        .input-standard { @apply w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-2xl border-none outline-none focus:ring-2 ring-brand transition-all font-bold text-sm; }
         
+        /* SIDEBAR ANIMATION & COLLAPSE */
+        #sidebar { transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 100; }
+        .sidebar-collapsed { width: 88px !important; }
+        .sidebar-collapsed .sidebar-text, .sidebar-collapsed .logo-text { display: none; }
+        .sidebar-collapsed nav button { justify-content: center; padding-left: 0; padding-right: 0; }
+        
+        @media (max-width: 1024px) { 
+            #sidebar { position: fixed; transform: translateX(-100%); } 
+            #sidebar.open { transform: translateX(0); width: 280px !important; } 
+        }
+
         .picker-container { position: relative; display: inline-block; }
         .picker-dropdown { 
             display: none; position: absolute; top: 110%; right: 0;
@@ -40,14 +48,14 @@
 </head>
 <body class="bg-slate-50 text-slate-900 dark:bg-darkBg dark:text-slate-100 min-h-screen">
 
-    <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-950/40 z-[90] hidden"></div>
+    <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-950/40 z-[90] hidden transition-opacity"></div>
 
     <div id="app-container" class="hidden min-h-screen flex">
         
         <aside id="sidebar" class="w-[280px] bg-white dark:bg-darkCard border-r border-slate-200 dark:border-slate-800 flex flex-col p-6 sticky top-0 h-screen overflow-hidden">
             <div class="flex items-center justify-between mb-12 px-2">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-brand rounded-xl flex items-center justify-center text-white shadow-lg"><i data-lucide="zap" class="fill-current"></i></div>
+                    <div class="w-10 h-10 bg-brand rounded-xl flex-shrink-0 flex items-center justify-center text-white shadow-lg"><i data-lucide="zap" class="fill-current"></i></div>
                     <span class="font-extrabold text-xl tracking-tighter italic logo-text">MuFinance</span>
                 </div>
                 <button onclick="toggleSidebar()" class="lg:hidden p-2 text-slate-400"><i data-lucide="x"></i></button>
@@ -64,11 +72,10 @@
         </aside>
 
         <main class="flex-1 p-4 lg:p-12 pb-32 overflow-y-auto w-full">
-            
             <header class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
                 <div class="flex items-center gap-4">
-                    <button onclick="toggleSidebar()" class="w-12 h-12 flex items-center justify-center bg-white dark:bg-darkCard rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 text-slate-500"><i data-lucide="menu"></i></button>
-                    <h1 id="tab-title" class="text-2xl lg:text-3xl font-extrabold italic uppercase tracking-tighter">Dashboard</h1>
+                    <button onclick="toggleSidebar()" class="w-12 h-12 flex items-center justify-center bg-white dark:bg-darkCard rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 text-slate-500 hover:text-brand transition-colors"><i data-lucide="menu"></i></button>
+                    <h1 id="tab-title" class="text-2xl lg:text-3xl font-extrabold italic uppercase tracking-tighter leading-none">Dashboard</h1>
                 </div>
 
                 <div id="date-picker-wrapper" class="picker-container">
@@ -85,7 +92,7 @@
                         </div>
                         <div class="month-grid" id="month-grid"></div>
                         <hr class="my-4 opacity-10">
-                        <button onclick="setAnualMode()" class="w-full py-2 bg-slate-100 dark:bg-slate-700 rounded-xl text-[10px] font-black uppercase hover:bg-brand hover:text-white transition-all">Ver Ano Inteiro</button>
+                        <button onclick="setAnualMode()" class="w-full py-2 bg-slate-100 dark:bg-slate-700 rounded-xl text-[10px] font-black uppercase hover:bg-brand hover:text-white transition-all border-none">Ver Ano Inteiro</button>
                     </div>
                 </div>
             </header>
@@ -113,10 +120,7 @@
                         </div>
                         <div class="h-[250px] relative w-full flex justify-center"><canvas id="chart-rosca"></canvas></div>
                     </div>
-                    <div class="bg-white dark:bg-darkCard p-8 rounded-[2rem] shadow-sm">
-                        <h3 class="text-xs font-black uppercase opacity-60 mb-6 tracking-widest">Feed do Período</h3>
-                        <div id="mini-feed" class="space-y-4"></div>
-                    </div>
+                    <div class="bg-white dark:bg-darkCard p-8 rounded-[2rem] shadow-sm"><h3 class="text-xs font-black uppercase opacity-60 mb-6 tracking-widest">Feed do Período</h3><div id="mini-feed" class="space-y-4"></div></div>
                 </div>
             </div>
 
@@ -129,23 +133,22 @@
                     <p class="text-[10px] font-black uppercase opacity-60 tracking-widest mb-1">Estimativa de Autonomia</p>
                     <h2 class="text-4xl font-extrabold" id="drivo-km-total">0 KM</h2>
                 </div>
-                <div id="drivo-timeline" class="space-y-4"></div>
             </div>
 
             <div id="content-perfil" class="tab-content space-y-8 pb-20">
                 <div class="bg-white dark:bg-darkCard p-8 rounded-[2rem] shadow-sm">
-                    <h3 class="text-xs font-black uppercase opacity-60 mb-6 tracking-widest">Configurações</h3>
+                    <h3 class="text-xs font-black uppercase mb-6 tracking-widest">Configurações</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <input type="text" id="perf-nome" placeholder="Nome" class="input-standard">
                         <input type="text" id="perf-user" placeholder="Usuário" class="input-standard">
                     </div>
                     <div id="lista-bancos-config" class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8"></div>
-                    <button onclick="saveSettings()" class="w-full py-5 bg-brand text-white font-black uppercase rounded-3xl shadow-lg mt-8">Salvar Tudo</button>
+                    <button onclick="saveSettings()" class="w-full py-5 bg-brand text-white font-black uppercase rounded-3xl shadow-lg mt-8 border-none">Salvar Tudo</button>
                 </div>
             </div>
         </main>
         
-        <button onclick="handlePlusButton()" class="fixed bottom-8 right-8 bg-brand text-white w-16 h-16 rounded-2xl shadow-2xl flex items-center justify-center z-50 transition-transform active:scale-90"><i data-lucide="plus"></i></button>
+        <button onclick="handlePlusButton()" class="fixed bottom-8 right-8 bg-brand text-white w-16 h-16 rounded-2xl shadow-2xl flex items-center justify-center z-50"><i data-lucide="plus"></i></button>
     </div>
 
     <div id="modal-lancamento" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-[110]">
@@ -165,7 +168,7 @@
                 </div>
                 <div class="flex gap-2 pt-2">
                     <button type="button" onclick="closeModal()" class="flex-1 font-bold text-xs opacity-40 uppercase border-none bg-transparent">Cancelar</button>
-                    <button type="submit" class="flex-1 py-4 bg-brand text-white rounded-2xl font-black text-xs uppercase shadow-md">Confirmar</button>
+                    <button type="submit" class="flex-1 py-4 bg-brand text-white rounded-2xl font-black text-xs uppercase shadow-md border-none">Confirmar</button>
                 </div>
             </form>
         </div>
@@ -186,7 +189,21 @@
 
         onAuthStateChanged(auth, u => { if (u) { userId = u.uid; document.getElementById('app-container').classList.replace('hidden', 'flex'); loadProfile(); startListener(); } else { window.location.reload(); } });
 
-        /* NAVEGAÇÃO */
+        /* UI SIDEBAR FIX */
+        window.toggleSidebar = () => {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            const isMobile = window.innerWidth < 1024;
+
+            if (isMobile) {
+                sidebar.classList.toggle('open');
+                overlay.classList.toggle('hidden');
+            } else {
+                sidebar.classList.toggle('sidebar-collapsed');
+            }
+            lucide.createIcons();
+        };
+
         window.toggleDatePicker = () => document.getElementById('picker-dropdown').classList.toggle('active');
         window.changeYear = (d) => { currentDate.setFullYear(currentDate.getFullYear() + d); renderPickerUI(); };
         window.selectMonth = (i) => { currentMode = 'mensal'; currentDate.setMonth(i); toggleDatePicker(); updateAll(); };
@@ -212,11 +229,11 @@
             const pR = document.getElementById('pill-rec');
             if(pD && pR) {
                 if (tipo === 'despesa') {
-                    pD.className = "px-4 py-1.5 text-[9px] font-black uppercase rounded-lg bg-slate-900 text-white dark:bg-brand transition-all";
-                    pR.className = "px-4 py-1.5 text-[9px] font-black uppercase rounded-lg text-slate-400 transition-all";
+                    pD.className = "px-4 py-1.5 text-[9px] font-black uppercase rounded-lg bg-slate-900 text-white dark:bg-brand transition-all border-none cursor-pointer";
+                    pR.className = "px-4 py-1.5 text-[9px] font-black uppercase rounded-lg text-slate-400 transition-all border-none cursor-pointer";
                 } else {
-                    pR.className = "px-4 py-1.5 text-[9px] font-black uppercase rounded-lg bg-slate-900 text-white dark:bg-brand transition-all";
-                    pD.className = "px-4 py-1.5 text-[9px] font-black uppercase rounded-lg text-slate-400 transition-all";
+                    pR.className = "px-4 py-1.5 text-[9px] font-black uppercase rounded-lg bg-slate-900 text-white dark:bg-brand transition-all border-none cursor-pointer";
+                    pD.className = "px-4 py-1.5 text-[9px] font-black uppercase rounded-lg text-slate-400 transition-all border-none cursor-pointer";
                 }
             }
             renderDonut(getFiltered());
@@ -232,12 +249,10 @@
             const picker = document.getElementById('date-picker-wrapper');
             if(picker) picker.style.display = (id === 'dashboard' || id === 'extrato') ? 'block' : 'none';
             if(id==='dashboard') renderDonut(getFiltered()); 
+            if(window.innerWidth < 1024) toggleSidebar();
             lucide.createIcons(); 
         };
 
-        window.toggleSidebar = () => { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('sidebar-overlay').classList.toggle('hidden'); lucide.createIcons(); };
-
-        /* DATA & FIREBASE */
         function startListener() {
             onSnapshot(query(collection(db, "transactions"), where("userId", "==", userId)), (snap) => { dataGlobal = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })); updateAll(); });
             onSnapshot(query(collection(db, "banks"), where("userId", "==", userId)), (snap) => { userBancos = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })); renderBankList(); updateBankSelects(); });
@@ -250,7 +265,6 @@
             });
         }
 
-        /* COMPONENTES DE TRANSAÇÃO (REUTILIZÁVEL) */
         const itemTransacao = (t) => `
             <div class="flex justify-between items-center p-4 bg-white dark:bg-darkCard rounded-2xl border border-slate-100 dark:border-slate-800 group transition-all">
                 <div class="flex items-center gap-4">
@@ -301,8 +315,6 @@
             if(document.getElementById('dash-receitas')) document.getElementById('dash-receitas').innerText = `R$ ${rT.toLocaleString('pt-BR')}`;
             if(document.getElementById('dash-despesas')) document.getElementById('dash-despesas').innerText = `R$ ${dT.toLocaleString('pt-BR')}`;
             renderDonut(f);
-            
-            // ATUALIZA FEED DO PERÍODO COM BOTÕES
             const feed = document.getElementById('mini-feed');
             if(feed) {
                 const s = [...f].sort((a,b)=>b.date.seconds-a.date.seconds).slice(0,4);
@@ -314,13 +326,9 @@
         window.renderExtratoFull = () => {
             const f = getFiltered().sort((a,b)=>b.date.seconds-a.date.seconds);
             const el = document.getElementById('extrato-lista');
-            if(el) {
-                el.innerHTML = f.map(t => itemTransacao(t)).join('');
-                lucide.createIcons();
-            }
+            if(el) { el.innerHTML = f.map(t => itemTransacao(t)).join(''); lucide.createIcons(); }
         };
 
-        /* CRUD */
         window.rotacionarSaldo = () => { bancoIndiceAtivo = (bancoIndiceAtivo >= userBancos.length - 1) ? -1 : bancoIndiceAtivo + 1; updateDash(); };
         window.deleteTransaction = async id => { if(confirm("Apagar transação?")) await deleteDoc(doc(db, "transactions", id)); };
         
@@ -339,7 +347,6 @@
             document.getElementById('modal-lancamento').classList.remove('hidden');
         };
 
-        /* CONFIGS */
         async function loadProfile() { const snap = await getDoc(doc(db, "users", userId)); if(snap.exists()) { userSettings = snap.data(); const n = document.getElementById('perf-nome'); const u = document.getElementById('perf-user'); if(n) n.value = snap.data().nome||""; if(u) u.value = snap.data().usuario||""; } updateCatSelect(); }
         window.saveSettings = async () => { const n = document.getElementById('perf-nome'); const u = document.getElementById('perf-user'); await setDoc(doc(db, "users", userId), { ...userSettings, nome: n?n.value:"", usuario: u?u.value:"" }, { merge: true }); alert("Salvo!"); };
         window.handleLogout = () => signOut(auth).then(() => window.location.reload());
@@ -377,7 +384,7 @@
         }
         function renderBankList() { 
             const el = document.getElementById('lista-bancos-config'); 
-            if(el) el.innerHTML = userBancos.map(b => `<div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-2xl flex justify-between items-center group"><div class="flex items-center gap-2"><div class="w-3 h-1 rounded-full" style="background:${b.cor}"></div><span class="font-bold text-xs uppercase">${b.nome}</span></div><button onclick="deleteBank('${b.id}')" class="text-rose-500 opacity-0 group-hover:opacity-100 transition-all border-none bg-transparent cursor-pointer"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>`).join(''); 
+            if(el) el.innerHTML = userBancos.map(b => `<div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-2xl flex justify-between items-center group"><div class="flex items-center gap-2"><div class="w-3 h-1 rounded-full" style="background:${b.cor}"></div><span class="font-bold text-xs uppercase text-slate-700 dark:text-slate-300">${b.nome}</span></div><button onclick="deleteBank('${b.id}')" class="text-rose-500 opacity-0 group-hover:opacity-100 transition-all border-none bg-transparent cursor-pointer"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>`).join(''); 
             lucide.createIcons(); 
         }
         
