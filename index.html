@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MuFinance v27.15</title>
+    <title>MuFinance v27.15.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -27,11 +27,11 @@
         @media (max-width: 1024px) { #sidebar { position: fixed; transform: translateX(-100%); z-index: 100; } #sidebar.open { transform: translateX(0); } }
         .input-standard { @apply w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-2xl border-none outline-none focus:ring-2 ring-brand transition-all font-bold text-sm; }
         
-        /* UI DE BOTÃO SEGMENTADO */
-        .segmented-control { @apply flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl w-fit border border-slate-200 dark:border-slate-700; }
-        .seg-btn { @apply px-4 py-1.5 rounded-lg font-black text-[10px] uppercase transition-all duration-200; }
-        .seg-btn.active { @apply bg-white dark:bg-slate-600 text-brand shadow-sm; }
-        .seg-btn.inactive { @apply text-slate-400 hover:text-slate-600 dark:hover:text-slate-300; }
+        /* CORREÇÃO DO BOTÃO SEGMENTADO */
+        .segmented-control { @apply flex bg-slate-200/50 dark:bg-slate-800 p-1 rounded-xl w-fit border border-slate-200 dark:border-slate-700 shadow-inner; }
+        .seg-btn { @apply px-5 py-2 rounded-lg font-black text-[10px] uppercase transition-all duration-200 cursor-pointer; }
+        .seg-btn.active { @apply bg-white dark:bg-slate-600 text-brand shadow-md scale-[1.02]; }
+        .seg-btn.inactive { @apply text-slate-500 dark:text-slate-400 hover:text-brand dark:hover:text-slate-200; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 dark:bg-darkBg dark:text-slate-100 min-h-screen">
@@ -97,7 +97,7 @@
                     <div class="bg-white dark:bg-darkCard p-8 rounded-[2rem] shadow-sm">
                         <div class="flex justify-between items-center mb-8">
                             <h3 class="text-xs font-black uppercase opacity-60 tracking-widest italic">Distribuição</h3>
-                            <div class="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
+                            <div class="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl shadow-inner">
                                 <button onclick="setChartTipo('despesa')" id="pill-des" class="px-4 py-1.5 text-[9px] font-black uppercase rounded-lg bg-slate-900 text-white dark:bg-brand">Despesas</button>
                                 <button onclick="setChartTipo('receita')" id="pill-rec" class="px-4 py-1.5 text-[9px] font-black uppercase rounded-lg text-slate-400">Receitas</button>
                             </div>
@@ -161,7 +161,7 @@
                     <select id="inp-banco" class="input-standard cursor-pointer"></select>
                     <input type="date" id="inp-data" class="input-standard">
                 </div>
-                <div class="flex gap-2">
+                <div class="flex gap-2 pt-2">
                     <button type="button" onclick="closeModal()" class="flex-1 font-bold text-xs opacity-40 uppercase">Cancelar</button>
                     <button type="submit" class="flex-1 py-4 bg-brand text-white rounded-2xl font-black text-xs uppercase">Confirmar</button>
                 </div>
@@ -222,9 +222,8 @@
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active')); 
             document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('sidebar-active'));
             document.getElementById('content-'+id).classList.add('active'); 
-            document.getElementById('tab-title').innerText = id;
+            document.getElementById('tab-title').innerText = id.charAt(0).toUpperCase() + id.slice(1);
             
-            // LOGICA DE VISIBILIDADE DO FILTRO
             const isFilterable = (id === 'dashboard' || id === 'extrato');
             document.getElementById('wrapper-time-mode').style.display = isFilterable ? 'flex' : 'none';
             document.getElementById('wrapper-date-nav').style.display = isFilterable ? 'flex' : 'none';
