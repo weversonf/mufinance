@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MuFinance v27.10.5</title>
+    <title>MuFinance v27.11</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -346,7 +346,55 @@
         window.toggleDarkMode = () => { document.documentElement.classList.toggle('dark'); lucide.createIcons(); };
         window.closeModal = () => document.getElementById('modal-lancamento').classList.add('hidden');
 
-        function renderDonut() { const ctx = document.getElementById('chart-rosca'); if(!ctx) return; const cats = {}; dataGlobal.filter(t => t.tipo === chartTipo && t.status === 'realizado').forEach(t => cats[t.categoria] = (cats[t.categoria] || 0) + t.valor); if (donutChart) donutChart.destroy(); donutChart = new Chart(ctx.getContext('2d'), { type: 'doughnut', data: { labels: Object.keys(cats), datasets: [{ data: Object.values(cats), backgroundColor: ['#0EA5E9', '#10B981', '#F59E0B', '#F43F5E', '#8B5CF6'], borderWidth: 0 }] }, options: { cutout: '85%', maintainAspectRatio: false, plugins: { legend: { display: false } } } }); }
+        // [LOGICA: CORREÇÃO GRAFICO DISTRIBUIÇÃO]
+        window.setChartTipo = (tipo) => {
+            chartTipo = tipo;
+            const btnDes = document.getElementById('pill-des');
+            const btnRec = document.getElementById('pill-rec');
+            if (tipo === 'despesa') {
+                btnDes.className = "px-4 py-1.5 text-[9px] font-black uppercase rounded-lg bg-slate-900 text-white dark:bg-brand transition-all";
+                btnRec.className = "px-4 py-1.5 text-[9px] font-black uppercase rounded-lg text-slate-400 transition-all";
+            } else {
+                btnRec.className = "px-4 py-1.5 text-[9px] font-black uppercase rounded-lg bg-slate-900 text-white dark:bg-brand transition-all";
+                btnDes.className = "px-4 py-1.5 text-[9px] font-black uppercase rounded-lg text-slate-400 transition-all";
+            }
+            renderDonut();
+        };
+
+        function renderDonut() { 
+            const ctx = document.getElementById('chart-rosca'); 
+            if(!ctx) return; 
+            const cats = {}; 
+            dataGlobal.filter(t => t.tipo === chartTipo && t.status === 'realizado').forEach(t => {
+                const label = t.categoria || "Outros";
+                cats[label] = (cats[label] || 0) + t.valor;
+            }); 
+            if (donutChart) donutChart.destroy(); 
+            donutChart = new Chart(ctx.getContext('2d'), { 
+                type: 'doughnut', 
+                data: { 
+                    labels: Object.keys(cats), 
+                    datasets: [{ data: Object.values(cats), backgroundColor: ['#0EA5E9', '#10B981', '#F59E0B', '#F43F5E', '#8B5CF6'], borderWidth: 0 }] 
+                }, 
+                options: { 
+                    cutout: '85%', 
+                    maintainAspectRatio: false, 
+                    plugins: { 
+                        legend: { 
+                            display: true,
+                            position: 'bottom',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 20,
+                                font: { size: 10, weight: '700' },
+                                color: '#94a3b8'
+                            }
+                        } 
+                    } 
+                } 
+            }); 
+        }
+
         function renderMiniFeed() { 
             const s = [...dataGlobal].sort((a,b)=>b.date.seconds-a.date.seconds).slice(0,4); 
             document.getElementById('mini-feed').innerHTML = s.map(t=>`
