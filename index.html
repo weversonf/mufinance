@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MuFinance v25.1 | Lighthouse</title>
+    <title>MuFinance v25.2 | Lighthouse</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -13,147 +13,157 @@
         .sidebar-active { background-color: #F1F5F9; color: #0EA5E9; border-right: 4px solid #0EA5E9; }
         .card-branco { background: white; border-radius: 2rem; border: 1px solid #E2E8F0; box-shadow: 0 4px 12px -2px rgba(0,0,0,0.05); }
         .tab-content { display: none; }
-        .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
+        .tab-content.active { display: block; animation: fadeIn 0.4s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .modal-dark { background-color: #0F172A; border-radius: 2.5rem; color: white; }
         .input-dark { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 1rem; padding: 1rem; outline: none; width: 100%; }
         .input-dark:focus { border-color: #0EA5E9; }
+        #auth-screen { background: radial-gradient(circle at top right, #0F172A, #020617); }
     </style>
 </head>
-<body class="flex min-h-screen">
+<body class="min-h-screen">
 
-    <aside class="w-72 bg-white border-r border-slate-200 hidden lg:flex flex-col p-8 sticky top-0 h-screen z-40">
-        <div class="flex items-center gap-3 mb-12">
-            <div class="w-10 h-10 bg-sky-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-sky-200">
-                <i data-lucide="zap" class="fill-current"></i>
+    <div id="auth-screen" class="hidden min-h-screen flex items-center justify-center p-6">
+        <div class="bg-white p-10 rounded-[3rem] w-full max-w-md shadow-2xl text-center">
+            <div class="w-16 h-16 bg-sky-600 rounded-2xl flex items-center justify-center text-white mx-auto mb-6 shadow-lg shadow-sky-200">
+                <i data-lucide="zap" class="w-8 h-8 fill-current"></i>
             </div>
-            <span class="font-extrabold text-xl tracking-tighter italic text-slate-800">MuFinance</span>
+            <h2 class="text-3xl font-black text-slate-800 tracking-tighter mb-2 italic">MuFinance</h2>
+            <p class="text-slate-500 text-sm font-medium mb-8 uppercase tracking-widest text-[10px]">Gestão de Caixa Real</p>
+            
+            <div class="space-y-4">
+                <input type="email" id="login-email" placeholder="E-mail" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-sky-500 font-medium">
+                <input type="password" id="login-pass" placeholder="Senha" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-sky-500 font-medium">
+                <button onclick="handleLogin()" class="w-full py-5 bg-slate-900 text-white font-black uppercase tracking-[0.2em] text-xs rounded-2xl shadow-xl hover:bg-slate-800 transition-all">Entrar no Sistema</button>
+            </div>
+            <p class="mt-8 text-[10px] font-bold text-slate-400 uppercase tracking-widest">v25.2 Lighthouse Edition</p>
         </div>
+    </div>
 
-        <nav class="flex-1 space-y-2">
-            <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-4 mb-4">Dashboard</p>
-            <button onclick="switchTab('dashboard')" id="btn-dashboard" class="sidebar-item w-full flex items-center gap-4 p-4 rounded-xl font-bold text-sm sidebar-active transition-all">
-                <i data-lucide="layout-dashboard" class="w-5 h-5"></i> Balanço Geral
-            </button>
-            <button onclick="switchTab('extrato')" id="btn-extrato" class="sidebar-item w-full flex items-center gap-4 p-4 rounded-xl font-bold text-sm text-slate-500 hover:bg-slate-50 transition-all">
-                <i data-lucide="receipt" class="w-5 h-5"></i> Extrato Detalhado
-            </button>
-            <button onclick="switchTab('drivo')" id="btn-drivo" class="sidebar-item w-full flex items-center gap-4 p-4 rounded-xl font-bold text-sm text-slate-500 hover:bg-slate-50 transition-all">
-                <i data-lucide="gauge" class="w-5 h-5"></i> Drivo Analytics
-            </button>
-            <button onclick="switchTab('metas')" id="btn-metas" class="sidebar-item w-full flex items-center gap-4 p-4 rounded-xl font-bold text-sm text-slate-500 hover:bg-slate-50 transition-all">
-                <i data-lucide="target" class="w-5 h-5"></i> Metas de Poupança
-            </button>
-        </nav>
-
-        <button onclick="handleLogout()" class="flex items-center gap-3 p-4 text-rose-500 font-bold text-sm hover:bg-rose-50 rounded-xl transition-all">
-            <i data-lucide="log-out" class="w-5 h-5"></i> Sair da Conta
-        </button>
-    </aside>
-
-    <main class="flex-1 p-6 lg:p-12 pb-32">
-        <header class="flex justify-between items-center mb-10">
-            <div>
-                <h1 id="tab-title" class="text-3xl font-extrabold text-slate-800 tracking-tight">Dashboard</h1>
-                <p class="text-slate-500 font-medium" id="display-date">Fevereiro 2026</p>
-            </div>
-            <div class="flex items-center gap-3">
-                <div class="flex bg-white p-1 rounded-xl border border-slate-200">
-                    <button onclick="changeMonth(-1)" class="p-2 hover:bg-slate-50 rounded-lg text-slate-400"><i data-lucide="chevron-left"></i></button>
-                    <button onclick="changeMonth(1)" class="p-2 hover:bg-slate-50 rounded-lg text-slate-400"><i data-lucide="chevron-right"></i></button>
+    <div id="app-container" class="hidden min-h-screen">
+        <aside class="w-72 bg-white border-r border-slate-200 hidden lg:flex flex-col p-8 sticky top-0 h-screen z-40">
+            <div class="flex items-center gap-3 mb-12">
+                <div class="w-10 h-10 bg-sky-600 rounded-xl flex items-center justify-center text-white shadow-lg">
+                    <i data-lucide="zap" class="fill-current"></i>
                 </div>
-                <div class="w-12 h-12 rounded-2xl bg-slate-200 border-2 border-white shadow-sm overflow-hidden">
-                    <img src="https://ui-avatars.com/api/?name=Weverson&background=0ea5e9&color=fff" alt="User">
-                </div>
+                <span class="font-extrabold text-xl tracking-tighter italic text-slate-800">MuFinance</span>
             </div>
-        </header>
 
-        <div id="content-dashboard" class="tab-content active space-y-8">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="bg-slate-900 p-8 rounded-[2.5rem] shadow-xl text-white relative overflow-hidden flex flex-col justify-between min-h-[160px]">
-                    <div class="relative z-10">
-                        <p class="text-[10px] font-black uppercase tracking-widest opacity-60">Caixa Disponível</p>
-                        <h2 class="text-4xl font-extrabold mt-2 tracking-tighter" id="dash-saldo">R$ 0,00</h2>
+            <nav class="flex-1 space-y-2">
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-4 mb-4">Principal</p>
+                <button onclick="switchTab('dashboard')" id="btn-dashboard" class="sidebar-item w-full flex items-center gap-4 p-4 rounded-xl font-bold text-sm sidebar-active">
+                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i> Dashboard
+                </button>
+                <button onclick="switchTab('extrato')" id="btn-extrato" class="sidebar-item w-full flex items-center gap-4 p-4 rounded-xl font-bold text-sm text-slate-500 hover:bg-slate-50 transition-all">
+                    <i data-lucide="receipt" class="w-5 h-5"></i> Extrato Real
+                </button>
+                <button onclick="switchTab('drivo')" id="btn-drivo" class="sidebar-item w-full flex items-center gap-4 p-4 rounded-xl font-bold text-sm text-slate-500 hover:bg-slate-50 transition-all">
+                    <i data-lucide="gauge" class="w-5 h-5"></i> Drivo KM
+                </button>
+            </nav>
+
+            <button onclick="handleLogout()" class="flex items-center gap-3 p-4 text-rose-500 font-bold text-sm hover:bg-rose-50 rounded-xl transition-all">
+                <i data-lucide="log-out" class="w-5 h-5"></i> Sair
+            </button>
+        </aside>
+
+        <main class="flex-1 p-6 lg:p-12 pb-32">
+            <header class="flex justify-between items-center mb-10">
+                <div>
+                    <h1 id="tab-title" class="text-3xl font-extrabold text-slate-800 tracking-tight leading-none">Dashboard</h1>
+                    <p class="text-slate-500 font-medium text-sm mt-1" id="display-date">Fevereiro 2026</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-2xl bg-slate-200 border-2 border-white shadow-sm overflow-hidden">
+                        <img src="https://ui-avatars.com/api/?name=User&background=0ea5e9&color=fff" id="user-avatar" alt="User">
                     </div>
-                    <div class="flex gap-2 relative z-10">
-                        <span class="px-3 py-1 bg-white/10 rounded-lg text-[9px] font-bold">REALIZADO</span>
-                    </div>
-                    <i data-lucide="wallet" class="absolute -right-6 -bottom-6 w-32 h-32 opacity-10 rotate-12"></i>
                 </div>
-                <div class="card-branco p-8 border-l-8 border-l-emerald-500">
-                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Receitas</p>
-                    <h3 class="text-3xl font-extrabold text-slate-800" id="dash-receitas">R$ 0,00</h3>
-                </div>
-                <div class="card-branco p-8 border-l-8 border-l-rose-500">
-                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Despesas</p>
-                    <h3 class="text-3xl font-extrabold text-slate-800" id="dash-despesas">R$ 0,00</h3>
-                </div>
-            </div>
+            </header>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div class="card-branco p-8">
-                    <h3 class="text-xs font-black uppercase text-slate-400 mb-8 tracking-widest text-center">Distribuição</h3>
-                    <div class="h-[280px]"><canvas id="chart-rosca"></canvas></div>
-                </div>
-                <div class="card-branco p-8">
-                    <h3 class="text-xs font-black uppercase text-slate-400 mb-6 tracking-widest">Resumo Semanal</h3>
-                    <div id="mini-feed" class="space-y-4">
+            <div id="content-dashboard" class="tab-content active space-y-8">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-slate-900 p-8 rounded-[2.5rem] shadow-xl text-white relative overflow-hidden flex flex-col justify-between min-h-[160px]">
+                        <div class="relative z-10">
+                            <p class="text-[10px] font-black uppercase tracking-widest opacity-60">Saldo em Caixa</p>
+                            <h2 class="text-4xl font-extrabold mt-2 tracking-tighter" id="dash-saldo">R$ 0,00</h2>
                         </div>
+                        <div class="flex gap-2 relative z-10">
+                            <span class="px-3 py-1 bg-white/10 rounded-lg text-[9px] font-bold">CONSOLIDADO</span>
+                        </div>
+                        <i data-lucide="wallet" class="absolute -right-6 -bottom-6 w-32 h-32 opacity-10 rotate-12"></i>
+                    </div>
+                    <div class="card-branco p-8 border-l-8 border-l-emerald-500">
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Receitas</p>
+                        <h3 class="text-3xl font-extrabold text-slate-800" id="dash-receitas">R$ 0,00</h3>
+                    </div>
+                    <div class="card-branco p-8 border-l-8 border-l-rose-500">
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Despesas</p>
+                        <h3 class="text-3xl font-extrabold text-slate-800" id="dash-despesas">R$ 0,00</h3>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="card-branco p-8">
+                        <h3 class="text-xs font-black uppercase text-slate-400 mb-8 tracking-widest text-center">Distribuição de Gastos</h3>
+                        <div class="h-[280px]"><canvas id="chart-rosca"></canvas></div>
+                    </div>
+                    <div class="card-branco p-8">
+                        <h3 class="text-xs font-black uppercase text-slate-400 mb-6 tracking-widest">Últimos Lançamentos</h3>
+                        <div id="mini-feed" class="space-y-4"></div>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div id="content-extrato" class="tab-content space-y-4">
-            <div id="extrato-lista" class="space-y-3"></div>
-        </div>
+            <div id="content-extrato" class="tab-content space-y-4">
+                <div id="extrato-lista" class="space-y-3"></div>
+            </div>
 
-        <div id="content-drivo" class="tab-content space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="card-branco p-10 border-l-8 border-amber-500 text-center">
-                    <p class="text-xs font-black text-slate-400 uppercase mb-2">KM Rodados Estimados</p>
-                    <h2 class="text-5xl font-black text-slate-800" id="drivo-km">0 KM</h2>
-                    <p class="text-[10px] font-bold text-slate-400 mt-4 uppercase">Baseado no consumo de 29km/L da sua Fazer 250</p>
-                </div>
-                <div class="card-branco p-10 border-l-8 border-sky-500 text-center">
-                    <p class="text-xs font-black text-slate-400 uppercase mb-2">Custo por Quilômetro</p>
-                    <h2 class="text-5xl font-black text-slate-800" id="drivo-custo">R$ 0,00</h2>
+            <div id="content-drivo" class="tab-content space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="card-branco p-10 border-l-8 border-amber-500 text-center">
+                        <p class="text-xs font-black text-slate-400 uppercase mb-2">KM Estimados Rodados</p>
+                        <h2 class="text-6xl font-black text-slate-800" id="drivo-km">0 KM</h2>
+                        <p class="text-[10px] font-bold text-slate-400 mt-4 uppercase">Cálculo Base: 29km/L (Fazer 250)</p>
+                    </div>
+                    <div class="card-branco p-10 border-l-8 border-sky-500 text-center">
+                        <p class="text-xs font-black text-slate-400 uppercase mb-2">Custo por Quilômetro</p>
+                        <h2 class="text-6xl font-black text-slate-800" id="drivo-custo">R$ 0,00</h2>
+                    </div>
                 </div>
             </div>
-        </div>
+        </main>
 
-    </main>
-
-    <button onclick="openModal()" class="fixed bottom-10 right-10 bg-sky-600 text-white w-16 h-16 rounded-2xl shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-50">
-        <i data-lucide="plus" class="w-8 h-8 stroke-[3]"></i>
-    </button>
+        <button onclick="openModal()" class="fixed bottom-8 right-8 bg-sky-600 text-white w-16 h-16 rounded-2xl shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-50">
+            <i data-lucide="plus" class="w-8 h-8 stroke-[3]"></i>
+        </button>
+    </div>
 
     <div id="modal-lancamento" class="hidden fixed inset-0 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4 z-[100]">
         <div class="modal-dark w-full max-w-md p-8 shadow-2xl border border-white/5 space-y-6">
-            <div class="flex gap-2">
-                <button onclick="setTipo('despesa')" id="btn-tipo-des" class="flex-1 py-4 bg-rose-600 text-white rounded-2xl font-black text-[10px] uppercase transition-all">Despesa</button>
-                <button onclick="setTipo('receita')" id="btn-tipo-rec" class="flex-1 py-4 bg-slate-800 text-slate-500 rounded-2xl font-black text-[10px] uppercase transition-all">Receita</button>
+            <div class="flex gap-2 mb-4">
+                <button onclick="setTipo('despesa')" id="btn-tipo-des" class="flex-1 py-4 bg-rose-600 text-white rounded-2xl font-black text-[10px] uppercase">Despesa</button>
+                <button onclick="setTipo('receita')" id="btn-tipo-rec" class="flex-1 py-4 bg-slate-800 text-slate-500 rounded-2xl font-black text-[10px] uppercase">Receita</button>
             </div>
             
             <form id="form-registro" class="space-y-4">
                 <div class="bg-black/20 p-8 rounded-[2rem] text-center border border-white/5">
-                    <span class="text-[10px] font-black text-slate-500 uppercase block mb-1">Informe o Valor</span>
                     <input type="number" step="0.01" id="inp-valor" class="bg-transparent text-5xl font-black text-white text-center outline-none w-full" placeholder="0,00" required>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
-                    <div class="flex flex-col gap-1">
+                    <div>
                         <label class="text-[9px] font-black text-slate-500 uppercase ml-2">Lançamento</label>
                         <input type="date" id="inp-data-lan" class="input-dark text-xs">
                     </div>
-                    <div class="flex flex-col gap-1">
+                    <div>
                         <label class="text-[9px] font-black text-sky-500 uppercase ml-2">Vencimento</label>
                         <input type="date" id="inp-data-ven" class="input-dark text-xs border-sky-500/30">
                     </div>
                 </div>
 
                 <div class="flex items-center justify-between p-4 bg-black/20 rounded-2xl border border-white/5">
-                    <span class="text-[10px] font-black text-slate-400 uppercase">Já foi efetivado?</span>
-                    <button type="button" onclick="toggleStatus()" id="btn-status-check" class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-[9px] font-black transition-all">SIM</button>
+                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Efetivado?</span>
+                    <button type="button" onclick="toggleStatus()" id="btn-status-check" class="px-6 py-2 bg-emerald-600 text-white rounded-lg text-[9px] font-black">SIM</button>
                 </div>
 
                 <select id="inp-cat" class="input-dark text-xs font-bold uppercase">
@@ -165,8 +175,8 @@
 
                 <input type="text" id="inp-desc" placeholder="Descrição" class="input-dark text-sm">
 
-                <button type="submit" class="w-full py-5 bg-sky-600 text-white rounded-2xl font-black uppercase text-xs tracking-[0.2em] shadow-xl hover:bg-sky-500">Confirmar Registro</button>
-                <button type="button" onclick="closeModal()" class="w-full text-[10px] font-black text-slate-500 uppercase text-center py-2">Cancelar</button>
+                <button type="submit" class="w-full py-5 bg-sky-600 text-white rounded-2xl font-black uppercase text-xs tracking-[0.2em] shadow-xl hover:bg-sky-500 transition-all">Confirmar Registro</button>
+                <button type="button" onclick="closeModal()" class="w-full text-[10px] font-black text-slate-500 uppercase text-center mt-2">Fechar</button>
             </form>
         </div>
     </div>
@@ -174,21 +184,39 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, where, Timestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-        // CONFIGURAÇÃO DO SEU FIREBASE
         const firebaseConfig = { apiKey: "AIzaSyArWGgDx0uxce8w72J_1UpKPCUJGvHs3fI", authDomain: "drivo-e-money.firebaseapp.com", projectId: "drivo-e-money", storageBucket: "drivo-e-money.firebasestorage.app", messagingSenderId: "62950568252", appId: "1:62950568252:web:7638827c39b589a9046e39" };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        let userId, currentTipo = 'despesa', statusRealizado = true, donutChart;
-        let dataGlobal = [];
+        let userId, currentTipo = 'despesa', statusRealizado = true, donutChart, dataGlobal = [];
 
         onAuthStateChanged(auth, u => {
-            if (u) { userId = u.uid; startListener(); }
-            else { window.location.href = "login.html"; }
+            const authScreen = document.getElementById('auth-screen');
+            const appContainer = document.getElementById('app-container');
+            if (u) {
+                userId = u.uid;
+                authScreen.classList.add('hidden');
+                appContainer.classList.remove('hidden');
+                appContainer.classList.add('flex');
+                startListener();
+            } else {
+                appContainer.classList.add('hidden');
+                appContainer.classList.remove('flex');
+                authScreen.classList.remove('hidden');
+                lucide.createIcons();
+            }
         });
+
+        window.handleLogin = () => {
+            const email = document.getElementById('login-email').value;
+            const pass = document.getElementById('login-pass').value;
+            signInWithEmailAndPassword(auth, email, pass).catch(err => alert("Erro ao entrar: " + err.message));
+        };
+
+        window.handleLogout = () => signOut(auth);
 
         function startListener() {
             const q = query(collection(db, "transactions"), where("userId", "==", userId));
@@ -201,44 +229,36 @@
 
         window.switchTab = (id) => {
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            document.querySelectorAll('.sidebar-item').forEach(b => {
-                b.classList.remove('sidebar-active');
-                b.classList.add('text-slate-500');
-            });
-            
+            document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('sidebar-active', 'text-sky-600'));
             document.getElementById('content-' + id).classList.add('active');
             document.getElementById('btn-' + id).classList.add('sidebar-active');
-            document.getElementById('tab-title').innerText = document.getElementById('btn-' + id).innerText;
             lucide.createIcons();
         };
 
         function updateDash() {
             const rec = dataGlobal.filter(t => t.tipo === 'receita' && t.status === 'realizado').reduce((a, b) => a + b.valor, 0);
             const des = dataGlobal.filter(t => t.tipo === 'despesa' && t.status === 'realizado').reduce((a, b) => a + b.valor, 0);
-            const saldo = rec - des;
-
-            document.getElementById('dash-saldo').innerText = `R$ ${saldo.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+            document.getElementById('dash-saldo').innerText = `R$ ${(rec - des).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
             document.getElementById('dash-receitas').innerText = `R$ ${rec.toLocaleString('pt-BR')}`;
             document.getElementById('dash-despesas').innerText = `R$ ${des.toLocaleString('pt-BR')}`;
 
-            // Lógica Drivo (Gasolina Fazer 250)
-            const gasTotal = dataGlobal.filter(t => t.categoria === 'Combustível').reduce((a, b) => a + b.valor, 0);
-            const kmEstimado = Math.round((gasTotal / 6.10) * 29); // 29km/L
-            document.getElementById('drivo-km').innerText = `${kmEstimado} KM`;
-            document.getElementById('drivo-custo').innerText = `R$ ${(gasTotal / (kmEstimado || 1)).toFixed(2)}`;
+            const gas = dataGlobal.filter(t => t.categoria === 'Combustível').reduce((a, b) => a + b.valor, 0);
+            const km = Math.round((gas / 6.15) * 29); // Preço médio Fortaleza
+            document.getElementById('drivo-km').innerText = `${km} KM`;
+            document.getElementById('drivo-custo').innerText = `R$ ${(gas / (km || 1)).toFixed(2)}`;
 
             renderFeed();
-            renderChart(dataGlobal.filter(t => t.tipo === 'despesa'));
+            renderDonut();
         }
 
         function renderFeed() {
-            const feed = document.getElementById('mini-feed');
+            const container = document.getElementById('mini-feed');
             const sorted = [...dataGlobal].sort((a,b) => b.date?.seconds - a.date?.seconds).slice(0, 4);
-            feed.innerHTML = sorted.map(t => `
-                <div class="flex justify-between items-center p-4 bg-slate-50 rounded-2xl transition-all">
+            container.innerHTML = sorted.map(t => `
+                <div class="flex justify-between items-center p-4 bg-slate-50 rounded-2xl">
                     <div class="flex items-center gap-4">
                         <div class="p-2 bg-white rounded-lg border border-slate-200">
-                            <i data-lucide="${t.tipo === 'receita' ? 'arrow-up-circle' : 'arrow-down-circle'}" class="w-4 h-4 ${t.tipo === 'receita' ? 'text-emerald-500' : 'text-rose-500'}"></i>
+                            <i data-lucide="${t.tipo === 'receita' ? 'arrow-up' : 'arrow-down'}" class="w-4 h-4 ${t.tipo === 'receita' ? 'text-emerald-500' : 'text-rose-500'}"></i>
                         </div>
                         <div><p class="font-bold text-sm text-slate-800">${t.descricao}</p><p class="text-[9px] font-black text-slate-400 uppercase">${t.categoria}</p></div>
                     </div>
@@ -248,23 +268,18 @@
             lucide.createIcons();
         }
 
-        function renderChart(despesas) {
+        function renderDonut() {
             const ctx = document.getElementById('chart-rosca').getContext('2d');
             const cats = {};
-            despesas.forEach(t => cats[t.categoria] = (cats[t.categoria] || 0) + t.valor);
-            
+            dataGlobal.filter(t => t.tipo === 'despesa').forEach(t => cats[t.categoria] = (cats[t.categoria] || 0) + t.valor);
             if (donutChart) donutChart.destroy();
             donutChart = new Chart(ctx, {
                 type: 'doughnut',
-                data: {
-                    labels: Object.keys(cats),
-                    datasets: [{ data: Object.values(cats), backgroundColor: ['#0EA5E9', '#10B981', '#F59E0B', '#F43F5E', '#6366F1'], borderWidth: 0 }]
-                },
+                data: { labels: Object.keys(cats), datasets: [{ data: Object.values(cats), backgroundColor: ['#0EA5E9', '#10B981', '#F59E0B', '#F43F5E', '#6366F1'], borderWidth: 0 }] },
                 options: { cutout: '80%', plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, font: { weight: 'bold', size: 10 } } } } }
             });
         }
 
-        // --- FUNÇÕES DE MODAL E LÓGICA ---
         window.openModal = () => {
             document.getElementById('inp-data-lan').value = new Date().toISOString().split('T')[0];
             document.getElementById('inp-data-ven').value = new Date().toISOString().split('T')[0];
@@ -280,7 +295,7 @@
             statusRealizado = !statusRealizado;
             const btn = document.getElementById('btn-status-check');
             btn.innerText = statusRealizado ? 'SIM' : 'NÃO';
-            btn.className = statusRealizado ? 'px-4 py-2 bg-emerald-600 text-white rounded-lg text-[9px] font-black' : 'px-4 py-2 bg-slate-700 text-slate-400 rounded-lg text-[9px] font-black';
+            btn.className = statusRealizado ? 'px-6 py-2 bg-emerald-600 text-white rounded-lg text-[9px] font-black' : 'px-6 py-2 bg-slate-700 text-slate-400 rounded-lg text-[9px] font-black';
         };
 
         document.getElementById('form-registro').onsubmit = async (e) => {
@@ -298,8 +313,6 @@
             closeModal();
             e.target.reset();
         };
-
-        window.handleLogout = () => signOut(auth).then(() => window.location.reload());
     </script>
 </body>
 </html>
