@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MuFinance v27.15.1</title>
+    <title>MuFinance v27.15.2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -27,16 +27,16 @@
         @media (max-width: 1024px) { #sidebar { position: fixed; transform: translateX(-100%); z-index: 100; } #sidebar.open { transform: translateX(0); } }
         .input-standard { @apply w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-2xl border-none outline-none focus:ring-2 ring-brand transition-all font-bold text-sm; }
         
-        /* CORREÇÃO DO BOTÃO SEGMENTADO */
+        /* UI DE BOTÃO SEGMENTADO CORRIGIDA */
         .segmented-control { @apply flex bg-slate-200/50 dark:bg-slate-800 p-1 rounded-xl w-fit border border-slate-200 dark:border-slate-700 shadow-inner; }
-        .seg-btn { @apply px-5 py-2 rounded-lg font-black text-[10px] uppercase transition-all duration-200 cursor-pointer; }
+        .seg-btn { @apply px-5 py-2 rounded-lg font-black text-[10px] uppercase transition-all duration-200 cursor-pointer border-none outline-none; }
         .seg-btn.active { @apply bg-white dark:bg-slate-600 text-brand shadow-md scale-[1.02]; }
-        .seg-btn.inactive { @apply text-slate-500 dark:text-slate-400 hover:text-brand dark:hover:text-slate-200; }
+        .seg-btn.inactive { @apply text-slate-500 dark:text-slate-400 hover:text-brand dark:hover:text-slate-200 bg-transparent; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 dark:bg-darkBg dark:text-slate-100 min-h-screen">
 
-    <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-950/50 backdrop-blur-sm z-[90] hidden"></div>
+    <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-950/40 z-[90] hidden transition-opacity"></div>
 
     <div id="app-container" class="hidden min-h-screen flex">
         
@@ -198,7 +198,6 @@
 
         onAuthStateChanged(auth, u => { if (u) { userId = u.uid; document.getElementById('app-container').classList.replace('hidden', 'flex'); loadProfile(); startListener(); } else { window.location.reload(); } });
 
-        /* [JS] UI & NAVEGAÇÃO */
         window.setTimeMode = (m) => {
             currentMode = m;
             document.getElementById('btn-mode-mensal').className = m === 'mensal' ? "seg-btn active" : "seg-btn inactive";
@@ -232,7 +231,6 @@
             lucide.createIcons(); 
         };
 
-        /* [JS] FIREBASE & DADOS */
         function startListener() {
             onSnapshot(query(collection(db, "transactions"), where("userId", "==", userId)), (snap) => { dataGlobal = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })); updateAll(); });
             onSnapshot(query(collection(db, "banks"), where("userId", "==", userId)), (snap) => { userBancos = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })); renderBankList(); updateBankSelects(); });
@@ -284,7 +282,6 @@
             lucide.createIcons();
         };
 
-        /* [JS] HELPERS & MODAIS */
         window.rotacionarSaldo = () => { bancoIndiceAtivo = (bancoIndiceAtivo >= userBancos.length - 1) ? -1 : bancoIndiceAtivo + 1; updateDash(); };
         window.editTransaction = (id) => {
             const t = dataGlobal.find(x => x.id === id); if(!t) return;
