@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MuFinance v27.16.8 | Sidebar Fix</title>
+    <title>MuFinance v27.17</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -21,24 +21,14 @@
         .tab-content { display: none; }
         .tab-content.active { display: block; animation: fadeIn 0.4s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
-        /* SIDEBAR ANIMATION & COLLAPSE */
-        #sidebar { transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 100; }
+        #sidebar { transition: width 0.3s ease, transform 0.3s ease; z-index: 100; }
         .sidebar-collapsed { width: 88px !important; }
         .sidebar-collapsed .sidebar-text, .sidebar-collapsed .logo-text { display: none; }
-        .sidebar-collapsed nav button { justify-content: center; padding-left: 0; padding-right: 0; }
+        @media (max-width: 1024px) { #sidebar { position: fixed; transform: translateX(-100%); } #sidebar.open { transform: translateX(0); width: 280px !important; } }
+        .input-standard { @apply w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-2xl border-none outline-none focus:ring-2 ring-brand transition-all font-bold text-sm; }
         
-        @media (max-width: 1024px) { 
-            #sidebar { position: fixed; transform: translateX(-100%); } 
-            #sidebar.open { transform: translateX(0); width: 280px !important; } 
-        }
-
         .picker-container { position: relative; display: inline-block; }
-        .picker-dropdown { 
-            display: none; position: absolute; top: 110%; right: 0;
-            background: white; border-radius: 1.5rem; box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
-            z-index: 150; width: 280px; padding: 1.25rem; border: 1px solid #f1f5f9;
-        }
+        .picker-dropdown { display: none; position: absolute; top: 110%; right: 0; background: white; border-radius: 1.5rem; box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); z-index: 150; width: 280px; padding: 1.25rem; border: 1px solid #f1f5f9; }
         .dark .picker-dropdown { background: #1E293B; border-color: #334155; }
         .picker-dropdown.active { display: block; animation: fadeIn 0.2s ease; }
         .month-grid { display: grid; grid-template-cols: repeat(3, 1fr); gap: 0.5rem; }
@@ -55,7 +45,7 @@
         <aside id="sidebar" class="w-[280px] bg-white dark:bg-darkCard border-r border-slate-200 dark:border-slate-800 flex flex-col p-6 sticky top-0 h-screen overflow-hidden">
             <div class="flex items-center justify-between mb-12 px-2">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-brand rounded-xl flex-shrink-0 flex items-center justify-center text-white shadow-lg"><i data-lucide="zap" class="fill-current"></i></div>
+                    <div class="w-10 h-10 bg-brand rounded-xl flex items-center justify-center text-white shadow-lg"><i data-lucide="zap" class="fill-current"></i></div>
                     <span class="font-extrabold text-xl tracking-tighter italic logo-text">MuFinance</span>
                 </div>
                 <button onclick="toggleSidebar()" class="lg:hidden p-2 text-slate-400"><i data-lucide="x"></i></button>
@@ -97,6 +87,46 @@
                 </div>
             </header>
 
+            <div id="content-perfil" class="tab-content space-y-8 pb-20">
+                
+                <div class="bg-white dark:bg-darkCard p-8 rounded-[2rem] shadow-sm">
+                    <h3 class="text-xs font-black uppercase mb-6 tracking-widest opacity-60 italic">Personalização</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input type="text" id="perf-nome" placeholder="Seu Nome" class="input-standard">
+                        <input type="text" id="perf-user" placeholder="Nome de Usuário" class="input-standard">
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-darkCard p-8 rounded-[2rem] shadow-sm">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xs font-black uppercase tracking-widest opacity-60 italic">Contas & Bancos</h3>
+                        <button onclick="openBankModal()" class="bg-brand text-white px-5 py-2 rounded-xl text-[10px] font-black uppercase shadow-lg shadow-brand/20">Novo Banco</button>
+                    </div>
+                    <div id="lista-bancos-config" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white dark:bg-darkCard p-8 rounded-[2rem] shadow-sm">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-xs font-black uppercase tracking-widest opacity-60 italic">Categorias Despesa</h3>
+                            <button onclick="addCategoryPrompt('despesa')" class="text-brand hover:scale-110 transition-transform"><i data-lucide="plus-circle"></i></button>
+                        </div>
+                        <div id="cat-despesa-list" class="flex flex-wrap gap-2"></div>
+                    </div>
+
+                    <div class="bg-white dark:bg-darkCard p-8 rounded-[2rem] shadow-sm">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-xs font-black uppercase tracking-widest opacity-60 italic">Categorias Receita</h3>
+                            <button onclick="addCategoryPrompt('receita')" class="text-brand hover:scale-110 transition-transform"><i data-lucide="plus-circle"></i></button>
+                        </div>
+                        <div id="cat-receita-list" class="flex flex-wrap gap-2"></div>
+                    </div>
+                </div>
+
+                <button onclick="saveSettings()" class="w-full py-5 bg-slate-900 text-white dark:bg-brand font-black uppercase rounded-3xl shadow-xl hover:scale-[1.01] active:scale-95 transition-all">Salvar Todas as Preferências</button>
+            </div>
+
             <div id="content-dashboard" class="tab-content active space-y-8">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div onclick="rotacionarSaldo()" id="card-saldo-principal" class="bg-slate-900 p-6 rounded-[2.5rem] shadow-xl text-white relative flex flex-col justify-center min-h-[160px] cursor-pointer active:scale-95 transition-all">
@@ -124,31 +154,32 @@
                 </div>
             </div>
 
-            <div id="content-extrato" class="tab-content space-y-6">
-                <div id="extrato-lista" class="space-y-3 pb-20"></div>
-            </div>
-
-            <div id="content-drivo" class="tab-content space-y-6">
-                <div class="bg-slate-900 p-8 rounded-[2.5rem] shadow-xl text-white">
-                    <p class="text-[10px] font-black uppercase opacity-60 tracking-widest mb-1">Estimativa de Autonomia</p>
-                    <h2 class="text-4xl font-extrabold" id="drivo-km-total">0 KM</h2>
-                </div>
-            </div>
-
-            <div id="content-perfil" class="tab-content space-y-8 pb-20">
-                <div class="bg-white dark:bg-darkCard p-8 rounded-[2rem] shadow-sm">
-                    <h3 class="text-xs font-black uppercase mb-6 tracking-widest">Configurações</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <input type="text" id="perf-nome" placeholder="Nome" class="input-standard">
-                        <input type="text" id="perf-user" placeholder="Usuário" class="input-standard">
-                    </div>
-                    <div id="lista-bancos-config" class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8"></div>
-                    <button onclick="saveSettings()" class="w-full py-5 bg-brand text-white font-black uppercase rounded-3xl shadow-lg mt-8 border-none">Salvar Tudo</button>
-                </div>
-            </div>
+            <div id="content-extrato" class="tab-content space-y-6"><div id="extrato-lista" class="space-y-3 pb-20"></div></div>
+            <div id="content-drivo" class="tab-content py-20 text-center opacity-30"><i data-lucide="gauge" class="w-16 h-16 mx-auto mb-4"></i><p class="font-bold uppercase tracking-widest text-[10px]">Drivo KM em breve</p></div>
+            <div id="content-metas" class="tab-content py-20 text-center opacity-30"><i data-lucide="target" class="w-16 h-16 mx-auto mb-4"></i><p class="font-bold uppercase tracking-widest text-[10px]">Metas em breve</p></div>
         </main>
         
-        <button onclick="handlePlusButton()" class="fixed bottom-8 right-8 bg-brand text-white w-16 h-16 rounded-2xl shadow-2xl flex items-center justify-center z-50"><i data-lucide="plus"></i></button>
+        <button onclick="handlePlusButton()" class="fixed bottom-8 right-8 bg-brand text-white w-16 h-16 rounded-2xl shadow-2xl flex items-center justify-center z-50 transition-transform active:scale-90"><i data-lucide="plus"></i></button>
+    </div>
+
+    <div id="modal-banco" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-[110]">
+        <div class="bg-white dark:bg-darkCard w-full max-w-sm rounded-[2.5rem] p-8 space-y-6">
+            <h3 class="text-xs font-black uppercase text-brand text-center tracking-widest">Configurar Banco</h3>
+            <input type="text" id="modal-bank-name" placeholder="Ex: Nubank, Itaú..." class="input-standard">
+            <div id="bank-color-grid" class="grid grid-cols-4 gap-2">
+                <div onclick="selectBankColor('#8A05BE', this)" class="w-10 h-10 rounded-xl bg-[#8A05BE] cursor-pointer border-2 border-transparent"></div>
+                <div onclick="selectBankColor('#FF6200', this)" class="w-10 h-10 rounded-xl bg-[#FF6200] cursor-pointer border-2 border-transparent"></div>
+                <div onclick="selectBankColor('#005CA9', this)" class="w-10 h-10 rounded-xl bg-[#005CA9] cursor-pointer border-2 border-transparent"></div>
+                <div onclick="selectBankColor('#111111', this)" class="w-10 h-10 rounded-xl bg-[#111111] cursor-pointer border-2 border-transparent"></div>
+                <div onclick="selectBankColor('#00A335', this)" class="w-10 h-10 rounded-xl bg-[#00A335] cursor-pointer border-2 border-transparent"></div>
+                <div onclick="selectBankColor('#E60000', this)" class="w-10 h-10 rounded-xl bg-[#E60000] cursor-pointer border-2 border-transparent"></div>
+            </div>
+            <input type="hidden" id="modal-bank-color-val">
+            <div class="flex gap-2">
+                <button onclick="closeBankModal()" class="flex-1 font-bold text-xs opacity-40 border-none bg-transparent">FECHAR</button>
+                <button onclick="saveBankModal()" class="flex-1 py-3 bg-brand text-white rounded-xl font-black text-xs border-none uppercase">Salvar</button>
+            </div>
+        </div>
     </div>
 
     <div id="modal-lancamento" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-[110]">
@@ -183,24 +214,21 @@
         const app = initializeApp(firebaseConfig); const db = getFirestore(app); const auth = getAuth(app);
 
         let userId, dataGlobal = [], userBancos = [], donutChart, chartTipo = 'despesa', bancoIndiceAtivo = -1;
-        let userSettings = { catDespesa: [], catReceita: [] };
+        let userSettings = { 
+            catDespesa: [{n:'Alimentação'}, {n:'Lazer'}, {n:'Transporte'}, {n:'Saúde'}], 
+            catReceita: [{n:'Salário'}, {n:'Investimento'}, {n:'Extra'}] 
+        };
         let currentMode = 'mensal', currentDate = new Date();
         const mesesNomes = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
 
         onAuthStateChanged(auth, u => { if (u) { userId = u.uid; document.getElementById('app-container').classList.replace('hidden', 'flex'); loadProfile(); startListener(); } else { window.location.reload(); } });
 
-        /* UI SIDEBAR FIX */
+        /* UI NAVEGAÇÃO */
         window.toggleSidebar = () => {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('sidebar-overlay');
-            const isMobile = window.innerWidth < 1024;
-
-            if (isMobile) {
-                sidebar.classList.toggle('open');
-                overlay.classList.toggle('hidden');
-            } else {
-                sidebar.classList.toggle('sidebar-collapsed');
-            }
+            if (window.innerWidth < 1024) { sidebar.classList.toggle('open'); overlay.classList.toggle('hidden'); } 
+            else { sidebar.classList.toggle('sidebar-collapsed'); }
             lucide.createIcons();
         };
 
@@ -223,22 +251,6 @@
             renderPickerUI(); updateDash(); renderExtratoFull();
         }
 
-        window.setChartTipo = (tipo) => {
-            chartTipo = tipo;
-            const pD = document.getElementById('pill-des');
-            const pR = document.getElementById('pill-rec');
-            if(pD && pR) {
-                if (tipo === 'despesa') {
-                    pD.className = "px-4 py-1.5 text-[9px] font-black uppercase rounded-lg bg-slate-900 text-white dark:bg-brand transition-all border-none cursor-pointer";
-                    pR.className = "px-4 py-1.5 text-[9px] font-black uppercase rounded-lg text-slate-400 transition-all border-none cursor-pointer";
-                } else {
-                    pR.className = "px-4 py-1.5 text-[9px] font-black uppercase rounded-lg bg-slate-900 text-white dark:bg-brand transition-all border-none cursor-pointer";
-                    pD.className = "px-4 py-1.5 text-[9px] font-black uppercase rounded-lg text-slate-400 transition-all border-none cursor-pointer";
-                }
-            }
-            renderDonut(getFiltered());
-        };
-
         window.switchTab = (id) => { 
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active')); 
             document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('sidebar-active'));
@@ -249,13 +261,21 @@
             const picker = document.getElementById('date-picker-wrapper');
             if(picker) picker.style.display = (id === 'dashboard' || id === 'extrato') ? 'block' : 'none';
             if(id==='dashboard') renderDonut(getFiltered()); 
-            if(window.innerWidth < 1024) toggleSidebar();
             lucide.createIcons(); 
         };
 
+        /* FIREBASE */
         function startListener() {
             onSnapshot(query(collection(db, "transactions"), where("userId", "==", userId)), (snap) => { dataGlobal = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })); updateAll(); });
-            onSnapshot(query(collection(db, "banks"), where("userId", "==", userId)), (snap) => { userBancos = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })); renderBankList(); updateBankSelects(); });
+            onSnapshot(query(collection(db, "banks"), where("userId", "==", userId)), (snap) => { 
+                userBancos = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                // Adiciona Carteira se não houver bancos
+                if(userBancos.length === 0) { 
+                    const bRef = collection(db, "banks");
+                    addDoc(bRef, { userId, nome: 'Carteira', cor: '#0F172A' });
+                }
+                renderBankList(); updateBankSelects(); updateDash();
+            });
         }
 
         function getFiltered() {
@@ -265,16 +285,12 @@
             });
         }
 
+        /* RENDERS TRANSAÇÕES */
         const itemTransacao = (t) => `
             <div class="flex justify-between items-center p-4 bg-white dark:bg-darkCard rounded-2xl border border-slate-100 dark:border-slate-800 group transition-all">
                 <div class="flex items-center gap-4">
-                    <div class="w-10 h-10 flex items-center justify-center rounded-xl ${t.tipo==='receita'?'bg-emerald-50 text-emerald-600':'bg-rose-50 text-rose-600'} flex-shrink-0">
-                        <i data-lucide="${t.tipo==='receita'?'trending-up':'trending-down'}"></i>
-                    </div>
-                    <div>
-                        <p class="font-bold text-sm uppercase leading-tight">${t.descricao}</p>
-                        <p class="text-[9px] opacity-40 uppercase font-black">${t.categoria} • ${t.banco}</p>
-                    </div>
+                    <div class="w-10 h-10 flex items-center justify-center rounded-xl ${t.tipo==='receita'?'bg-emerald-50 text-emerald-600':'bg-rose-50 text-rose-600'} flex-shrink-0"><i data-lucide="${t.tipo==='receita'?'trending-up':'trending-down'}"></i></div>
+                    <div><p class="font-bold text-sm uppercase leading-tight">${t.descricao}</p><p class="text-[9px] opacity-40 uppercase font-black">${t.categoria} • ${t.banco}</p></div>
                 </div>
                 <div class="flex items-center gap-4">
                     <p class="font-black text-sm text-right">R$ ${t.valor.toFixed(2)}</p>
@@ -316,11 +332,7 @@
             if(document.getElementById('dash-despesas')) document.getElementById('dash-despesas').innerText = `R$ ${dT.toLocaleString('pt-BR')}`;
             renderDonut(f);
             const feed = document.getElementById('mini-feed');
-            if(feed) {
-                const s = [...f].sort((a,b)=>b.date.seconds-a.date.seconds).slice(0,4);
-                feed.innerHTML = s.map(t => itemTransacao(t)).join('');
-                lucide.createIcons();
-            }
+            if(feed) { const s = [...f].sort((a,b)=>b.date.seconds-a.date.seconds).slice(0,4); feed.innerHTML = s.map(t => itemTransacao(t)).join(''); lucide.createIcons(); }
         };
 
         window.renderExtratoFull = () => {
@@ -329,8 +341,112 @@
             if(el) { el.innerHTML = f.map(t => itemTransacao(t)).join(''); lucide.createIcons(); }
         };
 
+        /* LÓGICA CONFIGURAÇÕES */
+        async function loadProfile() { 
+            const snap = await getDoc(doc(db, "users", userId)); 
+            if(snap.exists()) { 
+                const data = snap.data();
+                userSettings.catDespesa = data.catDespesa || userSettings.catDespesa;
+                userSettings.catReceita = data.catReceita || userSettings.catReceita;
+                if(document.getElementById('perf-nome')) document.getElementById('perf-nome').value = data.nome||""; 
+                if(document.getElementById('perf-user')) document.getElementById('perf-user').value = data.usuario||""; 
+            } 
+            renderConfigAssets(); updateCatSelect(); 
+        }
+
+        function renderConfigAssets() {
+            const chip = (c, type) => `
+                <div class="bg-slate-100 dark:bg-slate-800 px-3 py-2 rounded-xl flex items-center gap-2 border border-slate-200 dark:border-slate-700 shadow-sm transition-all hover:bg-white dark:hover:bg-slate-700">
+                    <span class="text-[10px] font-bold uppercase text-slate-600 dark:text-slate-300">${c.n}</span>
+                    <button onclick="removeCategory('${c.n}', '${type}')" class="text-rose-500/50 hover:text-rose-500 transition-colors border-none bg-transparent cursor-pointer"><i data-lucide="x-circle" class="w-3 h-3"></i></button>
+                </div>`;
+            
+            const dList = document.getElementById('cat-despesa-list');
+            const rList = document.getElementById('cat-receita-list');
+            if(dList) dList.innerHTML = userSettings.catDespesa.map(c => chip(c, 'despesa')).join('');
+            if(rList) rList.innerHTML = userSettings.catReceita.map(c => chip(c, 'receita')).join('');
+            lucide.createIcons();
+        }
+
+        window.addCategoryPrompt = (type) => {
+            const nome = prompt(`Nova categoria de ${type}:`);
+            if(nome) {
+                const target = type === 'despesa' ? userSettings.catDespesa : userSettings.catReceita;
+                if(!target.find(c => c.n.toLowerCase() === nome.toLowerCase())) {
+                    target.push({ n: nome });
+                    renderConfigAssets();
+                    updateCatSelect();
+                }
+            }
+        };
+
+        window.removeCategory = (nome, type) => {
+            if(confirm(`Remover categoria "${nome}"?`)) {
+                if(type === 'despesa') userSettings.catDespesa = userSettings.catDespesa.filter(c => c.n !== nome);
+                else userSettings.catReceita = userSettings.catReceita.filter(c => c.n !== nome);
+                renderConfigAssets();
+                updateCatSelect();
+            }
+        };
+
+        function renderBankList() {
+            const el = document.getElementById('lista-bancos-config');
+            if(el) {
+                el.innerHTML = userBancos.map(b => `
+                    <div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-2xl flex justify-between items-center group border border-transparent hover:border-slate-200 dark:hover:border-slate-700 transition-all">
+                        <div class="flex items-center gap-3">
+                            <div class="w-3 h-3 rounded-full shadow-sm" style="background:${b.cor}"></div>
+                            <span class="font-bold text-xs uppercase text-slate-700 dark:text-slate-200">${b.nome}</span>
+                        </div>
+                        <button onclick="deleteBank('${b.id}', '${b.nome}')" class="text-rose-500 opacity-0 group-hover:opacity-100 transition-all border-none bg-transparent cursor-pointer">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                `).join('');
+                lucide.createIcons();
+            }
+        }
+
+        window.saveSettings = async () => {
+            const n = document.getElementById('perf-nome').value;
+            const u = document.getElementById('perf-user').value;
+            await setDoc(doc(db, "users", userId), { 
+                ...userSettings, 
+                nome: n, 
+                usuario: u 
+            }, { merge: true });
+            alert("Configurações salvas com sucesso!");
+        };
+
+        /* BANCO MODAL */
+        window.openBankModal = () => document.getElementById('modal-banco').classList.remove('hidden');
+        window.closeBankModal = () => {
+            document.getElementById('modal-banco').classList.add('hidden');
+            document.getElementById('modal-bank-name').value = '';
+            document.getElementById('modal-bank-color-val').value = '';
+        };
+        window.selectBankColor = (h, el) => {
+            document.querySelectorAll('#bank-color-grid div').forEach(d => d.style.borderColor='transparent');
+            el.style.borderColor='#0EA5E9';
+            document.getElementById('modal-bank-color-val').value = h;
+        };
+        window.saveBankModal = async () => {
+            const n = document.getElementById('modal-bank-name').value;
+            const c = document.getElementById('modal-bank-color-val').value;
+            if(n && c) {
+                await addDoc(collection(db, "banks"), { userId, nome: n, cor: c });
+                closeBankModal();
+            } else { alert("Preencha o nome e escolha uma cor!"); }
+        };
+        window.deleteBank = async (id, nome) => {
+            if(nome === 'Carteira') return alert("A conta principal não pode ser deletada.");
+            if(confirm(`Apagar banco "${nome}"?`)) await deleteDoc(doc(db, "banks", id));
+        };
+
+        /* OUTROS CRUD */
         window.rotacionarSaldo = () => { bancoIndiceAtivo = (bancoIndiceAtivo >= userBancos.length - 1) ? -1 : bancoIndiceAtivo + 1; updateDash(); };
         window.deleteTransaction = async id => { if(confirm("Apagar transação?")) await deleteDoc(doc(db, "transactions", id)); };
+        window.handleLogout = () => signOut(auth).then(() => window.location.reload());
         
         window.editTransaction = (id) => {
             const t = dataGlobal.find(x => x.id === id); 
@@ -347,13 +463,35 @@
             document.getElementById('modal-lancamento').classList.remove('hidden');
         };
 
-        async function loadProfile() { const snap = await getDoc(doc(db, "users", userId)); if(snap.exists()) { userSettings = snap.data(); const n = document.getElementById('perf-nome'); const u = document.getElementById('perf-user'); if(n) n.value = snap.data().nome||""; if(u) u.value = snap.data().usuario||""; } updateCatSelect(); }
-        window.saveSettings = async () => { const n = document.getElementById('perf-nome'); const u = document.getElementById('perf-user'); await setDoc(doc(db, "users", userId), { ...userSettings, nome: n?n.value:"", usuario: u?u.value:"" }, { merge: true }); alert("Salvo!"); };
-        window.handleLogout = () => signOut(auth).then(() => window.location.reload());
+        window.handlePlusButton = () => { 
+            document.getElementById('edit-id').value = ''; 
+            document.getElementById('form-registro').reset(); 
+            document.getElementById('modal-title').innerText = "Novo Lançamento";
+            document.getElementById('modal-lancamento').classList.remove('hidden'); 
+            updateCatSelect();
+        };
+
+        window.closeModal = () => document.getElementById('modal-lancamento').classList.add('hidden');
         
+        window.updateCatSelect = () => { 
+            const tEl = document.getElementById('inp-tipo'); 
+            const cEl = document.getElementById('inp-cat'); 
+            if(tEl && cEl) { 
+                const cats = tEl.value === 'despesa' ? userSettings.catDespesa : userSettings.catReceita; 
+                cEl.innerHTML = cats.map(c => `<option value="${c.n}">${c.n}</option>`).join(''); 
+            } 
+        };
+
+        function updateBankSelects() { 
+            const el = document.getElementById('inp-banco'); 
+            if(el) el.innerHTML = userBancos.map(b => `<option value="${b.nome}">${b.nome}</option>`).join(''); 
+        }
+
         function renderDonut(f) { 
             const ctx = document.getElementById('chart-rosca'); if(!ctx) return; 
-            const cats = {}; f.filter(t => t.tipo === chartTipo).forEach(t => cats[t.categoria] = (cats[t.categoria] || 0) + t.valor);
+            const cats = {}; 
+            const tipo = chartTipo || 'despesa';
+            f.filter(t => t.tipo === tipo).forEach(t => cats[t.categoria] = (cats[t.categoria] || 0) + t.valor);
             if (donutChart) donutChart.destroy(); 
             donutChart = new Chart(ctx.getContext('2d'), { 
                 type: 'doughnut', 
@@ -362,32 +500,6 @@
             }); 
         }
 
-        window.handlePlusButton = () => { 
-            document.getElementById('edit-id').value = ''; 
-            document.getElementById('form-registro').reset(); 
-            document.getElementById('modal-title').innerText = "Novo Lançamento";
-            document.getElementById('modal-lancamento').classList.remove('hidden'); 
-        };
-        window.closeModal = () => document.getElementById('modal-lancamento').classList.add('hidden');
-        
-        window.updateCatSelect = () => { 
-            const tEl = document.getElementById('inp-tipo'); 
-            const cEl = document.getElementById('inp-cat'); 
-            if(tEl && cEl) { 
-                const cats = userSettings[tEl.value === 'despesa' ? 'catDespesa' : 'catReceita'] || []; 
-                cEl.innerHTML = cats.map(c => `<option value="${c.n||c}">${c.n||c}</option>`).join(''); 
-            } 
-        };
-        function updateBankSelects() { 
-            const el = document.getElementById('inp-banco'); 
-            if(el) el.innerHTML = userBancos.map(b => `<option value="${b.nome}">${b.nome}</option>`).join(''); 
-        }
-        function renderBankList() { 
-            const el = document.getElementById('lista-bancos-config'); 
-            if(el) el.innerHTML = userBancos.map(b => `<div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-2xl flex justify-between items-center group"><div class="flex items-center gap-2"><div class="w-3 h-1 rounded-full" style="background:${b.cor}"></div><span class="font-bold text-xs uppercase text-slate-700 dark:text-slate-300">${b.nome}</span></div><button onclick="deleteBank('${b.id}')" class="text-rose-500 opacity-0 group-hover:opacity-100 transition-all border-none bg-transparent cursor-pointer"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>`).join(''); 
-            lucide.createIcons(); 
-        }
-        
         lucide.createIcons();
     </script>
 </body>
