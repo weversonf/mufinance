@@ -66,21 +66,28 @@
 
             <div id="content-dashboard" class="tab-content active space-y-8">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div onclick="rotacionarSaldo()" id="card-saldo-principal" class="bg-slate-900 p-8 rounded-[2.5rem] shadow-xl text-white relative flex flex-col justify-center min-h-[220px] cursor-pointer active:scale-95 transition-all">
+                    <div onclick="rotacionarSaldo()" id="card-saldo-principal" class="bg-slate-900 p-6 rounded-[2.5rem] shadow-xl text-white relative flex flex-col justify-center min-h-[160px] cursor-pointer active:scale-95 transition-all">
                         <div class="relative z-10 text-center">
-                            <h2 class="text-4xl lg:text-5xl font-extrabold tracking-tighter" id="dash-saldo">R$ 0,00</h2>
-                            <p class="text-[10px] font-black uppercase tracking-widest opacity-60 mt-2" id="label-saldo">Saldo Consolidado</p>
-                            <div class="flex justify-center gap-1.5 mt-6" id="indicadores-banco"></div>
+                            <h2 class="text-3xl lg:text-4xl font-extrabold tracking-tighter" id="dash-saldo">R$ 0,00</h2>
+                            <p class="text-[9px] font-black uppercase tracking-widest opacity-60 mt-1" id="label-saldo">Saldo Consolidado</p>
+                            <div class="flex justify-center gap-1.5 mt-4" id="indicadores-banco"></div>
                         </div>
-                        <i data-lucide="wallet" class="absolute -right-6 -bottom-6 w-32 h-32 opacity-10 rotate-12"></i>
+                        <i data-lucide="wallet" class="absolute -right-4 -bottom-4 w-24 h-24 opacity-10 rotate-12"></i>
                     </div>
-                    <div class="bg-white dark:bg-darkCard p-6 rounded-[2rem] border-l-8 border-emerald-500 shadow-sm flex flex-col justify-center"><p class="text-[10px] font-black opacity-50 uppercase tracking-widest mb-1">Receitas</p><h3 class="text-2xl lg:text-3xl font-extrabold text-emerald-500" id="dash-receitas">R$ 0,00</h3></div>
-                    <div class="bg-white dark:bg-darkCard p-6 rounded-[2rem] border-l-8 border-rose-500 shadow-sm flex flex-col justify-center"><p class="text-[10px] font-black opacity-50 uppercase tracking-widest mb-1">Despesas</p><h3 class="text-2xl lg:text-3xl font-extrabold text-rose-500" id="dash-despesas">R$ 0,00</h3></div>
+                    <div class="bg-white dark:bg-darkCard p-5 rounded-[2rem] border-l-8 border-emerald-500 shadow-sm flex flex-col justify-center min-h-[140px]">
+                        <p class="text-[9px] font-black opacity-50 uppercase tracking-widest mb-1">Receitas</p>
+                        <h3 class="text-xl lg:text-2xl font-extrabold text-emerald-500" id="dash-receitas">R$ 0,00</h3>
+                    </div>
+                    <div class="bg-white dark:bg-darkCard p-5 rounded-[2rem] border-l-8 border-rose-500 shadow-sm flex flex-col justify-center min-h-[140px]">
+                        <p class="text-[9px] font-black opacity-50 uppercase tracking-widest mb-1">Despesas</p>
+                        <h3 class="text-xl lg:text-2xl font-extrabold text-rose-500" id="dash-despesas">R$ 0,00</h3>
+                    </div>
                 </div>
+
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     <div class="bg-white dark:bg-darkCard p-8 rounded-[2rem] shadow-sm">
                         <div class="flex justify-between items-center mb-8">
-                            <h3 class="text-xs font-black uppercase opacity-60 tracking-widest">Distribuição</h3>
+                            <h3 class="text-xs font-black uppercase opacity-60 tracking-widest italic">Distribuição</h3>
                             <div class="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
                                 <button onclick="setChartTipo('despesa')" id="pill-des" class="px-4 py-1.5 text-[9px] font-black uppercase rounded-lg bg-slate-900 text-white dark:bg-brand">Despesas</button>
                                 <button onclick="setChartTipo('receita')" id="pill-rec" class="px-4 py-1.5 text-[9px] font-black uppercase rounded-lg text-slate-400">Receitas</button>
@@ -144,7 +151,7 @@
 
     <div id="modal-lancamento" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-[110]">
         <div class="bg-white dark:bg-darkCard w-full max-w-md rounded-[2.5rem] p-8 space-y-6 shadow-2xl border border-white/10">
-            <h3 id="modal-title" class="text-xs font-black uppercase text-brand text-center tracking-widest">Novo Lançamento</h3>
+            <h3 id="modal-title" class="text-xs font-black uppercase text-brand text-center tracking-widest">Lançamento</h3>
             <form id="form-registro" class="space-y-4">
                 <input type="hidden" id="edit-id">
                 <div class="space-y-1"><p class="text-[10px] font-bold opacity-30 uppercase ml-2">Valor</p>
