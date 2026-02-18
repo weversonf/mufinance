@@ -1,29 +1,30 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-br" id="html-root">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MuFinance v26.9.3 | Full Fix</title>
+    <title>MuFinance v27.2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #F8FAFC; color: #1E293B; overflow-x: hidden; user-select: none; -webkit-user-select: none; }
+        :root { --bg-main: #F8FAFC; --card-bg: #FFFFFF; --text-main: #1E293B; --border-color: rgba(226, 232, 240, 0.8); }
+        .dark { --bg-main: #0F172A; --card-bg: #1E293B; --text-main: #F1F5F9; --border-color: rgba(255, 255, 255, 0.1); }
+        
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--bg-main); color: var(--text-main); overflow-x: hidden; user-select: none; -webkit-user-select: none; transition: background 0.3s ease; }
         .sidebar-active { background-color: #F1F5F9 !important; color: #0EA5E9 !important; border-right: 4px solid #0EA5E9; }
-        .card-branco { background: white; border-radius: 2rem; border: 1px solid #E2E8F0; box-shadow: 0 4px 12px -2px rgba(0,0,0,0.05); }
+        .dark .sidebar-active { background-color: #334155 !important; }
+        .card-branco { background: var(--card-bg); border-radius: 2rem; border: 1px solid var(--border-color); box-shadow: 0 4px 12px -2px rgba(0,0,0,0.05); }
         .tab-content { display: none; }
         .tab-content.active { display: block; animation: fadeIn 0.4s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .modal-dark { background-color: #0F172A; border-radius: 2.5rem; color: white; }
+        .modal-dark { background-color: #0F172A; border-radius: 2.5rem; color: white; border: 1px solid rgba(255,255,255,0.1); }
         .input-dark { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 1rem; padding: 1rem; outline: none; width: 100%; user-select: text; }
-        .input-dark option { background-color: #0F172A; color: white; }
-        #sidebar { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); width: 280px; }
-        #sidebar.collapsed { width: 90px; }
-        #sidebar.collapsed .sidebar-text, #sidebar.collapsed .logo-text { display: none; }
-        .input-light { @apply w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-sky-500 text-sm font-medium transition-all; user-select: text; }
-        #card-saldo-principal { transition: background-color 0.5s ease; }
-        .pill-active { background-color: #0F172A !important; color: white !important; }
+        #sidebar { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); width: 280px; background: var(--card-bg); }
+        .input-light { @apply w-full p-4 rounded-2xl outline-none focus:border-sky-500 text-sm font-medium transition-all; background: var(--bg-main); border: 1px solid var(--border-color); color: var(--text-main); user-select: text; }
+        .bank-option { cursor: pointer; border: 2px solid transparent; transition: all 0.2s; }
+        .bank-option.selected { border-color: #0EA5E9; transform: scale(1.05); }
         .timeline-container { position: relative; padding-left: 1.5rem; }
         .timeline-line { position: absolute; left: 0.5rem; top: 5px; bottom: 0; width: 2px; background: #E2E8F0; }
         .timeline-item { position: relative; margin-bottom: 2rem; }
@@ -33,33 +34,38 @@
 <body class="min-h-screen">
 
     <div id="app-container" class="hidden min-h-screen">
-        <aside id="sidebar" class="bg-white border-r border-slate-200 hidden lg:flex flex-col p-6 sticky top-0 h-screen z-40">
-            <div class="flex items-center justify-between mb-12 px-2">
+        <aside id="sidebar" class="border-r border-slate-200/10 hidden lg:flex flex-col p-6 sticky top-0 h-screen z-40">
+            <div class="flex items-center justify-between mb-8 px-2">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 bg-sky-600 rounded-xl flex items-center justify-center text-white shadow-lg"><i data-lucide="zap" class="fill-current"></i></div>
-                    <span class="font-extrabold text-xl tracking-tighter italic text-slate-800 logo-text">MuFinance</span>
+                    <span class="font-extrabold text-xl tracking-tighter italic logo-text">MuFinance</span>
                 </div>
-                <button onclick="toggleSidebar()" class="p-2 hover:bg-slate-100 rounded-lg text-slate-400"><i data-lucide="menu" class="w-5 h-5"></i></button>
             </div>
+
+            <button onclick="toggleDarkMode()" class="mb-8 flex items-center justify-between p-4 bg-slate-100 dark:bg-slate-800 rounded-2xl transition-all">
+                <span class="text-[10px] font-black uppercase tracking-widest opacity-60">Tema Escuro</span>
+                <div id="dark-status-icon"><i data-lucide="moon" class="w-4 h-4"></i></div>
+            </button>
+
             <nav class="flex-1 space-y-2">
                 <button onclick="switchTab('dashboard')" id="btn-dashboard" class="sidebar-item w-full flex items-center gap-4 p-4 rounded-xl font-bold text-sm text-slate-500 sidebar-active"><i data-lucide="layout-dashboard" class="w-5 h-5"></i> <span class="sidebar-text">Dashboard</span></button>
-                <button onclick="switchTab('extrato')" id="btn-extrato" class="sidebar-item w-full flex items-center gap-4 p-4 rounded-xl font-bold text-sm text-slate-500 hover:bg-slate-50 transition-all"><i data-lucide="receipt" class="w-5 h-5"></i> <span class="sidebar-text">Extrato</span></button>
-                <button onclick="switchTab('drivo')" id="btn-drivo" class="sidebar-item w-full flex items-center gap-4 p-4 rounded-xl font-bold text-sm text-slate-500 hover:bg-slate-50 transition-all"><i data-lucide="gauge" class="w-5 h-5"></i> <span class="sidebar-text">Drivo KM</span></button>
-                <hr class="border-slate-100 my-4">
-                <button onclick="switchTab('perfil')" id="btn-perfil" class="sidebar-item w-full flex items-center gap-4 p-4 rounded-xl font-bold text-sm text-slate-500 hover:bg-slate-50 transition-all"><i data-lucide="settings" class="w-5 h-5"></i> <span class="sidebar-text">Configurações</span></button>
+                <button onclick="switchTab('extrato')" id="btn-extrato" class="sidebar-item w-full flex items-center gap-4 p-4 rounded-xl font-bold text-sm text-slate-500 hover:bg-slate-50/10"><i data-lucide="receipt" class="w-5 h-5"></i> <span class="sidebar-text">Transações</span></button>
+                <button onclick="switchTab('drivo')" id="btn-drivo" class="sidebar-item w-full flex items-center gap-4 p-4 rounded-xl font-bold text-sm text-slate-500 hover:bg-slate-50/10"><i data-lucide="gauge" class="w-5 h-5"></i> <span class="sidebar-text">Drivo KM</span></button>
+                <hr class="border-slate-100/10 my-4">
+                <button onclick="switchTab('perfil')" id="btn-perfil" class="sidebar-item w-full flex items-center gap-4 p-4 rounded-xl font-bold text-sm text-slate-500 hover:bg-slate-50/10"><i data-lucide="settings" class="w-5 h-5"></i> <span class="sidebar-text">Configurações</span></button>
             </nav>
-            <button onclick="handleLogout()" class="flex items-center gap-3 p-4 text-rose-500 font-bold text-sm hover:bg-rose-50 rounded-xl mt-auto transition-all"><i data-lucide="log-out" class="w-5 h-5"></i> <span class="sidebar-text">Sair</span></button>
+            <button onclick="handleLogout()" class="flex items-center gap-3 p-4 text-rose-500 font-bold text-sm mt-auto"><i data-lucide="log-out" class="w-5 h-5"></i> <span class="sidebar-text">Sair</span></button>
         </aside>
 
         <main class="flex-1 p-6 lg:p-12 pb-32 overflow-y-auto">
             <header class="flex justify-between items-center mb-10">
-                <h1 id="tab-title" class="text-3xl font-extrabold text-slate-800 tracking-tight italic">Dashboard</h1>
+                <h1 id="tab-title" class="text-3xl font-extrabold tracking-tight italic">Dashboard</h1>
                 <div class="w-12 h-12 rounded-2xl bg-slate-200 border-2 border-white shadow-sm overflow-hidden"><img src="https://ui-avatars.com/api/?name=W&background=0ea5e9&color=fff"></div>
             </header>
 
             <div id="content-dashboard" class="tab-content active space-y-8">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div onclick="rotacionarSaldo()" class="bg-slate-900 p-8 rounded-[2.5rem] shadow-xl text-white relative flex flex-col justify-center min-h-[200px] cursor-pointer transition-all active:scale-[0.98]" id="card-saldo-principal">
+                    <div onclick="rotacionarSaldo()" class="bg-slate-900 p-8 rounded-[2.5rem] shadow-xl text-white relative flex flex-col justify-center min-h-[200px] cursor-pointer active:scale-[0.98]" id="card-saldo-principal">
                         <div class="relative z-10 text-center">
                             <p class="text-[10px] font-black uppercase tracking-widest opacity-60" id="label-saldo">Saldo Consolidado</p>
                             <h2 class="text-4xl font-extrabold mt-2 tracking-tighter" id="dash-saldo">R$ 0,00</h2>
@@ -67,28 +73,18 @@
                         </div>
                         <i data-lucide="wallet" class="absolute -right-6 -bottom-6 w-32 h-32 opacity-10 rotate-12"></i>
                     </div>
-                    <div class="card-branco p-8 border-l-8 border-l-emerald-500 flex flex-col justify-center"><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Receitas (Efetivado)</p><h3 class="text-3xl font-extrabold text-slate-800" id="dash-receitas">R$ 0,00</h3></div>
-                    <div class="card-branco p-8 border-l-8 border-l-rose-500 flex flex-col justify-center"><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Despesas (Efetivado)</p><h3 class="text-3xl font-extrabold text-slate-800" id="dash-despesas">R$ 0,00</h3></div>
+                    <div class="card-branco p-8 border-l-8 border-emerald-500 flex flex-col justify-center"><p class="text-[10px] font-black opacity-60 uppercase tracking-widest mb-1">Receitas</p><h3 class="text-3xl font-extrabold" id="dash-receitas">R$ 0,00</h3></div>
+                    <div class="card-branco p-8 border-l-8 border-rose-500 flex flex-col justify-center"><p class="text-[10px] font-black opacity-60 uppercase tracking-widest mb-1">Despesas</p><h3 class="text-3xl font-extrabold" id="dash-despesas">R$ 0,00</h3></div>
                 </div>
-
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <div class="card-branco p-8">
-                        <div class="flex justify-between items-center mb-8">
-                            <h3 class="text-xs font-black uppercase text-slate-400 tracking-widest">Distribuição</h3>
-                            <div class="flex bg-slate-100 p-1 rounded-xl">
-                                <button onclick="setChartTipo('despesa')" id="pill-des" class="px-4 py-1.5 text-[9px] font-black uppercase rounded-lg pill-active transition-all">Despesas</button>
-                                <button onclick="setChartTipo('receita')" id="pill-rec" class="px-4 py-1.5 text-[9px] font-black uppercase rounded-lg text-slate-400 transition-all">Receitas</button>
-                            </div>
-                        </div>
-                        <div class="h-[280px]"><canvas id="chart-rosca"></canvas></div>
-                    </div>
-                    <div class="card-branco p-8"><h3 class="text-xs font-black uppercase text-slate-400 mb-6 tracking-widest">Feed Recente</h3><div id="mini-feed" class="space-y-4"></div></div>
+                    <div class="card-branco p-8"><h3 class="text-xs font-black uppercase opacity-60 mb-8 tracking-widest">Distribuição</h3><div class="h-[280px]"><canvas id="chart-rosca"></canvas></div></div>
+                    <div class="card-branco p-8"><h3 class="text-xs font-black uppercase opacity-60 mb-6 tracking-widest">Feed Recente</h3><div id="mini-feed" class="space-y-4"></div></div>
                 </div>
             </div>
 
             <div id="content-extrato" class="tab-content space-y-6">
-                <div class="flex justify-between items-center p-6 bg-white rounded-3xl border border-slate-200">
-                    <h3 class="text-xs font-black uppercase text-slate-400 tracking-widest italic">Movimentações</h3>
+                <div class="flex flex-col md:flex-row justify-between items-center p-6 card-branco gap-4">
+                    <h3 class="text-xs font-black uppercase opacity-60 tracking-widest italic">Transações</h3>
                     <input type="month" id="filter-month" onchange="renderExtratoFull()" class="input-light !w-auto">
                 </div>
                 <div id="extrato-lista" class="space-y-3"></div>
@@ -96,89 +92,68 @@
 
             <div id="content-drivo" class="tab-content space-y-8">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="card-branco p-8 border-l-8 border-amber-500"><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">KM Estimados</p><h2 class="text-4xl font-extrabold text-slate-800" id="drivo-km-resumo">0 KM</h2></div>
-                    <div class="card-branco p-8 border-l-8 border-sky-500"><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Média Fazer 250</p><h2 class="text-4xl font-extrabold text-slate-800">29 KM/L</h2></div>
+                    <div class="card-branco p-8 border-l-8 border-amber-500"><p class="text-[10px] font-black opacity-60 uppercase tracking-widest">KM Estimados</p><h2 class="text-4xl font-extrabold" id="drivo-km-resumo">0 KM</h2></div>
+                    <div class="card-branco p-8 border-l-8 border-sky-500"><p class="text-[10px] font-black opacity-60 uppercase tracking-widest">Média Fazer 250</p><h2 class="text-4xl font-extrabold">29 KM/L</h2></div>
                 </div>
-                <div class="card-branco p-8">
-                    <h3 class="text-xs font-black uppercase text-slate-400 mb-8 tracking-widest">Histórico Drivo</h3>
-                    <div class="timeline-container" id="drivo-timeline"><div class="timeline-line"></div></div>
-                </div>
+                <div class="card-branco p-8"><div class="timeline-container" id="drivo-timeline"><div class="timeline-line"></div></div></div>
             </div>
 
             <div id="content-perfil" class="tab-content space-y-8 pb-20">
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 text-left">
-                    <div class="card-branco p-8 space-y-4">
-                        <h3 class="text-xs font-black uppercase text-slate-400 mb-4 tracking-widest">Perfil</h3>
-                        <div class="grid grid-cols-2 gap-4">
-                            <input type="text" id="perf-nome" placeholder="Nome" class="input-light">
-                            <input type="text" id="perf-handle" placeholder="Handle (@)" class="input-light">
-                        </div>
-                    </div>
-                    <div class="card-branco p-8 space-y-4">
-                        <h3 class="text-xs font-black uppercase text-slate-400 mb-4 tracking-widest">Veículo</h3>
-                        <div class="grid grid-cols-2 gap-4">
-                            <input type="number" id="veic-consumo" placeholder="KM/L" class="input-light">
-                            <input type="number" step="0.01" id="veic-gas" placeholder="Preço Gasolina" class="input-light">
-                        </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="card-branco p-8 space-y-4"><h3 class="text-xs font-black uppercase opacity-60 mb-4 tracking-widest">Perfil</h3>
+                        <div class="grid grid-cols-2 gap-4"><input type="text" id="perf-nome" class="input-light" placeholder="Nome"><input type="number" id="veic-consumo" class="input-light" placeholder="KM/L"></div>
                     </div>
                     <div class="card-branco p-8 lg:col-span-2">
-                        <div class="flex justify-between items-center mb-6">
-                            <h3 class="text-xs font-black uppercase text-slate-400 tracking-widest italic">Bancos e Cores</h3>
-                            <button onclick="openBankModal()" class="bg-emerald-50 text-emerald-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase">Novo Banco</button>
-                        </div>
+                        <div class="flex justify-between items-center mb-6"><h3 class="text-xs font-black uppercase opacity-60 tracking-widest">Bancos</h3><button onclick="openBankModal()" class="bg-sky-600 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase">Novo Banco</button></div>
                         <div id="lista-bancos-config" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
                     </div>
-                    <div class="card-branco p-8">
-                        <h3 class="text-xs font-black uppercase text-slate-400 mb-4 tracking-widest">Categorias Despesa</h3>
-                        <div id="cat-despesa-list" class="flex flex-wrap gap-2"></div>
-                    </div>
-                    <div class="card-branco p-8">
-                        <h3 class="text-xs font-black uppercase text-slate-400 mb-4 tracking-widest">Categorias Receita</h3>
-                        <div id="cat-receita-list" class="flex flex-wrap gap-2"></div>
-                    </div>
-                    <div class="card-branco p-8 lg:col-span-2 border-2 border-rose-100 bg-rose-50/30 flex justify-between items-center">
-                        <div><h3 class="text-xs font-black uppercase text-rose-600 tracking-widest">Zona de Perigo</h3><p class="text-[10px] text-slate-500 font-bold uppercase mt-1">Zerar transações permanentemente</p></div>
-                        <button onclick="resetAppData()" class="bg-rose-600 text-white px-8 py-4 rounded-2xl text-[10px] font-black uppercase shadow-lg shadow-rose-200">Zerar App</button>
-                    </div>
+                    <div class="card-branco p-8 lg:col-span-2 flex justify-between items-center"><button onclick="resetAppData()" class="bg-rose-600 text-white px-8 py-4 rounded-2xl text-[10px] font-black uppercase">Zerar App</button></div>
                 </div>
-                <button onclick="saveSettings()" class="w-full py-5 bg-sky-600 text-white font-black uppercase tracking-widest rounded-3xl shadow-xl">Salvar Tudo</button>
+                <button onclick="saveSettings()" class="w-full py-5 bg-sky-600 text-white font-black uppercase rounded-3xl">Salvar Tudo</button>
             </div>
         </main>
-        <button onclick="handlePlusButton()" class="fixed bottom-8 right-8 bg-sky-600 text-white w-16 h-16 rounded-2xl shadow-2xl flex items-center justify-center z-50 transition-all active:scale-90"><i data-lucide="plus"></i></button>
+        <button onclick="handlePlusButton()" class="fixed bottom-8 right-8 bg-sky-600 text-white w-16 h-16 rounded-2xl shadow-2xl flex items-center justify-center z-50"><i data-lucide="plus"></i></button>
     </div>
 
     <div id="modal-banco" class="hidden fixed inset-0 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4 z-[110]">
-        <div class="modal-dark w-full max-w-sm p-8 space-y-6 shadow-2xl">
-            <h3 class="text-xs font-black uppercase text-sky-500 tracking-widest text-center" id="bank-modal-title">Novo Banco</h3>
+        <div class="modal-dark w-full max-w-sm p-8 space-y-6">
+            <h3 class="text-xs font-black uppercase text-sky-500 text-center" id="bank-modal-title">Novo Banco</h3>
             <div class="space-y-4">
                 <input type="text" id="modal-bank-name" placeholder="Nome do Banco" class="input-dark">
-                <div class="flex items-center justify-between p-4 bg-black/20 rounded-2xl border border-white/5">
-                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Cor de Identidade</span>
-                    <input type="color" id="modal-bank-color" class="w-10 h-10 bg-transparent border-none cursor-pointer">
+                <div id="bank-color-grid" class="grid grid-cols-4 gap-3 justify-items-center">
+                    <div onclick="selectBankColor('#8A05BE', this)" class="bank-option w-10 h-10 rounded-xl bg-[#8A05BE]"></div>
+                    <div onclick="selectBankColor('#FF6200', this)" class="bank-option w-10 h-10 rounded-xl bg-[#FF6200]"></div>
+                    <div onclick="selectBankColor('#EC7000', this)" class="bank-option w-10 h-10 rounded-xl bg-[#EC7000]"></div>
+                    <div onclick="selectBankColor('#C71920', this)" class="bank-option w-10 h-10 rounded-xl bg-[#C71920]"></div>
+                    <div onclick="selectBankColor('#FCE300', this)" class="bank-option w-10 h-10 rounded-xl bg-[#FCE300]"></div>
+                    <div onclick="selectBankColor('#005CA9', this)" class="bank-option w-10 h-10 rounded-xl bg-[#005CA9]"></div>
+                    <div onclick="selectBankColor('#CC0000', this)" class="bank-option w-10 h-10 rounded-xl bg-[#CC0000]"></div>
+                    <div onclick="selectBankColor('#111111', this)" class="bank-option w-10 h-10 rounded-xl bg-[#111111]"></div>
                 </div>
             </div>
-            <input type="hidden" id="modal-bank-id">
-            <div class="flex gap-3 pt-2">
-                <button onclick="closeBankModal()" class="flex-1 py-4 text-[10px] font-black uppercase text-slate-500">Cancelar</button>
-                <button onclick="saveBankModal()" class="flex-1 py-4 bg-sky-600 text-white rounded-2xl font-black text-[10px] uppercase shadow-lg">Confirmar</button>
-            </div>
+            <input type="hidden" id="modal-bank-color-val"><input type="hidden" id="modal-bank-id">
+            <div class="flex gap-3"><button onclick="closeBankModal()" class="flex-1 text-[10px] font-black uppercase opacity-50">Sair</button><button onclick="saveBankModal()" class="flex-1 py-4 bg-sky-600 rounded-2xl font-black text-[10px] uppercase">Salvar</button></div>
         </div>
     </div>
 
     <div id="modal-lancamento" class="hidden fixed inset-0 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4 z-[100]">
-        <div class="modal-dark w-full max-w-md p-8 space-y-6 shadow-2xl">
-            <div class="flex gap-2">
+        <div class="modal-dark w-full max-w-md p-8 space-y-6">
+            <div class="flex gap-2" id="modal-tipo-toggle">
                 <button onclick="setTipo('despesa')" id="btn-tipo-des" class="flex-1 py-4 bg-rose-600 text-white rounded-2xl font-black text-[10px] uppercase">Despesa</button>
                 <button onclick="setTipo('receita')" id="btn-tipo-rec" class="flex-1 py-4 bg-slate-800 text-slate-500 rounded-2xl font-black text-[10px] uppercase">Receita</button>
             </div>
             <form id="form-registro-financeiro" class="space-y-4">
-                <div class="bg-black/20 p-8 rounded-[2rem] text-center border border-white/5"><input type="number" step="0.01" id="inp-valor" class="bg-transparent text-5xl font-black text-white text-center outline-none w-full" placeholder="0" required></div>
+                <input type="hidden" id="edit-id">
+                <div class="bg-black/20 p-8 rounded-[2rem] text-center"><input type="number" step="0.01" id="inp-valor" class="bg-transparent text-5xl font-black text-white text-center outline-none w-full" placeholder="0" required></div>
                 <div class="grid grid-cols-2 gap-4"><input type="date" id="inp-data-ven" class="input-dark text-xs"><select id="inp-banco" class="input-dark text-xs font-bold uppercase"></select></div>
-                <div class="flex items-center justify-between p-4 bg-black/20 rounded-2xl border border-white/5"><span class="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">Status:</span><button type="button" onclick="toggleStatus()" id="btn-status-check" class="px-6 py-2 bg-emerald-600 text-white rounded-lg text-[9px] font-black uppercase">EFETIVADO</button></div>
+                <div class="flex items-center justify-between p-4 bg-black/20 rounded-2xl border border-white/5">
+                    <span class="text-[10px] font-black text-slate-400 uppercase">Status:</span>
+                    <button type="button" onclick="toggleStatus()" id="btn-status-check" class="px-6 py-2 bg-emerald-600 text-white rounded-lg text-[9px] font-black uppercase">EFETIVADO</button>
+                </div>
                 <select id="inp-cat" class="input-dark text-xs font-bold uppercase"></select>
                 <input type="text" id="inp-desc" placeholder="Descrição" class="input-dark text-sm">
-                <button type="submit" class="w-full py-5 bg-sky-600 text-white rounded-2xl font-black uppercase text-xs tracking-widest">Confirmar</button>
-                <button type="button" onclick="closeModal()" class="w-full text-[10px] font-black text-slate-500 uppercase text-center mt-2">Fechar</button>
+                <button type="submit" class="w-full py-5 bg-sky-600 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest">Confirmar</button>
+                <button type="button" onclick="closeModal()" class="w-full text-[10px] font-black opacity-50 text-center">Fechar</button>
             </form>
         </div>
     </div>
@@ -186,218 +161,192 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, where, Timestamp, doc, getDoc, setDoc, deleteDoc, updateDoc, writeBatch, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = { apiKey: "AIzaSyArWGgDx0uxce8w72J_1UpKPCUJGvHs3fI", authDomain: "drivo-e-money.firebaseapp.com", projectId: "drivo-e-money", storageBucket: "drivo-e-money.firebasestorage.app", messagingSenderId: "62950568252", appId: "1:62950568252:web:7638827c39b589a9046e39" };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        let userId, dataGlobal = [], donutChart, userBancos = [], currentTipo = 'despesa', chartTipo = 'despesa', bancoIndiceAtivo = -1, statusRealizado = true, userSettings = {
-            catDespesa: [{n: 'Combustível', i: 'fuel'}, {n: 'Manutenção', i: 'wrench'}, {n: 'Alimentação', i: 'utensils'}, {n: 'Moradia', i: 'home'}, {n: 'Saúde', i: 'activity'}],
-            catReceita: [{n: 'Salário', i: 'briefcase'}, {n: 'Freelance', i: 'zap'}, {n: 'Venda', i: 'shopping-cart'}]
+        let userId, dataGlobal = [], userBancos = [], donutChart, currentTipo = 'despesa', chartTipo = 'despesa', bancoIndiceAtivo = -1, statusRealizado = true;
+        let userSettings = {
+            catDespesa: [{n: 'Combustível', i: 'fuel'}, {n: 'Manutenção', i: 'wrench'}, {n: 'Alimentação', i: 'utensils'}, {n: 'Moradia', i: 'home'}],
+            catReceita: [{n: 'Salário', i: 'briefcase'}, {n: 'Freelance', i: 'zap'}]
         };
 
         onAuthStateChanged(auth, u => {
             if (u) {
                 userId = u.uid;
-                document.getElementById('app-container').classList.remove('hidden');
-                document.getElementById('app-container').classList.add('flex');
+                document.getElementById('app-container').classList.replace('hidden', 'flex');
                 document.getElementById('filter-month').value = new Date().toISOString().slice(0, 7);
                 loadProfile(); startListener();
             } else { window.location.reload(); }
         });
 
-        // NAVEGAÇÃO
-        window.switchTab = (id) => {
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('sidebar-active'));
-            document.getElementById('content-' + id).classList.add('active');
-            document.getElementById('btn-' + id).classList.add('sidebar-active');
-            document.getElementById('tab-title').innerText = id === 'perfil' ? 'Configurações' : id.charAt(0).toUpperCase() + id.slice(1);
-            if(id === 'extrato') renderExtratoFull();
+        // TEMA
+        window.toggleDarkMode = () => {
+            document.documentElement.classList.toggle('dark');
+            const isDark = document.documentElement.classList.contains('dark');
+            document.getElementById('dark-status-icon').innerHTML = isDark ? '<i data-lucide="sun" class="w-4 h-4 text-amber-400"></i>' : '<i data-lucide="moon" class="w-4 h-4"></i>';
             lucide.createIcons();
-        };
-
-        // DASHBOARD LÓGICA
-        window.rotacionarSaldo = () => {
-            bancoIndiceAtivo = (bancoIndiceAtivo >= userBancos.length - 1) ? -1 : bancoIndiceAtivo + 1;
-            updateDash();
-        };
-
-        window.setChartTipo = (tipo) => {
-            chartTipo = tipo;
-            document.getElementById('pill-des').className = tipo === 'despesa' ? 'px-4 py-1.5 text-[9px] font-black uppercase rounded-lg pill-active transition-all' : 'px-4 py-1.5 text-[9px] font-black uppercase rounded-lg text-slate-400 transition-all';
-            document.getElementById('pill-rec').className = tipo === 'receita' ? 'px-4 py-1.5 text-[9px] font-black uppercase rounded-lg pill-active transition-all' : 'px-4 py-1.5 text-[9px] font-black uppercase rounded-lg text-slate-400 transition-all';
-            renderDonut();
         };
 
         function startListener() {
             onSnapshot(query(collection(db, "transactions"), where("userId", "==", userId)), (snap) => {
                 dataGlobal = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                updateDash();
-                renderDrivoTimeline();
+                updateDash(); renderExtratoFull(); renderDrivoTimeline();
             });
             onSnapshot(query(collection(db, "banks"), where("userId", "==", userId)), (snap) => {
                 userBancos = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                if(!userBancos.find(b => b.nome === 'Carteira')) checkDefaultBank();
                 renderBankList();
-                updateDash();
             });
         }
 
-        async function checkDefaultBank() { await addDoc(collection(db, "banks"), { userId, nome: "Carteira", cor: "#0F172A" }); }
+        // CRUD TRANSAÇÕES
+        window.renderExtratoFull = () => {
+            const container = document.getElementById('extrato-lista');
+            const month = document.getElementById('filter-month').value;
+            const filtered = dataGlobal.filter(t => new Date(t.date?.seconds * 1000).toISOString().slice(0, 7) === month).sort((a,b) => b.date.seconds - a.date.seconds);
 
-        window.updateDash = () => {
-            const efetivados = dataGlobal.filter(t => t.status === 'realizado');
-            const cardP = document.getElementById('card-saldo-principal');
-            const valorS = document.getElementById('dash-saldo');
-            const labelS = document.getElementById('label-saldo');
-
-            const recT = efetivados.filter(t => t.tipo === 'receita').reduce((a, b) => a + b.valor, 0);
-            const desT = efetivados.filter(t => t.tipo === 'despesa').reduce((a, b) => a + b.valor, 0);
-            
-            document.getElementById('dash-receitas').innerText = `R$ ${recT.toLocaleString('pt-BR')}`;
-            document.getElementById('dash-despesas').innerText = `R$ ${desT.toLocaleString('pt-BR')}`;
-
-            if (bancoIndiceAtivo === -1) {
-                cardP.style.backgroundColor = "#0F172A";
-                labelS.innerText = "Saldo Consolidado";
-                valorS.innerText = `R$ ${(recT - desT).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
-            } else {
-                const b = userBancos[bancoIndiceAtivo];
-                cardP.style.backgroundColor = b.cor || "#0EA5E9";
-                const bRec = efetivados.filter(t => t.banco === b.nome && t.tipo === 'receita').reduce((a, b) => a + b.valor, 0);
-                const bDes = efetivados.filter(t => t.banco === b.nome && t.tipo === 'despesa').reduce((a, b) => a + b.valor, 0);
-                labelS.innerText = `Saldo: ${b.nome}`;
-                valorS.innerText = `R$ ${(bRec - bDes).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+            if(filtered.length === 0) {
+                container.innerHTML = `<div class="p-20 text-center opacity-40 font-bold uppercase text-xs italic">Nenhum registro encontrado</div>`;
+                return;
             }
 
-            document.getElementById('indicadores-banco').innerHTML = `<div class="w-3 h-1 rounded-full ${bancoIndiceAtivo === -1 ? 'bg-white' : 'bg-white/20'}"></div>` + 
-                userBancos.map((_, i) => `<div class="w-1.5 h-1 rounded-full ${bancoIndiceAtivo === i ? 'bg-white' : 'bg-white/20'}"></div>`).join('');
-
-            renderDonut(); renderMiniFeed();
-        };
-
-        // CONFIGURAÇÕES LÓGICA
-        async function loadProfile() {
-            const snap = await getDoc(doc(db, "users", userId));
-            if(snap.exists()) {
-                const d = snap.data();
-                userSettings = { ...userSettings, ...d };
-                document.getElementById('perf-nome').value = d.nome || "";
-                document.getElementById('perf-handle').value = d.handle || "";
-                document.getElementById('veic-consumo').value = d.consumo || 29;
-                document.getElementById('veic-gas').value = d.precoGasolina || 6.10;
-            }
-            renderConfigAssets();
-        }
-
-        function renderConfigAssets() {
-            const chip = (cat, type) => `
-                <div class="bg-slate-50 px-3 py-2 rounded-xl border border-slate-200 flex items-center gap-2">
-                    <i data-lucide="${cat.i || 'tag'}" class="w-3 h-3 text-slate-400"></i>
-                    <span class="text-[9px] font-black uppercase text-slate-600">${cat.n || cat}</span>
-                    <div class="flex gap-1 ml-1">
-                        <button onclick="editCatPrompt('${cat.n || cat}', '${type}')" class="text-sky-500"><i data-lucide="edit-3" class="w-3 h-3"></i></button>
-                        <button onclick="deleteCat('${cat.n || cat}', '${type}')" class="text-rose-500"><i data-lucide="x" class="w-3 h-3"></i></button>
+            container.innerHTML = filtered.map(t => `
+                <div class="flex justify-between items-center p-5 card-branco group">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 flex items-center justify-center rounded-xl ${t.tipo === 'receita' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}">
+                            <i data-lucide="${t.tipo === 'receita' ? 'trending-up' : 'trending-down'}"></i>
+                        </div>
+                        <div>
+                            <p class="font-bold text-sm">${t.descricao || 'Sem descrição'}</p>
+                            <p class="text-[10px] opacity-50 font-black uppercase">${new Date(t.date.seconds*1000).toLocaleDateString('pt-BR')} • ${t.categoria}</p>
+                        </div>
                     </div>
-                </div>`;
-            document.getElementById('cat-despesa-list').innerHTML = (userSettings.catDespesa || []).map(c => chip(c, 'despesa')).join('');
-            document.getElementById('cat-receita-list').innerHTML = (userSettings.catReceita || []).map(c => chip(c, 'receita')).join('');
+                    <div class="flex items-center gap-6">
+                        <div class="text-right">
+                            <p class="font-black text-sm">R$ ${t.valor.toFixed(2)}</p>
+                            <span class="text-[9px] font-black px-2 py-0.5 rounded-full ${t.status === 'realizado' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}">${t.status === 'realizado' ? 'EFETIVADO' : 'PLANEJADO'}</span>
+                        </div>
+                        <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                            <button onclick="editTransaction('${t.id}')" class="p-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-sky-500"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
+                            <button onclick="deleteTransaction('${t.id}')" class="p-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-rose-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
             lucide.createIcons();
-        }
-
-        window.editCatPrompt = (oldName, type) => {
-            const newName = prompt("Novo nome da categoria:", oldName);
-            if (newName && newName !== oldName) {
-                const key = type === 'despesa' ? 'catDespesa' : 'catReceita';
-                userSettings[key] = userSettings[key].map(c => (c.n === oldName || c === oldName) ? {n: newName, i: c.i || 'tag'} : c);
-                renderConfigAssets();
-            }
         };
 
-        window.deleteCat = (name, type) => {
-            if(!confirm("Excluir categoria?")) return;
-            const key = type === 'despesa' ? 'catDespesa' : 'catReceita';
-            userSettings[key] = userSettings[key].filter(c => (c.n !== name && c !== name));
-            renderConfigAssets();
+        window.deleteTransaction = async (id) => { if(confirm("Deseja apagar esta transação?")) await deleteDoc(doc(db, "transactions", id)); };
+
+        window.editTransaction = (id) => {
+            const t = dataGlobal.find(x => x.id === id);
+            if(!t) return;
+            document.getElementById('edit-id').value = id;
+            document.getElementById('inp-valor').value = t.valor;
+            document.getElementById('inp-desc').value = t.descricao;
+            document.getElementById('inp-data-ven').value = new Date(t.date.seconds * 1000).toISOString().split('T')[0];
+            setTipo(t.tipo);
+            statusRealizado = t.status === 'realizado';
+            const btn = document.getElementById('btn-status-check');
+            btn.innerText = statusRealizado ? 'EFETIVADO' : 'PLANEJADO';
+            btn.className = statusRealizado ? 'px-6 py-2 bg-emerald-600 text-white rounded-lg text-[9px] font-black uppercase' : 'px-6 py-2 bg-amber-600 text-white rounded-lg text-[9px] font-black uppercase';
+            
+            updateModalSelects();
+            document.getElementById('inp-cat').value = t.categoria;
+            document.getElementById('inp-banco').value = t.banco;
+            document.getElementById('modal-lancamento').classList.remove('hidden');
         };
 
-        window.openBankModal = (id = null, nome = '', cor = '#0EA5E9') => {
-            document.getElementById('bank-modal-title').innerText = id ? 'Editar Banco' : 'Novo Banco';
+        document.getElementById('form-registro-financeiro').onsubmit = async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('edit-id').value;
+            const payload = {
+                userId,
+                valor: parseFloat(document.getElementById('inp-valor').value),
+                descricao: document.getElementById('inp-desc').value,
+                categoria: document.getElementById('inp-cat').value,
+                banco: document.getElementById('inp-banco').value,
+                tipo: currentTipo,
+                status: statusRealizado ? 'realizado' : 'planejado',
+                date: Timestamp.fromDate(new Date(document.getElementById('inp-data-ven').value + 'T12:00:00'))
+            };
+
+            if(id) await updateDoc(doc(db, "transactions", id), payload);
+            else await addDoc(collection(db, "transactions"), payload);
+            
+            closeModal();
+            e.target.reset();
+            document.getElementById('edit-id').value = '';
+        };
+
+        // BANCOS
+        window.selectBankColor = (hex, el) => {
+            document.querySelectorAll('.bank-option').forEach(opt => opt.classList.remove('selected'));
+            el.classList.add('selected');
+            document.getElementById('modal-bank-color-val').value = hex;
+        };
+
+        window.openBankModal = (id = null, n = '', c = '#111111') => {
+            document.getElementById('bank-modal-title').innerText = id ? 'Editar' : 'Novo';
             document.getElementById('modal-bank-id').value = id || '';
-            document.getElementById('modal-bank-name').value = nome;
-            document.getElementById('modal-bank-color').value = cor;
+            document.getElementById('modal-bank-name').value = n;
+            document.getElementById('modal-bank-color-val').value = c;
             document.getElementById('modal-banco').classList.remove('hidden');
         };
-        window.closeBankModal = () => document.getElementById('modal-banco').classList.add('hidden');
+
         window.saveBankModal = async () => {
             const id = document.getElementById('modal-bank-id').value;
             const n = document.getElementById('modal-bank-name').value;
-            const c = document.getElementById('modal-bank-color').value;
-            if(!n) return;
+            const c = document.getElementById('modal-bank-color-val').value;
+            if(!n || !c) return alert("Preencha tudo!");
             if(id) await updateDoc(doc(db, "banks", id), { nome: n, cor: c });
             else await addDoc(collection(db, "banks"), { userId, nome: n, cor: c });
-            closeBankModal();
+            document.getElementById('modal-banco').classList.add('hidden');
         };
 
-        function renderBankList() {
-            document.getElementById('lista-bancos-config').innerHTML = userBancos.map(b => `
-                <div class="p-4 bg-slate-50 rounded-2xl flex justify-between items-center border border-slate-100">
-                    <div class="flex items-center gap-3"><div class="w-3 h-3 rounded-full" style="background-color: ${b.cor}"></div><span class="text-xs font-bold text-slate-700">${b.nome}</span></div>
-                    <div class="flex gap-2">
-                        <button onclick="openBankModal('${b.id}', '${b.nome}', '${b.cor}')" class="text-sky-500"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
-                        ${b.nome !== 'Carteira' ? `<button onclick="deleteBank('${b.id}')" class="text-rose-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button>` : ''}
-                    </div>
-                </div>`).join('');
+        // AUXILIARES
+        window.updateDash = () => {
+            const ef = dataGlobal.filter(t => t.status === 'realizado');
+            const rT = ef.filter(t => t.tipo === 'receita').reduce((a,b) => a+b.valor,0);
+            const dT = ef.filter(t => t.tipo === 'despesa').reduce((a,b) => a+b.valor,0);
+            document.getElementById('dash-receitas').innerText = `R$ ${rT.toLocaleString('pt-BR')}`;
+            document.getElementById('dash-despesas').innerText = `R$ ${dT.toLocaleString('pt-BR')}`;
+            const valS = document.getElementById('dash-saldo');
+            if(bancoIndiceAtivo === -1) { valS.innerText = `R$ ${(rT-dT).toLocaleString('pt-BR')}`; document.getElementById('card-saldo-principal').style.backgroundColor = '#0F172A'; }
+            else { const b = userBancos[bancoIndiceAtivo]; valS.innerText = `R$ ${ef.filter(t => t.banco === b.nome).reduce((a,v) => v.tipo==='receita'?a+v.valor:a-v.valor,0).toLocaleString('pt-BR', {minimumFractionDigits:2})}`; document.getElementById('card-saldo-principal').style.backgroundColor = b.cor; }
+            renderDonut(); renderMiniFeed();
+        };
+
+        window.switchTab = (id) => {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('sidebar-active'));
+            document.getElementById('content-' + id).classList.add('active');
+            document.getElementById('btn-' + id).classList.add('sidebar-active');
+            document.getElementById('tab-title').innerText = id === 'perfil' ? 'Configurações' : id === 'extrato' ? 'Transações' : id.charAt(0).toUpperCase() + id.slice(1);
+            if(id === 'extrato') renderExtratoFull();
             lucide.createIcons();
-        }
-
-        window.saveSettings = async () => {
-            await setDoc(doc(db, "users", userId), { ...userSettings, nome: document.getElementById('perf-nome').value, handle: document.getElementById('perf-handle').value, consumo: parseFloat(document.getElementById('veic-consumo').value), precoGasolina: parseFloat(document.getElementById('veic-gas').value) }, { merge: true });
-            alert("Salvo!");
         };
 
-        window.resetAppData = async () => {
-            if(!confirm("⚠️ Apagar tudo?")) return;
-            const batch = writeBatch(db);
-            const snap = await getDocs(query(collection(db, "transactions"), where("userId", "==", userId)));
-            snap.forEach(d => batch.delete(d.ref)); await batch.commit();
-        };
-
-        // FINANCEIRO
-        document.getElementById('form-registro-financeiro').onsubmit = async (e) => {
-            e.preventDefault();
-            try {
-                const valor = parseFloat(document.getElementById('inp-valor').value);
-                await addDoc(collection(db, "transactions"), {
-                    userId,
-                    valor: valor,
-                    descricao: document.getElementById('inp-desc').value,
-                    categoria: document.getElementById('inp-cat').value,
-                    banco: document.getElementById('inp-banco').value,
-                    tipo: currentTipo,
-                    status: statusRealizado ? 'realizado' : 'planejado',
-                    date: Timestamp.fromDate(new Date(document.getElementById('inp-data-ven').value + 'T12:00:00'))
-                });
-                closeModal();
-                e.target.reset();
-            } catch (err) { console.error(err); }
-        };
-
-        function renderDonut() { const ctx = document.getElementById('chart-rosca').getContext('2d'); const cats = {}; dataGlobal.filter(t => t.tipo === chartTipo && t.status === 'realizado').forEach(t => cats[t.categoria] = (cats[t.categoria] || 0) + t.valor); if (donutChart) donutChart.destroy(); donutChart = new Chart(ctx, { type: 'doughnut', data: { labels: Object.keys(cats), datasets: [{ data: Object.values(cats), backgroundColor: ['#0EA5E9', '#10B981', '#F59E0B', '#F43F5E', '#6366F1', '#A855F7'], borderWidth: 0 }] }, options: { cutout: '80%', plugins: { legend: { position: 'bottom' } } } }); }
-        function renderMiniFeed() { const sorted = [...dataGlobal].sort((a,b) => (b.date?.seconds || 0) - (a.date?.seconds || 0)).slice(0, 4); document.getElementById('mini-feed').innerHTML = sorted.map(t => `<div class="flex justify-between items-center p-4 bg-slate-50 rounded-2xl"><div class="flex items-center gap-4"><i data-lucide="${t.tipo === 'receita' ? 'arrow-up' : 'arrow-down'}" class="w-4 h-4 ${t.tipo === 'receita' ? 'text-emerald-500' : 'text-rose-500'}"></i><div><p class="font-bold text-sm text-slate-800">${t.descricao}</p><p class="text-[9px] font-black opacity-40 uppercase">${t.categoria}</p></div></div><p class="font-black text-sm">R$ ${t.valor.toFixed(2)}</p></div>`).join(''); lucide.createIcons(); }
-        function renderDrivoTimeline() { const container = document.getElementById('drivo-timeline'); const vehicleCats = ['Combustível', 'Manutenção', 'Oficina', 'Saúde']; const events = dataGlobal.filter(t => vehicleCats.includes(t.categoria)).sort((a,b) => (b.date?.seconds || 0) - (a.date?.seconds || 0)); const gas = parseFloat(document.getElementById('veic-gas')?.value || 6.10); const cons = parseFloat(document.getElementById('veic-consumo')?.value || 29); let tk = 0; container.innerHTML = '<div class="timeline-line"></div>' + events.map(t => { const km = t.categoria === 'Combustível' ? Math.round((t.valor / gas) * cons) : 0; if(t.status === 'realizado') tk += km; return `<div class="timeline-item pl-6"><div class="timeline-dot"></div><div class="bg-slate-50 p-4 rounded-2xl flex justify-between border border-slate-100"><div><p class="font-bold text-sm text-slate-800">${t.categoria}</p><p class="text-[9px] text-slate-400 uppercase font-black">${t.descricao}</p></div><div class="text-right"><p class="font-black text-sm">R$ ${t.valor.toFixed(2)}</p>${km > 0 ? `<p class="text-[9px] font-bold text-sky-500">+${km} KM</p>` : ''}</div></div></div>`; }).join(''); document.getElementById('drivo-km-resumo').innerText = `${tk} KM`; lucide.createIcons(); }
-
-        window.handlePlusButton = () => { document.getElementById('inp-data-ven').value = new Date().toISOString().split('T')[0]; document.getElementById('modal-lancamento').classList.remove('hidden'); updateModalSelects(); };
-        window.updateModalSelects = () => { const cats = userSettings[currentTipo === 'despesa' ? 'catDespesa' : 'catReceita']; document.getElementById('inp-cat').innerHTML = (cats || []).map(c => `<option value="${c.n || c}">${c.n || c}</option>`).join(''); document.getElementById('inp-banco').innerHTML = userBancos.map(b => `<option value="${b.nome}">${b.nome}</option>`).join(''); };
+        async function loadProfile() { const snap = await getDoc(doc(db, "users", userId)); if(snap.exists()) { userSettings = {...userSettings, ...snap.data()}; document.getElementById('perf-nome').value = snap.data().nome; } renderConfigAssets(); }
+        function renderConfigAssets() { const chip = (c) => `<div class="bg-slate-50 dark:bg-slate-800 p-3 rounded-xl flex items-center gap-2 border border-slate-200/10"><i data-lucide="${c.i}" class="w-3 h-3 opacity-40"></i><span class="text-[9px] font-black uppercase">${c.n}</span></div>`; document.getElementById('cat-despesa-list').innerHTML = userSettings.catDespesa.map(c => chip(c)).join(''); document.getElementById('cat-receita-list').innerHTML = userSettings.catReceita.map(c => chip(c)).join(''); lucide.createIcons(); }
+        function renderBankList() { document.getElementById('lista-bancos-config').innerHTML = userBancos.map(b => `<div class="p-4 card-branco flex justify-between items-center"><div class="flex items-center gap-3"><div class="w-3 h-3 rounded-full" style="background:${b.cor}"></div><span class="text-xs font-bold">${b.nome}</span></div><button onclick="openBankModal('${b.id}','${b.nome}','${b.cor}')" class="text-sky-500"><i data-lucide="edit-3" class="w-4 h-4"></i></button></div>`).join(''); lucide.createIcons(); }
+        window.handlePlusButton = () => { document.getElementById('edit-id').value = ''; document.getElementById('form-registro-financeiro').reset(); document.getElementById('modal-lancamento').classList.remove('hidden'); updateModalSelects(); };
+        window.updateModalSelects = () => { const cats = userSettings[currentTipo==='despesa'?'catDespesa':'catReceita']; document.getElementById('inp-cat').innerHTML = (cats || []).map(c => `<option value="${c.n}">${c.n}</option>`).join(''); document.getElementById('inp-banco').innerHTML = userBancos.map(b => `<option value="${b.nome}">${b.nome}</option>`).join(''); };
+        window.setTipo = (t) => { currentTipo = t; document.getElementById('btn-tipo-des').className = t === 'despesa' ? 'flex-1 py-4 bg-rose-600 text-white rounded-2xl font-black text-[10px] uppercase' : 'flex-1 py-4 bg-slate-800 text-slate-500 rounded-2xl font-black text-[10px] uppercase'; document.getElementById('btn-tipo-rec').className = t === 'receita' ? 'flex-1 py-4 bg-emerald-600 text-white rounded-2xl font-black text-[10px] uppercase' : 'flex-1 py-4 bg-slate-800 text-slate-500 rounded-2xl font-black text-[10px] uppercase'; updateModalSelects(); };
+        window.closeModal = () => document.getElementById('modal-lancamento').classList.add('hidden');
+        window.closeBankModal = () => document.getElementById('modal-banco').classList.add('hidden');
         window.toggleStatus = () => { statusRealizado = !statusRealizado; const btn = document.getElementById('btn-status-check'); btn.innerText = statusRealizado ? 'EFETIVADO' : 'PLANEJADO'; btn.className = statusRealizado ? 'px-6 py-2 bg-emerald-600 text-white rounded-lg text-[9px] font-black uppercase' : 'px-6 py-2 bg-amber-600 text-white rounded-lg text-[9px] font-black uppercase'; };
+        function renderDonut() { const ctx = document.getElementById('chart-rosca').getContext('2d'); const cats = {}; dataGlobal.filter(t => t.tipo === chartTipo && t.status === 'realizado').forEach(t => cats[t.categoria] = (cats[t.categoria] || 0) + t.valor); if (donutChart) donutChart.destroy(); donutChart = new Chart(ctx, { type: 'doughnut', data: { labels: Object.keys(cats), datasets: [{ data: Object.values(cats), backgroundColor: ['#0EA5E9', '#10B981', '#F59E0B', '#F43F5E'], borderWidth: 0 }] }, options: { cutout: '80%', plugins: { legend: { display: false } } } }); }
+        function renderMiniFeed() { const sorted = [...dataGlobal].sort((a,b) => b.date.seconds - a.date.seconds).slice(0, 4); document.getElementById('mini-feed').innerHTML = sorted.map(t => `<div class="flex justify-between items-center p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl"><div class="flex items-center gap-4"><i data-lucide="${t.tipo === 'receita' ? 'arrow-up' : 'arrow-down'}" class="w-4 h-4 ${t.tipo === 'receita' ? 'text-emerald-500' : 'text-rose-500'}"></i><p class="font-bold text-xs">${t.descricao}</p></div><p class="font-black text-xs">R$ ${t.valor.toFixed(2)}</p></div>`).join(''); lucide.createIcons(); }
+        function renderDrivoTimeline() { const container = document.getElementById('drivo-timeline'); const vehicleCats = ['Combustível', 'Manutenção']; const events = dataGlobal.filter(t => vehicleCats.includes(t.categoria)).sort((a,b) => b.date.seconds - a.date.seconds); const gas = 6.10; const cons = 29; let tk = 0; container.innerHTML = '<div class="timeline-line"></div>' + events.map(t => { const km = t.categoria === 'Combustível' ? Math.round((t.valor / gas) * cons) : 0; if(t.status === 'realizado') tk += km; return `<div class="timeline-item pl-6"><div class="timeline-dot"></div><div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-2xl flex justify-between"><div><p class="font-bold text-xs">${t.categoria}</p><p class="text-[9px] opacity-40 font-black uppercase">${t.descricao}</p></div><div class="text-right"><p class="font-black text-xs">R$ ${t.valor.toFixed(2)}</p>${km > 0 ? `<p class="text-[9px] font-bold text-sky-500">+${km} KM</p>` : ''}</div></div></div>`; }).join(''); lucide.createIcons(); }
+        window.rotacionarSaldo = () => { bancoIndiceAtivo = (bancoIndiceAtivo >= userBancos.length - 1) ? -1 : bancoIndiceAtivo + 1; updateDash(); };
         window.handleLogout = () => signOut(auth).then(() => window.location.reload());
         window.toggleSidebar = () => document.getElementById('sidebar').classList.toggle('collapsed');
-        window.closeModal = () => document.getElementById('modal-lancamento').classList.add('hidden');
-        window.deleteBank = async (id) => { if(confirm("Excluir?")) await deleteDoc(doc(db, "banks", id)); };
-        window.setTipo = (t) => { currentTipo = t; updateModalSelects(); };
+        window.resetAppData = async () => { if(confirm("Zerar tudo?")) { const batch = writeBatch(db); const snap = await getDocs(query(collection(db, "transactions"), where("userId", "==", userId))); snap.forEach(d => batch.delete(d.ref)); await batch.commit(); } };
+        window.saveSettings = async () => { await setDoc(doc(db, "users", userId), { ...userSettings, nome: document.getElementById('perf-nome').value, consumo: parseFloat(document.getElementById('veic-consumo').value) }, { merge: true }); alert("Salvo!"); };
 
         lucide.createIcons();
     </script>
