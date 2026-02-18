@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MuFinance v27.17.3 | Bank Integrity</title>
+    <title>MuFinance v27.17.4</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -112,6 +112,7 @@
                         </div>
                         <div id="cat-despesa-list" class="flex flex-wrap gap-2"></div>
                     </div>
+
                     <div class="bg-white dark:bg-darkCard p-8 rounded-[2rem] shadow-sm">
                         <div class="flex justify-between items-center mb-6">
                             <h3 class="text-xs font-black uppercase tracking-widest opacity-60 italic">Categorias Receita</h3>
@@ -120,6 +121,7 @@
                         <div id="cat-receita-list" class="flex flex-wrap gap-2"></div>
                     </div>
                 </div>
+
                 <button onclick="saveSettings()" class="w-full py-5 bg-slate-900 text-white dark:bg-brand font-black uppercase rounded-3xl shadow-xl hover:scale-[1.01] active:scale-95 transition-all">Salvar Todas as Preferências</button>
             </div>
 
@@ -202,17 +204,20 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, where, Timestamp, doc, getDoc, setDoc, deleteDoc, updateDoc, writeBatch, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, where, doc, getDoc, setDoc, deleteDoc, updateDoc, writeBatch, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = { apiKey: "AIzaSyArWGgDx0uxce8w72J_1UpKPCUJGvHs3fI", authDomain: "drivo-e-money.firebaseapp.com", projectId: "drivo-e-money", storageBucket: "drivo-e-money.firebasestorage.app", messagingSenderId: "62950568252", appId: "1:62950568252:web:7638827c39b589a9046e39" };
         const app = initializeApp(firebaseConfig); const db = getFirestore(app); const auth = getAuth(app);
 
         let userId, dataGlobal = [], userBancos = [], donutChart, chartTipo = 'despesa', bancoIndiceAtivo = -1;
+        
+        // n = nome, p = padrão (não deleta)
         let userSettings = { 
-            catDespesa: [{n:'Alimentação'}, {n:'Moradia'}, {n:'Lazer'}, {n:'Transporte'}, {n:'Saúde'}], 
-            catReceita: [{n:'Salário'}, {n:'Investimentos'}, {n:'Extra'}] 
+            catDespesa: [{n:'Alimentação', p:true}, {n:'Moradia', p:true}, {n:'Lazer', p:true}, {n:'Transporte', p:true}, {n:'Saúde', p:true}], 
+            catReceita: [{n:'Salário', p:true}, {n:'Investimentos', p:true}, {n:'Extra', p:true}] 
         };
+        
         let currentMode = 'mensal', currentDate = new Date();
         const mesesNomes = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
 
@@ -315,8 +320,6 @@
                     }
                 }
             }
-            if(document.getElementById('dash-receitas')) document.getElementById('dash-receitas').innerText = `R$ ${rT.toLocaleString('pt-BR')}`;
-            if(document.getElementById('dash-despesas')) document.getElementById('dash-despesas').innerText = `R$ ${dT.toLocaleString('pt-BR')}`;
             renderDonut(f);
             const feed = document.getElementById('mini-feed');
             if(feed) { const s = [...f].sort((a,b)=>b.date.seconds-a.date.seconds).slice(0,4); feed.innerHTML = s.map(t => itemTransacao(t)).join(''); lucide.createIcons(); }
@@ -328,111 +331,7 @@
             if(el) { el.innerHTML = f.map(t => itemTransacao(t)).join(''); lucide.createIcons(); }
         };
 
-        /* LÓGICA BANCOS (FOCO AQUI) */
-        function renderBankList() {
-            const el = document.getElementById('lista-bancos-config');
-            if(el) {
-                el.innerHTML = userBancos.map(b => `
-                    <div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-2xl flex justify-between items-center group border border-transparent hover:border-slate-200 dark:hover:border-slate-700 transition-all">
-                        <div class="flex items-center gap-3">
-                            <div class="w-3 h-3 rounded-full shadow-sm" style="background:${b.cor}"></div>
-                            <span class="font-bold text-xs uppercase text-slate-700 dark:text-slate-200">${b.nome}</span>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <button onclick="openBankModal('${b.id}', '${b.nome}', '${b.cor}')" class="text-slate-400 hover:text-brand opacity-0 group-hover:opacity-100 transition-all border-none bg-transparent cursor-pointer">
-                                <i data-lucide="edit-3" class="w-4 h-4"></i>
-                            </button>
-                            ${b.nome !== 'Carteira' ? `
-                            <button onclick="deleteBankWithRules('${b.id}', '${b.nome}')" class="text-rose-400 hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-all border-none bg-transparent cursor-pointer">
-                                <i data-lucide="trash-2" class="w-4 h-4"></i>
-                            </button>` : ''}
-                        </div>
-                    </div>
-                `).join('');
-                lucide.createIcons();
-            }
-        }
-
-        window.deleteBankWithRules = async (id, nome) => {
-            const outrasContas = userBancos.filter(b => b.id !== id);
-            let contaDestino = "";
-
-            if (outrasContas.length === 1) {
-                contaDestino = outrasContas[0].nome;
-                if (!confirm(`Ao deletar "${nome}", todas as suas transações serão movidas para "${contaDestino}". Confirmar?`)) return;
-            } else {
-                const nomesOutras = outrasContas.map(b => b.nome).join(", ");
-                const escolha = prompt(`Para qual conta deseja mover as transações de "${nome}"?\nContas disponíveis: ${nomesOutras}`);
-                
-                if (!escolha) return;
-                const alvo = outrasContas.find(b => b.nome.toLowerCase() === escolha.toLowerCase());
-                if (!alvo) return alert("Conta de destino inválida!");
-                contaDestino = alvo.nome;
-            }
-
-            // Transferir transações
-            const q = query(collection(db, "transactions"), where("userId", "==", userId), where("banco", "==", nome));
-            const snap = await getDocs(q);
-            const batch = writeBatch(db);
-            
-            snap.forEach(tDoc => {
-                batch.update(doc(db, "transactions", tDoc.id), { banco: contaDestino });
-            });
-
-            await batch.commit();
-            await deleteDoc(doc(db, "banks", id));
-            alert(`Banco removido e transações movidas para ${contaDestino}.`);
-        };
-
-        window.openBankModal = (id = '', nome = '', cor = '') => {
-            document.getElementById('modal-bank-id').value = id;
-            document.getElementById('modal-bank-name').value = nome;
-            document.getElementById('modal-bank-color-val').value = cor;
-            document.getElementById('modal-bank-title').innerText = id ? "Editar Banco" : "Novo Banco";
-            
-            document.querySelectorAll('#bank-color-grid div').forEach(d => {
-                const bg = d.style.backgroundColor;
-                // Converter rgb para hex simples para comparação
-                d.style.borderColor = (cor.toUpperCase() === rgbToHex(d.style.backgroundColor).toUpperCase()) ? '#0EA5E9' : 'transparent';
-            });
-
-            document.getElementById('modal-banco').classList.remove('hidden');
-        };
-
-        function rgbToHex(rgb) {
-            if (!rgb) return "";
-            const vals = rgb.match(/\d+/g);
-            if (!vals) return "";
-            return "#" + vals.map(x => parseInt(x).toString(16).padStart(2, '0')).join('');
-        }
-
-        window.saveBankModal = async () => {
-            const id = document.getElementById('modal-bank-id').value;
-            const n = document.getElementById('modal-bank-name').value;
-            const c = document.getElementById('modal-bank-color-val').value;
-            
-            if(!n || !c) return alert("Preencha o nome e a cor!");
-
-            if(id) {
-                const antigoNome = userBancos.find(b => b.id === id).nome;
-                await updateDoc(doc(db, "banks", id), { nome: n, cor: c });
-                // Se mudou o nome, atualiza as transações vinculadas
-                if(antigoNome !== n) {
-                    const q = query(collection(db, "transactions"), where("userId", "==", userId), where("banco", "==", antigoNome));
-                    const snap = await getDocs(q);
-                    const batch = writeBatch(db);
-                    snap.forEach(tDoc => batch.update(doc(db, "transactions", tDoc.id), { banco: n }));
-                    await batch.commit();
-                }
-            } else {
-                await addDoc(collection(db, "banks"), { userId, nome: n, cor: c });
-            }
-            closeBankModal();
-        };
-
-        window.closeBankModal = () => document.getElementById('modal-banco').classList.add('hidden');
-
-        /* OUTRAS FUNÇÕES (PERFIL/CAT/DASH) */
+        /* LÓGICA CATEGORIAS (FOCO AQUI) */
         async function loadProfile() { 
             const snap = await getDoc(doc(db, "users", userId)); 
             if(snap.exists()) { 
@@ -446,11 +345,17 @@
         }
 
         function renderConfigAssets() {
-            const chip = (c, type) => `
-                <div class="bg-slate-100 dark:bg-slate-800 px-3 py-2 rounded-xl flex items-center gap-2 border border-slate-200 dark:border-slate-700">
-                    <span class="text-[10px] font-bold uppercase">${c.n || c}</span>
-                    <button onclick="removeCategory('${c.n || c}', '${type}')" class="text-rose-500/50 hover:text-rose-500 border-none bg-transparent cursor-pointer"><i data-lucide="x-circle" class="w-3 h-3"></i></button>
+            const chip = (c, type) => {
+                const nome = c.n || c;
+                return `
+                <div class="bg-slate-100 dark:bg-slate-800 px-3 py-2 rounded-xl flex items-center gap-3 border border-slate-200 dark:border-slate-700">
+                    <span class="text-[10px] font-bold uppercase text-slate-600 dark:text-slate-300">${nome}</span>
+                    <div class="flex items-center gap-1.5 border-l border-slate-200 dark:border-slate-700 pl-2">
+                        <button onclick="editCategoryPrompt('${nome}', '${type}')" class="text-slate-400 hover:text-brand border-none bg-transparent cursor-pointer transition-colors"><i data-lucide="edit-3" class="w-3 h-3"></i></button>
+                        ${!c.p ? `<button onclick="removeCategory('${nome}', '${type}')" class="text-slate-400 hover:text-rose-500 border-none bg-transparent cursor-pointer transition-colors"><i data-lucide="trash-2" class="w-3 h-3"></i></button>` : ''}
+                    </div>
                 </div>`;
+            };
             document.getElementById('cat-despesa-list').innerHTML = userSettings.catDespesa.map(c => chip(c, 'despesa')).join('');
             document.getElementById('cat-receita-list').innerHTML = userSettings.catReceita.map(c => chip(c, 'receita')).join('');
             lucide.createIcons();
@@ -458,20 +363,113 @@
 
         window.addCategoryPrompt = (type) => {
             const n = prompt(`Nova categoria de ${type}:`);
-            if(n) { 
+            if(n && n.trim() !== "") { 
                 const target = type === 'despesa' ? userSettings.catDespesa : userSettings.catReceita;
-                target.push({ n }); renderConfigAssets(); updateCatSelect();
+                if(!target.find(c => (c.n || c).toLowerCase() === n.trim().toLowerCase())) {
+                    target.push({ n: n.trim(), p: false }); 
+                    renderConfigAssets(); updateCatSelect();
+                }
+            }
+        };
+
+        window.editCategoryPrompt = async (nomeAntigo, type) => {
+            const novoNome = prompt(`Editar categoria "${nomeAntigo}" para:`, nomeAntigo);
+            if(novoNome && novoNome.trim() !== "" && novoNome !== nomeAntigo) {
+                const target = type === 'despesa' ? userSettings.catDespesa : userSettings.catReceita;
+                const index = target.findIndex(c => (c.n || c) === nomeAntigo);
+                if(index !== -1) {
+                    target[index].n = novoNome.trim();
+                    
+                    // Atualizar transações vinculadas no Firebase
+                    const q = query(collection(db, "transactions"), where("userId", "==", userId), where("categoria", "==", nomeAntigo), where("tipo", "==", type));
+                    const snap = await getDocs(q);
+                    const batch = writeBatch(db);
+                    snap.forEach(tDoc => batch.update(doc(db, "transactions", tDoc.id), { categoria: novoNome.trim() }));
+                    
+                    await batch.commit();
+                    renderConfigAssets(); updateCatSelect(); updateDash();
+                }
             }
         };
 
         window.removeCategory = (n, type) => {
-            if(confirm(`Remover "${n}"?`)) {
+            if(confirm(`Remover "${n}"? Todas as transações nesta categoria serão mantidas, mas sem vínculo categórico.`)) {
                 if(type === 'despesa') userSettings.catDespesa = userSettings.catDespesa.filter(c => (c.n || c) !== n);
                 else userSettings.catReceita = userSettings.catReceita.filter(c => (c.n || c) !== n);
                 renderConfigAssets(); updateCatSelect();
             }
         };
 
+        /* LÓGICA BANCOS */
+        function renderBankList() {
+            const el = document.getElementById('lista-bancos-config');
+            if(el) {
+                el.innerHTML = userBancos.map(b => `
+                    <div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-2xl flex justify-between items-center group border border-transparent hover:border-slate-200 dark:hover:border-slate-700 transition-all">
+                        <div class="flex items-center gap-3">
+                            <div class="w-3 h-3 rounded-full shadow-sm" style="background:${b.cor}"></div>
+                            <span class="font-bold text-xs uppercase text-slate-700 dark:text-slate-200">${b.nome}</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button onclick="openBankModal('${b.id}', '${b.nome}', '${b.cor}')" class="text-slate-400 hover:text-brand opacity-0 group-hover:opacity-100 transition-all border-none bg-transparent cursor-pointer"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
+                            ${b.nome !== 'Carteira' ? `<button onclick="deleteBankWithRules('${b.id}', '${b.nome}')" class="text-rose-400 hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-all border-none bg-transparent cursor-pointer"><i data-lucide="trash-2" class="w-4 h-4"></i></button>` : ''}
+                        </div>
+                    </div>
+                `).join('');
+                lucide.createIcons();
+            }
+        }
+
+        window.deleteBankWithRules = async (id, nome) => {
+            const outrasContas = userBancos.filter(b => b.id !== id);
+            let contaDestino = (outrasContas.length === 1) ? outrasContas[0].nome : "";
+
+            if (outrasContas.length === 1) {
+                if (!confirm(`Ao deletar "${nome}", todas as transações serão movidas para "${contaDestino}". Confirmar?`)) return;
+            } else {
+                const escolha = prompt(`Para qual conta deseja mover as transações de "${nome}"?\nContas: ${outrasContas.map(b => b.nome).join(", ")}`);
+                if (!escolha) return;
+                const alvo = outrasContas.find(b => b.nome.toLowerCase() === escolha.toLowerCase());
+                if (!alvo) return alert("Conta inválida!");
+                contaDestino = alvo.nome;
+            }
+
+            const q = query(collection(db, "transactions"), where("userId", "==", userId), where("banco", "==", nome));
+            const snap = await getDocs(q);
+            const batch = writeBatch(db);
+            snap.forEach(tDoc => batch.update(doc(db, "transactions", tDoc.id), { banco: contaDestino }));
+            await batch.commit();
+            await deleteDoc(doc(db, "banks", id));
+        };
+
+        window.openBankModal = (id = '', nome = '', cor = '') => {
+            document.getElementById('modal-bank-id').value = id;
+            document.getElementById('modal-bank-name').value = nome;
+            document.getElementById('modal-bank-color-val').value = cor;
+            document.getElementById('modal-bank-title').innerText = id ? "Editar Banco" : "Novo Banco";
+            document.getElementById('modal-banco').classList.remove('hidden');
+        };
+
+        window.saveBankModal = async () => {
+            const id = document.getElementById('modal-bank-id').value;
+            const n = document.getElementById('modal-bank-name').value;
+            const c = document.getElementById('modal-bank-color-val').value;
+            if(!n || !c) return alert("Preencha tudo!");
+            if(id) {
+                const antigoNome = userBancos.find(b => b.id === id).nome;
+                await updateDoc(doc(db, "banks", id), { nome: n, cor: c });
+                if(antigoNome !== n) {
+                    const q = query(collection(db, "transactions"), where("userId", "==", userId), where("banco", "==", antigoNome));
+                    const snap = await getDocs(q);
+                    const batch = writeBatch(db);
+                    snap.forEach(tDoc => batch.update(doc(db, "transactions", tDoc.id), { banco: n }));
+                    await batch.commit();
+                }
+            } else { await addDoc(collection(db, "banks"), { userId, nome: n, cor: c }); }
+            closeBankModal();
+        };
+
+        /* GERAL */
         window.saveSettings = async () => {
             await setDoc(doc(db, "users", userId), { 
                 catDespesa: userSettings.catDespesa, catReceita: userSettings.catReceita,
@@ -480,6 +478,7 @@
             alert("Salvo!");
         };
 
+        window.closeBankModal = () => document.getElementById('modal-banco').classList.add('hidden');
         window.selectBankColor = (h, el) => {
             document.querySelectorAll('#bank-color-grid div').forEach(d => d.style.borderColor='transparent');
             el.style.borderColor='#0EA5E9';
