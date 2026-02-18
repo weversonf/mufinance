@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MuFinance v27.16.3 | Bug Fix</title>
+    <title>MuFinance v27.16.4 | Clean Header</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -25,13 +25,6 @@
         @media (max-width: 1024px) { #sidebar { position: fixed; transform: translateX(-100%); z-index: 100; } #sidebar.open { transform: translateX(0); } }
         .input-standard { @apply w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-2xl border-none outline-none focus:ring-2 ring-brand transition-all font-bold text-sm; }
         
-        /* UI DE BOTÃO SEGMENTADO */
-        .segmented-control { @apply flex bg-slate-200/50 dark:bg-slate-800 p-1 rounded-xl w-fit border border-slate-200 dark:border-slate-700 shadow-inner; }
-        .seg-btn { @apply px-5 py-2 rounded-lg font-black text-[10px] uppercase transition-all duration-200 cursor-pointer border-none outline-none; }
-        .seg-btn.active { @apply bg-white dark:bg-slate-600 text-brand shadow-md scale-[1.02]; }
-        .seg-btn.inactive { @apply text-slate-500 dark:text-slate-400 hover:text-brand dark:hover:text-slate-200 bg-transparent; }
-
-        /* PICKER */
         .picker-container { position: relative; display: inline-block; }
         .picker-dropdown { 
             display: none; position: absolute; top: 110%; right: 0;
@@ -47,7 +40,7 @@
 </head>
 <body class="bg-slate-50 text-slate-900 dark:bg-darkBg dark:text-slate-100 min-h-screen">
 
-    <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-950/40 z-[90] hidden transition-opacity"></div>
+    <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-950/40 z-[90] hidden"></div>
 
     <div id="app-container" class="hidden min-h-screen flex">
         
@@ -75,13 +68,7 @@
             <header class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
                 <div class="flex items-center gap-4">
                     <button onclick="toggleSidebar()" class="w-12 h-12 flex items-center justify-center bg-white dark:bg-darkCard rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 text-slate-500"><i data-lucide="menu"></i></button>
-                    <div>
-                        <h1 id="tab-title" class="text-2xl lg:text-3xl font-extrabold italic uppercase tracking-tighter text-slate-900 dark:text-white leading-none">Dashboard</h1>
-                        <div id="wrapper-time-mode" class="segmented-control mt-2">
-                            <button onclick="setTimeMode('mensal')" id="btn-mode-mensal" class="seg-btn active">Mensal</button>
-                            <button onclick="setTimeMode('anual')" id="btn-mode-anual" class="seg-btn inactive">Anual</button>
-                        </div>
-                    </div>
+                    <h1 id="tab-title" class="text-2xl lg:text-3xl font-extrabold italic uppercase tracking-tighter">Dashboard</h1>
                 </div>
 
                 <div id="date-picker-wrapper" class="picker-container">
@@ -149,10 +136,6 @@
                         <input type="text" id="perf-user" placeholder="Usuário" class="input-standard">
                     </div>
                     <div id="lista-bancos-config" class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8"></div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-                        <div><div class="flex justify-between mb-4"><h3 class="text-xs font-black uppercase opacity-60">Categorias Despesa</h3><button onclick="addCategoryPrompt('despesa')" class="text-brand"><i data-lucide="plus-circle"></i></button></div><div id="cat-despesa-list" class="flex flex-wrap gap-2"></div></div>
-                        <div><div class="flex justify-between mb-4"><h3 class="text-xs font-black uppercase opacity-60">Categorias Receita</h3><button onclick="addCategoryPrompt('receita')" class="text-brand"><i data-lucide="plus-circle"></i></button></div><div id="cat-receita-list" class="flex flex-wrap gap-2"></div></div>
-                    </div>
                     <button onclick="saveSettings()" class="w-full py-5 bg-brand text-white font-black uppercase rounded-3xl shadow-lg mt-8">Salvar Tudo</button>
                 </div>
             </div>
@@ -177,7 +160,7 @@
                     <input type="date" id="inp-data" class="input-standard">
                 </div>
                 <div class="flex gap-2 pt-2">
-                    <button type="button" onclick="closeModal()" class="flex-1 font-bold text-xs opacity-40 uppercase border-none bg-transparent">Cancelar</button>
+                    <button type="button" onclick="closeModal()" class="flex-1 font-bold text-xs opacity-40 uppercase">Cancelar</button>
                     <button type="submit" class="flex-1 py-4 bg-brand text-white rounded-2xl font-black text-xs uppercase shadow-md">Confirmar</button>
                 </div>
             </form>
@@ -199,16 +182,17 @@
 
         onAuthStateChanged(auth, u => { if (u) { userId = u.uid; document.getElementById('app-container').classList.replace('hidden', 'flex'); loadProfile(); startListener(); } else { window.location.reload(); } });
 
+        /* NAVEGAÇÃO DATA */
         window.toggleDatePicker = () => document.getElementById('picker-dropdown').classList.toggle('active');
         window.changeYear = (d) => { currentDate.setFullYear(currentDate.getFullYear() + d); renderPickerUI(); };
         window.selectMonth = (i) => { currentMode = 'mensal'; currentDate.setMonth(i); toggleDatePicker(); updateAll(); };
         window.setAnualMode = () => { currentMode = 'anual'; toggleDatePicker(); updateAll(); };
 
         function renderPickerUI() {
-            const el = document.getElementById('picker-year');
-            if(el) el.innerText = currentDate.getFullYear();
-            const grid = document.getElementById('month-grid');
-            if(grid) grid.innerHTML = mesesNomes.map((n, i) => `<button onclick="selectMonth(${i})" class="month-btn ${currentMode==='mensal' && currentDate.getMonth()===i ? 'selected' : ''}">${n}</button>`).join('');
+            const elYear = document.getElementById('picker-year');
+            const elGrid = document.getElementById('month-grid');
+            if(elYear) elYear.innerText = currentDate.getFullYear();
+            if(elGrid) elGrid.innerHTML = mesesNomes.map((n, i) => `<button onclick="selectMonth(${i})" class="month-btn ${currentMode==='mensal' && currentDate.getMonth()===i ? 'selected' : ''}">${n}</button>`).join('');
         }
 
         function updateAll() {
@@ -220,15 +204,15 @@
 
         window.setChartTipo = (tipo) => {
             chartTipo = tipo;
-            const pillDes = document.getElementById('pill-des');
-            const pillRec = document.getElementById('pill-rec');
-            if(pillDes && pillRec) {
+            const pD = document.getElementById('pill-des');
+            const pR = document.getElementById('pill-rec');
+            if(pD && pR) {
                 if (tipo === 'despesa') {
-                    pillDes.className = "px-4 py-1.5 text-[9px] font-black uppercase rounded-lg bg-slate-900 text-white dark:bg-brand transition-all";
-                    pillRec.className = "px-4 py-1.5 text-[9px] font-black uppercase rounded-lg text-slate-400 transition-all";
+                    pD.className = "px-4 py-1.5 text-[9px] font-black uppercase rounded-lg bg-slate-900 text-white dark:bg-brand transition-all";
+                    pR.className = "px-4 py-1.5 text-[9px] font-black uppercase rounded-lg text-slate-400 transition-all";
                 } else {
-                    pillRec.className = "px-4 py-1.5 text-[9px] font-black uppercase rounded-lg bg-slate-900 text-white dark:bg-brand transition-all";
-                    pillDes.className = "px-4 py-1.5 text-[9px] font-black uppercase rounded-lg text-slate-400 transition-all";
+                    pR.className = "px-4 py-1.5 text-[9px] font-black uppercase rounded-lg bg-slate-900 text-white dark:bg-brand transition-all";
+                    pD.className = "px-4 py-1.5 text-[9px] font-black uppercase rounded-lg text-slate-400 transition-all";
                 }
             }
             renderDonut(getFiltered());
@@ -267,7 +251,7 @@
             const dT = f.filter(t => t.tipo === 'despesa').reduce((a,b) => a+b.valor,0);
             const valS = document.getElementById('dash-saldo');
             const labelS = document.getElementById('label-saldo');
-            const indicators = document.getElementById('indicadores-banco');
+            const ind = document.getElementById('indicadores-banco');
 
             if(valS) {
                 if(bancoIndiceAtivo === -1) { 
@@ -276,20 +260,22 @@
                     document.getElementById('card-saldo-principal').style.backgroundColor = '#0F172A'; 
                 } else { 
                     const b = userBancos[bancoIndiceAtivo];
-                    const bSaldo = f.filter(t => t.banco === b.nome).reduce((a,v) => v.tipo==='receita'?a+v.valor:a-v.valor,0);
-                    valS.innerText = `R$ ${bSaldo.toLocaleString('pt-BR', {minimumFractionDigits:2})}`; 
-                    if(labelS) labelS.innerText = b.nome;
-                    document.getElementById('card-saldo-principal').style.backgroundColor = b.cor;
+                    if(b) {
+                        const bSaldo = f.filter(t => t.banco === b.nome).reduce((a,v) => v.tipo==='receita'?a+v.valor:a-v.valor,0);
+                        valS.innerText = `R$ ${bSaldo.toLocaleString('pt-BR', {minimumFractionDigits:2})}`; 
+                        if(labelS) labelS.innerText = b.nome;
+                        document.getElementById('card-saldo-principal').style.backgroundColor = b.cor;
+                    }
                 }
             }
-            if(indicators) {
-                indicators.innerHTML = `<div class="w-3 h-1 rounded-full ${bancoIndiceAtivo===-1?'bg-white':'bg-white/20'}"></div>` + 
+            if(ind) {
+                ind.innerHTML = `<div class="w-3 h-1 rounded-full ${bancoIndiceAtivo===-1?'bg-white':'bg-white/20'}"></div>` + 
                     userBancos.map((_,i) => `<div class="w-1.5 h-1 rounded-full ${bancoIndiceAtivo===i?'bg-white':'bg-white/20'}"></div>`).join('');
             }
-            const recEl = document.getElementById('dash-receitas');
-            const desEl = document.getElementById('dash-despesas');
-            if(recEl) recEl.innerText = `R$ ${rT.toLocaleString('pt-BR')}`;
-            if(desEl) desEl.innerText = `R$ ${dT.toLocaleString('pt-BR')}`;
+            const rEl = document.getElementById('dash-receitas');
+            const dEl = document.getElementById('dash-despesas');
+            if(rEl) rEl.innerText = `R$ ${rT.toLocaleString('pt-BR')}`;
+            if(dEl) dEl.innerText = `R$ ${dT.toLocaleString('pt-BR')}`;
             renderDonut(f); renderMiniFeed(f);
         };
 
@@ -303,7 +289,7 @@
                         <div><p class="font-bold text-sm uppercase">${t.descricao}</p><p class="text-[9px] opacity-40 uppercase font-black">${t.categoria} • ${t.banco}</p></div>
                     </div>
                     <div class="flex items-center gap-4">
-                        <p class="font-black text-sm">R$ ${t.valor.toFixed(2)}</p>
+                        <p class="font-black text-sm text-right">R$ ${t.valor.toFixed(2)}</p>
                         <button onclick="deleteTransaction('${t.id}')" class="text-rose-500 opacity-0 group-hover:opacity-100 transition-all border-none bg-transparent cursor-pointer"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                     </div>
                 </div>`).join('');
@@ -312,7 +298,7 @@
 
         window.rotacionarSaldo = () => { bancoIndiceAtivo = (bancoIndiceAtivo >= userBancos.length - 1) ? -1 : bancoIndiceAtivo + 1; updateDash(); };
         window.deleteTransaction = async id => { if(confirm("Apagar?")) await deleteDoc(doc(db, "transactions", id)); };
-        async function loadProfile() { const snap = await getDoc(doc(db, "users", userId)); if(snap.exists()) { userSettings = snap.data(); const n = document.getElementById('perf-nome'); const u = document.getElementById('perf-user'); if(n) n.value = snap.data().nome||""; if(u) u.value = snap.data().usuario||""; } renderConfigAssets(); updateCatSelect(); }
+        async function loadProfile() { const snap = await getDoc(doc(db, "users", userId)); if(snap.exists()) { userSettings = snap.data(); const n = document.getElementById('perf-nome'); const u = document.getElementById('perf-user'); if(n) n.value = snap.data().nome||""; if(u) u.value = snap.data().usuario||""; } updateCatSelect(); }
         window.saveSettings = async () => { const n = document.getElementById('perf-nome'); const u = document.getElementById('perf-user'); await setDoc(doc(db, "users", userId), { ...userSettings, nome: n?n.value:"", usuario: u?u.value:"" }, { merge: true }); alert("Salvo!"); };
         window.handleLogout = () => signOut(auth).then(() => window.location.reload());
         
@@ -330,12 +316,23 @@
         function renderMiniFeed(f) { const s = [...f].sort((a,b)=>b.date.seconds-a.date.seconds).slice(0,4); const el = document.getElementById('mini-feed'); if(el) el.innerHTML = s.map(t=>`<div class="flex justify-between items-center p-4 bg-slate-50 dark:bg-slate-900/50 rounded-2xl group transition-all"><p class="font-bold text-xs uppercase">${t.descricao}</p><div class="flex items-center gap-3"><p class="font-black text-xs">R$ ${t.valor.toFixed(2)}</p></div></div>`).join(''); lucide.createIcons(); }
         window.handlePlusButton = () => { const f = document.getElementById('form-registro'); if(f) f.reset(); const m = document.getElementById('modal-lancamento'); if(m) m.classList.remove('hidden'); };
         window.closeModal = () => { const m = document.getElementById('modal-lancamento'); if(m) m.classList.add('hidden'); };
-        window.updateCatSelect = () => { const tEl = document.getElementById('inp-tipo'); const cEl = document.getElementById('inp-cat'); if(tEl && cEl) { const cats = userSettings[tEl.value === 'despesa' ? 'catDespesa' : 'catReceita'] || []; cEl.innerHTML = cats.map(c => `<option value="${c.n||c}">${c.n||c}</option>`).join(''); } };
-        function updateBankSelects() { const el = document.getElementById('inp-banco'); if(el) el.innerHTML = userBancos.map(b => `<option value="${b.nome}">${b.nome}</option>`).join(''); }
-        function renderBankList() { const el = document.getElementById('lista-bancos-config'); if(el) el.innerHTML = userBancos.map(b => `<div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-2xl flex justify-between items-center group"><div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full" style="background:${b.cor}"></div><span class="font-bold text-xs uppercase">${b.nome}</span></div><button onclick="deleteBank('${b.id}')" class="text-rose-500 opacity-0 group-hover:opacity-100 transition-all border-none bg-transparent cursor-pointer"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>`).join(''); lucide.createIcons(); }
-        window.addCategoryPrompt = type => { const n = prompt("Nome:"); if(n) { if(type==='despesa') { if(!userSettings.catDespesa) userSettings.catDespesa=[]; userSettings.catDespesa.push({n, i:'tag'}); } else { if(!userSettings.catReceita) userSettings.catReceita=[]; userSettings.catReceita.push({n, i:'tag'}); } renderConfigAssets(); } };
-        window.removeCategory = (n, t) => { if(t==='despesa') userSettings.catDespesa = userSettings.catDespesa.filter(c => (c.n||c)!==n); else userSettings.catReceita = userSettings.catReceita.filter(c => (c.n||c)!==n); renderConfigAssets(); };
-        function renderConfigAssets() { const dL = document.getElementById('cat-despesa-list'); const rL = document.getElementById('cat-receita-list'); const chip = (c, type) => `<div class="bg-slate-100 dark:bg-slate-800 px-3 py-2 rounded-xl flex items-center gap-2 border border-slate-200 dark:border-slate-700"><span class="text-[10px] font-bold uppercase">${typeof c === 'object' ? c.n : c}</span><button onclick="removeCategory('${typeof c === 'object' ? c.n : c}', '${type}')" class="text-rose-500/50 border-none bg-transparent cursor-pointer"><i data-lucide="x-circle" class="w-3 h-3"></i></button></div>`; if(dL) dL.innerHTML = (userSettings.catDespesa || []).map(c => chip(c, 'despesa')).join(''); if(rL) rL.innerHTML = (userSettings.catReceita || []).map(c => chip(c, 'receita')).join(''); lucide.createIcons(); }
+        window.updateCatSelect = () => { 
+            const tEl = document.getElementById('inp-tipo'); 
+            const cEl = document.getElementById('inp-cat'); 
+            if(tEl && cEl) { 
+                const cats = userSettings[tEl.value === 'despesa' ? 'catDespesa' : 'catReceita'] || []; 
+                cEl.innerHTML = cats.map(c => `<option value="${c.n||c}">${c.n||c}</option>`).join(''); 
+            } 
+        };
+        function updateBankSelects() { 
+            const el = document.getElementById('inp-banco'); 
+            if(el) el.innerHTML = userBancos.map(b => `<option value="${b.nome}">${b.nome}</option>`).join(''); 
+        }
+        function renderBankList() { 
+            const el = document.getElementById('lista-bancos-config'); 
+            if(el) el.innerHTML = userBancos.map(b => `<div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-2xl flex justify-between items-center group"><div class="flex items-center gap-2"><div class="w-3 h-1 rounded-full" style="background:${b.cor}"></div><span class="font-bold text-xs uppercase text-slate-700 dark:text-slate-300">${b.nome}</span></div><button onclick="deleteBank('${b.id}')" class="text-rose-500 opacity-0 group-hover:opacity-100 transition-all border-none bg-transparent cursor-pointer"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>`).join(''); 
+            lucide.createIcons(); 
+        }
         
         lucide.createIcons();
     </script>
