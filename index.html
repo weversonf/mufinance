@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MuFinance v27.16.2 | Fix Rotating Balance</title>
+    <title>MuFinance v27.16.3 | Bug Fix</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -25,6 +25,13 @@
         @media (max-width: 1024px) { #sidebar { position: fixed; transform: translateX(-100%); z-index: 100; } #sidebar.open { transform: translateX(0); } }
         .input-standard { @apply w-full bg-slate-100 dark:bg-slate-800 p-4 rounded-2xl border-none outline-none focus:ring-2 ring-brand transition-all font-bold text-sm; }
         
+        /* UI DE BOTÃO SEGMENTADO */
+        .segmented-control { @apply flex bg-slate-200/50 dark:bg-slate-800 p-1 rounded-xl w-fit border border-slate-200 dark:border-slate-700 shadow-inner; }
+        .seg-btn { @apply px-5 py-2 rounded-lg font-black text-[10px] uppercase transition-all duration-200 cursor-pointer border-none outline-none; }
+        .seg-btn.active { @apply bg-white dark:bg-slate-600 text-brand shadow-md scale-[1.02]; }
+        .seg-btn.inactive { @apply text-slate-500 dark:text-slate-400 hover:text-brand dark:hover:text-slate-200 bg-transparent; }
+
+        /* PICKER */
         .picker-container { position: relative; display: inline-block; }
         .picker-dropdown { 
             display: none; position: absolute; top: 110%; right: 0;
@@ -68,7 +75,13 @@
             <header class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
                 <div class="flex items-center gap-4">
                     <button onclick="toggleSidebar()" class="w-12 h-12 flex items-center justify-center bg-white dark:bg-darkCard rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 text-slate-500"><i data-lucide="menu"></i></button>
-                    <h1 id="tab-title" class="text-2xl lg:text-3xl font-extrabold italic uppercase tracking-tighter">Dashboard</h1>
+                    <div>
+                        <h1 id="tab-title" class="text-2xl lg:text-3xl font-extrabold italic uppercase tracking-tighter text-slate-900 dark:text-white leading-none">Dashboard</h1>
+                        <div id="wrapper-time-mode" class="segmented-control mt-2">
+                            <button onclick="setTimeMode('mensal')" id="btn-mode-mensal" class="seg-btn active">Mensal</button>
+                            <button onclick="setTimeMode('anual')" id="btn-mode-anual" class="seg-btn inactive">Anual</button>
+                        </div>
+                    </div>
                 </div>
 
                 <div id="date-picker-wrapper" class="picker-container">
@@ -105,7 +118,7 @@
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     <div class="bg-white dark:bg-darkCard p-8 rounded-[2rem] shadow-sm">
                         <div class="flex justify-between items-center mb-8">
-                            <h3 class="text-xs font-black uppercase opacity-60 tracking-widest italic">Distribuição</h3>
+                            <h3 class="text-xs font-black uppercase opacity-60 tracking-widest italic leading-none">Distribuição</h3>
                             <div class="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl shadow-inner">
                                 <button onclick="setChartTipo('despesa')" id="pill-des" class="px-4 py-1.5 text-[9px] font-black uppercase rounded-lg bg-slate-900 text-white dark:bg-brand transition-all">Despesas</button>
                                 <button onclick="setChartTipo('receita')" id="pill-rec" class="px-4 py-1.5 text-[9px] font-black uppercase rounded-lg text-slate-400 transition-all">Receitas</button>
@@ -136,12 +149,39 @@
                         <input type="text" id="perf-user" placeholder="Usuário" class="input-standard">
                     </div>
                     <div id="lista-bancos-config" class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8"></div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+                        <div><div class="flex justify-between mb-4"><h3 class="text-xs font-black uppercase opacity-60">Categorias Despesa</h3><button onclick="addCategoryPrompt('despesa')" class="text-brand"><i data-lucide="plus-circle"></i></button></div><div id="cat-despesa-list" class="flex flex-wrap gap-2"></div></div>
+                        <div><div class="flex justify-between mb-4"><h3 class="text-xs font-black uppercase opacity-60">Categorias Receita</h3><button onclick="addCategoryPrompt('receita')" class="text-brand"><i data-lucide="plus-circle"></i></button></div><div id="cat-receita-list" class="flex flex-wrap gap-2"></div></div>
+                    </div>
                     <button onclick="saveSettings()" class="w-full py-5 bg-brand text-white font-black uppercase rounded-3xl shadow-lg mt-8">Salvar Tudo</button>
                 </div>
             </div>
         </main>
         
         <button onclick="handlePlusButton()" class="fixed bottom-8 right-8 bg-brand text-white w-16 h-16 rounded-2xl shadow-2xl flex items-center justify-center z-50"><i data-lucide="plus"></i></button>
+    </div>
+
+    <div id="modal-lancamento" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-[110]">
+        <div class="bg-white dark:bg-darkCard w-full max-w-md rounded-[2.5rem] p-8 space-y-6 shadow-2xl">
+            <h3 id="modal-title" class="text-xs font-black uppercase text-brand text-center tracking-widest">Lançamento</h3>
+            <form id="form-registro" class="space-y-4">
+                <input type="hidden" id="edit-id">
+                <input type="number" step="0.01" id="inp-valor" placeholder="R$ 0,00" class="input-standard text-center text-3xl h-20" required>
+                <input type="text" id="inp-desc" placeholder="Descrição" class="input-standard" required>
+                <div class="grid grid-cols-2 gap-4">
+                    <select id="inp-tipo" class="input-standard cursor-pointer" onchange="updateCatSelect()"><option value="despesa">Despesa</option><option value="receita">Receita</option></select>
+                    <select id="inp-cat" class="input-standard cursor-pointer"></select>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <select id="inp-banco" class="input-standard cursor-pointer"></select>
+                    <input type="date" id="inp-data" class="input-standard">
+                </div>
+                <div class="flex gap-2 pt-2">
+                    <button type="button" onclick="closeModal()" class="flex-1 font-bold text-xs opacity-40 uppercase border-none bg-transparent">Cancelar</button>
+                    <button type="submit" class="flex-1 py-4 bg-brand text-white rounded-2xl font-black text-xs uppercase shadow-md">Confirmar</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <script type="module">
@@ -159,21 +199,22 @@
 
         onAuthStateChanged(auth, u => { if (u) { userId = u.uid; document.getElementById('app-container').classList.replace('hidden', 'flex'); loadProfile(); startListener(); } else { window.location.reload(); } });
 
-        /* NAVEGAÇÃO DATA */
         window.toggleDatePicker = () => document.getElementById('picker-dropdown').classList.toggle('active');
         window.changeYear = (d) => { currentDate.setFullYear(currentDate.getFullYear() + d); renderPickerUI(); };
         window.selectMonth = (i) => { currentMode = 'mensal'; currentDate.setMonth(i); toggleDatePicker(); updateAll(); };
         window.setAnualMode = () => { currentMode = 'anual'; toggleDatePicker(); updateAll(); };
 
         function renderPickerUI() {
-            document.getElementById('picker-year').innerText = currentDate.getFullYear();
+            const el = document.getElementById('picker-year');
+            if(el) el.innerText = currentDate.getFullYear();
             const grid = document.getElementById('month-grid');
-            grid.innerHTML = mesesNomes.map((n, i) => `<button onclick="selectMonth(${i})" class="month-btn ${currentMode==='mensal' && currentDate.getMonth()===i ? 'selected' : ''}">${n}</button>`).join('');
+            if(grid) grid.innerHTML = mesesNomes.map((n, i) => `<button onclick="selectMonth(${i})" class="month-btn ${currentMode==='mensal' && currentDate.getMonth()===i ? 'selected' : ''}">${n}</button>`).join('');
         }
 
         function updateAll() {
             const label = currentMode === 'mensal' ? `${mesesNomes[currentDate.getMonth()]}/${currentDate.getFullYear().toString().slice(-2)}` : `Ano ${currentDate.getFullYear()}`;
-            document.getElementById('display-periodo').innerText = label;
+            const el = document.getElementById('display-periodo');
+            if(el) el.innerText = label;
             renderPickerUI(); updateDash(); renderExtratoFull();
         }
 
@@ -181,12 +222,14 @@
             chartTipo = tipo;
             const pillDes = document.getElementById('pill-des');
             const pillRec = document.getElementById('pill-rec');
-            if (tipo === 'despesa') {
-                pillDes.className = "px-4 py-1.5 text-[9px] font-black uppercase rounded-lg bg-slate-900 text-white dark:bg-brand transition-all";
-                pillRec.className = "px-4 py-1.5 text-[9px] font-black uppercase rounded-lg text-slate-400 transition-all";
-            } else {
-                pillRec.className = "px-4 py-1.5 text-[9px] font-black uppercase rounded-lg bg-slate-900 text-white dark:bg-brand transition-all";
-                pillDes.className = "px-4 py-1.5 text-[9px] font-black uppercase rounded-lg text-slate-400 transition-all";
+            if(pillDes && pillRec) {
+                if (tipo === 'despesa') {
+                    pillDes.className = "px-4 py-1.5 text-[9px] font-black uppercase rounded-lg bg-slate-900 text-white dark:bg-brand transition-all";
+                    pillRec.className = "px-4 py-1.5 text-[9px] font-black uppercase rounded-lg text-slate-400 transition-all";
+                } else {
+                    pillRec.className = "px-4 py-1.5 text-[9px] font-black uppercase rounded-lg bg-slate-900 text-white dark:bg-brand transition-all";
+                    pillDes.className = "px-4 py-1.5 text-[9px] font-black uppercase rounded-lg text-slate-400 transition-all";
+                }
             }
             renderDonut(getFiltered());
         };
@@ -194,9 +237,12 @@
         window.switchTab = (id) => { 
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active')); 
             document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('sidebar-active'));
-            document.getElementById('content-'+id).classList.add('active'); 
-            document.getElementById('tab-title').innerText = id.charAt(0).toUpperCase() + id.slice(1);
-            document.getElementById('date-picker-wrapper').style.display = (id === 'dashboard' || id === 'extrato') ? 'block' : 'none';
+            const content = document.getElementById('content-'+id);
+            if(content) content.classList.add('active'); 
+            const title = document.getElementById('tab-title');
+            if(title) title.innerText = id.charAt(0).toUpperCase() + id.slice(1);
+            const picker = document.getElementById('date-picker-wrapper');
+            if(picker) picker.style.display = (id === 'dashboard' || id === 'extrato') ? 'block' : 'none';
             if(id==='dashboard') renderDonut(getFiltered()); 
             lucide.createIcons(); 
         };
@@ -223,30 +269,34 @@
             const labelS = document.getElementById('label-saldo');
             const indicators = document.getElementById('indicadores-banco');
 
-            if(bancoIndiceAtivo === -1) { 
-                valS.innerText = `R$ ${(rT-dT).toLocaleString('pt-BR', {minimumFractionDigits:2})}`; 
-                labelS.innerText = "Saldo Consolidado"; 
-                document.getElementById('card-saldo-principal').style.backgroundColor = '#0F172A'; 
-            } else { 
-                const b = userBancos[bancoIndiceAtivo];
-                const bSaldo = f.filter(t => t.banco === b.nome).reduce((a,v) => v.tipo==='receita'?a+v.valor:a-v.valor,0);
-                valS.innerText = `R$ ${bSaldo.toLocaleString('pt-BR', {minimumFractionDigits:2})}`; 
-                labelS.innerText = b.nome; // AQUI ESTÁ A CORREÇÃO
-                document.getElementById('card-saldo-principal').style.backgroundColor = b.cor;
+            if(valS) {
+                if(bancoIndiceAtivo === -1) { 
+                    valS.innerText = `R$ ${(rT-dT).toLocaleString('pt-BR', {minimumFractionDigits:2})}`; 
+                    if(labelS) labelS.innerText = "Saldo Consolidado"; 
+                    document.getElementById('card-saldo-principal').style.backgroundColor = '#0F172A'; 
+                } else { 
+                    const b = userBancos[bancoIndiceAtivo];
+                    const bSaldo = f.filter(t => t.banco === b.nome).reduce((a,v) => v.tipo==='receita'?a+v.valor:a-v.valor,0);
+                    valS.innerText = `R$ ${bSaldo.toLocaleString('pt-BR', {minimumFractionDigits:2})}`; 
+                    if(labelS) labelS.innerText = b.nome;
+                    document.getElementById('card-saldo-principal').style.backgroundColor = b.cor;
+                }
             }
-            
-            // Atualiza indicadores visuais (pontinhos)
-            indicators.innerHTML = `<div class="w-3 h-1 rounded-full ${bancoIndiceAtivo===-1?'bg-white':'bg-white/20'}"></div>` + 
-                userBancos.map((_,i) => `<div class="w-1.5 h-1 rounded-full ${bancoIndiceAtivo===i?'bg-white':'bg-white/20'}"></div>`).join('');
-
-            document.getElementById('dash-receitas').innerText = `R$ ${rT.toLocaleString('pt-BR')}`;
-            document.getElementById('dash-despesas').innerText = `R$ ${dT.toLocaleString('pt-BR')}`;
+            if(indicators) {
+                indicators.innerHTML = `<div class="w-3 h-1 rounded-full ${bancoIndiceAtivo===-1?'bg-white':'bg-white/20'}"></div>` + 
+                    userBancos.map((_,i) => `<div class="w-1.5 h-1 rounded-full ${bancoIndiceAtivo===i?'bg-white':'bg-white/20'}"></div>`).join('');
+            }
+            const recEl = document.getElementById('dash-receitas');
+            const desEl = document.getElementById('dash-despesas');
+            if(recEl) recEl.innerText = `R$ ${rT.toLocaleString('pt-BR')}`;
+            if(desEl) desEl.innerText = `R$ ${dT.toLocaleString('pt-BR')}`;
             renderDonut(f); renderMiniFeed(f);
         };
 
         window.renderExtratoFull = () => {
             const f = getFiltered().sort((a,b)=>b.date.seconds-a.date.seconds);
-            document.getElementById('extrato-lista').innerHTML = f.map(t => `
+            const el = document.getElementById('extrato-lista');
+            if(el) el.innerHTML = f.map(t => `
                 <div class="flex justify-between items-center p-5 bg-white dark:bg-darkCard rounded-2xl border border-slate-100 dark:border-slate-800 group transition-all">
                     <div class="flex items-center gap-4">
                         <div class="w-10 h-10 flex items-center justify-center rounded-xl ${t.tipo==='receita'?'bg-emerald-50 text-emerald-600':'bg-rose-50 text-rose-600'} flex-shrink-0"><i data-lucide="${t.tipo==='receita'?'trending-up':'trending-down'}"></i></div>
@@ -254,7 +304,7 @@
                     </div>
                     <div class="flex items-center gap-4">
                         <p class="font-black text-sm">R$ ${t.valor.toFixed(2)}</p>
-                        <button onclick="deleteTransaction('${t.id}')" class="text-rose-500 opacity-0 group-hover:opacity-100 transition-all"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                        <button onclick="deleteTransaction('${t.id}')" class="text-rose-500 opacity-0 group-hover:opacity-100 transition-all border-none bg-transparent cursor-pointer"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                     </div>
                 </div>`).join('');
             lucide.createIcons();
@@ -262,8 +312,8 @@
 
         window.rotacionarSaldo = () => { bancoIndiceAtivo = (bancoIndiceAtivo >= userBancos.length - 1) ? -1 : bancoIndiceAtivo + 1; updateDash(); };
         window.deleteTransaction = async id => { if(confirm("Apagar?")) await deleteDoc(doc(db, "transactions", id)); };
-        async function loadProfile() { const snap = await getDoc(doc(db, "users", userId)); if(snap.exists()) { userSettings = snap.data(); document.getElementById('perf-nome').value = snap.data().nome||""; document.getElementById('perf-user').value = snap.data().usuario||""; } updateCatSelect(); }
-        window.saveSettings = async () => { await setDoc(doc(db, "users", userId), { ...userSettings, nome: document.getElementById('perf-nome').value, usuario: document.getElementById('perf-user').value }, { merge: true }); alert("Salvo!"); };
+        async function loadProfile() { const snap = await getDoc(doc(db, "users", userId)); if(snap.exists()) { userSettings = snap.data(); const n = document.getElementById('perf-nome'); const u = document.getElementById('perf-user'); if(n) n.value = snap.data().nome||""; if(u) u.value = snap.data().usuario||""; } renderConfigAssets(); updateCatSelect(); }
+        window.saveSettings = async () => { const n = document.getElementById('perf-nome'); const u = document.getElementById('perf-user'); await setDoc(doc(db, "users", userId), { ...userSettings, nome: n?n.value:"", usuario: u?u.value:"" }, { merge: true }); alert("Salvo!"); };
         window.handleLogout = () => signOut(auth).then(() => window.location.reload());
         
         function renderDonut(f) { 
@@ -277,16 +327,15 @@
             }); 
         }
 
-        function renderMiniFeed(f) { const s = [...f].sort((a,b)=>b.date.seconds-a.date.seconds).slice(0,4); document.getElementById('mini-feed').innerHTML = s.map(t=>`<div class="flex justify-between items-center p-4 bg-slate-50 dark:bg-slate-900/50 rounded-2xl group transition-all"><p class="font-bold text-xs uppercase">${t.descricao}</p><div class="flex items-center gap-3"><p class="font-black text-xs">R$ ${t.valor.toFixed(2)}</p></div></div>`).join(''); lucide.createIcons(); }
-        window.handlePlusButton = () => { document.getElementById('form-registro').reset(); document.getElementById('modal-lancamento').classList.remove('hidden'); };
-        window.closeModal = () => document.getElementById('modal-lancamento').classList.add('hidden');
-        window.updateCatSelect = () => { const tipo = document.getElementById('inp-tipo').value; const cats = userSettings[tipo === 'despesa' ? 'catDespesa' : 'catReceita'] || []; document.getElementById('inp-cat').innerHTML = cats.map(c => `<option value="${c.n||c}">${c.n||c}</option>`).join(''); };
-        function updateBankSelects() { document.getElementById('inp-banco').innerHTML = userBancos.map(b => `<option value="${b.nome}">${b.nome}</option>`).join(''); }
-        function renderBankList() { document.getElementById('lista-bancos-config').innerHTML = userBancos.map(b => `<div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-2xl flex justify-between items-center group"><div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full" style="background:${b.cor}"></div><span class="font-bold text-xs uppercase">${b.nome}</span></div><button onclick="deleteBank('${b.id}')" class="text-rose-500 opacity-0 group-hover:opacity-100 transition-all"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>`).join(''); lucide.createIcons(); }
-        window.openBankModal = () => document.getElementById('modal-banco').classList.remove('hidden');
-        window.closeBankModal = () => document.getElementById('modal-banco').classList.add('hidden');
-        window.saveBankModal = async () => { const n = document.getElementById('modal-bank-name').value; const c = document.getElementById('modal-bank-color-val').value; if(n && c) { await addDoc(collection(db, "banks"), { userId, nome: n, cor: c }); closeBankModal(); } };
-        window.deleteBank = async id => { if(confirm("Apagar?")) await deleteDoc(doc(db, "banks", id)); };
+        function renderMiniFeed(f) { const s = [...f].sort((a,b)=>b.date.seconds-a.date.seconds).slice(0,4); const el = document.getElementById('mini-feed'); if(el) el.innerHTML = s.map(t=>`<div class="flex justify-between items-center p-4 bg-slate-50 dark:bg-slate-900/50 rounded-2xl group transition-all"><p class="font-bold text-xs uppercase">${t.descricao}</p><div class="flex items-center gap-3"><p class="font-black text-xs">R$ ${t.valor.toFixed(2)}</p></div></div>`).join(''); lucide.createIcons(); }
+        window.handlePlusButton = () => { const f = document.getElementById('form-registro'); if(f) f.reset(); const m = document.getElementById('modal-lancamento'); if(m) m.classList.remove('hidden'); };
+        window.closeModal = () => { const m = document.getElementById('modal-lancamento'); if(m) m.classList.add('hidden'); };
+        window.updateCatSelect = () => { const tEl = document.getElementById('inp-tipo'); const cEl = document.getElementById('inp-cat'); if(tEl && cEl) { const cats = userSettings[tEl.value === 'despesa' ? 'catDespesa' : 'catReceita'] || []; cEl.innerHTML = cats.map(c => `<option value="${c.n||c}">${c.n||c}</option>`).join(''); } };
+        function updateBankSelects() { const el = document.getElementById('inp-banco'); if(el) el.innerHTML = userBancos.map(b => `<option value="${b.nome}">${b.nome}</option>`).join(''); }
+        function renderBankList() { const el = document.getElementById('lista-bancos-config'); if(el) el.innerHTML = userBancos.map(b => `<div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-2xl flex justify-between items-center group"><div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full" style="background:${b.cor}"></div><span class="font-bold text-xs uppercase">${b.nome}</span></div><button onclick="deleteBank('${b.id}')" class="text-rose-500 opacity-0 group-hover:opacity-100 transition-all border-none bg-transparent cursor-pointer"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>`).join(''); lucide.createIcons(); }
+        window.addCategoryPrompt = type => { const n = prompt("Nome:"); if(n) { if(type==='despesa') { if(!userSettings.catDespesa) userSettings.catDespesa=[]; userSettings.catDespesa.push({n, i:'tag'}); } else { if(!userSettings.catReceita) userSettings.catReceita=[]; userSettings.catReceita.push({n, i:'tag'}); } renderConfigAssets(); } };
+        window.removeCategory = (n, t) => { if(t==='despesa') userSettings.catDespesa = userSettings.catDespesa.filter(c => (c.n||c)!==n); else userSettings.catReceita = userSettings.catReceita.filter(c => (c.n||c)!==n); renderConfigAssets(); };
+        function renderConfigAssets() { const dL = document.getElementById('cat-despesa-list'); const rL = document.getElementById('cat-receita-list'); const chip = (c, type) => `<div class="bg-slate-100 dark:bg-slate-800 px-3 py-2 rounded-xl flex items-center gap-2 border border-slate-200 dark:border-slate-700"><span class="text-[10px] font-bold uppercase">${typeof c === 'object' ? c.n : c}</span><button onclick="removeCategory('${typeof c === 'object' ? c.n : c}', '${type}')" class="text-rose-500/50 border-none bg-transparent cursor-pointer"><i data-lucide="x-circle" class="w-3 h-3"></i></button></div>`; if(dL) dL.innerHTML = (userSettings.catDespesa || []).map(c => chip(c, 'despesa')).join(''); if(rL) rL.innerHTML = (userSettings.catReceita || []).map(c => chip(c, 'receita')).join(''); lucide.createIcons(); }
         
         lucide.createIcons();
     </script>
