@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MuFinance v25.6 | Lighthouse</title>
+    <title>MuFinance v25.7</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -17,25 +17,23 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .modal-dark { background-color: #0F172A; border-radius: 2.5rem; color: white; }
         .input-dark { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 1rem; padding: 1rem; outline: none; width: 100%; }
-        #auth-screen { background: radial-gradient(circle at top right, #0F172A, #020617); }
         #sidebar { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); width: 280px; }
         #sidebar.collapsed { width: 90px; }
         #sidebar.collapsed .sidebar-text, #sidebar.collapsed .logo-text { display: none; }
         #sidebar.collapsed .sidebar-item { justify-content: center; padding: 1rem 0; }
+        .input-light { @apply w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-sky-500 text-sm font-medium; }
     </style>
 </head>
 <body class="min-h-screen">
 
-    <div id="auth-screen" class="hidden min-h-screen flex items-center justify-center p-6">
+    <div id="auth-screen" class="hidden min-h-screen flex items-center justify-center p-6 bg-slate-900">
         <div class="bg-white p-10 rounded-[3rem] w-full max-w-md shadow-2xl text-center">
-            <div class="w-16 h-16 bg-sky-600 rounded-2xl flex items-center justify-center text-white mx-auto mb-6 shadow-lg shadow-sky-200">
-                <i data-lucide="zap" class="w-8 h-8 fill-current"></i>
-            </div>
-            <h2 class="text-3xl font-black text-slate-800 tracking-tighter mb-2 italic">MuFinance</h2>
+            <div class="w-16 h-16 bg-sky-600 rounded-2xl flex items-center justify-center text-white mx-auto mb-6 shadow-lg"><i data-lucide="zap" class="fill-current"></i></div>
+            <h2 class="text-3xl font-black text-slate-800 tracking-tighter mb-8 italic">MuFinance</h2>
             <div class="space-y-4">
-                <input type="email" id="login-email" placeholder="E-mail" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-sky-500 font-medium text-sm">
-                <input type="password" id="login-pass" placeholder="Senha" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-sky-500 font-medium text-sm">
-                <button onclick="handleLogin()" class="w-full py-5 bg-slate-900 text-white font-black uppercase tracking-[0.2em] text-xs rounded-2xl shadow-xl hover:bg-slate-800 transition-all">Entrar</button>
+                <input type="email" id="login-email" placeholder="E-mail" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none">
+                <input type="password" id="login-pass" placeholder="Senha" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none">
+                <button onclick="handleLogin()" class="w-full py-5 bg-slate-900 text-white font-black uppercase text-xs rounded-2xl tracking-widest">Acessar</button>
             </div>
         </div>
     </div>
@@ -53,20 +51,16 @@
                 <button onclick="switchTab('dashboard')" id="btn-dashboard" class="sidebar-item w-full flex items-center gap-4 p-4 rounded-xl font-bold text-sm sidebar-active"><i data-lucide="layout-dashboard" class="w-5 h-5"></i> <span class="sidebar-text">Dashboard</span></button>
                 <button onclick="switchTab('extrato')" id="btn-extrato" class="sidebar-item w-full flex items-center gap-4 p-4 rounded-xl font-bold text-sm text-slate-500 hover:bg-slate-50 transition-all"><i data-lucide="receipt" class="w-5 h-5"></i> <span class="sidebar-text">Extrato</span></button>
                 <button onclick="switchTab('drivo')" id="btn-drivo" class="sidebar-item w-full flex items-center gap-4 p-4 rounded-xl font-bold text-sm text-slate-500 hover:bg-slate-50 transition-all"><i data-lucide="gauge" class="w-5 h-5"></i> <span class="sidebar-text">Drivo KM</span></button>
-                
                 <hr class="border-slate-100 my-4">
-                
-                <button onclick="switchTab('perfil')" id="btn-perfil" class="sidebar-item w-full flex items-center gap-4 p-4 rounded-xl font-bold text-sm text-slate-500 hover:bg-slate-50 transition-all">
-                    <i data-lucide="settings" class="w-5 h-5"></i> <span class="sidebar-text">Configurações</span>
-                </button>
+                <button onclick="switchTab('perfil')" id="btn-perfil" class="sidebar-item w-full flex items-center gap-4 p-4 rounded-xl font-bold text-sm text-slate-500 hover:bg-slate-50 transition-all"><i data-lucide="settings" class="w-5 h-5"></i> <span class="sidebar-text">Configurações</span></button>
             </nav>
             <button onclick="handleLogout()" class="flex items-center gap-3 p-4 text-rose-500 font-bold text-sm hover:bg-rose-50 rounded-xl transition-all"><i data-lucide="log-out" class="w-5 h-5"></i> <span class="sidebar-text">Sair</span></button>
         </aside>
 
-        <main class="flex-1 p-6 lg:p-12 pb-32">
+        <main class="flex-1 p-6 lg:p-12 pb-32 overflow-y-auto">
             <header class="flex justify-between items-center mb-10">
                 <div><h1 id="tab-title" class="text-3xl font-extrabold text-slate-800 tracking-tight leading-none">Dashboard</h1></div>
-                <div class="w-12 h-12 rounded-2xl bg-slate-200 border-2 border-white shadow-sm overflow-hidden"><img src="https://ui-avatars.com/api/?name=W&background=0ea5e9&color=fff"></div>
+                <div class="w-12 h-12 rounded-2xl bg-slate-200 border-2 border-white shadow-sm overflow-hidden"><img id="avatar-img" src="https://ui-avatars.com/api/?name=W&background=0ea5e9&color=fff"></div>
             </header>
 
             <div id="content-dashboard" class="tab-content active space-y-8">
@@ -87,38 +81,77 @@
             <div id="content-extrato" class="tab-content space-y-6">
                 <div class="flex flex-col md:flex-row justify-between items-center gap-4 bg-white p-6 rounded-3xl border border-slate-200">
                     <h3 class="font-black text-slate-800 uppercase text-xs tracking-widest">Filtro de Período</h3>
-                    <input type="month" id="filter-month" onchange="renderExtratoFull()" class="p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:border-sky-500">
+                    <input type="month" id="filter-month" onchange="renderExtratoFull()" class="p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm">
                 </div>
                 <div id="extrato-lista" class="space-y-3"></div>
             </div>
 
             <div id="content-drivo" class="tab-content space-y-6">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="card-branco p-10 border-l-8 border-amber-500 text-center"><p class="text-xs font-black text-slate-400 uppercase mb-2">KM Estimados (Fazer 250)</p><h2 class="text-6xl font-black text-slate-800" id="drivo-km">0 KM</h2></div>
+                    <div class="card-branco p-10 border-l-8 border-amber-500 text-center"><p class="text-xs font-black text-slate-400 uppercase mb-2">KM Estimados (Mês)</p><h2 class="text-6xl font-black text-slate-800" id="drivo-km">0 KM</h2></div>
                     <div class="card-branco p-10 border-l-8 border-sky-500 text-center"><p class="text-xs font-black text-slate-400 uppercase mb-2">Custo por KM</p><h2 class="text-6xl font-black text-slate-800" id="drivo-custo">R$ 0,00</h2></div>
                 </div>
             </div>
 
-            <div id="content-perfil" class="tab-content space-y-8">
+            <div id="content-perfil" class="tab-content space-y-8 pb-20">
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <div class="card-branco p-8">
-                        <h3 class="text-xs font-black uppercase text-slate-400 mb-6 tracking-widest">Dados Pessoais</h3>
-                        <div class="space-y-4 text-left">
-                            <div><label class="text-[10px] font-black text-slate-400 uppercase ml-2">Nome</label><input type="text" id="perf-nome" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-sky-500 text-sm"></div>
-                            <div><label class="text-[10px] font-black text-slate-400 uppercase ml-2">Cidade</label><input type="text" id="perf-cidade" value="Fortaleza" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-sky-500 text-sm"></div>
+                    <div class="card-branco p-8 space-y-4 text-left">
+                        <h3 class="text-xs font-black uppercase text-slate-400 mb-6 tracking-widest flex items-center gap-2"><i data-lucide="user" class="w-4 h-4"></i> Dados de Usuário</h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="text-[9px] font-black text-slate-400 uppercase ml-2">Nome Completo</label><input type="text" id="perf-nome" class="input-light"></div>
+                            <div><label class="text-[9px] font-black text-sky-500 uppercase ml-2">Identificador (@)</label><input type="text" id="perf-handle" placeholder="@weverson" class="input-light border-sky-100 bg-sky-50/30"></div>
                         </div>
-                    </div>
-                    <div class="card-branco p-8 text-left">
-                        <h3 class="text-xs font-black uppercase text-slate-400 mb-6 tracking-widest">Configurações da Moto</h3>
-                        <div class="space-y-4">
-                            <div class="grid grid-cols-2 gap-4">
-                                <div><label class="text-[10px] font-black text-slate-400 uppercase ml-2">KM por Litro</label><input type="number" id="veic-consumo" value="29" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-sky-500 text-sm"></div>
-                                <div><label class="text-[10px] font-black text-slate-400 uppercase ml-2">Preço Combustível</label><input type="number" step="0.01" id="veic-gas" value="6.10" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-sky-500 text-sm"></div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="text-[9px] font-black text-slate-400 uppercase ml-2">Cidade</label><input type="text" id="perf-cidade" class="input-light"></div>
+                            <div>
+                                <label class="text-[9px] font-black text-slate-400 uppercase ml-2">Estado (UF)</label>
+                                <select id="perf-uf" class="input-light">
+                                    <option value="CE">Ceará</option>
+                                    <option value="AC">Acre</option><option value="AL">Alagoas</option><option value="AP">Amapá</option><option value="AM">Amazonas</option><option value="BA">Bahia</option><option value="DF">Distrito Federal</option><option value="ES">Espírito Santo</option><option value="GO">Goiás</option><option value="MA">Maranhão</option><option value="MT">Mato Grosso</option><option value="MS">Mato Grosso do Sul</option><option value="MG">Minas Gerais</option><option value="PA">Pará</option><option value="PB">Paraíba</option><option value="PR">Paraná</option><option value="PE">Pernambuco</option><option value="PI">Piauí</option><option value="RJ">Rio de Janeiro</option><option value="RN">Rio Grande do Norte</option><option value="RS">Rio Grande do Sul</option><option value="RO">Rondônia</option><option value="RR">Roraima</option><option value="SC">Santa Catarina</option><option value="SP">São Paulo</option><option value="SE">Sergipe</option><option value="TO">Tocantins</option>
+                                </select>
                             </div>
                         </div>
                     </div>
+
+                    <div class="card-branco p-8 space-y-4 text-left">
+                        <h3 class="text-xs font-black uppercase text-slate-400 mb-6 tracking-widest flex items-center gap-2"><i data-lucide="gauge" class="w-4 h-4"></i> Configuração do Veículo</h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-[9px] font-black text-slate-400 uppercase ml-2">Tipo de Veículo</label>
+                                <select id="veic-tipo" class="input-light">
+                                    <option value="moto">Moto</option>
+                                    <option value="carro">Carro</option>
+                                </select>
+                            </div>
+                            <div><label class="text-[9px] font-black text-slate-400 uppercase ml-2">Consumo (KM/L)</label><input type="number" id="veic-consumo" class="input-light"></div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-[9px] font-black text-slate-400 uppercase ml-2">Montadora</label>
+                                <select id="veic-marca" class="input-light">
+                                    <option value="yamaha">Yamaha</option><option value="honda">Honda</option><option value="toyota">Toyota</option><option value="fiat">Fiat</option><option value="volkswagen">VW</option><option value="outros">Outros</option>
+                                </select>
+                            </div>
+                            <div><label class="text-[9px] font-black text-slate-400 uppercase ml-2">Preço Combustível</label><input type="number" step="0.01" id="veic-gas" class="input-light"></div>
+                        </div>
+                    </div>
+
+                    <div class="card-branco p-8 space-y-4 text-left">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xs font-black uppercase text-slate-400 tracking-widest flex items-center gap-2"><i data-lucide="landmark" class="w-4 h-4"></i> Meus Bancos</h3>
+                            <button onclick="addBank()" class="p-2 bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-100"><i data-lucide="plus" class="w-4 h-4"></i></button>
+                        </div>
+                        <div id="lista-bancos" class="space-y-2">
+                            </div>
+                    </div>
+
+                    <div class="card-branco p-8 space-y-4 text-left">
+                        <h3 class="text-xs font-black uppercase text-slate-400 mb-6 tracking-widest flex items-center gap-2"><i data-lucide="layers" class="w-4 h-4"></i> Categorias Ativas</h3>
+                        <div class="flex flex-wrap gap-2" id="cat-chips">
+                            </div>
+                    </div>
                 </div>
-                <button onclick="saveSettings()" class="w-full py-5 bg-sky-600 text-white font-black uppercase italic tracking-widest rounded-2xl shadow-xl shadow-sky-900/20">Salvar Alterações</button>
+                <button onclick="saveSettings()" class="w-full py-5 bg-sky-600 text-white font-black uppercase italic tracking-widest rounded-2xl shadow-xl hover:bg-sky-500">Salvar Painel de Configurações</button>
             </div>
         </main>
 
@@ -129,9 +162,9 @@
 
     <div id="modal-lancamento" class="hidden fixed inset-0 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4 z-[100]">
         <div class="modal-dark w-full max-w-md p-8 shadow-2xl border border-white/5 space-y-6">
-            <div class="flex gap-2 mb-4">
-                <button onclick="setTipo('despesa')" id="btn-tipo-des" class="flex-1 py-4 bg-rose-600 text-white rounded-2xl font-black text-[10px] uppercase transition-all">Despesa</button>
-                <button onclick="setTipo('receita')" id="btn-tipo-rec" class="flex-1 py-4 bg-slate-800 text-slate-500 rounded-2xl font-black text-[10px] uppercase transition-all">Receita</button>
+            <div class="flex gap-2">
+                <button onclick="setTipo('despesa')" id="btn-tipo-des" class="flex-1 py-4 bg-rose-600 text-white rounded-2xl font-black text-[10px] uppercase">Despesa</button>
+                <button onclick="setTipo('receita')" id="btn-tipo-rec" class="flex-1 py-4 bg-slate-800 text-slate-500 rounded-2xl font-black text-[10px] uppercase">Receita</button>
             </div>
             <form id="form-registro" class="space-y-4">
                 <div class="bg-black/20 p-8 rounded-[2rem] text-center border border-white/5"><input type="number" step="0.01" id="inp-valor" class="bg-transparent text-5xl font-black text-white text-center outline-none w-full" placeholder="0,00" required></div>
@@ -139,10 +172,13 @@
                     <div><label class="text-[9px] font-black text-slate-500 uppercase ml-2">Lançamento</label><input type="date" id="inp-data-lan" class="input-dark text-xs"></div>
                     <div><label class="text-[9px] font-black text-sky-500 uppercase ml-2">Vencimento</label><input type="date" id="inp-data-ven" class="input-dark text-xs border-sky-500/30"></div>
                 </div>
-                <div class="flex items-center justify-between p-4 bg-black/20 rounded-2xl border border-white/5"><span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Efetivado?</span><button type="button" onclick="toggleStatus()" id="btn-status-check" class="px-6 py-2 bg-emerald-600 text-white rounded-lg text-[9px] font-black">SIM</button></div>
+                <div class="flex items-center justify-between p-4 bg-black/20 rounded-2xl border border-white/5">
+                    <span class="text-[10px] font-black text-slate-400 uppercase">Efetivado?</span>
+                    <button type="button" onclick="toggleStatus()" id="btn-status-check" class="px-6 py-2 bg-emerald-600 text-white rounded-lg text-[9px] font-black">SIM</button>
+                </div>
                 <select id="inp-cat" class="input-dark text-xs font-bold uppercase"></select>
                 <input type="text" id="inp-desc" placeholder="Descrição" class="input-dark text-sm">
-                <button type="submit" class="w-full py-5 bg-sky-600 text-white rounded-2xl font-black uppercase text-xs tracking-[0.2em] shadow-xl hover:bg-sky-500 transition-all">SALVAR</button>
+                <button type="submit" class="w-full py-5 bg-sky-600 text-white rounded-2xl font-black uppercase text-xs tracking-[0.2em] shadow-xl">SALVAR</button>
                 <button type="button" onclick="closeModal()" class="w-full text-[10px] font-black text-slate-500 uppercase text-center mt-2">Fechar</button>
             </form>
         </div>
@@ -159,7 +195,10 @@
         const auth = getAuth(app);
 
         let userId, currentTipo = 'despesa', statusRealizado = true, donutChart, dataGlobal = [];
-        const catMap = { despesa: ['Combustível', 'Comida', 'Lazer', 'Fixo', 'Saúde', 'Outros'], receita: ['Salário', 'Freelance', 'Venda', 'Investimento', 'Outros'] };
+        const catMap = { 
+            despesa: ['Combustível', 'Comida', 'Lazer', 'Fixo', 'Saúde', 'Oficina', 'Outros'], 
+            receita: ['Salário', 'Freelance', 'Venda', 'Investimento', 'Outros'] 
+        };
 
         onAuthStateChanged(auth, u => {
             if (u) {
@@ -168,8 +207,7 @@
                 document.getElementById('app-container').classList.remove('hidden');
                 document.getElementById('app-container').classList.add('flex');
                 document.getElementById('filter-month').value = new Date().toISOString().slice(0, 7);
-                loadProfile();
-                startListener();
+                loadProfile(); startListener();
             } else {
                 document.getElementById('app-container').classList.add('hidden');
                 document.getElementById('auth-screen').classList.remove('hidden');
@@ -187,27 +225,55 @@
             document.getElementById('btn-' + id).classList.add('sidebar-active');
             document.getElementById('tab-title').innerText = id === 'perfil' ? 'Configurações' : id.charAt(0).toUpperCase() + id.slice(1);
             if(id === 'extrato') renderExtratoFull();
+            if(id === 'perfil') renderChips();
             lucide.createIcons();
         };
 
         async function loadProfile() {
             const snap = await getDoc(doc(db, "users", userId));
             if(snap.exists()) {
-                const data = snap.data();
-                document.getElementById('perf-nome').value = data.nome || "";
-                document.getElementById('veic-consumo').value = data.consumo || 29;
-                document.getElementById('veic-gas').value = data.precoGasolina || 6.10;
+                const d = snap.data();
+                document.getElementById('perf-nome').value = d.nome || "";
+                document.getElementById('perf-handle').value = d.handle || "";
+                document.getElementById('perf-cidade').value = d.cidade || "Fortaleza";
+                document.getElementById('perf-uf').value = d.uf || "CE";
+                document.getElementById('veic-tipo').value = d.veiculoTipo || "moto";
+                document.getElementById('veic-consumo').value = d.consumo || 29;
+                document.getElementById('veic-gas').value = d.precoGasolina || 6.10;
+                document.getElementById('veic-marca').value = d.veiculoMarca || "yamaha";
             }
+            renderBanks();
+        }
+
+        function renderChips() {
+            const allCats = [...catMap.despesa, ...catMap.receita];
+            document.getElementById('cat-chips').innerHTML = allCats.map(c => `<span class="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-[10px] font-bold uppercase">${c}</span>`).join('');
+        }
+
+        function renderBanks() {
+            // Exemplo de bancos fixos por enquanto, pode ser expandido para o Firebase
+            const banks = ['Carteira (Padrão)', 'Nubank', 'Inter'];
+            document.getElementById('lista-bancos').innerHTML = banks.map(b => `
+                <div class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                    <span class="text-xs font-bold text-slate-700">${b}</span>
+                    <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-500"></i>
+                </div>
+            `).join('');
+            lucide.createIcons();
         }
 
         window.saveSettings = async () => {
             await setDoc(doc(db, "users", userId), {
                 nome: document.getElementById('perf-nome').value,
+                handle: document.getElementById('perf-handle').value,
                 cidade: document.getElementById('perf-cidade').value,
+                uf: document.getElementById('perf-uf').value,
+                veiculoTipo: document.getElementById('veic-tipo').value,
+                veiculoMarca: document.getElementById('veic-marca').value,
                 consumo: parseFloat(document.getElementById('veic-consumo').value),
                 precoGasolina: parseFloat(document.getElementById('veic-gas').value)
             }, { merge: true });
-            alert("Salvo!"); updateDash();
+            alert("Configurações atualizadas!"); updateDash();
         };
 
         function startListener() {
@@ -223,14 +289,10 @@
             document.getElementById('dash-saldo').innerText = `R$ ${(rec - des).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
             document.getElementById('dash-receitas').innerText = `R$ ${rec.toLocaleString('pt-BR')}`;
             document.getElementById('dash-despesas').innerText = `R$ ${des.toLocaleString('pt-BR')}`;
-            
             const gas = dataGlobal.filter(t => t.categoria === 'Combustível').reduce((a, b) => a + b.valor, 0);
-            const cons = parseFloat(document.getElementById('veic-consumo').value || 29);
-            const prec = parseFloat(document.getElementById('veic-gas').value || 6.10);
-            const km = Math.round((gas / prec) * cons);
-            document.getElementById('drivo-km').innerText = `${km} KM`;
-            document.getElementById('drivo-custo').innerText = `R$ ${(gas / (km || 1)).toFixed(2)}`;
-            
+            const c = parseFloat(document.getElementById('veic-consumo').value || 29);
+            const p = parseFloat(document.getElementById('veic-gas').value || 6.10);
+            document.getElementById('drivo-km').innerText = `${Math.round((gas / p) * c)} KM`;
             renderMiniFeed(); renderDonut();
         }
 
@@ -255,19 +317,12 @@
                 const d = new Date(t.date?.seconds * 1000);
                 return d.toISOString().slice(0, 7) === filterVal;
             }).sort((a,b) => b.date?.seconds - a.date?.seconds).slice(0, 20);
-
             if(filtered.length === 0) { container.innerHTML = `<p class="text-center text-slate-400 py-10 font-bold">Sem dados.</p>`; return; }
-
             container.innerHTML = filtered.map(t => `
                 <div class="flex justify-between items-center p-5 bg-white rounded-3xl border border-slate-100 shadow-sm">
                     <div class="flex items-center gap-4">
-                        <div class="w-10 h-10 flex items-center justify-center rounded-xl ${t.tipo === 'receita' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}">
-                            <i data-lucide="${t.tipo === 'receita' ? 'trending-up' : 'trending-down'}"></i>
-                        </div>
-                        <div>
-                            <p class="font-bold text-slate-800 text-sm">${t.descricao}</p>
-                            <p class="text-[10px] text-slate-400 font-bold uppercase">${new Date(t.date?.seconds * 1000).toLocaleDateString('pt-BR')} • ${t.categoria}</p>
-                        </div>
+                        <div class="w-10 h-10 flex items-center justify-center rounded-xl ${t.tipo === 'receita' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}"><i data-lucide="${t.tipo === 'receita' ? 'trending-up' : 'trending-down'}"></i></div>
+                        <div><p class="font-bold text-slate-800 text-sm">${t.descricao}</p><p class="text-[10px] text-slate-400 font-bold uppercase">${new Date(t.date?.seconds * 1000).toLocaleDateString('pt-BR')} • ${t.categoria}</p></div>
                     </div>
                     <div class="text-right">
                         <p class="font-black text-sm">R$ ${t.valor.toLocaleString('pt-BR', {minimumFractionDigits:2})}</p>
