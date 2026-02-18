@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MuFinance v26.2 | Drivo Timeline</title>
+    <title>MuFinance v26.1 | Drivo Timeline</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -21,11 +21,13 @@
         #sidebar.collapsed { width: 90px; }
         #sidebar.collapsed .sidebar-text, #sidebar.collapsed .logo-text { display: none; }
         .input-light { @apply w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-sky-500 text-sm font-medium transition-all; }
+        select.input-light { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1em; }
         
-        /* Timeline Styles */
-        .timeline-container { position: relative; padding-left: 2rem; }
-        .timeline-line { position: absolute; left: 0.75rem; top: 0; bottom: 0; width: 2px; background: #E2E8F0; border-radius: 1px; }
-        .timeline-dot { position: absolute; left: 0; width: 1.5rem; height: 1.5rem; border-radius: 50%; display: flex; items-center; justify-content: center; z-index: 10; background: white; border: 2px solid #E2E8F0; }
+        /* TIMELINE DRIVVO */
+        .timeline-container { position: relative; padding-left: 1.5rem; }
+        .timeline-line { position: absolute; left: 0.5rem; top: 5px; bottom: 0; width: 2px; background: #E2E8F0; }
+        .timeline-item { position: relative; margin-bottom: 2rem; }
+        .timeline-dot { position: absolute; left: -1.45rem; width: 0.8rem; height: 0.8rem; background: #CBD5E1; border: 2px solid white; border-radius: 50%; z-index: 10; }
     </style>
 </head>
 <body class="min-h-screen">
@@ -41,96 +43,274 @@
             </div>
             <nav class="flex-1 space-y-2">
                 <button onclick="switchTab('dashboard')" id="btn-dashboard" class="sidebar-item w-full flex items-center gap-4 p-4 rounded-xl font-bold text-sm text-slate-500 sidebar-active"><i data-lucide="layout-dashboard" class="w-5 h-5"></i> <span class="sidebar-text">Dashboard</span></button>
-                <button onclick="switchTab('extrato')" id="btn-extrato" class="sidebar-item w-full flex items-center gap-4 p-4 rounded-xl font-bold text-sm text-slate-500 hover:bg-slate-50"><i data-lucide="receipt" class="w-5 h-5"></i> <span class="sidebar-text">Extrato</span></button>
-                <button onclick="switchTab('drivo')" id="btn-drivo" class="sidebar-item w-full flex items-center gap-4 p-4 rounded-xl font-bold text-sm text-slate-500 hover:bg-slate-50"><i data-lucide="gauge" class="w-5 h-5"></i> <span class="sidebar-text">Drivo KM</span></button>
+                <button onclick="switchTab('extrato')" id="btn-extrato" class="sidebar-item w-full flex items-center gap-4 p-4 rounded-xl font-bold text-sm text-slate-500 hover:bg-slate-50 transition-all"><i data-lucide="receipt" class="w-5 h-5"></i> <span class="sidebar-text">Extrato</span></button>
+                <button onclick="switchTab('drivo')" id="btn-drivo" class="sidebar-item w-full flex items-center gap-4 p-4 rounded-xl font-bold text-sm text-slate-500 hover:bg-slate-50 transition-all"><i data-lucide="gauge" class="w-5 h-5"></i> <span class="sidebar-text">Drivo KM</span></button>
                 <hr class="border-slate-100 my-4">
-                <button onclick="switchTab('perfil')" id="btn-perfil" class="sidebar-item w-full flex items-center gap-4 p-4 rounded-xl font-bold text-sm text-slate-500 hover:bg-slate-50"><i data-lucide="settings" class="w-5 h-5"></i> <span class="sidebar-text">Configurações</span></button>
+                <button onclick="switchTab('perfil')" id="btn-perfil" class="sidebar-item w-full flex items-center gap-4 p-4 rounded-xl font-bold text-sm text-slate-500 hover:bg-slate-50 transition-all"><i data-lucide="settings" class="w-5 h-5"></i> <span class="sidebar-text">Configurações</span></button>
             </nav>
+            <button onclick="handleLogout()" class="flex items-center gap-3 p-4 text-rose-500 font-bold text-sm hover:bg-rose-50 rounded-xl mt-auto"><i data-lucide="log-out" class="w-5 h-5"></i> <span class="sidebar-text">Sair</span></button>
         </aside>
 
         <main class="flex-1 p-6 lg:p-12 pb-32">
             <header class="flex justify-between items-center mb-10">
-                <h1 id="tab-title" class="text-3xl font-extrabold text-slate-800 tracking-tight italic">Dashboard</h1>
+                <h1 id="tab-title" class="text-3xl font-extrabold text-slate-800 tracking-tight leading-none italic">Dashboard</h1>
                 <div class="w-12 h-12 rounded-2xl bg-slate-200 border-2 border-white shadow-sm overflow-hidden"><img src="https://ui-avatars.com/api/?name=W&background=0ea5e9&color=fff"></div>
             </header>
 
             <div id="content-dashboard" class="tab-content active space-y-8">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-slate-900 p-8 rounded-[2.5rem] shadow-xl text-white relative flex flex-col justify-between min-h-[160px]">
+                        <div><p class="text-[10px] font-black uppercase tracking-widest opacity-60">Saldo em Caixa</p><h2 class="text-4xl font-extrabold mt-2 tracking-tighter" id="dash-saldo">R$ 0,00</h2></div>
+                        <i data-lucide="wallet" class="absolute -right-6 -bottom-6 w-32 h-32 opacity-10 rotate-12"></i>
+                    </div>
+                    <div class="card-branco p-8 border-l-8 border-l-emerald-500 flex flex-col justify-center"><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Receitas</p><h3 class="text-3xl font-extrabold text-slate-800" id="dash-receitas">R$ 0,00</h3></div>
+                    <div class="card-branco p-8 border-l-8 border-l-rose-500 flex flex-col justify-center"><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Despesas</p><h3 class="text-3xl font-extrabold text-slate-800" id="dash-despesas">R$ 0,00</h3></div>
                 </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="card-branco p-8"><h3 class="text-xs font-black uppercase text-slate-400 mb-8 tracking-widest text-center">Distribuição</h3><div class="h-[280px]"><canvas id="chart-rosca"></canvas></div></div>
+                    <div class="card-branco p-8"><h3 class="text-xs font-black uppercase text-slate-400 mb-6 tracking-widest">Feed Recente</h3><div id="mini-feed" class="space-y-4"></div></div>
+                </div>
+            </div>
+
+            <div id="content-extrato" class="tab-content space-y-6">
+                <div id="extrato-lista" class="space-y-3"></div>
+            </div>
 
             <div id="content-drivo" class="tab-content space-y-8">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="card-branco p-8 border-l-8 border-amber-500">
-                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">KM Total Estimado</p>
-                        <h2 class="text-4xl font-extrabold text-slate-800" id="drivo-km-total">0 KM</h2>
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">KM Rodados (Estimativa)</p>
+                        <h2 class="text-4xl font-extrabold text-slate-800" id="drivo-km-resumo">0 KM</h2>
                     </div>
                     <div class="card-branco p-8 border-l-8 border-sky-500">
-                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Média de Consumo</p>
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Média do Veículo</p>
                         <h2 class="text-4xl font-extrabold text-slate-800">29 KM/L</h2>
                     </div>
                 </div>
 
                 <div class="card-branco p-8">
-                    <h3 class="text-xs font-black uppercase text-slate-400 mb-10 tracking-widest">Linha do Tempo de Serviços</h3>
-                    
+                    <h3 class="text-xs font-black uppercase text-slate-400 mb-8 tracking-widest">Histórico de Manutenção</h3>
                     <div class="timeline-container" id="drivo-timeline">
                         <div class="timeline-line"></div>
                         </div>
                 </div>
             </div>
-            
-            </main>
-        
-        <button onclick="openModal()" class="fixed bottom-8 right-8 bg-sky-600 text-white w-16 h-16 rounded-2xl shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-50"><i data-lucide="plus" class="w-8 h-8 stroke-[3]"></i></button>
+
+            <div id="content-perfil" class="tab-content space-y-8 pb-20">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 text-left">
+                    <div class="card-branco p-8 space-y-4">
+                        <h3 class="text-xs font-black uppercase text-slate-400 mb-4 tracking-widest">Perfil</h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <input type="text" id="perf-nome" placeholder="Nome" class="input-light">
+                            <input type="text" id="perf-handle" placeholder="Handle (@)" class="input-light">
+                        </div>
+                    </div>
+                    <div class="card-branco p-8 space-y-4">
+                        <h3 class="text-xs font-black uppercase text-slate-400 mb-4 tracking-widest">Veículo</h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <input type="number" id="veic-consumo" placeholder="KM/L" class="input-light">
+                            <input type="number" step="0.01" id="veic-gas" placeholder="Preço Gasolina" class="input-light">
+                        </div>
+                    </div>
+                    <div class="card-branco p-8 lg:col-span-2">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-xs font-black uppercase text-slate-400 tracking-widest">Contas e Bancos</h3>
+                            <button onclick="addBankPrompt()" class="bg-emerald-50 text-emerald-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase">Adicionar</button>
+                        </div>
+                        <div id="lista-bancos-config" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+                    </div>
+                    <div class="card-branco p-8"><h3 class="text-xs font-black uppercase text-slate-400 mb-4 tracking-widest">Categorias Despesa</h3><div id="cat-despesa-list" class="flex flex-wrap gap-2"></div></div>
+                    <div class="card-branco p-8"><h3 class="text-xs font-black uppercase text-slate-400 mb-4 tracking-widest">Categorias Receita</h3><div id="cat-receita-list" class="flex flex-wrap gap-2"></div></div>
+                </div>
+                <button onclick="saveSettings()" class="w-full py-5 bg-sky-600 text-white font-black uppercase tracking-widest rounded-3xl shadow-xl">Salvar Alterações</button>
+            </div>
+        </main>
+        <button onclick="openModal()" class="fixed bottom-8 right-8 bg-sky-600 text-white w-16 h-16 rounded-2xl shadow-2xl flex items-center justify-center z-50"><i data-lucide="plus"></i></button>
+    </div>
+
+    <div id="modal-lancamento" class="hidden fixed inset-0 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4 z-[100]">
+        <div class="modal-dark w-full max-w-md p-8 space-y-6">
+            <div class="flex gap-2">
+                <button onclick="setTipo('despesa')" id="btn-tipo-des" class="flex-1 py-4 bg-rose-600 text-white rounded-2xl font-black text-[10px] uppercase">Despesa</button>
+                <button onclick="setTipo('receita')" id="btn-tipo-rec" class="flex-1 py-4 bg-slate-800 text-slate-500 rounded-2xl font-black text-[10px] uppercase">Receita</button>
+            </div>
+            <form id="form-registro" class="space-y-4">
+                <div class="bg-black/20 p-8 rounded-[2rem] text-center border border-white/5"><input type="number" step="0.01" id="inp-valor" class="bg-transparent text-5xl font-black text-white text-center outline-none w-full" placeholder="0,00" required></div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="text-[9px] font-black text-slate-500 uppercase">Data</label><input type="date" id="inp-data-ven" class="input-dark text-xs"></div>
+                    <div><label class="text-[9px] font-black text-slate-500 uppercase">Conta</label><select id="inp-banco" class="input-dark text-xs font-bold uppercase"></select></div>
+                </div>
+                <select id="inp-cat" class="input-dark text-xs font-bold uppercase"></select>
+                <input type="text" id="inp-desc" placeholder="Descrição (ex: Posto Lighthouse)" class="input-dark text-sm">
+                <button type="submit" class="w-full py-5 bg-sky-600 text-white rounded-2xl font-black uppercase text-xs tracking-widest">Confirmar</button>
+                <button type="button" onclick="closeModal()" class="w-full text-[10px] font-black text-slate-500 uppercase text-center mt-2">Fechar</button>
+            </form>
+        </div>
     </div>
 
     <script type="module">
-        // Importações e Config do Firebase (Mantidas)
-        
-        // Mock de ícones por serviço
-        const serviceIcons = {
-            'Combustível': { icon: 'fuel', color: 'text-amber-500', bg: 'bg-amber-50' },
-            'Oficina': { icon: 'wrench', color: 'text-rose-500', bg: 'bg-rose-50' },
-            'Saúde': { icon: 'heart', color: 'text-red-500', bg: 'bg-red-50' },
-            'Outros': { icon: 'settings', color: 'text-slate-500', bg: 'bg-slate-50' }
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, where, Timestamp, doc, getDoc, setDoc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyArWGgDx0uxce8w72J_1UpKPCUJGvHs3fI", authDomain: "drivo-e-money.firebaseapp.com", projectId: "drivo-e-money", storageBucket: "drivo-e-money.firebasestorage.app", messagingSenderId: "62950568252", appId: "1:62950568252:web:7638827c39b589a9046e39" };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        let userId, dataGlobal = [], donutChart, userBancos = [], userSettings = {
+            catDespesa: ['Combustível', 'Comida', 'Aluguel', 'Saúde', 'Oficina'],
+            catReceita: ['Salário', 'Freelance', 'Venda']
         };
+
+        onAuthStateChanged(auth, u => {
+            if (u) {
+                userId = u.uid;
+                document.getElementById('app-container').classList.remove('hidden');
+                document.getElementById('app-container').classList.add('flex');
+                loadProfile(); startListener();
+            } else { window.location.reload(); }
+        });
+
+        async function loadProfile() {
+            const snap = await getDoc(doc(db, "users", userId));
+            if(snap.exists()) {
+                const d = snap.data();
+                userSettings = { ...userSettings, ...d };
+                document.getElementById('perf-nome').value = d.nome || "";
+                document.getElementById('perf-handle').value = d.handle || "";
+                document.getElementById('veic-consumo').value = d.consumo || 29;
+                document.getElementById('veic-gas').value = d.precoGasolina || 6.10;
+            }
+            renderConfigAssets();
+        }
+
+        function startListener() {
+            onSnapshot(query(collection(db, "transactions"), where("userId", "==", userId)), (snap) => {
+                dataGlobal = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                updateDash();
+                renderDrivoTimeline();
+            });
+            onSnapshot(query(collection(db, "banks"), where("userId", "==", userId)), (snap) => {
+                userBancos = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderBankList();
+            });
+        }
 
         function renderDrivoTimeline() {
             const container = document.getElementById('drivo-timeline');
-            // Filtramos apenas despesas relacionadas ao veículo
-            const vehicleData = dataGlobal.filter(t => t.tipo === 'despesa' && ['Combustível', 'Oficina'].includes(t.categoria))
-                                         .sort((a,b) => (b.date?.seconds || 0) - (a.date?.seconds || 0));
+            const vehicleCats = ['Combustível', 'Oficina', 'Documentação'];
+            const events = dataGlobal.filter(t => vehicleCats.includes(t.categoria))
+                                     .sort((a,b) => (b.date?.seconds || 0) - (a.date?.seconds || 0));
 
-            container.innerHTML = '<div class="timeline-line"></div>' + vehicleData.map((t, index) => {
-                const config = serviceIcons[t.categoria] || serviceIcons['Outros'];
+            const gasPrice = parseFloat(document.getElementById('veic-gas').value || 6.10);
+            const consumption = parseFloat(document.getElementById('veic-consumo').value || 29);
+            
+            let totalKm = 0;
+            
+            container.innerHTML = '<div class="timeline-line"></div>' + events.map(t => {
                 const date = new Date(t.date?.seconds * 1000).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+                const icon = t.categoria === 'Combustível' ? 'fuel' : 'wrench';
+                const color = t.categoria === 'Combustível' ? 'text-amber-500' : 'text-rose-500';
                 
-                // Cálculo de KM acumulado para o exemplo (Simulação Drivvo)
-                const kmSimulado = 19618 + (index * 120); 
+                // Cálculo de KM por abastecimento
+                const kmEvent = t.categoria === 'Combustível' ? Math.round((t.valor / gasPrice) * consumption) : 0;
+                totalKm += kmEvent;
 
                 return `
-                <div class="relative mb-12 pl-8">
-                    <div class="timeline-dot ${config.bg}">
-                        <i data-lucide="${config.icon}" class="w-3 h-3 ${config.color}"></i>
-                    </div>
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <h4 class="font-bold text-slate-800 text-sm">${t.categoria}</h4>
-                            <p class="text-[10px] text-slate-400 font-bold uppercase"><i data-lucide="map-pin" class="w-2 h-2 inline mr-1"></i> ${t.descricao || 'Local não informado'}</p>
-                            <p class="text-[11px] font-bold text-slate-500 mt-1"><i data-lucide="gauge" class="w-3 h-3 inline mr-1"></i> ${kmSimulado} km</p>
+                <div class="timeline-item pl-6">
+                    <div class="timeline-dot"></div>
+                    <div class="flex justify-between items-start bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                        <div class="flex gap-3">
+                            <div class="p-2 bg-white rounded-lg shadow-sm h-fit"><i data-lucide="${icon}" class="w-4 h-4 ${color}"></i></div>
+                            <div>
+                                <p class="font-bold text-sm text-slate-800">${t.categoria}</p>
+                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-tighter">${t.descricao || 'Serviço'}</p>
+                            </div>
                         </div>
                         <div class="text-right">
-                            <span class="block text-[10px] font-black text-slate-300 uppercase">${date}</span>
-                            <span class="block font-black text-sm text-slate-700">R$ ${t.valor.toFixed(2)}</span>
+                            <p class="text-[10px] font-black text-slate-300 uppercase">${date}</p>
+                            <p class="font-black text-sm text-slate-700">R$ ${t.valor.toFixed(2)}</p>
+                            ${kmEvent > 0 ? `<p class="text-[9px] font-bold text-sky-500">+${kmEvent} KM</p>` : ''}
                         </div>
                     </div>
-                </div>
-                `;
+                </div>`;
             }).join('');
             
+            document.getElementById('drivo-km-resumo').innerText = `${totalKm} KM`;
             lucide.createIcons();
         }
 
-        // Adicione renderDrivoTimeline() dentro do seu startListener para atualizar em tempo real
+        function updateDash() {
+            const rec = dataGlobal.filter(t => t.tipo === 'receita').reduce((a, b) => a + b.valor, 0);
+            const des = dataGlobal.filter(t => t.tipo === 'despesa').reduce((a, b) => a + b.valor, 0);
+            document.getElementById('dash-saldo').innerText = `R$ ${(rec - des).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+            document.getElementById('dash-receitas').innerText = `R$ ${rec.toLocaleString('pt-BR')}`;
+            document.getElementById('dash-despesas').innerText = `R$ ${des.toLocaleString('pt-BR')}`;
+            renderDonut(); renderMiniFeed();
+        }
+
+        // Funções de apoio (Renderização de listas e navegação)
+        window.switchTab = (id) => {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('sidebar-active'));
+            document.getElementById('content-' + id).classList.add('active');
+            document.getElementById('btn-' + id).classList.add('sidebar-active');
+            document.getElementById('tab-title').innerText = id === 'perfil' ? 'Configurações' : id.charAt(0).toUpperCase() + id.slice(1);
+            lucide.createIcons();
+        };
+
+        window.toggleSidebar = () => document.getElementById('sidebar').classList.toggle('collapsed');
+        window.handleLogout = () => signOut(auth).then(() => window.location.reload());
+
+        // Restante das funções de banco e categorias mantidas para não quebrar as configurações
+        window.addBankPrompt = async () => { const n = prompt("Nome da Conta:"); if(n) await addDoc(collection(db, "banks"), { userId, nome: n }); };
+        function renderBankList() { document.getElementById('lista-bancos-config').innerHTML = userBancos.map(b => `<div class="p-4 bg-slate-50 rounded-2xl flex justify-between items-center border border-slate-100"><span class="text-xs font-bold">${b.nome}</span></div>`).join(''); lucide.createIcons(); }
+        function renderConfigAssets() {
+            const renderChip = (cat, type) => `<div class="bg-slate-50 px-3 py-2 rounded-xl border border-slate-200 flex items-center gap-2"><span class="text-[9px] font-black uppercase text-slate-600">${cat}</span></div>`;
+            document.getElementById('cat-despesa-list').innerHTML = userSettings.catDespesa.map(c => renderChip(c, 'despesa')).join('');
+            document.getElementById('cat-receita-list').innerHTML = userSettings.catReceita.map(c => renderChip(c, 'receita')).join('');
+            lucide.createIcons();
+        }
+
+        function renderDonut() {
+            const ctx = document.getElementById('chart-rosca').getContext('2d');
+            const cats = {};
+            dataGlobal.filter(t => t.tipo === 'despesa').forEach(t => cats[t.categoria] = (cats[t.categoria] || 0) + t.valor);
+            if (donutChart) donutChart.destroy();
+            donutChart = new Chart(ctx, { type: 'doughnut', data: { labels: Object.keys(cats), datasets: [{ data: Object.values(cats), backgroundColor: ['#0EA5E9', '#10B981', '#F59E0B', '#F43F5E', '#6366F1'], borderWidth: 0 }] }, options: { cutout: '80%', plugins: { legend: { position: 'bottom' } } } });
+        }
+
+        function renderMiniFeed() {
+            const sorted = [...dataGlobal].sort((a,b) => (b.date?.seconds || 0) - (a.date?.seconds || 0)).slice(0, 4);
+            document.getElementById('mini-feed').innerHTML = sorted.map(t => `<div class="flex justify-between items-center p-4 bg-slate-50 rounded-2xl"><div class="flex items-center gap-4"><i data-lucide="${t.tipo === 'receita' ? 'arrow-up' : 'arrow-down'}" class="w-4 h-4 ${t.tipo === 'receita' ? 'text-emerald-500' : 'text-rose-500'}"></i><div><p class="font-bold text-sm">${t.descricao}</p><p class="text-[9px] font-black opacity-40 uppercase">${t.categoria}</p></div></div><p class="font-black text-sm">R$ ${t.valor.toFixed(2)}</p></div>`).join('');
+            lucide.createIcons();
+        }
+
+        window.openModal = () => { document.getElementById('inp-data-ven').value = new Date().toISOString().split('T')[0]; updateModalSelects(); document.getElementById('modal-lancamento').classList.remove('hidden'); };
+        window.closeModal = () => document.getElementById('modal-lancamento').classList.add('hidden');
+        window.setTipo = (t) => { currentTipo = t; updateModalSelects(); };
+        function updateModalSelects() { 
+            document.getElementById('inp-cat').innerHTML = userSettings[currentTipo === 'despesa' ? 'catDespesa' : 'catReceita'].map(c => `<option value="${c}">${c}</option>`).join(''); 
+            document.getElementById('inp-banco').innerHTML = userBancos.map(b => `<option value="${b.nome}">${b.nome}</option>`).join('');
+        }
+
+        document.getElementById('form-registro').onsubmit = async (e) => {
+            e.preventDefault();
+            await addDoc(collection(db, "transactions"), {
+                userId,
+                valor: parseFloat(document.getElementById('inp-valor').value),
+                descricao: document.getElementById('inp-desc').value,
+                categoria: document.getElementById('inp-cat').value,
+                banco: document.getElementById('inp-banco').value,
+                tipo: currentTipo,
+                status: 'realizado',
+                date: Timestamp.fromDate(new Date(document.getElementById('inp-data-ven').value + 'T12:00:00'))
+            });
+            closeModal(); e.target.reset();
+        };
+
+        lucide.createIcons();
     </script>
 </body>
 </html>
