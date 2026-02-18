@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MuFinance v27.4</title>
+    <title>MuFinance v27.5</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -64,8 +64,8 @@
                         </div>
                         <i data-lucide="wallet" class="absolute -right-6 -bottom-6 w-32 h-32 opacity-10 rotate-12"></i>
                     </div>
-                    <div class="card-branco p-8 border-l-8 border-emerald-500 flex flex-col justify-center"><p class="text-[10px] font-black opacity-60 uppercase tracking-widest mb-1">Receitas</p><h3 class="text-3xl font-extrabold" id="dash-receitas">R$ 0,00</h3></div>
-                    <div class="card-branco p-8 border-l-8 border-rose-500 flex flex-col justify-center"><p class="text-[10px] font-black opacity-60 uppercase tracking-widest mb-1">Despesas</p><h3 class="text-3xl font-extrabold" id="dash-despesas">R$ 0,00</h3></div>
+                    <div class="card-branco p-6 border-l-8 border-emerald-500 flex flex-col justify-center"><p class="text-[10px] font-black opacity-60 uppercase tracking-widest mb-1">Receitas</p><h3 class="text-3xl font-extrabold" id="dash-receitas">R$ 0,00</h3></div>
+                    <div class="card-branco p-6 border-l-8 border-rose-500 flex flex-col justify-center"><p class="text-[10px] font-black opacity-60 uppercase tracking-widest mb-1">Despesas</p><h3 class="text-3xl font-extrabold" id="dash-despesas">R$ 0,00</h3></div>
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -114,7 +114,7 @@
                     </div>
                     <div class="card-branco p-8 lg:col-span-2 flex justify-between items-center">
                         <button onclick="resetAppData()" class="bg-rose-600/10 text-rose-600 px-8 py-4 rounded-2xl text-[10px] font-black uppercase">Zerar Transações</button>
-                        <button onclick="saveSettings()" class="px-12 py-5 bg-sky-600 text-white font-black uppercase rounded-3xl shadow-xl">Salvar Configurações</button>
+                        <button onclick="saveSettings()" class="px-12 py-5 bg-sky-600 text-white font-black uppercase rounded-3xl shadow-xl">Salvar Tudo</button>
                     </div>
                 </div>
             </div>
@@ -253,39 +253,78 @@
             lucide.createIcons();
         };
 
-        // CORREÇÃO DUPLICIDADE AO SALVAR BANCO
+        // BANCOS
+        window.openBankModal = (id = null, n = '', c = '#111111') => {
+            document.getElementById('bank-modal-title').innerText = id ? 'Editar Banco' : 'Novo Banco';
+            document.getElementById('modal-bank-id').value = id || '';
+            document.getElementById('modal-bank-name').value = n;
+            document.getElementById('modal-bank-color-val').value = c;
+            document.getElementById('modal-banco').classList.remove('hidden');
+        };
+        window.selectBankColor = (hex, el) => {
+            document.querySelectorAll('.bank-option').forEach(opt => opt.classList.remove('selected'));
+            el.classList.add('selected');
+            document.getElementById('modal-bank-color-val').value = hex;
+        };
         window.saveBankModal = async () => {
             const id = document.getElementById('modal-bank-id').value;
             const n = document.getElementById('modal-bank-name').value;
             const c = document.getElementById('modal-bank-color-val').value;
             if(!n || !c) return alert("Preencha tudo!");
-            if(id) {
-                await updateDoc(doc(db, "banks", id), { nome: n, cor: c });
-            } else {
-                await addDoc(collection(db, "banks"), { userId, nome: n, cor: c });
-            }
+            if(id) await updateDoc(doc(db, "banks", id), { nome: n, cor: c });
+            else await addDoc(collection(db, "banks"), { userId, nome: n, cor: c });
             closeBankModal();
         };
+        window.deleteBank = async (id) => {
+            if(confirm("Deseja apagar este banco?")) await deleteDoc(doc(db, "banks", id));
+        };
+        window.closeBankModal = () => document.getElementById('modal-banco').classList.add('hidden');
 
-        // RESTO DAS FUNÇÕES ...
-        function startListener() { onSnapshot(query(collection(db, "transactions"), where("userId", "==", userId)), (snap) => { dataGlobal = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })); updateDash(); renderExtratoFull(); }); onSnapshot(query(collection(db, "banks"), where("userId", "==", userId)), (snap) => { userBancos = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })); renderBankList(); updateDash(); }); }
+        // FIREBASE LISTENER & RENDERERS
+        function startListener() { 
+            onSnapshot(query(collection(db, "transactions"), where("userId", "==", userId)), (snap) => { 
+                dataGlobal = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })); 
+                updateDash(); 
+                renderExtratoFull(); 
+            }); 
+            onSnapshot(query(collection(db, "banks"), where("userId", "==", userId)), (snap) => { 
+                userBancos = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })); 
+                renderBankList(); 
+                updateDash(); 
+            }); 
+        }
+        function renderBankList() { 
+            document.getElementById('lista-bancos-config').innerHTML = userBancos.map(b => `
+                <div class="p-4 card-branco flex justify-between items-center">
+                    <div class="flex items-center gap-3">
+                        <div class="w-3 h-3 rounded-full" style="background:${b.cor}"></div>
+                        <span class="text-xs font-bold">${b.nome}</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="openBankModal('${b.id}','${b.nome}','${b.cor}')" class="text-sky-500"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
+                        <button onclick="deleteBank('${b.id}')" class="text-rose-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    </div>
+                </div>`).join(''); 
+            lucide.createIcons(); 
+        }
+
+        // DEMAIS FUNÇÕES GLOBAIS
         window.renderExtratoFull = () => { const container = document.getElementById('extrato-lista'); const month = document.getElementById('filter-month').value; const filtered = dataGlobal.filter(t => new Date(t.date?.seconds * 1000).toISOString().slice(0, 7) === month).sort((a,b) => b.date.seconds - a.date.seconds); container.innerHTML = filtered.map(t => `<div class="flex justify-between items-center p-5 card-branco group"><div class="flex items-center gap-4"><div class="w-10 h-10 flex items-center justify-center rounded-xl ${t.tipo === 'receita' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}"><i data-lucide="${t.tipo === 'receita' ? 'trending-up' : 'trending-down'}"></i></div><div><p class="font-bold text-sm">${t.descricao}</p><p class="text-[10px] opacity-40 font-black uppercase">${t.categoria}</p></div></div><div class="flex items-center gap-4 text-right"><div><p class="font-black text-sm">R$ ${t.valor.toFixed(2)}</p><span class="text-[8px] font-black px-2 py-0.5 rounded-full ${t.status === 'realizado' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}">${t.status === 'realizado' ? 'OK' : 'PAG'}</span></div><div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-all"><button onclick="editTransaction('${t.id}')" class="text-sky-500"><i data-lucide="edit-3" class="w-4 h-4"></i></button><button onclick="deleteTransaction('${t.id}')" class="text-rose-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div></div></div>`).join(''); lucide.createIcons(); };
         window.editTransaction = (id) => { const t = dataGlobal.find(x => x.id === id); if(!t) return; document.getElementById('edit-id').value = id; document.getElementById('inp-valor').value = t.valor; document.getElementById('inp-desc').value = t.descricao; document.getElementById('inp-data-ven').value = new Date(t.date.seconds * 1000).toISOString().split('T')[0]; setTipo(t.tipo); statusRealizado = t.status === 'realizado'; const btn = document.getElementById('btn-status-check'); btn.innerText = statusRealizado ? 'EFETIVADO' : 'PLANEJADO'; updateModalSelects(); document.getElementById('inp-cat').value = t.categoria; document.getElementById('inp-banco').value = t.banco; document.getElementById('modal-lancamento').classList.remove('hidden'); };
         window.deleteTransaction = async (id) => { if(confirm("Deseja apagar?")) await deleteDoc(doc(db, "transactions", id)); };
         window.switchTab = (id) => { document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active')); document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('sidebar-active')); document.getElementById('content-' + id).classList.add('active'); document.getElementById('btn-' + id).classList.add('sidebar-active'); if(id === 'extrato') renderExtratoFull(); lucide.createIcons(); };
-        window.openBankModal = (id = null, n = '', c = '#111111') => { document.getElementById('bank-modal-title').innerText = id ? 'Editar' : 'Novo'; document.getElementById('modal-bank-id').value = id || ''; document.getElementById('modal-bank-name').value = n; document.getElementById('modal-bank-color-val').value = c; document.getElementById('modal-banco').classList.remove('hidden'); };
-        window.selectBankColor = (hex, el) => { document.querySelectorAll('.bank-option').forEach(opt => opt.classList.remove('selected')); el.classList.add('selected'); document.getElementById('modal-bank-color-val').value = hex; };
-        window.closeBankModal = () => document.getElementById('modal-banco').classList.add('hidden');
         window.saveSettings = async () => { await setDoc(doc(db, "users", userId), { ...userSettings, nome: document.getElementById('perf-nome').value, consumo: parseFloat(document.getElementById('veic-consumo').value) }, { merge: true }); alert("Salvo!"); };
         async function loadProfile() { const snap = await getDoc(doc(db, "users", userId)); if(snap.exists()) { userSettings = {...userSettings, ...snap.data()}; document.getElementById('perf-nome').value = snap.data().nome; } renderConfigAssets(); }
         function renderConfigAssets() { const chip = (c) => `<div class="bg-slate-50 dark:bg-slate-800 p-3 rounded-xl flex items-center gap-2 border border-slate-200/10"><i data-lucide="${c.i}" class="w-3 h-3 opacity-40"></i><span class="text-[9px] font-black uppercase">${c.n}</span></div>`; document.getElementById('cat-despesa-list').innerHTML = userSettings.catDespesa.map(c => chip(c)).join(''); document.getElementById('cat-receita-list').innerHTML = userSettings.catReceita.map(c => chip(c)).join(''); lucide.createIcons(); }
-        function renderBankList() { document.getElementById('lista-bancos-config').innerHTML = userBancos.map(b => `<div class="p-4 card-branco flex justify-between items-center"><div class="flex items-center gap-3"><div class="w-3 h-3 rounded-full" style="background:${b.cor}"></div><span class="text-xs font-bold">${b.nome}</span></div><button onclick="openBankModal('${b.id}','${b.nome}','${b.cor}')" class="text-sky-500"><i data-lucide="edit-3" class="w-4 h-4"></i></button></div>`).join(''); lucide.createIcons(); }
         document.getElementById('form-registro-financeiro').onsubmit = async (e) => { e.preventDefault(); const id = document.getElementById('edit-id').value; const payload = { userId, valor: parseFloat(document.getElementById('inp-valor').value), descricao: document.getElementById('inp-desc').value, categoria: document.getElementById('inp-cat').value, banco: document.getElementById('inp-banco').value, tipo: currentTipo, status: statusRealizado ? 'realizado' : 'planejado', date: Timestamp.fromDate(new Date(document.getElementById('inp-data-ven').value + 'T12:00:00')) }; if(id) await updateDoc(doc(db, "transactions", id), payload); else await addDoc(collection(db, "transactions"), payload); closeModal(); };
         window.handlePlusButton = () => { document.getElementById('edit-id').value = ''; document.getElementById('form-registro-financeiro').reset(); document.getElementById('modal-lancamento').classList.remove('hidden'); updateModalSelects(); };
         window.updateModalSelects = () => { const cats = userSettings[currentTipo==='despesa'?'catDespesa':'catReceita']; document.getElementById('inp-cat').innerHTML = (cats || []).map(c => `<option value="${c.n}">${c.n}</option>`).join(''); document.getElementById('inp-banco').innerHTML = userBancos.map(b => `<option value="${b.nome}">${b.nome}</option>`).join(''); };
         window.toggleStatus = () => { statusRealizado = !statusRealizado; document.getElementById('btn-status-check').innerText = statusRealizado ? 'EFETIVADO' : 'PLANEJADO'; };
         window.closeModal = () => document.getElementById('modal-lancamento').classList.add('hidden');
         window.handleLogout = () => signOut(auth).then(() => window.location.reload());
+        window.toggleSidebar = () => document.getElementById('sidebar').classList.toggle('collapsed');
+        window.setTipo = (t) => { currentTipo = t; updateModalSelects(); };
+        window.resetAppData = async () => { if(confirm("Zerar tudo?")) { const batch = writeBatch(db); const snap = await getDocs(query(collection(db, "transactions"), where("userId", "==", userId))); snap.forEach(d => batch.delete(d.ref)); await batch.commit(); } };
         lucide.createIcons();
     </script>
 </body>
