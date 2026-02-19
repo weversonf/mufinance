@@ -290,7 +290,10 @@
         window.updateDash = () => {
             const f = getFiltered();
             // AJUSTE: Somente efetivadas para o Dashboard
-            const fEfetivadas = f.filter(t => t.status === 'efetivada' || !t.status);
+            const fEfetivadas = f.filter(t => {
+            const status = t.status ? t.status.toLowerCase() : 'efetivada';
+            return status === 'efetivada';
+            });
             
             const rT = fEfetivadas.filter(t => t.tipo === 'receita').reduce((a,b) => a+b.valor,0);
             const dT = fEfetivadas.filter(t => t.tipo === 'despesa').reduce((a,b) => a+b.valor,0);
