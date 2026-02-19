@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MuFinance v27.17.9 | Pro Edition</title>
+    <title>MuFinance v27.18</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -87,51 +87,12 @@
                 </div>
             </header>
 
-            <div id="content-perfil" class="tab-content space-y-8 pb-20">
-                <div class="bg-white dark:bg-darkCard p-8 rounded-[2rem] shadow-sm">
-                    <h3 class="text-xs font-black uppercase mb-6 tracking-widest opacity-60 italic">Personalização</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <input type="text" id="perf-nome" placeholder="Seu Nome" class="input-standard">
-                        <input type="text" id="perf-user" placeholder="Nome de Usuário" class="input-standard">
-                    </div>
-                </div>
-
-                <div class="bg-white dark:bg-darkCard p-8 rounded-[2rem] shadow-sm">
-                    <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-xs font-black uppercase tracking-widest opacity-60 italic">Contas & Bancos</h3>
-                        <button onclick="openBankModal()" class="bg-brand text-white px-5 py-2 rounded-xl text-[10px] font-black uppercase shadow-lg shadow-brand/20">Novo Banco</button>
-                    </div>
-                    <div id="lista-bancos-config" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="bg-white dark:bg-darkCard p-8 rounded-[2rem] shadow-sm">
-                        <div class="flex justify-between items-center mb-6">
-                            <h3 class="text-xs font-black uppercase tracking-widest opacity-60 italic">Categorias Despesa</h3>
-                            <button onclick="addCategoryPrompt('despesa')" class="text-brand hover:scale-110 transition-transform"><i data-lucide="plus-circle"></i></button>
-                        </div>
-                        <div id="cat-despesa-list" class="flex flex-wrap gap-2"></div>
-                    </div>
-
-                    <div class="bg-white dark:bg-darkCard p-8 rounded-[2rem] shadow-sm">
-                        <div class="flex justify-between items-center mb-6">
-                            <h3 class="text-xs font-black uppercase tracking-widest opacity-60 italic">Categorias Receita</h3>
-                            <button onclick="addCategoryPrompt('receita')" class="text-brand hover:scale-110 transition-transform"><i data-lucide="plus-circle"></i></button>
-                        </div>
-                        <div id="cat-receita-list" class="flex flex-wrap gap-2"></div>
-                    </div>
-                </div>
-
-                <button onclick="saveSettings()" class="w-full py-5 bg-slate-900 text-white dark:bg-brand font-black uppercase rounded-3xl shadow-xl hover:scale-[1.01] active:scale-95 transition-all">Salvar Todas as Preferências</button>
-            </div>
-
             <div id="content-dashboard" class="tab-content active space-y-8">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div onclick="rotacionarSaldo()" id="card-saldo-principal" class="bg-slate-900 p-6 rounded-[2.5rem] shadow-xl text-white relative flex flex-col justify-center min-h-[160px] cursor-pointer active:scale-95 transition-all">
                         <div class="relative z-10 text-center">
                             <h2 class="text-3xl lg:text-4xl font-extrabold tracking-tighter" id="dash-saldo">R$ 0,00</h2>
                             <p class="text-[9px] font-black uppercase tracking-widest opacity-60 mt-1" id="label-saldo">Saldo Consolidado</p>
-                            <div class="flex justify-center gap-1.5 mt-4" id="indicadores-banco"></div>
                         </div>
                     </div>
                     <div class="bg-white dark:bg-darkCard p-5 rounded-[2rem] border-l-8 border-emerald-500 shadow-sm flex flex-col justify-center min-h-[140px]"><p class="text-[9px] font-black opacity-50 uppercase tracking-widest mb-1">Receitas</p><h3 class="text-xl lg:text-2xl font-extrabold text-emerald-500" id="dash-receitas">R$ 0,00</h3></div>
@@ -140,7 +101,7 @@
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     <div class="bg-white dark:bg-darkCard p-8 rounded-[2rem] shadow-sm">
                         <div class="flex justify-between items-center mb-8">
-                            <h3 class="text-xs font-black uppercase opacity-60 tracking-widest italic leading-none">Distribuição</h3>
+                            <h3 class="text-xs font-black uppercase opacity-60 tracking-widest italic">Distribuição</h3>
                             <div class="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl shadow-inner">
                                 <button onclick="setChartTipo('despesa')" id="pill-des" class="px-4 py-1.5 text-[9px] font-black uppercase rounded-lg bg-slate-900 text-white dark:bg-brand transition-all border-none">Despesas</button>
                                 <button onclick="setChartTipo('receita')" id="pill-rec" class="px-4 py-1.5 text-[9px] font-black uppercase rounded-lg text-slate-400 transition-all border-none">Receitas</button>
@@ -153,26 +114,55 @@
             </div>
 
             <div id="content-extrato" class="tab-content space-y-6"><div id="extrato-lista" class="space-y-3 pb-20"></div></div>
+
+            <div id="content-perfil" class="tab-content space-y-8 pb-20">
+                <div class="bg-white dark:bg-darkCard p-8 rounded-[2rem] shadow-sm">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xs font-black uppercase tracking-widest opacity-60 italic">Contas & Bancos</h3>
+                        <button onclick="openBankModal()" class="bg-brand text-white px-5 py-2 rounded-xl text-[10px] font-black uppercase">Novo Banco</button>
+                    </div>
+                    <div id="lista-bancos-config" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white dark:bg-darkCard p-8 rounded-[2rem] shadow-sm">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-xs font-black uppercase tracking-widest opacity-60 italic">Categorias Despesa</h3>
+                            <button onclick="addCategoryPrompt('despesa')" class="text-brand"><i data-lucide="plus-circle"></i></button>
+                        </div>
+                        <div id="cat-despesa-list" class="flex flex-wrap gap-2"></div>
+                    </div>
+                    <div class="bg-white dark:bg-darkCard p-8 rounded-[2rem] shadow-sm">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-xs font-black uppercase tracking-widest opacity-60 italic">Categorias Receita</h3>
+                            <button onclick="addCategoryPrompt('receita')" class="text-brand"><i data-lucide="plus-circle"></i></button>
+                        </div>
+                        <div id="cat-receita-list" class="flex flex-wrap gap-2"></div>
+                    </div>
+                </div>
+
+                <div class="pt-10">
+                    <button onclick="openResetModal()" class="w-full py-4 border-2 border-rose-500/20 text-rose-500 hover:bg-rose-500 hover:text-white font-black uppercase rounded-2xl transition-all text-[10px] tracking-widest">
+                        Zona de Perigo: Resetar minha conta
+                    </button>
+                </div>
+            </div>
         </main>
         
         <button onclick="handlePlusButton()" class="fixed bottom-8 right-8 bg-brand text-white w-16 h-16 rounded-2xl shadow-2xl flex items-center justify-center z-50 transition-transform active:scale-90"><i data-lucide="plus"></i></button>
     </div>
 
-    <div id="modal-banco" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-[110]">
-        <div class="bg-white dark:bg-darkCard w-full max-w-sm rounded-[2.5rem] p-8 space-y-6">
-            <h3 id="modal-bank-title" class="text-xs font-black uppercase text-brand text-center tracking-widest">Configurar Banco</h3>
-            <input type="text" id="modal-bank-name" placeholder="Ex: Nubank, Itaú..." class="input-standard">
-            <div id="bank-color-grid" class="grid grid-cols-4 gap-2">
-                <div onclick="selectBankColor('#8A05BE', this)" class="w-10 h-10 rounded-xl bg-[#8A05BE] cursor-pointer border-2 border-transparent"></div>
-                <div onclick="selectBankColor('#FF6200', this)" class="w-10 h-10 rounded-xl bg-[#FF6200] cursor-pointer border-2 border-transparent"></div>
-                <div onclick="selectBankColor('#005CA9', this)" class="w-10 h-10 rounded-xl bg-[#005CA9] cursor-pointer border-2 border-transparent"></div>
-                <div onclick="selectBankColor('#111111', this)" class="w-10 h-10 rounded-xl bg-[#111111] cursor-pointer border-2 border-transparent"></div>
-            </div>
-            <input type="hidden" id="modal-bank-color-val">
-            <input type="hidden" id="modal-bank-id">
-            <div class="flex gap-2">
-                <button onclick="closeBankModal()" class="flex-1 font-bold text-xs opacity-40 uppercase border-none bg-transparent">FECHAR</button>
-                <button onclick="saveBankModal()" class="flex-1 py-3 bg-brand text-white rounded-xl font-black text-xs uppercase border-none">Salvar</button>
+    <div id="modal-reset" class="hidden fixed inset-0 bg-rose-950/90 backdrop-blur-md flex items-center justify-center p-4 z-[200]">
+        <div class="bg-white dark:bg-darkCard w-full max-w-sm rounded-[2.5rem] p-8 space-y-6 border-4 border-rose-500 shadow-2xl">
+            <h3 class="text-lg font-black uppercase text-rose-600 text-center tracking-tighter italic">Reset Total do Sistema</h3>
+            <p class="text-[10px] text-center font-bold opacity-60 leading-relaxed uppercase">Todas as transações serão apagadas e categorias voltarão ao padrão.</p>
+            <label class="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl cursor-pointer">
+                <input type="checkbox" id="reset-bancos" class="w-5 h-5 accent-rose-600">
+                <span class="text-[9px] font-black uppercase">Apagar bancos também</span>
+            </label>
+            <div class="flex flex-col gap-2">
+                <button onclick="executeFullReset()" class="w-full py-4 bg-rose-600 text-white rounded-2xl font-black text-xs uppercase">Confirmar Reset</button>
+                <button onclick="closeResetModal()" class="w-full py-3 font-bold text-xs opacity-40 uppercase">Cancelar</button>
             </div>
         </div>
     </div>
@@ -196,11 +186,30 @@
                     </select>
                 </div>
                 <input type="date" id="inp-data" class="input-standard">
-                <div class="flex gap-2 pt-2">
-                    <button type="button" onclick="closeModal()" class="flex-1 font-bold text-xs opacity-40 uppercase border-none bg-transparent">Cancelar</button>
-                    <button type="submit" class="flex-1 py-4 bg-brand text-white rounded-2xl font-black text-xs uppercase border-none shadow-md">Confirmar</button>
+                <div class="flex gap-2">
+                    <button type="button" onclick="closeModal()" class="flex-1 opacity-40 font-bold uppercase text-xs">Cancelar</button>
+                    <button type="submit" class="flex-1 py-4 bg-brand text-white rounded-2xl font-black text-xs uppercase shadow-md">Confirmar</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <div id="modal-banco" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-[110]">
+        <div class="bg-white dark:bg-darkCard w-full max-w-sm rounded-[2.5rem] p-8 space-y-6">
+            <h3 id="modal-bank-title" class="text-xs font-black uppercase text-brand text-center tracking-widest">Configurar Banco</h3>
+            <input type="text" id="modal-bank-name" placeholder="Nome do Banco" class="input-standard">
+            <div id="bank-color-grid" class="grid grid-cols-4 gap-2">
+                <div onclick="selectBankColor('#8A05BE', this)" class="w-10 h-10 rounded-xl bg-[#8A05BE] cursor-pointer border-2 border-transparent"></div>
+                <div onclick="selectBankColor('#FF6200', this)" class="w-10 h-10 rounded-xl bg-[#FF6200] cursor-pointer border-2 border-transparent"></div>
+                <div onclick="selectBankColor('#005CA9', this)" class="w-10 h-10 rounded-xl bg-[#005CA9] cursor-pointer border-2 border-transparent"></div>
+                <div onclick="selectBankColor('#111111', this)" class="w-10 h-10 rounded-xl bg-[#111111] cursor-pointer border-2 border-transparent"></div>
+            </div>
+            <input type="hidden" id="modal-bank-color-val">
+            <input type="hidden" id="modal-bank-id">
+            <div class="flex gap-2">
+                <button onclick="closeBankModal()" class="flex-1 opacity-40 font-bold text-xs uppercase">Fechar</button>
+                <button onclick="saveBankModal()" class="flex-1 py-3 bg-brand text-white rounded-xl font-black text-xs uppercase">Salvar</button>
+            </div>
         </div>
     </div>
 
@@ -222,53 +231,12 @@
 
         onAuthStateChanged(auth, u => { if (u) { userId = u.uid; document.getElementById('app-container').classList.replace('hidden', 'flex'); loadProfile(); startListener(); } else { window.location.reload(); } });
 
-        /* UI NAVEGAÇÃO */
-        window.toggleSidebar = () => {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('sidebar-overlay');
-            if (window.innerWidth < 1024) { sidebar.classList.toggle('open'); overlay.classList.toggle('hidden'); } 
-            else { sidebar.classList.toggle('sidebar-collapsed'); }
-            lucide.createIcons();
-        };
-
-        window.toggleDatePicker = () => document.getElementById('picker-dropdown').classList.toggle('active');
-        window.changeYear = (d) => { currentDate.setFullYear(currentDate.getFullYear() + d); renderPickerUI(); };
-        window.selectMonth = (i) => { currentMode = 'mensal'; currentDate.setMonth(i); toggleDatePicker(); updateAll(); };
-        window.setAnualMode = () => { currentMode = 'anual'; toggleDatePicker(); updateAll(); };
-
-        function renderPickerUI() {
-            const elYear = document.getElementById('picker-year');
-            const elGrid = document.getElementById('month-grid');
-            if(elYear) elYear.innerText = currentDate.getFullYear();
-            if(elGrid) elGrid.innerHTML = mesesNomes.map((n, i) => `<button onclick="selectMonth(${i})" class="month-btn ${currentMode==='mensal' && currentDate.getMonth()===i ? 'selected' : ''}">${n}</button>`).join('');
-        }
-
-        function updateAll() {
-            const label = currentMode === 'mensal' ? `${mesesNomes[currentDate.getMonth()]}/${currentDate.getFullYear().toString().slice(-2)}` : `Ano ${currentDate.getFullYear()}`;
-            const el = document.getElementById('display-periodo');
-            if(el) el.innerText = label;
-            renderPickerUI(); updateDash(); renderExtratoFull();
-        }
-
-        window.switchTab = (id) => { 
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active')); 
-            document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('sidebar-active'));
-            const content = document.getElementById('content-'+id);
-            if(content) content.classList.add('active'); 
-            const title = document.getElementById('tab-title');
-            if(title) title.innerText = id.charAt(0).toUpperCase() + id.slice(1);
-            const picker = document.getElementById('date-picker-wrapper');
-            if(picker) picker.style.display = (id === 'dashboard' || id === 'extrato') ? 'block' : 'none';
-            if(id==='dashboard') renderDonut(getFiltered()); 
-            lucide.createIcons(); 
-        };
-
-        /* FIREBASE LISTENERS */
+        /* LISTENERS & DASHBOARD */
         function startListener() {
             onSnapshot(query(collection(db, "transactions"), where("userId", "==", userId)), (snap) => { dataGlobal = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })); updateAll(); });
             onSnapshot(query(collection(db, "banks"), where("userId", "==", userId)), (snap) => { 
                 userBancos = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                if(userBancos.length === 0 && userId) { addDoc(collection(db, "banks"), { userId, nome: 'Carteira', cor: '#0F172A' }); }
+                if(userBancos.length === 0 && userId) addDoc(collection(db, "banks"), { userId, nome: 'Carteira', cor: '#0F172A' });
                 renderBankList(); updateBankSelects(); updateDash();
             });
         }
@@ -280,67 +248,59 @@
             });
         }
 
-        /* DASHBOARD LOGIC */
         window.rotacionarSaldo = () => { bancoIndiceAtivo = (bancoIndiceAtivo >= userBancos.length - 1) ? -1 : bancoIndiceAtivo + 1; updateDash(); };
-        
+
         window.updateDash = () => {
             const f = getFiltered();
             const rT = f.filter(t => t.tipo === 'receita').reduce((a,b) => a+b.valor,0);
             const dT = f.filter(t => t.tipo === 'despesa').reduce((a,b) => a+b.valor,0);
-            const valS = document.getElementById('dash-saldo');
-            const labelS = document.getElementById('label-saldo');
-            const cardS = document.getElementById('card-saldo-principal');
+            
+            const elSaldo = document.getElementById('dash-saldo');
+            const elLabel = document.getElementById('label-saldo');
+            const elCard = document.getElementById('card-saldo-principal');
 
-            if(valS) {
-                if(bancoIndiceAtivo === -1) { 
-                    valS.innerText = `R$ ${(rT-dT).toLocaleString('pt-BR', {minimumFractionDigits:2})}`; 
-                    if(labelS) labelS.innerText = "Saldo Consolidado"; 
-                    cardS.style.backgroundColor = '#0F172A'; 
-                } else { 
-                    const b = userBancos[bancoIndiceAtivo];
-                    const bSaldo = f.filter(t => t.banco === b.nome).reduce((a,v) => v.tipo==='receita'?a+v.valor:a-v.valor,0);
-                    valS.innerText = `R$ ${bSaldo.toLocaleString('pt-BR', {minimumFractionDigits:2})}`; 
-                    if(labelS) labelS.innerText = b.nome;
-                    cardS.style.backgroundColor = b.cor;
-                }
+            if (bancoIndiceAtivo === -1) {
+                elSaldo.innerText = `R$ ${(rT-dT).toLocaleString('pt-BR', {minimumFractionDigits:2})}`;
+                elLabel.innerText = "Saldo Consolidado";
+                elCard.style.backgroundColor = '#0F172A';
+            } else {
+                const b = userBancos[bancoIndiceAtivo];
+                const bSaldo = f.filter(t => t.banco === b.nome).reduce((a,v) => v.tipo==='receita'?a+v.valor:a-v.valor,0);
+                elSaldo.innerText = `R$ ${bSaldo.toLocaleString('pt-BR', {minimumFractionDigits:2})}`;
+                elLabel.innerText = b.nome;
+                elCard.style.backgroundColor = b.cor;
             }
-            document.getElementById('dash-receitas').innerText = `R$ ${rT.toLocaleString('pt-BR', {minimumFractionDigits:2})}`;
-            document.getElementById('dash-despesas').innerText = `R$ ${dT.toLocaleString('pt-BR', {minimumFractionDigits:2})}`;
+            document.getElementById('dash-receitas').innerText = `R$ ${rT.toLocaleString('pt-BR')}`;
+            document.getElementById('dash-despesas').innerText = `R$ ${dT.toLocaleString('pt-BR')}`;
             
             renderDonut(f);
             const feed = document.getElementById('mini-feed');
-            if(feed) { feed.innerHTML = [...f].sort((a,b)=>b.date.seconds-a.date.seconds).slice(0,4).map(t => itemTransacao(t)).join(''); lucide.createIcons(); }
+            if(feed) feed.innerHTML = [...f].sort((a,b)=>b.date.seconds-a.date.seconds).slice(0,4).map(t => itemTransacao(t)).join('');
+            lucide.createIcons();
         };
 
         const itemTransacao = (t) => `
             <div class="flex justify-between items-center p-4 bg-white dark:bg-darkCard rounded-2xl border border-slate-100 dark:border-slate-800 group transition-all">
                 <div class="flex items-center gap-4">
-                    <div class="w-10 h-10 flex items-center justify-center rounded-xl ${t.tipo==='receita'?'bg-emerald-50 text-emerald-600':'bg-rose-50 text-rose-600'} flex-shrink-0"><i data-lucide="${t.tipo==='receita'?'trending-up':'trending-down'}"></i></div>
-                    <div><p class="font-bold text-sm uppercase leading-tight">${t.descricao}</p><p class="text-[9px] opacity-40 uppercase font-black">${t.categoria} • ${t.status || 'Efetivada'}</p></div>
+                    <div class="${t.tipo==='receita'?'text-emerald-500':'text-rose-500'}"><i data-lucide="${t.tipo==='receita'?'trending-up':'trending-down'}"></i></div>
+                    <div><p class="font-bold text-sm uppercase">${t.descricao}</p><p class="text-[9px] opacity-40 font-black">${t.categoria} • ${t.status || 'Efetivada'}</p></div>
                 </div>
                 <div class="flex items-center gap-4">
                     <p class="font-black text-sm text-right">R$ ${t.valor.toFixed(2)}</p>
                     <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                        <button onclick="editTransaction('${t.id}')" class="text-brand p-1 border-none bg-transparent cursor-pointer"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
-                        <button onclick="deleteTransaction('${t.id}')" class="text-rose-500 p-1 border-none bg-transparent cursor-pointer"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                        <button onclick="editTransaction('${t.id}')" class="text-brand p-1 cursor-pointer"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
+                        <button onclick="deleteTransaction('${t.id}')" class="text-rose-500 p-1 cursor-pointer"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                     </div>
                 </div>
             </div>`;
 
-        window.renderExtratoFull = () => {
-            const el = document.getElementById('extrato-lista');
-            if(el) { el.innerHTML = getFiltered().sort((a,b)=>b.date.seconds-a.date.seconds).map(t => itemTransacao(t)).join(''); lucide.createIcons(); }
-        };
-
-        /* CATEGORIAS INTEGRITY */
+        /* CATEGORIAS & CONFIGS */
         async function loadProfile() { 
             const snap = await getDoc(doc(db, "users", userId)); 
             if(snap.exists()) { 
-                const data = snap.data();
-                if(data.catDespesa) userSettings.catDespesa = data.catDespesa;
-                if(data.catReceita) userSettings.catReceita = data.catReceita;
-                document.getElementById('perf-nome').value = data.nome || ""; 
-                document.getElementById('perf-user').value = data.usuario || ""; 
+                const d = snap.data();
+                if(d.catDespesa) userSettings.catDespesa = d.catDespesa;
+                if(d.catReceita) userSettings.catReceita = d.catReceita;
             } 
             renderConfigAssets(); updateCatSelect(); 
         }
@@ -350,10 +310,10 @@
                 const nome = c.n || c;
                 return `
                 <div class="bg-slate-100 dark:bg-slate-800 px-3 py-2 rounded-xl flex items-center gap-3 border border-slate-200 dark:border-slate-700">
-                    <span class="text-[10px] font-bold uppercase text-slate-600 dark:text-slate-300">${nome}</span>
-                    <div class="flex items-center gap-1.5 border-l border-slate-200 dark:border-slate-700 pl-2">
-                        <button onclick="editCategoryPrompt('${nome}', '${type}')" class="text-slate-400 hover:text-brand border-none bg-transparent cursor-pointer transition-colors"><i data-lucide="edit-3" class="w-3 h-3"></i></button>
-                        ${!c.p ? `<button onclick="removeCategoryWithTransfer('${nome}', '${type}')" class="text-slate-400 hover:text-rose-500 border-none bg-transparent cursor-pointer transition-colors"><i data-lucide="trash-2" class="w-3 h-3"></i></button>` : ''}
+                    <span class="text-[10px] font-bold uppercase">${nome}</span>
+                    <div class="flex items-center gap-1.5 border-l pl-2 border-slate-300 dark:border-slate-600">
+                        <button onclick="editCategoryPrompt('${nome}', '${type}')" class="text-slate-400 hover:text-brand"><i data-lucide="edit-3" class="w-3 h-3"></i></button>
+                        ${!c.p ? `<button onclick="removeCategoryWithTransfer('${nome}', '${type}')" class="text-slate-400 hover:text-rose-500"><i data-lucide="trash-2" class="w-3 h-3"></i></button>` : ''}
                     </div>
                 </div>`;
             };
@@ -364,12 +324,12 @@
 
         window.removeCategoryWithTransfer = async (nome, type) => {
             const outras = (type === 'despesa' ? userSettings.catDespesa : userSettings.catReceita).filter(c => (c.n || c) !== nome);
-            const destino = prompt(`Para qual categoria deseja mover as transações de "${nome}"?\nOpções: ${outras.map(c => c.n || c).join(', ')}`);
+            const destino = prompt(`Para qual categoria mover as transações de "${nome}"?\nOpções: ${outras.map(c => c.n || c).join(', ')}`);
             if(!destino) return;
             const alvo = outras.find(c => (c.n || c).toLowerCase() === destino.toLowerCase());
             if(!alvo) return alert("Destino inválido.");
 
-            const q = query(collection(db, "transactions"), where("userId", "==", userId), where("categoria", "==", nome), where("tipo", "==", type));
+            const q = query(collection(db, "transactions"), where("userId", "==", userId), where("categoria", "==", nome));
             const snap = await getDocs(q);
             const batch = writeBatch(db);
             snap.forEach(tDoc => batch.update(doc(db, "transactions", tDoc.id), { categoria: alvo.n || alvo }));
@@ -377,59 +337,71 @@
 
             if(type === 'despesa') userSettings.catDespesa = outras; else userSettings.catReceita = outras;
             saveSettings();
-            renderConfigAssets(); updateCatSelect(); updateDash();
+            renderConfigAssets(); updateCatSelect();
         };
 
-        /* TRANSAÇÕES */
-        window.handlePlusButton = () => { 
-            document.getElementById('edit-id').value = ''; document.getElementById('form-registro').reset(); 
-            document.getElementById('modal-title').innerText = "Novo Lançamento"; 
-            document.getElementById('inp-data').value = new Date().toISOString().split('T')[0];
-            updateCatSelect(); updateBankSelects();
-            document.getElementById('modal-lancamento').classList.remove('hidden'); 
-        };
+        /* RESET TOTAL */
+        window.openResetModal = () => document.getElementById('modal-reset').classList.remove('hidden');
+        window.closeResetModal = () => document.getElementById('modal-reset').classList.add('hidden');
+        window.executeFullReset = async () => {
+            const confirmacao = prompt("Para confirmar, digite: mufinance");
+            if (confirmacao !== "mufinance") return alert("Reset cancelado.");
 
-        window.editTransaction = (id) => {
-            const t = dataGlobal.find(x => x.id === id); 
-            if(!t) return;
-            document.getElementById('edit-id').value = t.id; document.getElementById('inp-valor').value = t.valor; document.getElementById('inp-desc').value = t.descricao;
-            document.getElementById('inp-tipo').value = t.tipo; document.getElementById('inp-status').value = t.status || 'efetivada';
-            document.getElementById('inp-data').value = new Date(t.date.seconds * 1000).toISOString().split('T')[0];
-            updateCatSelect(); document.getElementById('inp-cat').value = t.categoria; document.getElementById('inp-banco').value = t.banco;
-            document.getElementById('modal-title').innerText = "Editar Lançamento"; document.getElementById('modal-lancamento').classList.remove('hidden');
-        };
+            try {
+                const batch = writeBatch(db);
+                const apagarBancos = document.getElementById('reset-bancos').checked;
 
-        document.getElementById('form-registro').onsubmit = async (e) => {
-            e.preventDefault();
-            const id = document.getElementById('edit-id').value;
-            const payload = {
-                userId,
-                valor: parseFloat(document.getElementById('inp-valor').value),
-                descricao: document.getElementById('inp-desc').value,
-                tipo: document.getElementById('inp-tipo').value,
-                categoria: document.getElementById('inp-cat').value,
-                banco: document.getElementById('inp-banco').value,
-                status: document.getElementById('inp-status').value,
-                date: Timestamp.fromDate(new Date(document.getElementById('inp-data').value + 'T12:00:00'))
-            };
-            if(id) await updateDoc(doc(db, "transactions", id), payload);
-            else await addDoc(collection(db, "transactions"), payload);
-            closeModal();
+                const transDocs = await getDocs(query(collection(db, "transactions"), where("userId", "==", userId)));
+                transDocs.forEach(t => batch.delete(doc(db, "transactions", t.id)));
+
+                if (apagarBancos) {
+                    const bancoDocs = await getDocs(query(collection(db, "banks"), where("userId", "==", userId)));
+                    bancoDocs.forEach(b => { if (b.data().nome !== 'Carteira') batch.delete(doc(db, "banks", b.id)); });
+                }
+
+                const defaultSettings = {
+                    catDespesa: [{n:'Alimentação', p:true}, {n:'Moradia', p:true}, {n:'Lazer', p:true}, {n:'Transporte', p:true}, {n:'Saúde', p:true}],
+                    catReceita: [{n:'Salário', p:true}, {n:'Investimentos', p:true}, {n:'Extra', p:true}]
+                };
+                batch.set(doc(db, "users", userId), defaultSettings, { merge: true });
+                await batch.commit();
+                window.location.reload();
+            } catch (e) { alert("Erro ao resetar."); }
         };
 
         /* AUXILIARES */
-        window.updateCatSelect = () => { 
-            const t = document.getElementById('inp-tipo').value;
-            const cats = t === 'despesa' ? userSettings.catDespesa : userSettings.catReceita;
-            document.getElementById('inp-cat').innerHTML = cats.map(c => `<option value="${c.n || c}">${c.n || c}</option>`).join('');
+        window.updateAll = () => {
+            document.getElementById('display-periodo').innerText = currentMode === 'mensal' ? `${mesesNomes[currentDate.getMonth()]}/${currentDate.getFullYear().toString().slice(-2)}` : `Ano ${currentDate.getFullYear()}`;
+            renderPickerUI(); updateDash();
+            const elExtrato = document.getElementById('extrato-lista');
+            if(elExtrato) elExtrato.innerHTML = getFiltered().sort((a,b)=>b.date.seconds-a.date.seconds).map(t => itemTransacao(t)).join('');
+            lucide.createIcons();
         };
-        window.updateBankSelects = () => { document.getElementById('inp-banco').innerHTML = userBancos.map(b => `<option value="${b.nome}">${b.nome}</option>`).join(''); };
-        window.saveSettings = async () => {
-            await setDoc(doc(db, "users", userId), { 
-                catDespesa: userSettings.catDespesa, catReceita: userSettings.catReceita,
-                nome: document.getElementById('perf-nome').value, usuario: document.getElementById('perf-user').value 
-            }, { merge: true });
+
+        window.renderPickerUI = () => {
+            const elYear = document.getElementById('picker-year');
+            const elGrid = document.getElementById('month-grid');
+            if(elYear) elYear.innerText = currentDate.getFullYear();
+            if(elGrid) elGrid.innerHTML = mesesNomes.map((n, i) => `<button onclick="selectMonth(${i})" class="month-btn ${currentMode==='mensal' && currentDate.getMonth()===i ? 'selected' : ''}">${n}</button>`).join('');
         };
+
+        window.toggleDatePicker = () => document.getElementById('picker-dropdown').classList.toggle('active');
+        window.changeYear = (d) => { currentDate.setFullYear(currentDate.getFullYear() + d); renderPickerUI(); };
+        window.selectMonth = (i) => { currentMode = 'mensal'; currentDate.setMonth(i); toggleDatePicker(); updateAll(); };
+        window.setAnualMode = () => { currentMode = 'anual'; toggleDatePicker(); updateAll(); };
+
+        window.switchTab = (id) => {
+            if (window.innerWidth < 1024) { document.getElementById('sidebar').classList.remove('open'); document.getElementById('sidebar-overlay').classList.add('hidden'); }
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('sidebar-active'));
+            const content = document.getElementById('content-'+id);
+            if(content) content.classList.add('active');
+            const title = document.getElementById('tab-title');
+            if(title) title.innerText = id.charAt(0).toUpperCase() + id.slice(1);
+            if(id==='dashboard') renderDonut(getFiltered());
+            lucide.createIcons();
+        };
+
         window.setChartTipo = (tipo) => {
             chartTipo = tipo;
             const pD = document.getElementById('pill-des'), pR = document.getElementById('pill-rec');
@@ -437,17 +409,49 @@
             pR.className = tipo === 'receita' ? "px-4 py-1.5 text-[9px] font-black uppercase rounded-lg bg-slate-900 text-white dark:bg-brand border-none" : "px-4 py-1.5 text-[9px] font-black uppercase rounded-lg text-slate-400 border-none";
             renderDonut(getFiltered());
         };
-        function renderDonut(f) { 
-            const ctx = document.getElementById('chart-rosca'); if(!ctx) return; 
+
+        function renderDonut(f) {
+            const ctx = document.getElementById('chart-rosca'); if(!ctx) return;
             const cats = {}; f.filter(t => t.tipo === chartTipo).forEach(t => cats[t.categoria] = (cats[t.categoria] || 0) + t.valor);
-            if (donutChart) donutChart.destroy(); 
-            donutChart = new Chart(ctx, { type: 'doughnut', data: { labels: Object.keys(cats), datasets: [{ data: Object.values(cats), backgroundColor: ['#0EA5E9', '#10B981', '#F59E0B', '#F43F5E'], borderWidth: 0 }] }, options: { cutout: '85%', plugins: { legend: { display: false } } } }); 
+            if (donutChart) donutChart.destroy();
+            donutChart = new Chart(ctx, { type: 'doughnut', data: { labels: Object.keys(cats), datasets: [{ data: Object.values(cats), backgroundColor: ['#0EA5E9', '#10B981', '#F59E0B', '#F43F5E'], borderWidth: 0 }] }, options: { cutout: '85%', plugins: { legend: { display: false } } } });
         }
+
+        window.handlePlusButton = () => { document.getElementById('edit-id').value = ''; document.getElementById('form-registro').reset(); document.getElementById('inp-data').value = new Date().toISOString().split('T')[0]; updateCatSelect(); updateBankSelects(); document.getElementById('modal-lancamento').classList.remove('hidden'); };
         window.closeModal = () => document.getElementById('modal-lancamento').classList.add('hidden');
-        window.closeBankModal = () => document.getElementById('modal-banco').classList.add('hidden');
-        window.deleteTransaction = async id => { if(confirm("Apagar?")) await deleteDoc(doc(db, "transactions", id)); };
+        window.updateCatSelect = () => { const t = document.getElementById('inp-tipo').value; const cats = t === 'despesa' ? userSettings.catDespesa : userSettings.catReceita; document.getElementById('inp-cat').innerHTML = cats.map(c => `<option value="${c.n || c}">${c.n || c}</option>`).join(''); };
+        window.updateBankSelects = () => { document.getElementById('inp-banco').innerHTML = userBancos.map(b => `<option value="${b.nome}">${b.nome}</option>`).join(''); };
+        window.saveSettings = async () => { await setDoc(doc(db, "users", userId), { catDespesa: userSettings.catDespesa, catReceita: userSettings.catReceita }, { merge: true }); alert("Preferências salvas!"); };
         window.handleLogout = () => signOut(auth).then(() => window.location.reload());
         
+        document.getElementById('form-registro').onsubmit = async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('edit-id').value;
+            const payload = {
+                userId, valor: parseFloat(document.getElementById('inp-valor').value), descricao: document.getElementById('inp-desc').value,
+                tipo: document.getElementById('inp-tipo').value, categoria: document.getElementById('inp-cat').value,
+                banco: document.getElementById('inp-banco').value, status: document.getElementById('inp-status').value,
+                date: Timestamp.fromDate(new Date(document.getElementById('inp-data').value + 'T12:00:00'))
+            };
+            if(id) await updateDoc(doc(db, "transactions", id), payload);
+            else await addDoc(collection(db, "transactions"), payload);
+            closeModal();
+        };
+
+        function renderBankList() {
+            const el = document.getElementById('lista-bancos-config');
+            if(el) el.innerHTML = userBancos.map(b => `
+                <div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-2xl flex justify-between items-center group transition-all">
+                    <div class="flex items-center gap-3"><div class="w-3 h-3 rounded-full" style="background:${b.cor}"></div><span class="font-bold text-xs uppercase">${b.nome}</span></div>
+                    ${b.nome !== 'Carteira' ? `<button onclick="deleteBankWithRules('${b.id}', '${b.nome}')" class="text-rose-400"><i data-lucide="trash-2" class="w-4 h-4"></i></button>` : ''}
+                </div>`).join('');
+            lucide.createIcons();
+        }
+        window.openBankModal = () => document.getElementById('modal-banco').classList.remove('hidden');
+        window.closeBankModal = () => document.getElementById('modal-banco').classList.add('hidden');
+        window.selectBankColor = (h, el) => { document.querySelectorAll('#bank-color-grid div').forEach(d => d.style.borderColor='transparent'); el.style.borderColor='#0EA5E9'; document.getElementById('modal-bank-color-val').value = h; };
+        window.saveBankModal = async () => { const n = document.getElementById('modal-bank-name').value, c = document.getElementById('modal-bank-color-val').value; if(n && c) { await addDoc(collection(db, "banks"), { userId, nome: n, cor: c }); closeBankModal(); } };
+
         lucide.createIcons();
     </script>
 </body>
