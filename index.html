@@ -287,48 +287,29 @@
             lucide.createIcons();
         };
 
-        // ============================================================
-        // AJUSTE NA LÓGICA DO DASHBOARD: APENAS EFETIVADAS
-        // ============================================================
         window.updateDash = () => {
             const f = getFiltered();
+            // AJUSTE: Somente efetivadas para o Dashboard
+            const fEfetivadas = f.filter(t => t.status === 'efetivada' || !t.status);
             
-            // Filtramos apenas as transações efetivadas para os cálculos de saldo e cards
-            const fEfetivadas = f.filter(t => (t.status === 'efetivada' || !t.status));
-
             const rT = fEfetivadas.filter(t => t.tipo === 'receita').reduce((a,b) => a+b.valor,0);
             const dT = fEfetivadas.filter(t => t.tipo === 'despesa').reduce((a,b) => a+b.valor,0);
-            
             const valS = document.getElementById('dash-saldo');
             const labelS = document.getElementById('label-saldo');
 
             if(valS) {
-                if(bancoIndiceAtivo === -1) { 
-                    valS.innerText = `R$ ${(rT-dT).toLocaleString('pt-BR', {minimumFractionDigits:2})}`; 
-                    if(labelS) labelS.innerText = "Saldo Consolidado"; 
-                    document.getElementById('card-saldo-principal').style.backgroundColor = '#0F172A'; 
-                }
-                else { 
-                    const b = userBancos[bancoIndiceAtivo]; 
-                    if(b) { 
-                        const bSaldo = fEfetivadas.filter(t => t.banco === b.nome).reduce((a,v) => v.tipo==='receita'?a+v.valor:a-v.valor,0); 
-                        valS.innerText = `R$ ${bSaldo.toLocaleString('pt-BR', {minimumFractionDigits:2})}`; 
-                        if(labelS) labelS.innerText = b.nome; 
-                        document.getElementById('card-saldo-principal').style.backgroundColor = b.cor; 
-                    } 
-                }
+                if(bancoIndiceAtivo === -1) { valS.innerText = `R$ ${(rT-dT).toLocaleString('pt-BR', {minimumFractionDigits:2})}`; if(labelS) labelS.innerText = "Saldo Consolidado"; document.getElementById('card-saldo-principal').style.backgroundColor = '#0F172A'; }
+                else { const b = userBancos[bancoIndiceAtivo]; if(b) { const bSaldo = fEfetivadas.filter(t => t.banco === b.nome).reduce((a,v) => v.tipo==='receita'?a+v.valor:a-v.valor,0); valS.innerText = `R$ ${bSaldo.toLocaleString('pt-BR', {minimumFractionDigits:2})}`; if(labelS) labelS.innerText = b.nome; document.getElementById('card-saldo-principal').style.backgroundColor = b.cor; } }
             }
             document.getElementById('dash-receitas').innerText = `R$ ${rT.toLocaleString('pt-BR')}`;
             document.getElementById('dash-despesas').innerText = `R$ ${dT.toLocaleString('pt-BR')}`;
-            
-            // O gráfico de rosca também deve refletir apenas o dinheiro real (efetivado)
             renderDonut(fEfetivadas);
-
             const feed = document.getElementById('mini-feed');
             if(feed) feed.innerHTML = [...f].sort((a,b)=>b.date.seconds-a.date.seconds).slice(0,4).map(t => itemTransacao(t)).join('');
             lucide.createIcons();
         };
 
+        // AJUSTE: Ícones sempre visíveis e estilo para previstas
         const itemTransacao = (t) => {
             const isPrevista = t.status === 'prevista';
             return `
@@ -344,14 +325,45 @@
                 </div>
                 <div class="flex items-center gap-4">
                     <p class="font-black text-sm text-right">R$ ${t.valor.toFixed(2)}</p>
-                    <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                        <button onclick="editTransaction('${t.id}')" class="text-brand p-1 cursor-pointer border-none bg-transparent"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
-                        <button onclick="deleteTransaction('${t.id}')" class="text-rose-500 p-1 cursor-pointer border-none bg-transparent"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    <div class="flex gap-2 transition-all">
+                        <button onclick="editTransaction('${t.id}')" class="text-brand p-1 cursor-pointer border-none bg-transparent hover:scale-110"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
+                        <button onclick="deleteTransaction('${t.id}')" class="text-rose-500 p-1 cursor-pointer border-none bg-transparent hover:scale-110"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                     </div>
                 </div>
             </div>`;
         };
 
+        window.switchTab = (id) => {
+            if (window.innerWidth < 1024) { document.getElementById('sidebar').classList.remove('open'); document.getElementById('sidebar-overlay').classList.add('hidden'); }
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('sidebar-active'));
+            const target = document.getElementById('content-'+id);
+            if(target) target.classList.add('active');
+            const title = document.getElementById('tab-title');
+            if(title) title.innerText = id.charAt(0).toUpperCase() + id.slice(1);
+            const picker = document.getElementById('date-picker-wrapper');
+            if(picker) picker.style.display = (id === 'dashboard' || id === 'extrato') ? 'block' : 'none';
+            if(id === 'dashboard') updateDash();
+            lucide.createIcons();
+        };
+
+        async function loadProfile() { 
+            const snap = await getDoc(doc(db, "users", userId)); 
+            if(snap.exists()) { const d = snap.data(); if(d.catDespesa) userSettings.catDespesa = d.catDespesa; if(d.catReceita) userSettings.catReceita = d.catReceita; document.getElementById('perf-nome').value = d.nome || ""; document.getElementById('perf-user').value = d.usuario || ""; } 
+            renderConfigAssets();
+        }
+
+        window.saveSettings = async () => { await setDoc(doc(db, "users", userId), { nome: document.getElementById('perf-nome').value, usuario: document.getElementById('perf-user').value, catDespesa: userSettings.catDespesa, catReceita: userSettings.catReceita }, { merge: true }); alert("Salvo!"); };
+
+        window.openVehicleModal = () => document.getElementById('modal-veiculo').classList.remove('hidden');
+        window.closeVehicleModal = () => document.getElementById('modal-veiculo').classList.add('hidden');
+        window.saveVehicle = async () => { const marca = document.getElementById('vh-marca').value, modelo = document.getElementById('vh-modelo').value, consumo = parseFloat(document.getElementById('vh-consumo').value); if(marca && modelo && consumo) { await addDoc(collection(db, "vehicles"), { userId, marca, modelo, consumo }); closeVehicleModal(); } };
+        function renderVehicleList() { const el = document.getElementById('lista-veiculos'); if(el) el.innerHTML = userVeiculos.map(v => `<div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-3xl border border-slate-100 dark:border-slate-700 flex justify-between items-center group"><div><p class="text-xs font-black uppercase">${v.marca} ${v.modelo}</p><p class="text-[9px] font-bold opacity-40">${v.consumo} KM/L</p></div><button onclick="deleteVehicle('${v.id}')" class="text-rose-400 border-none bg-transparent cursor-pointer"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>`).join(''); lucide.createIcons(); }
+        window.deleteVehicle = async (id) => { if(confirm("Apagar?")) await deleteDoc(doc(db, "vehicles", id)); };
+
+        window.rotacionarSaldo = () => { bancoIndiceAtivo = (bancoIndiceAtivo >= userBancos.length - 1) ? -1 : bancoIndiceAtivo + 1; updateDash(); };
+        window.setChartTipo = (tipo) => { chartTipo = tipo; const pD = document.getElementById('pill-des'), pR = document.getElementById('pill-rec'); pD.className = tipo === 'despesa' ? "px-4 py-1.5 text-[9px] font-black uppercase rounded-lg bg-slate-900 text-white dark:bg-brand border-none" : "px-4 py-1.5 text-[9px] font-black uppercase rounded-lg text-slate-400 border-none"; pR.className = tipo === 'receita' ? "px-4 py-1.5 text-[9px] font-black uppercase rounded-lg bg-slate-900 text-white dark:bg-brand border-none" : "px-4 py-1.5 text-[9px] font-black uppercase rounded-lg text-slate-400 border-none"; renderDonut(getFiltered()); };
+        
         function renderDonut(f) { 
             const ctx = document.getElementById('chart-rosca'); if(!ctx) return; 
             const cats = {}; 
