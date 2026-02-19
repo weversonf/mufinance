@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MuFinance v27.17.4</title>
+    <title>MuFinance v27.17.9 | Pro Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -167,14 +167,12 @@
                 <div onclick="selectBankColor('#FF6200', this)" class="w-10 h-10 rounded-xl bg-[#FF6200] cursor-pointer border-2 border-transparent"></div>
                 <div onclick="selectBankColor('#005CA9', this)" class="w-10 h-10 rounded-xl bg-[#005CA9] cursor-pointer border-2 border-transparent"></div>
                 <div onclick="selectBankColor('#111111', this)" class="w-10 h-10 rounded-xl bg-[#111111] cursor-pointer border-2 border-transparent"></div>
-                <div onclick="selectBankColor('#00A335', this)" class="w-10 h-10 rounded-xl bg-[#00A335] cursor-pointer border-2 border-transparent"></div>
-                <div onclick="selectBankColor('#E60000', this)" class="w-10 h-10 rounded-xl bg-[#E60000] cursor-pointer border-2 border-transparent"></div>
             </div>
             <input type="hidden" id="modal-bank-color-val">
             <input type="hidden" id="modal-bank-id">
             <div class="flex gap-2">
-                <button onclick="closeBankModal()" class="flex-1 font-bold text-xs opacity-40 border-none bg-transparent">FECHAR</button>
-                <button onclick="saveBankModal()" class="flex-1 py-3 bg-brand text-white rounded-xl font-black text-xs border-none uppercase">Salvar</button>
+                <button onclick="closeBankModal()" class="flex-1 font-bold text-xs opacity-40 uppercase border-none bg-transparent">FECHAR</button>
+                <button onclick="saveBankModal()" class="flex-1 py-3 bg-brand text-white rounded-xl font-black text-xs uppercase border-none">Salvar</button>
             </div>
         </div>
     </div>
@@ -192,11 +190,15 @@
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <select id="inp-banco" class="input-standard cursor-pointer"></select>
-                    <input type="date" id="inp-data" class="input-standard">
+                    <select id="inp-status" class="input-standard cursor-pointer">
+                        <option value="efetivada">Efetivada</option>
+                        <option value="prevista">Prevista</option>
+                    </select>
                 </div>
+                <input type="date" id="inp-data" class="input-standard">
                 <div class="flex gap-2 pt-2">
                     <button type="button" onclick="closeModal()" class="flex-1 font-bold text-xs opacity-40 uppercase border-none bg-transparent">Cancelar</button>
-                    <button type="submit" class="flex-1 py-4 bg-brand text-white rounded-2xl font-black text-xs uppercase shadow-md border-none">Confirmar</button>
+                    <button type="submit" class="flex-1 py-4 bg-brand text-white rounded-2xl font-black text-xs uppercase border-none shadow-md">Confirmar</button>
                 </div>
             </form>
         </div>
@@ -204,20 +206,17 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, where, doc, getDoc, setDoc, deleteDoc, updateDoc, writeBatch, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, where, doc, getDoc, setDoc, deleteDoc, updateDoc, writeBatch, getDocs, Timestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = { apiKey: "AIzaSyArWGgDx0uxce8w72J_1UpKPCUJGvHs3fI", authDomain: "drivo-e-money.firebaseapp.com", projectId: "drivo-e-money", storageBucket: "drivo-e-money.firebasestorage.app", messagingSenderId: "62950568252", appId: "1:62950568252:web:7638827c39b589a9046e39" };
         const app = initializeApp(firebaseConfig); const db = getFirestore(app); const auth = getAuth(app);
 
         let userId, dataGlobal = [], userBancos = [], donutChart, chartTipo = 'despesa', bancoIndiceAtivo = -1;
-        
-        // n = nome, p = padrão (não deleta)
         let userSettings = { 
             catDespesa: [{n:'Alimentação', p:true}, {n:'Moradia', p:true}, {n:'Lazer', p:true}, {n:'Transporte', p:true}, {n:'Saúde', p:true}], 
             catReceita: [{n:'Salário', p:true}, {n:'Investimentos', p:true}, {n:'Extra', p:true}] 
         };
-        
         let currentMode = 'mensal', currentDate = new Date();
         const mesesNomes = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
 
@@ -269,9 +268,7 @@
             onSnapshot(query(collection(db, "transactions"), where("userId", "==", userId)), (snap) => { dataGlobal = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })); updateAll(); });
             onSnapshot(query(collection(db, "banks"), where("userId", "==", userId)), (snap) => { 
                 userBancos = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                if(userBancos.length === 0) { 
-                    addDoc(collection(db, "banks"), { userId, nome: 'Carteira', cor: '#0F172A' });
-                }
+                if(userBancos.length === 0 && userId) { addDoc(collection(db, "banks"), { userId, nome: 'Carteira', cor: '#0F172A' }); }
                 renderBankList(); updateBankSelects(); updateDash();
             });
         }
@@ -283,12 +280,43 @@
             });
         }
 
-        /* RENDERS */
+        /* DASHBOARD LOGIC */
+        window.rotacionarSaldo = () => { bancoIndiceAtivo = (bancoIndiceAtivo >= userBancos.length - 1) ? -1 : bancoIndiceAtivo + 1; updateDash(); };
+        
+        window.updateDash = () => {
+            const f = getFiltered();
+            const rT = f.filter(t => t.tipo === 'receita').reduce((a,b) => a+b.valor,0);
+            const dT = f.filter(t => t.tipo === 'despesa').reduce((a,b) => a+b.valor,0);
+            const valS = document.getElementById('dash-saldo');
+            const labelS = document.getElementById('label-saldo');
+            const cardS = document.getElementById('card-saldo-principal');
+
+            if(valS) {
+                if(bancoIndiceAtivo === -1) { 
+                    valS.innerText = `R$ ${(rT-dT).toLocaleString('pt-BR', {minimumFractionDigits:2})}`; 
+                    if(labelS) labelS.innerText = "Saldo Consolidado"; 
+                    cardS.style.backgroundColor = '#0F172A'; 
+                } else { 
+                    const b = userBancos[bancoIndiceAtivo];
+                    const bSaldo = f.filter(t => t.banco === b.nome).reduce((a,v) => v.tipo==='receita'?a+v.valor:a-v.valor,0);
+                    valS.innerText = `R$ ${bSaldo.toLocaleString('pt-BR', {minimumFractionDigits:2})}`; 
+                    if(labelS) labelS.innerText = b.nome;
+                    cardS.style.backgroundColor = b.cor;
+                }
+            }
+            document.getElementById('dash-receitas').innerText = `R$ ${rT.toLocaleString('pt-BR', {minimumFractionDigits:2})}`;
+            document.getElementById('dash-despesas').innerText = `R$ ${dT.toLocaleString('pt-BR', {minimumFractionDigits:2})}`;
+            
+            renderDonut(f);
+            const feed = document.getElementById('mini-feed');
+            if(feed) { feed.innerHTML = [...f].sort((a,b)=>b.date.seconds-a.date.seconds).slice(0,4).map(t => itemTransacao(t)).join(''); lucide.createIcons(); }
+        };
+
         const itemTransacao = (t) => `
             <div class="flex justify-between items-center p-4 bg-white dark:bg-darkCard rounded-2xl border border-slate-100 dark:border-slate-800 group transition-all">
                 <div class="flex items-center gap-4">
                     <div class="w-10 h-10 flex items-center justify-center rounded-xl ${t.tipo==='receita'?'bg-emerald-50 text-emerald-600':'bg-rose-50 text-rose-600'} flex-shrink-0"><i data-lucide="${t.tipo==='receita'?'trending-up':'trending-down'}"></i></div>
-                    <div><p class="font-bold text-sm uppercase leading-tight">${t.descricao}</p><p class="text-[9px] opacity-40 uppercase font-black">${t.categoria} • ${t.banco}</p></div>
+                    <div><p class="font-bold text-sm uppercase leading-tight">${t.descricao}</p><p class="text-[9px] opacity-40 uppercase font-black">${t.categoria} • ${t.status || 'Efetivada'}</p></div>
                 </div>
                 <div class="flex items-center gap-4">
                     <p class="font-black text-sm text-right">R$ ${t.valor.toFixed(2)}</p>
@@ -299,39 +327,12 @@
                 </div>
             </div>`;
 
-        window.updateDash = () => {
-            const f = getFiltered();
-            const rT = f.filter(t => t.tipo === 'receita').reduce((a,b) => a+b.valor,0);
-            const dT = f.filter(t => t.tipo === 'despesa').reduce((a,b) => a+b.valor,0);
-            const valS = document.getElementById('dash-saldo');
-            const labelS = document.getElementById('label-saldo');
-            if(valS) {
-                if(bancoIndiceAtivo === -1) { 
-                    valS.innerText = `R$ ${(rT-dT).toLocaleString('pt-BR', {minimumFractionDigits:2})}`; 
-                    if(labelS) labelS.innerText = "Saldo Consolidado"; 
-                    document.getElementById('card-saldo-principal').style.backgroundColor = '#0F172A'; 
-                } else { 
-                    const b = userBancos[bancoIndiceAtivo];
-                    if(b) {
-                        const bSaldo = f.filter(t => t.banco === b.nome).reduce((a,v) => v.tipo==='receita'?a+v.valor:a-v.valor,0);
-                        valS.innerText = `R$ ${bSaldo.toLocaleString('pt-BR', {minimumFractionDigits:2})}`; 
-                        if(labelS) labelS.innerText = b.nome;
-                        document.getElementById('card-saldo-principal').style.backgroundColor = b.cor;
-                    }
-                }
-            }
-            renderDonut(f);
-            const feed = document.getElementById('mini-feed');
-            if(feed) { const s = [...f].sort((a,b)=>b.date.seconds-a.date.seconds).slice(0,4); feed.innerHTML = s.map(t => itemTransacao(t)).join(''); lucide.createIcons(); }
-        };
-
         window.renderExtratoFull = () => {
-            const f = getFiltered().sort((a,b)=>b.date.seconds-a.date.seconds);
             const el = document.getElementById('extrato-lista');
-            if(el) { el.innerHTML = f.map(t => itemTransacao(t)).join(''); lucide.createIcons(); }
+            if(el) { el.innerHTML = getFiltered().sort((a,b)=>b.date.seconds-a.date.seconds).map(t => itemTransacao(t)).join(''); lucide.createIcons(); }
         };
 
-        /* LÓGICA CATEGORIAS (FOCO AQUI) */
+        /* CATEGORIAS INTEGRITY */
         async function loadProfile() { 
             const snap = await getDoc(doc(db, "users", userId)); 
             if(snap.exists()) { 
@@ -352,7 +353,7 @@
                     <span class="text-[10px] font-bold uppercase text-slate-600 dark:text-slate-300">${nome}</span>
                     <div class="flex items-center gap-1.5 border-l border-slate-200 dark:border-slate-700 pl-2">
                         <button onclick="editCategoryPrompt('${nome}', '${type}')" class="text-slate-400 hover:text-brand border-none bg-transparent cursor-pointer transition-colors"><i data-lucide="edit-3" class="w-3 h-3"></i></button>
-                        ${!c.p ? `<button onclick="removeCategory('${nome}', '${type}')" class="text-slate-400 hover:text-rose-500 border-none bg-transparent cursor-pointer transition-colors"><i data-lucide="trash-2" class="w-3 h-3"></i></button>` : ''}
+                        ${!c.p ? `<button onclick="removeCategoryWithTransfer('${nome}', '${type}')" class="text-slate-400 hover:text-rose-500 border-none bg-transparent cursor-pointer transition-colors"><i data-lucide="trash-2" class="w-3 h-3"></i></button>` : ''}
                     </div>
                 </div>`;
             };
@@ -361,178 +362,92 @@
             lucide.createIcons();
         }
 
-        window.addCategoryPrompt = (type) => {
-            const n = prompt(`Nova categoria de ${type}:`);
-            if(n && n.trim() !== "") { 
-                const target = type === 'despesa' ? userSettings.catDespesa : userSettings.catReceita;
-                if(!target.find(c => (c.n || c).toLowerCase() === n.trim().toLowerCase())) {
-                    target.push({ n: n.trim(), p: false }); 
-                    renderConfigAssets(); updateCatSelect();
-                }
-            }
-        };
+        window.removeCategoryWithTransfer = async (nome, type) => {
+            const outras = (type === 'despesa' ? userSettings.catDespesa : userSettings.catReceita).filter(c => (c.n || c) !== nome);
+            const destino = prompt(`Para qual categoria deseja mover as transações de "${nome}"?\nOpções: ${outras.map(c => c.n || c).join(', ')}`);
+            if(!destino) return;
+            const alvo = outras.find(c => (c.n || c).toLowerCase() === destino.toLowerCase());
+            if(!alvo) return alert("Destino inválido.");
 
-        window.editCategoryPrompt = async (nomeAntigo, type) => {
-            const novoNome = prompt(`Editar categoria "${nomeAntigo}" para:`, nomeAntigo);
-            if(novoNome && novoNome.trim() !== "" && novoNome !== nomeAntigo) {
-                const target = type === 'despesa' ? userSettings.catDespesa : userSettings.catReceita;
-                const index = target.findIndex(c => (c.n || c) === nomeAntigo);
-                if(index !== -1) {
-                    target[index].n = novoNome.trim();
-                    
-                    // Atualizar transações vinculadas no Firebase
-                    const q = query(collection(db, "transactions"), where("userId", "==", userId), where("categoria", "==", nomeAntigo), where("tipo", "==", type));
-                    const snap = await getDocs(q);
-                    const batch = writeBatch(db);
-                    snap.forEach(tDoc => batch.update(doc(db, "transactions", tDoc.id), { categoria: novoNome.trim() }));
-                    
-                    await batch.commit();
-                    renderConfigAssets(); updateCatSelect(); updateDash();
-                }
-            }
-        };
-
-        window.removeCategory = (n, type) => {
-            if(confirm(`Remover "${n}"? Todas as transações nesta categoria serão mantidas, mas sem vínculo categórico.`)) {
-                if(type === 'despesa') userSettings.catDespesa = userSettings.catDespesa.filter(c => (c.n || c) !== n);
-                else userSettings.catReceita = userSettings.catReceita.filter(c => (c.n || c) !== n);
-                renderConfigAssets(); updateCatSelect();
-            }
-        };
-
-        /* LÓGICA BANCOS */
-        function renderBankList() {
-            const el = document.getElementById('lista-bancos-config');
-            if(el) {
-                el.innerHTML = userBancos.map(b => `
-                    <div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-2xl flex justify-between items-center group border border-transparent hover:border-slate-200 dark:hover:border-slate-700 transition-all">
-                        <div class="flex items-center gap-3">
-                            <div class="w-3 h-3 rounded-full shadow-sm" style="background:${b.cor}"></div>
-                            <span class="font-bold text-xs uppercase text-slate-700 dark:text-slate-200">${b.nome}</span>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <button onclick="openBankModal('${b.id}', '${b.nome}', '${b.cor}')" class="text-slate-400 hover:text-brand opacity-0 group-hover:opacity-100 transition-all border-none bg-transparent cursor-pointer"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
-                            ${b.nome !== 'Carteira' ? `<button onclick="deleteBankWithRules('${b.id}', '${b.nome}')" class="text-rose-400 hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-all border-none bg-transparent cursor-pointer"><i data-lucide="trash-2" class="w-4 h-4"></i></button>` : ''}
-                        </div>
-                    </div>
-                `).join('');
-                lucide.createIcons();
-            }
-        }
-
-        window.deleteBankWithRules = async (id, nome) => {
-            const outrasContas = userBancos.filter(b => b.id !== id);
-            let contaDestino = (outrasContas.length === 1) ? outrasContas[0].nome : "";
-
-            if (outrasContas.length === 1) {
-                if (!confirm(`Ao deletar "${nome}", todas as transações serão movidas para "${contaDestino}". Confirmar?`)) return;
-            } else {
-                const escolha = prompt(`Para qual conta deseja mover as transações de "${nome}"?\nContas: ${outrasContas.map(b => b.nome).join(", ")}`);
-                if (!escolha) return;
-                const alvo = outrasContas.find(b => b.nome.toLowerCase() === escolha.toLowerCase());
-                if (!alvo) return alert("Conta inválida!");
-                contaDestino = alvo.nome;
-            }
-
-            const q = query(collection(db, "transactions"), where("userId", "==", userId), where("banco", "==", nome));
+            const q = query(collection(db, "transactions"), where("userId", "==", userId), where("categoria", "==", nome), where("tipo", "==", type));
             const snap = await getDocs(q);
             const batch = writeBatch(db);
-            snap.forEach(tDoc => batch.update(doc(db, "transactions", tDoc.id), { banco: contaDestino }));
+            snap.forEach(tDoc => batch.update(doc(db, "transactions", tDoc.id), { categoria: alvo.n || alvo }));
             await batch.commit();
-            await deleteDoc(doc(db, "banks", id));
+
+            if(type === 'despesa') userSettings.catDespesa = outras; else userSettings.catReceita = outras;
+            saveSettings();
+            renderConfigAssets(); updateCatSelect(); updateDash();
         };
 
-        window.openBankModal = (id = '', nome = '', cor = '') => {
-            document.getElementById('modal-bank-id').value = id;
-            document.getElementById('modal-bank-name').value = nome;
-            document.getElementById('modal-bank-color-val').value = cor;
-            document.getElementById('modal-bank-title').innerText = id ? "Editar Banco" : "Novo Banco";
-            document.getElementById('modal-banco').classList.remove('hidden');
+        /* TRANSAÇÕES */
+        window.handlePlusButton = () => { 
+            document.getElementById('edit-id').value = ''; document.getElementById('form-registro').reset(); 
+            document.getElementById('modal-title').innerText = "Novo Lançamento"; 
+            document.getElementById('inp-data').value = new Date().toISOString().split('T')[0];
+            updateCatSelect(); updateBankSelects();
+            document.getElementById('modal-lancamento').classList.remove('hidden'); 
         };
 
-        window.saveBankModal = async () => {
-            const id = document.getElementById('modal-bank-id').value;
-            const n = document.getElementById('modal-bank-name').value;
-            const c = document.getElementById('modal-bank-color-val').value;
-            if(!n || !c) return alert("Preencha tudo!");
-            if(id) {
-                const antigoNome = userBancos.find(b => b.id === id).nome;
-                await updateDoc(doc(db, "banks", id), { nome: n, cor: c });
-                if(antigoNome !== n) {
-                    const q = query(collection(db, "transactions"), where("userId", "==", userId), where("banco", "==", antigoNome));
-                    const snap = await getDocs(q);
-                    const batch = writeBatch(db);
-                    snap.forEach(tDoc => batch.update(doc(db, "transactions", tDoc.id), { banco: n }));
-                    await batch.commit();
-                }
-            } else { await addDoc(collection(db, "banks"), { userId, nome: n, cor: c }); }
-            closeBankModal();
-        };
-
-        /* GERAL */
-        window.saveSettings = async () => {
-            await setDoc(doc(db, "users", userId), { 
-                catDespesa: userSettings.catDespesa, catReceita: userSettings.catReceita,
-                nome: document.getElementById('perf-nome').value, usuario: document.getElementById('perf-user').value 
-            }, { merge: true });
-            alert("Salvo!");
-        };
-
-        window.closeBankModal = () => document.getElementById('modal-banco').classList.add('hidden');
-        window.selectBankColor = (h, el) => {
-            document.querySelectorAll('#bank-color-grid div').forEach(d => d.style.borderColor='transparent');
-            el.style.borderColor='#0EA5E9';
-            document.getElementById('modal-bank-color-val').value = h;
-        };
-
-        window.setChartTipo = (tipo) => {
-            chartTipo = tipo;
-            const pD = document.getElementById('pill-des'), pR = document.getElementById('pill-rec');
-            if(tipo === 'despesa') { pD.className = "px-4 py-1.5 text-[9px] font-black uppercase rounded-lg bg-slate-900 text-white dark:bg-brand border-none"; pR.className = "px-4 py-1.5 text-[9px] font-black uppercase rounded-lg text-slate-400 border-none"; }
-            else { pR.className = "px-4 py-1.5 text-[9px] font-black uppercase rounded-lg bg-slate-900 text-white dark:bg-brand border-none"; pD.className = "px-4 py-1.5 text-[9px] font-black uppercase rounded-lg text-slate-400 border-none"; }
-            renderDonut(getFiltered());
-        };
-
-        function renderDonut(f) { 
-            const ctx = document.getElementById('chart-rosca'); if(!ctx) return; 
-            const cats = {}; const tipo = chartTipo || 'despesa';
-            f.filter(t => t.tipo === tipo).forEach(t => cats[t.categoria] = (cats[t.categoria] || 0) + t.valor);
-            if (donutChart) donutChart.destroy(); 
-            donutChart = new Chart(ctx.getContext('2d'), { 
-                type: 'doughnut', data: { labels: Object.keys(cats), datasets: [{ data: Object.values(cats), backgroundColor: ['#0EA5E9', '#10B981', '#F59E0B', '#F43F5E', '#8B5CF6'], borderWidth: 0 }] }, 
-                options: { cutout: '85%', maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom', labels: { usePointStyle: true, font: { size: 10, weight: '700' }, color: '#94a3b8' } } } } 
-            }); 
-        }
-
-        window.rotacionarSaldo = () => { bancoIndiceAtivo = (bancoIndiceAtivo >= userBancos.length - 1) ? -1 : bancoIndiceAtivo + 1; updateDash(); };
-        window.deleteTransaction = async id => { if(confirm("Apagar?")) await deleteDoc(doc(db, "transactions", id)); };
-        window.handleLogout = () => signOut(auth).then(() => window.location.reload());
-        
         window.editTransaction = (id) => {
             const t = dataGlobal.find(x => x.id === id); 
+            if(!t) return;
             document.getElementById('edit-id').value = t.id; document.getElementById('inp-valor').value = t.valor; document.getElementById('inp-desc').value = t.descricao;
-            document.getElementById('inp-tipo').value = t.tipo; document.getElementById('inp-data').value = new Date(t.date.seconds * 1000).toISOString().split('T')[0];
+            document.getElementById('inp-tipo').value = t.tipo; document.getElementById('inp-status').value = t.status || 'efetivada';
+            document.getElementById('inp-data').value = new Date(t.date.seconds * 1000).toISOString().split('T')[0];
             updateCatSelect(); document.getElementById('inp-cat').value = t.categoria; document.getElementById('inp-banco').value = t.banco;
             document.getElementById('modal-title').innerText = "Editar Lançamento"; document.getElementById('modal-lancamento').classList.remove('hidden');
         };
 
-        window.handlePlusButton = () => { 
-            document.getElementById('edit-id').value = ''; document.getElementById('form-registro').reset(); 
-            document.getElementById('modal-title').innerText = "Novo Lançamento"; document.getElementById('modal-lancamento').classList.remove('hidden'); 
-            updateCatSelect(); updateBankSelects();
+        document.getElementById('form-registro').onsubmit = async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('edit-id').value;
+            const payload = {
+                userId,
+                valor: parseFloat(document.getElementById('inp-valor').value),
+                descricao: document.getElementById('inp-desc').value,
+                tipo: document.getElementById('inp-tipo').value,
+                categoria: document.getElementById('inp-cat').value,
+                banco: document.getElementById('inp-banco').value,
+                status: document.getElementById('inp-status').value,
+                date: Timestamp.fromDate(new Date(document.getElementById('inp-data').value + 'T12:00:00'))
+            };
+            if(id) await updateDoc(doc(db, "transactions", id), payload);
+            else await addDoc(collection(db, "transactions"), payload);
+            closeModal();
         };
 
+        /* AUXILIARES */
         window.updateCatSelect = () => { 
             const t = document.getElementById('inp-tipo').value;
             const cats = t === 'despesa' ? userSettings.catDespesa : userSettings.catReceita;
             document.getElementById('inp-cat').innerHTML = cats.map(c => `<option value="${c.n || c}">${c.n || c}</option>`).join('');
         };
-
-        function updateBankSelects() { 
-            document.getElementById('inp-banco').innerHTML = userBancos.map(b => `<option value="${b.nome}">${b.nome}</option>`).join(''); 
+        window.updateBankSelects = () => { document.getElementById('inp-banco').innerHTML = userBancos.map(b => `<option value="${b.nome}">${b.nome}</option>`).join(''); };
+        window.saveSettings = async () => {
+            await setDoc(doc(db, "users", userId), { 
+                catDespesa: userSettings.catDespesa, catReceita: userSettings.catReceita,
+                nome: document.getElementById('perf-nome').value, usuario: document.getElementById('perf-user').value 
+            }, { merge: true });
+        };
+        window.setChartTipo = (tipo) => {
+            chartTipo = tipo;
+            const pD = document.getElementById('pill-des'), pR = document.getElementById('pill-rec');
+            pD.className = tipo === 'despesa' ? "px-4 py-1.5 text-[9px] font-black uppercase rounded-lg bg-slate-900 text-white dark:bg-brand border-none" : "px-4 py-1.5 text-[9px] font-black uppercase rounded-lg text-slate-400 border-none";
+            pR.className = tipo === 'receita' ? "px-4 py-1.5 text-[9px] font-black uppercase rounded-lg bg-slate-900 text-white dark:bg-brand border-none" : "px-4 py-1.5 text-[9px] font-black uppercase rounded-lg text-slate-400 border-none";
+            renderDonut(getFiltered());
+        };
+        function renderDonut(f) { 
+            const ctx = document.getElementById('chart-rosca'); if(!ctx) return; 
+            const cats = {}; f.filter(t => t.tipo === chartTipo).forEach(t => cats[t.categoria] = (cats[t.categoria] || 0) + t.valor);
+            if (donutChart) donutChart.destroy(); 
+            donutChart = new Chart(ctx, { type: 'doughnut', data: { labels: Object.keys(cats), datasets: [{ data: Object.values(cats), backgroundColor: ['#0EA5E9', '#10B981', '#F59E0B', '#F43F5E'], borderWidth: 0 }] }, options: { cutout: '85%', plugins: { legend: { display: false } } } }); 
         }
-
         window.closeModal = () => document.getElementById('modal-lancamento').classList.add('hidden');
+        window.closeBankModal = () => document.getElementById('modal-banco').classList.add('hidden');
+        window.deleteTransaction = async id => { if(confirm("Apagar?")) await deleteDoc(doc(db, "transactions", id)); };
+        window.handleLogout = () => signOut(auth).then(() => window.location.reload());
+        
         lucide.createIcons();
     </script>
 </body>
