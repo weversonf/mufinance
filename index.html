@@ -331,75 +331,102 @@
             if(el) { el.innerHTML = f.map(t => itemTransacao(t)).join(''); lucide.createIcons(); }
         };
 
-        /* LÓGICA CATEGORIAS (FOCO AQUI) */
-        async function loadProfile() { 
-            const snap = await getDoc(doc(db, "users", userId)); 
-            if(snap.exists()) { 
-                const data = snap.data();
-                if(data.catDespesa) userSettings.catDespesa = data.catDespesa;
-                if(data.catReceita) userSettings.catReceita = data.catReceita;
-                document.getElementById('perf-nome').value = data.nome || ""; 
-                document.getElementById('perf-user').value = data.usuario || ""; 
-            } 
-            renderConfigAssets(); updateCatSelect(); 
+       /* LÓGICA CATEGORIAS (EDIÇÃO LIBERADA / EXCLUSÃO RESTRITA A NOVAS) */
+async function loadProfile() { 
+    const snap = await getDoc(doc(db, "users", userId)); 
+    if(snap.exists()) { 
+        const data = snap.data();
+        // Garante que as categorias salvas no banco mantenham a propriedade 'p' se forem padrões
+        if(data.catDespesa) userSettings.catDespesa = data.catDespesa;
+        if(data.catReceita) userSettings.catReceita = data.catReceita;
+        
+        if(document.getElementById('perf-nome')) document.getElementById('perf-nome').value = data.nome || ""; 
+        if(document.getElementById('perf-user')) document.getElementById('perf-user').value = data.usuario || ""; 
+    } 
+    renderConfigAssets(); 
+    updateCatSelect(); 
+}
+
+function renderConfigAssets() {
+    const chip = (c, type) => {
+        const nome = c.n || c;
+        // Se c.p for true, esconde a lixeira. Se for indefinido ou false, mostra.
+        const podeDeletar = c.p !== true;
+
+        return `
+        <div class="bg-slate-100 dark:bg-slate-800 px-3 py-2 rounded-xl flex items-center gap-3 border border-slate-200 dark:border-slate-700 shadow-sm transition-all hover:bg-white dark:hover:bg-slate-700">
+            <span class="text-[10px] font-bold uppercase text-slate-600 dark:text-slate-300">${nome}</span>
+            <div class="flex items-center gap-1.5 border-l border-slate-200 dark:border-slate-700 pl-2">
+                <button onclick="editCategoryPrompt('${nome}', '${type}')" class="text-slate-400 hover:text-brand border-none bg-transparent cursor-pointer transition-colors">
+                    <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                </button>
+                ${podeDeletar ? `
+                <button onclick="removeCategory('${nome}', '${type}')" class="text-slate-400 hover:text-rose-500 border-none bg-transparent cursor-pointer transition-colors">
+                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                </button>` : ''}
+            </div>
+        </div>`;
+    };
+
+    const dList = document.getElementById('cat-despesa-list');
+    const rList = document.getElementById('cat-receita-list');
+    
+    if(dList) dList.innerHTML = userSettings.catDespesa.map(c => chip(c, 'despesa')).join('');
+    if(rList) rList.innerHTML = userSettings.catReceita.map(c => chip(c, 'receita')).join('');
+    
+    lucide.createIcons();
+}
+
+window.addCategoryPrompt = (type) => {
+    const n = prompt(`Nova categoria de ${type}:`);
+    if(n && n.trim() !== "") { 
+        const target = type === 'despesa' ? userSettings.catDespesa : userSettings.catReceita;
+        const nomeLimpo = n.trim();
+        if(!target.find(c => (c.n || c).toLowerCase() === nomeLimpo.toLowerCase())) {
+            // Novas categorias sempre vêm com p: false
+            target.push({ n: nomeLimpo, p: false }); 
+            renderConfigAssets(); 
+            updateCatSelect();
         }
+    }
+};
 
-        function renderConfigAssets() {
-            const chip = (c, type) => {
-                const nome = c.n || c;
-                return `
-                <div class="bg-slate-100 dark:bg-slate-800 px-3 py-2 rounded-xl flex items-center gap-3 border border-slate-200 dark:border-slate-700">
-                    <span class="text-[10px] font-bold uppercase text-slate-600 dark:text-slate-300">${nome}</span>
-                    <div class="flex items-center gap-1.5 border-l border-slate-200 dark:border-slate-700 pl-2">
-                        <button onclick="editCategoryPrompt('${nome}', '${type}')" class="text-slate-400 hover:text-brand border-none bg-transparent cursor-pointer transition-colors"><i data-lucide="edit-3" class="w-3 h-3"></i></button>
-                        ${!c.p ? `<button onclick="removeCategory('${nome}', '${type}')" class="text-slate-400 hover:text-rose-500 border-none bg-transparent cursor-pointer transition-colors"><i data-lucide="trash-2" class="w-3 h-3"></i></button>` : ''}
-                    </div>
-                </div>`;
-            };
-            document.getElementById('cat-despesa-list').innerHTML = userSettings.catDespesa.map(c => chip(c, 'despesa')).join('');
-            document.getElementById('cat-receita-list').innerHTML = userSettings.catReceita.map(c => chip(c, 'receita')).join('');
-            lucide.createIcons();
+window.editCategoryPrompt = async (nomeAntigo, type) => {
+    const novoNome = prompt(`Editar categoria "${nomeAntigo}" para:`, nomeAntigo);
+    if(novoNome && novoNome.trim() !== "" && novoNome.trim() !== nomeAntigo) {
+        const target = type === 'despesa' ? userSettings.catDespesa : userSettings.catReceita;
+        const index = target.findIndex(c => (c.n || c) === nomeAntigo);
+        
+        if(index !== -1) {
+            const nomeEditado = novoNome.trim();
+            target[index].n = nomeEditado;
+            
+            // Atualizar transações vinculadas no Firebase para não perder o histórico
+            const q = query(collection(db, "transactions"), 
+                        where("userId", "==", userId), 
+                        where("categoria", "==", nomeAntigo), 
+                        where("tipo", "==", type));
+            
+            const snap = await getDocs(q);
+            const batch = writeBatch(db);
+            snap.forEach(tDoc => batch.update(doc(db, "transactions", tDoc.id), { categoria: nomeEditado }));
+            
+            await batch.commit();
+            renderConfigAssets(); 
+            updateCatSelect(); 
+            updateDash();
         }
+    }
+};
 
-        window.addCategoryPrompt = (type) => {
-            const n = prompt(`Nova categoria de ${type}:`);
-            if(n && n.trim() !== "") { 
-                const target = type === 'despesa' ? userSettings.catDespesa : userSettings.catReceita;
-                if(!target.find(c => (c.n || c).toLowerCase() === n.trim().toLowerCase())) {
-                    target.push({ n: n.trim(), p: false }); 
-                    renderConfigAssets(); updateCatSelect();
-                }
-            }
-        };
-
-        window.editCategoryPrompt = async (nomeAntigo, type) => {
-            const novoNome = prompt(`Editar categoria "${nomeAntigo}" para:`, nomeAntigo);
-            if(novoNome && novoNome.trim() !== "" && novoNome !== nomeAntigo) {
-                const target = type === 'despesa' ? userSettings.catDespesa : userSettings.catReceita;
-                const index = target.findIndex(c => (c.n || c) === nomeAntigo);
-                if(index !== -1) {
-                    target[index].n = novoNome.trim();
-                    
-                    // Atualizar transações vinculadas no Firebase
-                    const q = query(collection(db, "transactions"), where("userId", "==", userId), where("categoria", "==", nomeAntigo), where("tipo", "==", type));
-                    const snap = await getDocs(q);
-                    const batch = writeBatch(db);
-                    snap.forEach(tDoc => batch.update(doc(db, "transactions", tDoc.id), { categoria: novoNome.trim() }));
-                    
-                    await batch.commit();
-                    renderConfigAssets(); updateCatSelect(); updateDash();
-                }
-            }
-        };
-
-        window.removeCategory = (n, type) => {
-            if(confirm(`Remover "${n}"? Todas as transações nesta categoria serão mantidas, mas sem vínculo categórico.`)) {
-                if(type === 'despesa') userSettings.catDespesa = userSettings.catDespesa.filter(c => (c.n || c) !== n);
-                else userSettings.catReceita = userSettings.catReceita.filter(c => (c.n || c) !== n);
-                renderConfigAssets(); updateCatSelect();
-            }
-        };
-
+window.removeCategory = (n, type) => {
+    if(confirm(`Remover "${n}"? Todas as transações nesta categoria serão mantidas, mas ficarão sem categoria vinculada.`)) {
+        if(type === 'despesa') userSettings.catDespesa = userSettings.catDespesa.filter(c => (c.n || c) !== n);
+        else userSettings.catReceita = userSettings.catReceita.filter(c => (c.n || c) !== n);
+        renderConfigAssets(); 
+        updateCatSelect();
+    }
+};
         /* LÓGICA BANCOS */
         function renderBankList() {
             const el = document.getElementById('lista-bancos-config');
