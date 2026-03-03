@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mu Finance v03.30</title>
+    <title>Mu Finance v03.31</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -231,7 +231,7 @@
         <header class="flex justify-between items-center shrink-0">
             <div>
                 <h1 id="header-title" class="text-2xl font-bold tracking-tight">Mu Finance</h1>
-                <p class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mt-1" id="header-subtitle">Dashboard Geral v03.30</p>
+                <p class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mt-1" id="header-subtitle">Dashboard Geral v03.31</p>
             </div>
             <div class="flex items-center space-x-3">
                 <button onclick="toggleOverlay('notificacoes')" class="relative w-10 h-10 flex items-center justify-center rounded-full bg-[#1E2128] border border-gray-800 active:scale-90 transition-transform">
@@ -776,6 +776,17 @@
                         <label class="text-[10px] text-gray-500 uppercase font-bold block mb-1">Hora</label>
                         <input type="time" id="input-fuel-hora" class="bg-transparent font-bold w-full outline-none text-xs">
                     </div>
+                </div>
+
+                <div class="bg-black/20 p-4 rounded-2xl border border-white/5">
+                    <label class="text-[10px] text-gray-500 uppercase font-bold block mb-1">Tipo de Combustível</label>
+                    <select id="input-fuel-tipo" class="bg-transparent font-bold w-full outline-none text-xs">
+                        <option value="Gasolina Comum">Gasolina Comum</option>
+                        <option value="Gasolina Premium">Gasolina Premium</option>
+                        <option value="Diesel">Diesel</option>
+                        <option value="Etanol">Etanol</option>
+                        <option value="GNV">GNV</option>
+                    </select>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
@@ -1727,9 +1738,9 @@
             if(t === 'abastecer') {
                 if(id) { 
                     const h = state.veiculo.historico.find(x => x.id === id); 
-                    document.getElementById('input-fuel-price').value = (h.total / h.liters).toFixed(2); document.getElementById('input-fuel-liters').value = h.liters; document.getElementById('input-fuel-total').value = h.total; document.getElementById('input-fuel-km').value = h.km; document.getElementById('input-fuel-data').value = h.data || new Date().toISOString().split('T')[0]; document.getElementById('input-fuel-hora').value = h.hora || new Date().toTimeString().slice(0, 5); if(h.conta) document.getElementById('input-fuel-acc').value = h.conta;
+                    document.getElementById('input-fuel-price').value = (h.total / h.liters).toFixed(2); document.getElementById('input-fuel-liters').value = h.liters; document.getElementById('input-fuel-total').value = h.total; document.getElementById('input-fuel-km').value = h.km; document.getElementById('input-fuel-data').value = h.data || new Date().toISOString().split('T')[0]; document.getElementById('input-fuel-hora').value = h.hora || new Date().toTimeString().slice(0, 5); document.getElementById('input-fuel-tipo').value = h.combustivel || 'Gasolina Comum'; if(h.conta) document.getElementById('input-fuel-acc').value = h.conta;
                 } else { 
-                    document.getElementById('input-fuel-price').value = ''; document.getElementById('input-fuel-liters').value = ''; document.getElementById('input-fuel-total').value = ''; document.getElementById('input-fuel-km').value = state.veiculo.hodometro; document.getElementById('input-fuel-data').value = new Date().toISOString().split('T')[0]; document.getElementById('input-fuel-hora').value = new Date().toTimeString().slice(0, 5);
+                    document.getElementById('input-fuel-price').value = ''; document.getElementById('input-fuel-liters').value = ''; document.getElementById('input-fuel-total').value = ''; document.getElementById('input-fuel-km').value = state.veiculo.hodometro; document.getElementById('input-fuel-data').value = new Date().toISOString().split('T')[0]; document.getElementById('input-fuel-hora').value = new Date().toTimeString().slice(0, 5); document.getElementById('input-fuel-tipo').value = 'Gasolina Comum';
                 }
                 toggleOverlay('veh-abastecer');
             } else if (t === 'servico') {
@@ -1823,12 +1834,12 @@
 
         function saveRefueling() {
             try {
-                const kmInput = parseInt(document.getElementById('input-fuel-km').value); const km = !isNaN(kmInput) ? kmInput : state.veiculo.hodometro; const t = parseFloat(document.getElementById('input-fuel-total').value) || 0; const l = parseFloat(document.getElementById('input-fuel-liters').value) || 0; const acc = document.getElementById('input-fuel-acc').value; const dataFuel = document.getElementById('input-fuel-data').value || new Date().toISOString().split('T')[0]; const horaFuel = document.getElementById('input-fuel-hora').value || new Date().toTimeString().slice(0, 5);
+                const kmInput = parseInt(document.getElementById('input-fuel-km').value); const km = !isNaN(kmInput) ? kmInput : state.veiculo.hodometro; const t = parseFloat(document.getElementById('input-fuel-total').value) || 0; const l = parseFloat(document.getElementById('input-fuel-liters').value) || 0; const acc = document.getElementById('input-fuel-acc').value; const dataFuel = document.getElementById('input-fuel-data').value || new Date().toISOString().split('T')[0]; const horaFuel = document.getElementById('input-fuel-hora').value || new Date().toTimeString().slice(0, 5); const tipoFuel = document.getElementById('input-fuel-tipo').value || 'Gasolina Comum';
                 if(!km || !t || !l) { showToast("Preencha KM, Total e Litros."); return; }
                 
                 const newId = state.editingVehId || Date.now(); let med = 29.0; const last = state.veiculo.historico.find(h => h.tipo === 'abastecimento' && h.id !== newId);
                 if(last && km > last.km && l > 0) med = (km - last.km) / l;
-                const item = { id: newId, tipo: 'abastecimento', data: dataFuel, hora: horaFuel, km, total: t, litros: l, media: med, conta: acc };
+                const item = { id: newId, tipo: 'abastecimento', data: dataFuel, hora: horaFuel, combustivel: tipoFuel, km, total: t, litros: l, media: med, conta: acc };
                 
                 if(state.editingVehId) { 
                     const idx = state.veiculo.historico.findIndex(x => x.id === newId); if (idx > -1) state.veiculo.historico[idx] = item; 
@@ -2059,7 +2070,7 @@
             document.getElementById('veh-timeline').innerHTML = state.veiculo.historico.map(h => {
                 let icon = 'wrench'; let colorClass = 'bg-blue-500/10 text-blue-500'; let title = h.nome; let valHtml = ''; let deleteBtn = `<button onclick="deleteVehActivity(${h.id})"><i data-lucide="trash-2" class="w-4 h-4 text-red-900/50 hover:text-red-500 transition-colors"></i></button>`; let editBtn = `<button onclick="openVehModal('servico', ${h.id})"><i data-lucide="edit-3" class="w-4 h-4 text-gray-600 hover:text-white transition-colors"></i></button>`;
                 if(h.tipo === 'abastecimento') {
-                    icon = 'fuel'; colorClass = 'bg-orange-500/10 text-orange-500'; title = 'Abastecer'; valHtml = `<div class="text-right"><p class="text-xs font-black">R$ ${h.total?.toFixed(2)}</p>${h.media ? `<p class="text-[9px] text-orange-400 font-bold font-mono">${h.media.toFixed(1)} km/l</p>` : ''}</div>`; editBtn = `<button onclick="openVehModal('abastecer', ${h.id})"><i data-lucide="edit-3" class="w-4 h-4 text-gray-600 hover:text-white transition-colors"></i></button>`;
+                    icon = 'fuel'; colorClass = 'bg-orange-500/10 text-orange-500'; title = `Abastecimento - ${h.combustivel || 'Gasolina Comum'}`; valHtml = `<div class="text-right"><p class="text-xs font-black">R$ ${h.total?.toFixed(2)}</p>${h.media ? `<p class="text-[9px] text-orange-400 font-bold font-mono">${h.media.toFixed(1)} km/l</p>` : ''}</div>`; editBtn = `<button onclick="openVehModal('abastecer', ${h.id})"><i data-lucide="edit-3" class="w-4 h-4 text-gray-600 hover:text-white transition-colors"></i></button>`;
                
                } else if(h.tipo === 'rota') {
                     icon = 'map-pin'; colorClass = 'bg-green-500/10 text-green-500'; title = h.motivo || 'Rota'; let subtitle = (h.origem || h.destino) ? `${h.origem || '?'} ➔ ${h.destino || '?'}` : 'Deslocamento'; valHtml = `<div class="text-right"><p class="text-xs font-black text-green-400">+ ${h.distancia} km</p></div>`; editBtn = `<button onclick="openVehModal('rota', ${h.id})"><i data-lucide="edit-3" class="w-4 h-4 text-gray-600 hover:text-white transition-colors"></i></button>`; 
