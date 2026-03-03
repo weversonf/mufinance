@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mu Finance v03.35</title>
+    <title>Mu Finance v03.36</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -231,7 +231,7 @@
         <header class="flex justify-between items-center shrink-0">
             <div>
                 <h1 id="header-title" class="text-2xl font-bold tracking-tight">Mu Finance</h1>
-                <p class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mt-1" id="header-subtitle">Dashboard Geral v03.35</p>
+                <p class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mt-1" id="header-subtitle">Dashboard Geral v03.36</p>
             </div>
             <div class="flex items-center space-x-3">
                 <button onclick="toggleOverlay('notificacoes')" class="relative w-10 h-10 flex items-center justify-center rounded-full bg-[#1E2128] border border-gray-800 active:scale-90 transition-transform">
@@ -437,22 +437,8 @@
                     <button onclick="openVehModal('servico')" class="card py-5 rounded-2xl flex flex-col items-center border border-white/5 active:bg-blue-500/10 transition-colors"><i data-lucide="wrench" class="w-6 h-6 text-blue-500 mb-2"></i><span class="text-[10px] font-bold uppercase">Manutenção</span></button>
                 </div>
                 <div class="space-y-4">
-                    <div class="flex items-center justify-between px-1 mb-4">
-                        <h3 class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Histórico</h3>
-                        <div class="flex items-center gap-3">
-                            <div class="flex gap-2">
-                                <button onclick="setVehHistoryFilter('fuel-maintenance')" id="dot-fuel-maintenance" class="w-2 h-2 rounded-full bg-orange-500 cursor-pointer transition-all"></button>
-                                <button onclick="setVehHistoryFilter('rota')" id="dot-rota" class="w-2 h-2 rounded-full bg-gray-600 cursor-pointer transition-all"></button>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <button onclick="prevVehMonth()" class="text-gray-500 hover:text-white transition-colors"><</button>
-                                <span id="veh-month-display" class="text-[10px] font-bold text-gray-500 uppercase w-12 text-center">Fev</span>
-                                <button onclick="nextVehMonth()" class="text-gray-500 hover:text-white transition-colors">></button>
-                            </div>
-                        </div>
-                    </div>
+                    <h3 class="text-[10px] font-bold text-gray-500 uppercase tracking-widest px-1">Histórico</h3>
                     <div id="veh-timeline" class="space-y-3 pb-10"></div>
-                    <div id="veh-pagination" class="flex justify-center gap-2 pb-10"></div>
                 </div>
             </div>
 
@@ -1177,7 +1163,7 @@
         ];
 
         let state = {
-            isLoggedIn: false, userId: null, viewDate: new Date(), extratoDate: new Date(), blurred: false, editingId: null, editingVehId: null, vehHistoryFilter: 'fuel-maintenance', vehHistoryMonth: new Date(), vehHistoryPage: 1,
+            isLoggedIn: false, userId: null, viewDate: new Date(), extratoDate: new Date(), blurred: false, editingId: null, editingVehId: null,
             usuario: { 
                 firstName: "Murilo", lastName: "Finance", username: "mufinance", birthDate: "1996-02-26", peso: 100, idade: 30, avatarUrl: null,
                 contas: [
@@ -2082,13 +2068,7 @@
         }
 
         function renderVehTimeline() {
-            const monthNames = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-            const m = state.vehHistoryMonth.getMonth(); const y = state.vehHistoryMonth.getFullYear();
-            document.getElementById('veh-month-display').innerText = monthNames[m];
-            let filtered = state.veiculo.historico.filter(h => { const d = new Date(h.data); return d.getMonth() === m && d.getFullYear() === y; });
-            if(state.vehHistoryFilter === 'fuel-maintenance') { filtered = filtered.filter(h => h.tipo === 'abastecimento' || h.tipo === 'servico'); } else if(state.vehHistoryFilter === 'rota') { filtered = filtered.filter(h => h.tipo === 'rota'); }
-            const itemsPerPage = 10; const totalPages = Math.ceil(filtered.length / itemsPerPage); const startIdx = (state.vehHistoryPage - 1) * itemsPerPage; const endIdx = startIdx + itemsPerPage; const pageItems = filtered.slice(startIdx, endIdx);
-            document.getElementById('veh-timeline').innerHTML = pageItems.map(h => {
+            document.getElementById('veh-timeline').innerHTML = state.veiculo.historico.map(h => {
                 let icon = 'wrench'; let colorClass = 'bg-blue-500/10 text-blue-500'; let title = h.nome; let valHtml = ''; let deleteBtn = `<button onclick="deleteVehActivity(${h.id})"><i data-lucide="trash-2" class="w-4 h-4 text-red-900/50 hover:text-red-500 transition-colors"></i></button>`; let editBtn = `<button onclick="openVehModal('servico', ${h.id})"><i data-lucide="edit-3" class="w-4 h-4 text-gray-600 hover:text-white transition-colors"></i></button>`;
                 if(h.tipo === 'abastecimento') {
                     icon = 'fuel'; colorClass = 'bg-orange-500/10 text-orange-500'; title = `Abastecimento - ${h.combustivel || 'Gasolina Comum'}`; valHtml = `<div class="text-right"><p class="text-xs font-black">R$ ${h.total?.toFixed(2)}</p>${h.media ? `<p class="text-[9px] text-orange-400 font-bold font-mono">${h.media.toFixed(1)} km/l</p>` : ''}</div>`; editBtn = `<button onclick="openVehModal('abastecer', ${h.id})"><i data-lucide="edit-3" class="w-4 h-4 text-gray-600 hover:text-white transition-colors"></i></button>`;
@@ -2101,14 +2081,7 @@
                 return `<div class="card p-4 rounded-2xl border border-white/5 flex items-center justify-between"><div class="flex items-center space-x-3"><div class="w-8 h-8 rounded-lg ${colorClass} flex items-center justify-center"><i data-lucide="${icon}" class="w-4 h-4"></i></div><div><p class="text-xs font-bold uppercase">${title}</p><p class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">${new Date(h.data).toLocaleDateString('pt-BR')} - ${h.km} km</p>
 </div></div><div class="flex items-center space-x-2">${valHtml}${editBtn}${deleteBtn}</div></div>`;
             }).join('');
-            const totalPages = Math.ceil(filtered.length / 10);
-            document.getElementById('veh-pagination').innerHTML = totalPages > 1 ? Array.from({length: totalPages}, (_, i) => { const pageNum = i + 1; const isActive = pageNum === state.vehHistoryPage; return `<button onclick='setVehHistoryPage(${pageNum})' class='text-[10px] font-bold ${isActive ? "text-orange-500" : "text-gray-500 hover:text-white"} transition-colors'>${pageNum}</button>`; }).join(' | ') : '';
         }
-
-        function setVehHistoryFilter(filter) { state.vehHistoryFilter = filter; state.vehHistoryPage = 1; document.getElementById('dot-fuel-maintenance').className = filter === 'fuel-maintenance' ? 'w-2 h-2 rounded-full bg-orange-500 cursor-pointer transition-all' : 'w-2 h-2 rounded-full bg-gray-600 cursor-pointer transition-all'; document.getElementById('dot-rota').className = filter === 'rota' ? 'w-2 h-2 rounded-full bg-green-500 cursor-pointer transition-all' : 'w-2 h-2 rounded-full bg-gray-600 cursor-pointer transition-all'; renderVehTimeline(); }
-        function setVehHistoryPage(page) { state.vehHistoryPage = page; renderVehTimeline(); }
-        function prevVehMonth() { state.vehHistoryMonth.setMonth(state.vehHistoryMonth.getMonth() - 1); state.vehHistoryPage = 1; renderVehTimeline(); }
-        function nextVehMonth() { state.vehHistoryMonth.setMonth(state.vehHistoryMonth.getMonth() + 1); state.vehHistoryPage = 1; renderVehTimeline(); }
 
         function renderCalendar() {
             const grid = document.getElementById('calendar-grid'); const headers = Array.from(grid.children).slice(0, 7); grid.innerHTML = ''; headers.forEach(h => grid.appendChild(h));
