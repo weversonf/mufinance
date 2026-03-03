@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mu Finance v04.04</title>
+    <title>Mu Finance v04.05</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -2355,24 +2355,40 @@ function renderVehTimeline() {
             }); 
         }
 
-        window.onload = () => { 
-    // Localiza o splash screen
-    const splash = document.getElementById('splash-screen');
+window.onload = () => { 
+            initializeAuthListener();
+        };
 
-    if(!state.isLoggedIn) { 
-        document.getElementById('login-screen').classList.remove('hidden'); 
-    }
+const initializeAuthListener = () => {
+            if (window.onAuthStateChanged) {
+                window.onAuthStateChanged(window.firebaseAuth, async (user) => {
+                    const loginScreen = document.getElementById('login-screen');
+                    const splashScreen = document.getElementById('splash-screen');
+                    
+                    if (user) {
+                        state.isLoggedIn = true; 
+                        state.userId = user.uid; 
+                        if(loginScreen) loginScreen.classList.add('hidden');
+                        await loadDataFromCloud(); 
+                        updateUI();
+                    } else {
+                        state.isLoggedIn = false; 
+                        state.userId = null; 
+                        if(loginScreen) loginScreen.classList.remove('hidden');
+                    }
 
-    initializeAuthListener();
-
-    // Adicione estas linhas abaixo para esconder o carregamento
-    if (splash) {
-        splash.style.transition = 'opacity 0.5s ease';
-        splash.style.opacity = '0';
-        setTimeout(() => {
-            splash.classList.add('hidden');
-        }, 500);
-    }
+                    // Remove o Splash Screen apenas após a resposta do Firebase
+                    if (splashScreen) {
+                        splashScreen.style.opacity = '0';
+                        setTimeout(() => {
+                            splashScreen.classList.add('hidden');
+                        }, 500);
+                    }
+                });
+            } else { 
+                setTimeout(initializeAuthListener, 50); 
+            }
+        };
 };
 </script>
     
