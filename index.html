@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mu Finance v04.02</title>
+    <title>Mu Finance v04.03</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -1115,446 +1115,386 @@
     </script>
 
 <script>
-        // 👉 VARIÁVEIS GLOBAIS: Guardam o estado dos gráficos e instâncias para evitar duplicações.
-        let barChartInstance = null, catChartInstance = null, chartsInitialized = false;
-        let tempAvatar = null;
-        let currentViewCardId = null;
-        let cropperInstance = null;
-        let editingCardId = null; 
-        
-        // 👉 AVATARES: Lista de presets divertidos.
-        const avatarPresets = [
-            'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Felix&backgroundColor=38bdf8',
-            'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Aneka&backgroundColor=fb7185',
-            'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Leo&backgroundColor=f97316',
-            'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Zoey&backgroundColor=34d399',
-            'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Max&backgroundColor=a855f7',
-            'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Mia&backgroundColor=eab308',
-            'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Sam&backgroundColor=6366f1',
-            'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Jude&backgroundColor=475569'
-        ];
+    // 👉 VARIÁVEIS GLOBAIS
+    let barChartInstance = null, catChartInstance = null, chartsInitialized = false;
+    let tempAvatar = null;
+    let currentViewCardId = null;
+    let cropperInstance = null;
+    let editingCardId = null; 
+    
+    const avatarPresets = [
+        'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Felix&backgroundColor=38bdf8',
+        'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Aneka&backgroundColor=fb7185',
+        'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Leo&backgroundColor=f97316',
+        'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Zoey&backgroundColor=34d399',
+        'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Max&backgroundColor=a855f7',
+        'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Mia&backgroundColor=eab308',
+        'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Sam&backgroundColor=6366f1',
+        'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Jude&backgroundColor=475569'
+    ];
 
-        // 👉 STATE (O CORAÇÃO DO APP): Toda a informação do sistema vive aqui.
-        let state = {
-            isLoggedIn: false, userId: null, viewDate: new Date(), extratoDate: new Date(), blurred: false, editingId: null, editingVehId: null,
-            usuario: { 
-                firstName: "Murilo", lastName: "Finance", username: "mufinance", birthDate: "1996-02-26", peso: 100, idade: 30, avatarUrl: null,
-                contas: [
-                    {id: 'wallet', nome: 'Carteira', protected: true, somaSaldo: true}, 
-                    {id: 2, nome: 'Inter', protected: false, somaSaldo: true},
-                    {id: 3, nome: 'Reserva Oculta', protected: false, somaSaldo: false}
-                ],
-                categorias_despesa: [
-                    {id: 'd1', nome: 'Alimentação', protected: true}, {id: 'd2', nome: 'Combustível', protected: true}, {id: 'd3', nome: 'Manutenção', protected: true}, {id: 'd4', nome: 'Moradia', protected: true}, {id: 'd5', nome: 'Lazer', protected: false}
-                ],
-                categorias_receita: [
-                    {id: 'r1', nome: 'Salário', protected: true}, {id: 'r2', nome: 'Freelance', protected: false}
-                ]
-            },
-            saude: { aguaMeta: 3500, cafeinaMeta: 400, historico: {}, proposito: {ativo: false, nome: '', inicio: '', dias: 0, celebrado: false} },
-            financas: { 
-                cartoes: [{id:1, nome:'Nubank', cor:'#8b5cf6', limite:5400, bandeira: 'MASTERCARD', vencimento: 10}], 
-                transacoes: [], metas: [], temp: {type:'despesa', status:'previsivel', fixa:false} 
-            },
-            veiculo: { tipo: 'moto', nome: 'Fazer 250', hodometro: 12450, mediaGeral: 29.0, oleoIntervalo: 3000, oleoUltimaTrocaKM: 11000, historico: [] },
-            notificacoes: []
+    // 👉 ESTADO CENTRALIZADO
+    let state = {
+        isLoggedIn: false, userId: null, viewDate: new Date(), extratoDate: new Date(), blurred: false, editingId: null, editingVehId: null,
+        usuario: { 
+            firstName: "Murilo", lastName: "Finance", username: "mufinance", birthDate: "1996-02-26", peso: 100, idade: 30, avatarUrl: null,
+            contas: [
+                {id: 'wallet', nome: 'Carteira', protected: true, somaSaldo: true}, 
+                {id: 2, nome: 'Inter', protected: false, somaSaldo: true},
+                {id: 3, nome: 'Reserva Oculta', protected: false, somaSaldo: false}
+            ],
+            categorias_despesa: [
+                {id: 'd1', nome: 'Alimentação', protected: true}, {id: 'd2', nome: 'Combustível', protected: true}, {id: 'd3', nome: 'Manutenção', protected: true}, {id: 'd4', nome: 'Moradia', protected: true}, {id: 'd5', nome: 'Lazer', protected: false}
+            ],
+            categorias_receita: [
+                {id: 'r1', nome: 'Salário', protected: true}, {id: 'r2', nome: 'Freelance', protected: false}
+            ]
+        },
+        saude: { aguaMeta: 3500, cafeinaMeta: 400, historico: {}, proposito: {ativo: false, nome: '', inicio: '', dias: 0, celebrado: false} },
+        financas: { 
+            cartoes: [{id:1, nome:'Nubank', cor:'#8b5cf6', limite:5400, bandeira: 'MASTERCARD', vencimento: 10}], 
+            transacoes: [], metas: [], temp: {type:'despesa', status:'previsivel', fixa:false} 
+        },
+        veiculo: { tipo: 'moto', nome: 'Fazer 250', hodometro: 12450, mediaGeral: 29.0, oleoIntervalo: 3000, oleoUltimaTrocaKM: 11000, historico: [] },
+        notificacoes: []
+    };
+
+    // 👉 UTILITÁRIOS DE INTERFACE
+    function getCategoryIcon(catName, type) {
+        const map = {
+            'Alimentação': 'utensils',
+            'Combustível': 'fuel',
+            'Manutenção': 'wrench',
+            'Moradia': 'home',
+            'Lazer': 'palmtree',
+            'Salário': 'banknote',
+            'Freelance': 'laptop',
+            'Educação': 'graduation-cap',
+            'Saúde': 'heart-pulse',
+            'Transporte': 'bus',
+            'Transferência': 'arrow-right-left',
+            'Pagamento de Fatura': 'credit-card',
+            'Saldo Inicial': 'piggy-bank'
         };
+        return map[catName] || (type === 'receita' ? 'trending-up' : 'shopping-bag');
+    }
 
-        // 👉 MAPEAMENTO DE ÍCONES: Função que retorna o ícone baseado na categoria para uma experiência visual melhor.
-        function getCategoryIcon(catName, type) {
-            const map = {
-                'Alimentação': 'utensils',
-                'Combustível': 'fuel',
-                'Manutenção': 'wrench',
-                'Moradia': 'home',
-                'Lazer': 'palmtree',
-                'Salário': 'banknote',
-                'Freelance': 'laptop',
-                'Educação': 'graduation-cap',
-                'Saúde': 'heart-pulse',
-                'Transporte': 'bus',
-                'Transferência': 'arrow-right-left',
-                'Pagamento de Fatura': 'credit-card',
-                'Saldo Inicial': 'piggy-bank'
-            };
-            return map[catName] || (type === 'receita' ? 'trending-up' : 'shopping-bag');
+    function refreshIcons() { if (window.lucide) lucide.createIcons(); }
+
+    function showToast(msg) {
+        const toast = document.createElement('div');
+        toast.className = 'fixed top-10 left-1/2 transform -translate-x-1/2 bg-black/90 text-white px-6 py-3 rounded-full text-[10px] font-bold uppercase tracking-widest z-[9999] border border-white/10 shadow-2xl fade-in text-center whitespace-nowrap';
+        toast.innerText = msg;
+        document.body.appendChild(toast);
+        setTimeout(() => { toast.remove(); }, 3000);
+    }
+    
+    window.toggleSidebar = function() {
+        document.body.classList.toggle('sidebar-collapsed');
+        refreshIcons();
+    };
+
+    document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b') { e.preventDefault(); toggleSidebar(); }
+    });
+
+    function toggleFab(e) {
+        if(e) e.stopPropagation();
+        document.getElementById('fab-container').classList.toggle('active');
+    }
+
+    function quickAction(type) {
+        toggleFab();
+        if (type === 'fin') openTransactionModal('despesa');
+        else if (type === 'veh') openVehModal('abastecer');
+    }
+
+    document.addEventListener('click', function(e) {
+        const fab = document.getElementById('fab-container');
+        if (fab && fab.classList.contains('active') && !fab.contains(e.target)) fab.classList.remove('active');
+    });
+
+    function navigate(navId, pageId, title) {
+        document.querySelectorAll('.page-content').forEach(p => p.classList.add('hidden'));
+        document.getElementById(pageId).classList.remove('hidden');
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(navId)?.classList.add('active');
+        document.getElementById('header-title').innerText = title;
+        document.getElementById('header-subtitle').innerText = title === 'Visão Geral' ? 'Dashboard Geral' : 'Controle de ' + title;
+        closeAllOverlays(); updateUI();
+    }
+
+    function toggleOverlay(id) {
+        const el = document.getElementById('overlay-' + id);
+        if(!el) return;
+        if(el.classList.contains('active')) { closeAllOverlays(); }
+        else { 
+            closeAllOverlays(); 
+            el.classList.add('active'); 
+            document.getElementById('backdrop').classList.add('active'); 
+            
+            if(id === 'relatorios-fin') setTimeout(initCharts, 200); 
+            if(id === 'perfil') renderProfileForm(); 
+            if(id === 'veh-config') {
+                setVehType(state.veiculo.tipo);
+                document.getElementById('input-veh-name').value = state.veiculo.nome;
+                document.getElementById('input-veh-oil-interval').value = state.veiculo.oleoIntervalo;
+            }
         }
+        refreshIcons();
+    }
 
-        // 👉 FUNÇÕES DE INTERFACE: Atualizam ícones, mostram balões de aviso e controlam o menu.
-        function refreshIcons() { if (window.lucide) lucide.createIcons(); }
+    function closeAllOverlays() { 
+        document.querySelectorAll('.overlay').forEach(o => o.classList.remove('active')); 
+        document.getElementById('backdrop').classList.remove('active'); 
+        if(cropperInstance) cropperInstance.destroy();
+        refreshIcons(); 
+    }
 
-        function showToast(msg) {
-            const toast = document.createElement('div');
-            toast.className = 'fixed top-10 left-1/2 transform -translate-x-1/2 bg-black/90 text-white px-6 py-3 rounded-full text-[10px] font-bold uppercase tracking-widest z-[9999] border border-white/10 shadow-2xl fade-in text-center whitespace-nowrap';
-            toast.innerText = msg;
-            document.body.appendChild(toast);
-            setTimeout(() => { toast.remove(); }, 3000);
-        }
+    // 👉 CLOUD & AUTH
+    async function loadDataFromCloud() {
+        if(!state.userId || !window.firebaseDb) return;
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'mu-finance';
+        const docRef = window.firebaseDoc(window.firebaseDb, 'artifacts', appId, 'users', state.userId, 'data', 'user_state');
+        try {
+            const docSnap = await window.firebaseGetDoc(docRef);
+            if (docSnap.exists()) {
+                const cd = docSnap.data();
+                state.usuario = cd.usuario || state.usuario; 
+                state.saude = cd.saude || state.saude;
+                state.financas = cd.financas || state.financas; 
+                state.veiculo = cd.veiculo || state.veiculo; 
+                state.notificacoes = cd.notificacoes || state.notificacoes;
+            }
+        } catch (e) { console.error("Erro no load:", e); }
+        checkVencimentos();
+    }
+
+    async function saveDataToCloud() {
+        if(!state.userId || !window.firebaseDb) return;
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'mu-finance';
+        const docRef = window.firebaseDoc(window.firebaseDb, 'artifacts', appId, 'users', state.userId, 'data', 'user_state');
+        try { await window.firebaseSetDoc(docRef, { usuario: state.usuario, saude: state.saude, financas: state.financas, veiculo: state.veiculo, notificacoes: state.notificacoes }); } 
+        catch (error) { console.error("Erro ao salvar:", error); }
+    }
+
+    const initializeAuthListener = () => {
+        if (window.onAuthStateChanged) {
+            window.onAuthStateChanged(window.firebaseAuth, async (user) => {
+                const splash = document.getElementById('splash-screen');
+                if (user) {
+                    state.isLoggedIn = true; state.userId = user.uid;
+                    document.getElementById('login-screen').classList.add('hidden');
+                    await loadDataFromCloud(); updateUI();
+                } else {
+                    state.isLoggedIn = false;
+                    document.getElementById('login-screen').classList.remove('hidden');
+                }
+                if (splash) splash.classList.add('hidden');
+            });
+        } else { setTimeout(initializeAuthListener, 50); }
+    };
+
+    window.handleLogin = async () => {
+        const email = document.getElementById('login-email').value; const pwd = document.getElementById('login-pwd').value;
+        try { await window.signInWithEmailAndPassword(window.firebaseAuth, email, pwd); } 
+        catch (e) { document.getElementById('login-error').innerText = "Credenciais inválidas."; }
+    };
+
+    window.handleLogout = async () => { await window.signOut(window.firebaseAuth); location.reload(); };
+
+    // 👉 FINANCEIRO (TRANSAÇÕES)
+    function renderTransItem(t) {
+        const isRec = t.tipo === 'receita'; 
+        const isTransf = t.tipo === 'transferencia'; 
+        const iconName = getCategoryIcon(t.cat, t.tipo);
         
-        window.toggleSidebar = function() {
-            document.body.classList.toggle('sidebar-collapsed');
-            refreshIcons();
-        };
+        let colorClass = isRec ? 'text-green-400' : (isTransf ? 'text-blue-400' : 'text-red-400');
+        let bgClass = isRec ? 'bg-green-500/10 text-green-500' : (isTransf ? 'bg-blue-500/10 text-blue-500' : 'bg-red-500/10 text-red-500');
+        let prefix = isRec ? '+' : (isTransf ? '' : '-');
+        
+        const title = t.desc || t.cat;
+        const sub = isTransf ? `De ${t.conta} p/ ${t.destino}` : t.conta;
 
-        document.addEventListener('keydown', (e) => {
-            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b') { e.preventDefault(); toggleSidebar(); }
+        return `
+        <div class="flex justify-between items-center group card p-4 rounded-2xl border border-white/5">
+            <div class="flex items-center space-x-3 overflow-hidden">
+                <div class="w-10 h-10 rounded-full ${bgClass} flex items-center justify-center shrink-0">
+                    <i data-lucide="${iconName}" class="w-5 h-5"></i>
+                </div>
+                <div class="truncate">
+                    <span class="block text-sm font-medium truncate">${title}</span>
+                    <span class="block text-[10px] text-gray-500 uppercase tracking-wider truncate">${sub} <span class="text-blue-500 font-bold">• ${t.status}</span></span>
+                </div>
+            </div>
+            <div class="flex flex-col items-end shrink-0 ml-2">
+                <span class="text-sm font-semibold ${colorClass}">${prefix} R$ ${t.valor.toLocaleString('pt-BR', {minimumFractionDigits:2})}</span>
+                <div class="flex space-x-3 mt-1.5 opacity-80">
+                    <button class="text-gray-500 hover:text-white transition-colors" onclick="openTransactionModal('${t.tipo}', ${t.id})">
+                        <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button class="text-gray-500 hover:text-red-400 transition-colors" onclick="deleteTransaction(${t.id})">
+                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                </div>
+            </div>
+        </div>`;
+    }
+
+    function addMonthsSafe(dateStr, monthsToAdd) {
+        let d = new Date(dateStr + 'T12:00:00');
+        let day = d.getDate();
+        d.setMonth(d.getMonth() + monthsToAdd);
+        if (d.getDate() !== day) d.setDate(0); 
+        return d.toISOString().split('T')[0];
+    }
+
+    function saveTransaction() {
+        const v = parseFloat(document.getElementById('trans-val-input').value);
+        const d = document.getElementById('trans-date-input').value;
+        const a = document.getElementById('trans-acc-select').value;
+        const desc = document.getElementById('trans-desc-input')?.value.trim() || "";
+        const type = state.financas.temp.type;
+        const isFixa = state.financas.temp.fixa;
+        if(!v || !d) return;
+        let cat = document.getElementById('trans-cat-select')?.value || "Geral";
+        let status = state.financas.temp.status;
+        let dest = document.getElementById('trans-dest-select')?.value || "";
+
+        if(state.editingId) {
+            const idx = state.financas.transacoes.findIndex(x => x.id === state.editingId);
+            if(idx > -1) state.financas.transacoes[idx] = {...state.financas.transacoes[idx], valor:v, data:d, cat, desc, conta:a, destino:dest, tipo:type, status, fixa:isFixa};
+        } else {
+            const baseId = Date.now();
+            state.financas.transacoes.push({id:baseId, data:d, valor:v, tipo:type, status, cat, desc, conta:a, destino:dest, fixa:isFixa});
+            if(isFixa && type !== 'transferencia') {
+                for(let i=1; i<=12; i++) {
+                    state.financas.transacoes.push({ id: baseId + i, data: addMonthsSafe(d, i), valor: v, tipo: type, status: 'previsivel', cat, desc, conta: a, destino: dest, fixa: true });
+                }
+            }
+        }
+        saveDataToCloud(); closeAllOverlays(); updateUI();
+    }
+
+    function deleteTransaction(id) {
+        if(confirm("Excluir este lançamento?")) {
+            state.financas.transacoes = state.financas.transacoes.filter(x => x.id !== id);
+            saveDataToCloud(); updateUI();
+        }
+    }
+
+    // 👉 FINANCEIRO (CARDS & SELECTS)
+    function getFinSelectOptions(type = 'all') {
+        let options = '';
+        if (type === 'all' || type === 'contas') options += state.usuario.contas.map(a => `<option value="${a.nome}">🏦 ${a.nome}</option>`).join('');
+        if (type === 'all' || type === 'cartoes') options += state.financas.cartoes.map(c => `<option value="${c.nome}">💳 ${c.nome}</option>`).join('');
+        return options;
+    }
+
+    function openTransactionModal(t, id = null) {
+        state.editingId = id; setTransType(t);
+        const descEl = document.getElementById('trans-desc-input');
+        const valEl = document.getElementById('trans-val-input');
+        const dateEl = document.getElementById('trans-date-input');
+        if(id) {
+            const tr = state.financas.transacoes.find(x => x.id === id);
+            valEl.value = tr.valor; dateEl.value = tr.data; if(descEl) descEl.value = tr.desc || "";
+            setTransState('status', tr.status); setTransState('fixa', tr.fixa);
+        } else {
+            valEl.value = ""; dateEl.value = new Date().toISOString().split('T')[0]; if(descEl) descEl.value = "";
+            setTransState('status', 'previsivel'); setTransState('fixa', false);
+        }
+        toggleOverlay('transaction');
+    }
+
+    function setTransType(t) {
+        state.financas.temp.type = t;
+        document.getElementById('btn-tt-despesa').classList.toggle('bg-red-500/20', t==='despesa');
+        document.getElementById('btn-tt-receita').classList.toggle('bg-green-500/20', t==='receita');
+        document.getElementById('btn-tt-transf').classList.toggle('bg-blue-500/20', t==='transferencia');
+        const cats = t === 'receita' ? state.usuario.categorias_receita : state.usuario.categorias_despesa;
+        document.getElementById('trans-cat-select').innerHTML = cats.map(c => `<option value="${c.nome}">${c.nome}</option>`).join('');
+        document.getElementById('trans-acc-select').innerHTML = getFinSelectOptions(t === 'receita' ? 'contas' : 'all');
+    }
+
+    function setTransState(p, v) { 
+        state.financas.temp[p] = v; 
+        if(p === 'status') {
+            document.getElementById('btn-st-prev').className = v === 'previsivel' ? 'flex-1 py-2 text-[9px] font-bold rounded-lg bg-blue-500/20 text-blue-400' : 'flex-1 py-2 text-[9px] font-bold rounded-lg text-gray-500';
+            document.getElementById('btn-st-efet').className = v === 'efetivada' ? 'flex-1 py-2 text-[9px] font-bold rounded-lg bg-green-500/20 text-green-400' : 'flex-1 py-2 text-[9px] font-bold rounded-lg text-gray-500';
+        }
+    }
+
+    // 👉 VEÍCULO
+    function setVehType(t) { state.veiculo.tipo = t; }
+    function openVehModal(t) { toggleOverlay('veh-' + t); }
+    function renderVehTimeline() {
+        const container = document.getElementById('veh-timeline');
+        if(!container) return;
+        container.innerHTML = state.veiculo.historico.map(h => `
+            <div class="card p-3 rounded-xl border border-white/5 flex justify-between">
+                <div><span class="text-[10px] font-bold block uppercase">${h.tipo}</span><span class="text-[9px] text-gray-500">${h.km} km • ${h.data}</span></div>
+                <button onclick="deleteVehActivity(${h.id})"><i data-lucide="trash-2" class="w-3.5 h-3.5 text-red-500/50"></i></button>
+            </div>`).join('');
+    }
+
+    // 👉 UPDATE UI CENTRAL
+    function updateUI() {
+        const now = new Date();
+        const avatarHtml = state.usuario.avatarUrl ? `<img src="${state.usuario.avatarUrl}" class="w-full h-full object-cover">` : (state.usuario.firstName[0] + (state.usuario.lastName ? state.usuario.lastName[0] : "")).toUpperCase();
+        document.getElementById('header-initials').innerHTML = avatarHtml;
+        if(document.getElementById('sidebar-avatar-preview')) document.getElementById('sidebar-avatar-preview').innerHTML = avatarHtml;
+        if(document.getElementById('sidebar-user-name')) document.getElementById('sidebar-user-name').innerText = state.usuario.firstName;
+
+        let saldo = 0, recM = 0, desM = 0;
+        const contasAtivas = state.usuario.contas.filter(c => c.somaSaldo).map(c => c.nome);
+        state.financas.transacoes.forEach(t => {
+            const td = new Date(t.data);
+            const isMes = td.getMonth() === now.getMonth() && td.getFullYear() === now.getFullYear();
+            const isEfet = t.status === 'efetivada' || t.status === 'fatura_paga';
+            if (isEfet && contasAtivas.includes(t.conta)) {
+                if (t.tipo === 'receita') { saldo += t.valor; if(isMes) recM += t.valor; }
+                else if (t.tipo === 'despesa') { saldo -= t.valor; if(isMes) desM += t.valor; }
+            }
         });
 
-        function toggleFab(e) {
-            if(e) e.stopPropagation();
-            document.getElementById('fab-container').classList.toggle('active');
-        }
+        const fmt = v => 'R$ ' + v.toLocaleString('pt-BR', {minimumFractionDigits:2});
+        document.querySelectorAll('.fin-total-saldo').forEach(el => el.innerText = state.blurred ? 'R$ •••••' : fmt(saldo));
+        document.querySelectorAll('.fin-receita-mes').forEach(el => el.innerText = state.blurred ? 'R$ •••••' : fmt(recM));
+        document.querySelectorAll('.fin-despesa-mes').forEach(el => el.innerText = state.blurred ? 'R$ •••••' : fmt(desM));
 
-        function quickAction(type) {
-            toggleFab();
-            if (type === 'fin') openTransactionModal('despesa');
-            else if (type === 'veh') openVehModal('abastecer');
-        }
+        renderRecentTrans(); renderExtrato(); renderVehTimeline(); refreshIcons();
+    }
 
-        document.addEventListener('click', function(e) {
-            const fab = document.getElementById('fab-container');
-            if (fab && fab.classList.contains('active') && !fab.contains(e.target)) fab.classList.remove('active');
+    function renderRecentTrans() {
+        const sorted = [...state.financas.transacoes].sort((a,b) => new Date(b.data) - new Date(a.data)).slice(0, 5);
+        document.getElementById('recent-trans-list').innerHTML = sorted.length ? sorted.map(t => renderTransItem(t)).join('') : '<p class="text-center text-gray-500 py-4">Vazio</p>';
+    }
+
+    function renderExtrato() {
+        const m = state.extratoDate.getMonth(), y = state.extratoDate.getFullYear();
+        const fil = state.financas.transacoes.filter(t => { const d = new Date(t.data); return d.getMonth() === m && d.getFullYear() === y; }).sort((a,b) => new Date(b.data) - new Date(a.data));
+        const content = document.getElementById('extrato-month-content');
+        if(content) content.innerHTML = fil.length ? fil.map(t => renderTransItem(t)).join('') : '<p class="text-center text-gray-600 py-10">Vazio</p>';
+    }
+
+    function checkVencimentos() {
+        const today = new Date(); const currentDay = today.getDate();
+        state.financas.cartoes.forEach(card => {
+            const dueDay = parseInt(card.vencimento) || 10;
+            let diff = dueDay - currentDay;
+            if (diff >= 0 && diff <= 5) {
+                const title = `Fatura: ${card.nome}`;
+                const msg = diff === 0 ? `Vence hoje!` : `Vence em ${diff} dias.`;
+                if (!state.notificacoes.some(n => n.titulo === title && n.msg === msg)) {
+                    state.notificacoes.unshift({titulo: title, msg: msg, data: today.toISOString()});
+                }
+            }
         });
+    }
 
-        function navigate(navId, pageId, title) {
-            document.querySelectorAll('.page-content').forEach(p => p.classList.add('hidden'));
-            document.getElementById(pageId).classList.remove('hidden');
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(navId)?.classList.add('active');
-            document.getElementById('header-title').innerText = title;
-            document.getElementById('header-subtitle').innerText = title === 'Visão Geral' ? 'Dashboard Geral' : 'Controle de ' + title;
-            closeAllOverlays(); updateUI();
-        }
-
-        function toggleOverlay(id) {
-            const el = document.getElementById('overlay-' + id);
-            if(!el) return;
-            if(el.classList.contains('active')) { closeAllOverlays(); }
-            else { 
-                closeAllOverlays(); 
-                el.classList.add('active'); 
-                document.getElementById('backdrop').classList.add('active'); 
-                
-                if(id === 'relatorios-fin') setTimeout(initCharts, 200); 
-                if(id === 'perfil') renderProfileForm(); 
-                if(id === 'veh-config') {
-                    setVehType(state.veiculo.tipo);
-                    document.getElementById('input-veh-name').value = state.veiculo.nome;
-                    document.getElementById('input-veh-oil-interval').value = state.veiculo.oleoIntervalo;
-                }
-                if(id === 'proposito-config') {
-                    if(state.saude.proposito && state.saude.proposito.ativo) {
-                        document.getElementById('input-prop-name').value = state.saude.proposito.nome;
-                        document.getElementById('input-prop-date').value = state.saude.proposito.inicio;
-                        document.getElementById('input-prop-days').value = state.saude.proposito.dias;
-                        document.getElementById('prop-giveup-container').classList.remove('hidden');
-                    } else {
-                        document.getElementById('input-prop-name').value = '';
-                        document.getElementById('input-prop-date').value = new Date().toISOString().split('T')[0];
-                        document.getElementById('input-prop-days').value = '';
-                        document.getElementById('prop-giveup-container').classList.add('hidden');
-                    }
-                }
-            }
-            refreshIcons();
-        }
-
-        function closeAllOverlays() { 
-            document.querySelectorAll('.overlay').forEach(o => o.classList.remove('active')); 
-            document.getElementById('backdrop').classList.remove('active'); 
-            const fab = document.getElementById('fab-container');
-            if(fab) fab.classList.remove('active');
-            if(cropperInstance) cropperInstance.destroy();
-            refreshIcons(); 
-        }
-
-        // 👉 BANCO DE DADOS: Funções para carregar e salvar na nuvem via Firebase.
-        async function loadDataFromCloud() {
-            if(!state.userId || !window.firebaseDb) return;
-            const appId = typeof __app_id !== 'undefined' ? __app_id : 'mu-finance';
-            const docRef = window.firebaseDoc(window.firebaseDb, 'artifacts', appId, 'users', state.userId, 'data', 'user_state');
-            try {
-                const docSnap = await window.firebaseGetDoc(docRef);
-                if (docSnap.exists()) {
-                    const cd = docSnap.data();
-                    state.usuario = cd.usuario || state.usuario; 
-                    state.saude = cd.saude || state.saude;
-                    state.financas = cd.financas || state.financas; 
-                    state.veiculo = cd.veiculo || state.veiculo; 
-                    state.notificacoes = cd.notificacoes || state.notificacoes;
-                }
-            } catch (e) { console.error("Erro no load:", e); }
-            checkVencimentos();
-        }
-
-        async function saveDataToCloud() {
-            if(!state.userId || !window.firebaseDb) return;
-            const appId = typeof __app_id !== 'undefined' ? __app_id : 'mu-finance';
-            const docRef = window.firebaseDoc(window.firebaseDb, 'artifacts', appId, 'users', state.userId, 'data', 'user_state');
-            try { 
-                await window.firebaseSetDoc(docRef, { 
-                    usuario: state.usuario, saude: state.saude, financas: state.financas, veiculo: state.veiculo, notificacoes: state.notificacoes
-                }); 
-            } catch (error) { console.error("Erro ao salvar no banco:", error); }
-        }
-
-        // 👉 VENCIMENTOS: Alerta sobre faturas de cartão próximas.
-        function checkVencimentos() {
-            const today = new Date();
-            const currentDay = today.getDate();
-            state.financas.cartoes.forEach(card => {
-                const dueDay = parseInt(card.vencimento) || 10;
-                let diff = dueDay - currentDay;
-                if (diff >= 0 && diff <= 5) {
-                    const title = `Fatura: ${card.nome}`;
-                    const msg = diff === 0 ? `Vence HOJE!` : `Vence em ${diff} dia(s).`;
-                    if (!state.notificacoes.some(n => n.titulo === title && n.msg === msg)) {
-                        state.notificacoes.unshift({titulo: title, msg: msg, data: today.toISOString()});
-                    }
-                }
-            });
-        }
-
-        // 👉 EXPORTAÇÃO: Gera arquivo XLS.
-        function exportarExcel(origem) {
-            let fil = state.financas.transacoes;
-            if (origem === 'extrato') {
-                const m = state.extratoDate.getMonth(), y = state.extratoDate.getFullYear();
-                fil = fil.filter(t => { const d = new Date(t.data); return d.getMonth() === m && d.getFullYear() === y; });
-            }
-            if (!fil.length) { showToast("Sem dados para exportar"); return; }
-            let html = '<table border="1"><tr><th>Data</th><th>Cat</th><th>Conta</th><th>Tipo</th><th>Valor</th></tr>';
-            fil.forEach(t => { html += `<tr><td>${t.data}</td><td>${t.cat}</td><td>${t.conta}</td><td>${t.tipo}</td><td>${t.valor}</td></tr>`; });
-            const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = "MuFinance_Export.xls";
-            link.click();
-        }
-
-        // 👉 AUTENTICAÇÃO
-        const initializeAuthListener = () => {
-            if (window.onAuthStateChanged) {
-                window.onAuthStateChanged(window.firebaseAuth, async (user) => {
-                    const splash = document.getElementById('splash-screen');
-                    if (user) {
-                        state.isLoggedIn = true; state.userId = user.uid;
-                        document.getElementById('login-screen').classList.add('hidden');
-                        await loadDataFromCloud(); updateUI();
-                    } else {
-                        state.isLoggedIn = false;
-                        document.getElementById('login-screen').classList.remove('hidden');
-                    }
-                    if (splash) splash.classList.add('hidden');
-                });
-            } else { setTimeout(initializeAuthListener, 50); }
-        };
-
-        window.handleLogin = async () => {
-            const email = document.getElementById('login-email').value; const pwd = document.getElementById('login-pwd').value;
-            try { await window.signInWithEmailAndPassword(window.firebaseAuth, email, pwd); } 
-            catch (e) { document.getElementById('login-error').innerText = "Erro ao entrar."; }
-        };
-
-        window.handleLogout = async () => { await window.signOut(window.firebaseAuth); location.reload(); };
-
-        // 👉 FINANCEIRO: Renderização e Lógica de Transações
-        function renderTransItem(t) {
-            const isRec = t.tipo === 'receita'; 
-            const isTransf = t.tipo === 'transferencia'; 
-            const isPgto = t.tipo === 'pagamento_cartao';
-            
-            // 👉 Busca o ícone específico da categoria ou usa o padrão
-            const iconName = getCategoryIcon(t.cat, t.tipo);
-            
-            let colorClass = isRec ? 'text-green-400' : (isTransf ? 'text-blue-400' : 'text-red-400');
-            let bgClass = isRec ? 'bg-green-500/10 text-green-500' : (isTransf ? 'bg-blue-500/10 text-blue-500' : 'bg-red-500/10 text-red-500');
-            let prefix = isRec ? '+' : (isTransf ? '' : '-');
-            
-            // Título exibe descrição se existir, senão usa categoria
-            const title = t.desc || t.cat;
-            const sub = isTransf ? `De ${t.conta} p/ ${t.destino}` : t.conta;
-
-            return `
-            <div class="flex justify-between items-center group card p-4 rounded-2xl border border-white/5">
-                <div class="flex items-center space-x-3 overflow-hidden">
-                    <div class="w-10 h-10 rounded-full ${bgClass} flex items-center justify-center shrink-0">
-                        <i data-lucide="${iconName}" class="w-5 h-5"></i>
-                    </div>
-                    <div class="truncate">
-                        <span class="block text-sm font-medium truncate">${title}</span>
-                        <span class="block text-[10px] text-gray-500 uppercase tracking-wider truncate">${sub} <span class="text-blue-500 font-bold">• ${t.status}</span></span>
-                    </div>
-                </div>
-                <div class="flex flex-col items-end shrink-0 ml-2">
-                    <span class="text-sm font-semibold ${colorClass}">${prefix} R$ ${t.valor.toLocaleString('pt-BR', {minimumFractionDigits:2})}</span>
-                    <div class="flex space-x-3 mt-1.5 opacity-80">
-                        <button class="text-gray-500 hover:text-white transition-colors" onclick="openTransactionModal('${t.tipo}', ${t.id})">
-                            <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
-                        </button>
-                        <button class="text-gray-500 hover:text-red-400 transition-colors" onclick="deleteTransaction(${t.id})">
-                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>`;
-        }
-
-        // 👉 FUNÇÃO DE CLONAGEM V4: Adiciona meses respeitando o calendário.
-        function addMonthsSafe(dateStr, monthsToAdd) {
-            let d = new Date(dateStr + 'T12:00:00');
-            let day = d.getDate();
-            d.setMonth(d.getMonth() + monthsToAdd);
-            if (d.getDate() !== day) d.setDate(0); 
-            return d.toISOString().split('T')[0];
-        }
-
-        // 👉 SALVAR TRANSAÇÃO: Incluindo a lógica de fixas (clonagem 12 meses).
-        function saveTransaction() {
-            const v = parseFloat(document.getElementById('trans-val-input').value);
-            const d = document.getElementById('trans-date-input').value;
-            const a = document.getElementById('trans-acc-select').value;
-            const desc = document.getElementById('trans-desc-input')?.value.trim() || "";
-            const type = state.financas.temp.type;
-            const isFixa = state.financas.temp.fixa;
-
-            if(!v || !d) return;
-
-            let cat = document.getElementById('trans-cat-select')?.value || "Geral";
-            let status = state.financas.temp.status;
-            let dest = document.getElementById('trans-dest-select')?.value || "";
-
-            if (type === 'transferencia' && a === dest) { showToast("Contas iguais!"); return; }
-
-            if(state.editingId) {
-                const idx = state.financas.transacoes.findIndex(x => x.id === state.editingId);
-                if(idx > -1) state.financas.transacoes[idx] = {...state.financas.transacoes[idx], valor:v, data:d, cat, desc, conta:a, destino:dest, tipo:type, status, fixa:isFixa};
-            } else {
-                const baseId = Date.now();
-                // Registro Principal
-                state.financas.transacoes.push({id:baseId, data:d, valor:v, tipo:type, status, cat, desc, conta:a, destino:dest, fixa:isFixa});
-                
-                // 👉 Se for FIXA, clona pros próximos 12 meses como "previsivel"
-                if(isFixa && type !== 'transferencia') {
-                    for(let i=1; i<=12; i++) {
-                        state.financas.transacoes.push({
-                            id: baseId + i, data: addMonthsSafe(d, i), valor: v, tipo: type, status: 'previsivel', cat, desc, conta: a, destino: dest, fixa: true
-                        });
-                    }
-                }
-            }
-            saveDataToCloud(); closeAllOverlays(); updateUI(); showToast("Salvo com sucesso!");
-        }
-
-        // 👉 INTERFACE: Atualiza todos os elementos visuais da tela.
-        function updateUI() {
-            const now = new Date();
-            // Atualiza Avatar e Nome na Sidebar
-            const avatarHtml = state.usuario.avatarUrl ? `<img src="${state.usuario.avatarUrl}" class="w-full h-full object-cover">` : (state.usuario.firstName[0] + (state.usuario.lastName ? state.usuario.lastName[0] : "")).toUpperCase();
-            document.getElementById('header-initials').innerHTML = avatarHtml;
-            if(document.getElementById('sidebar-avatar-preview')) document.getElementById('sidebar-avatar-preview').innerHTML = avatarHtml;
-            if(document.getElementById('sidebar-user-name')) document.getElementById('sidebar-user-name').innerText = state.usuario.firstName;
-
-            // Cálculos de Saldo
-            let saldo = 0, recM = 0, desM = 0;
-            const contasAtivas = state.usuario.contas.filter(c => c.somaSaldo).map(c => c.nome);
-            
-            state.financas.transacoes.forEach(t => {
-                const td = new Date(t.data);
-                const isMes = td.getMonth() === now.getMonth() && td.getFullYear() === now.getFullYear();
-                const isEfet = t.status === 'efetivada' || t.status === 'fatura_paga';
-                
-                if (isEfet && contasAtivas.includes(t.conta)) {
-                    if (t.tipo === 'receita') { saldo += t.valor; if(isMes) recM += t.valor; }
-                    else if (t.tipo === 'despesa') { saldo -= t.valor; if(isMes) desM += t.valor; }
-                }
-                if (t.tipo === 'transferencia') {
-                    if(contasAtivas.includes(t.conta)) saldo -= t.valor;
-                    if(contasAtivas.includes(t.destino)) saldo += t.valor;
-                }
-            });
-
-            const fmt = v => 'R$ ' + v.toLocaleString('pt-BR', {minimumFractionDigits:2});
-            document.querySelectorAll('.fin-total-saldo').forEach(el => { el.setAttribute('data-value', fmt(saldo)); el.innerText = state.blurred ? 'R$ •••••' : fmt(saldo); });
-            document.querySelectorAll('.fin-receita-mes').forEach(el => { el.setAttribute('data-value', fmt(recM)); el.innerText = state.blurred ? 'R$ •••••' : fmt(recM); });
-            document.querySelectorAll('.fin-despesa-mes').forEach(el => { el.setAttribute('data-value', fmt(desM)); el.innerText = state.blurred ? 'R$ •••••' : fmt(desM); });
-
-            renderRecentTrans(); renderExtrato(); renderCards(); refreshIcons();
-        }
-
-        function renderRecentTrans() {
-            const sorted = [...state.financas.transacoes].sort((a,b) => new Date(b.data) - new Date(a.data)).slice(0, 5);
-            document.getElementById('recent-trans-list').innerHTML = sorted.length ? sorted.map(t => renderTransItem(t)).join('') : '<p class="text-center text-gray-500 py-4 text-[10px] uppercase font-bold">Nenhuma atividade</p>';
-        }
-
-        function renderExtrato() {
-            const m = state.extratoDate.getMonth(), y = state.extratoDate.getFullYear();
-            const fil = state.financas.transacoes.filter(t => { const d = new Date(t.data); return d.getMonth() === m && d.getFullYear() === y; }).sort((a,b) => new Date(b.data) - new Date(a.data));
-            const content = document.getElementById('extrato-month-content');
-            if(content) content.innerHTML = fil.length ? fil.map(t => renderTransItem(t)).join('') : '<p class="text-center text-gray-500 py-10">Vazio</p>';
-        }
-
-        // Funções auxiliares (UI e State)
-        function setTransState(p, v) { 
-            state.financas.temp[p] = v; 
-            if(p === 'status') {
-                document.getElementById('btn-st-prev').className = v === 'previsivel' ? 'flex-1 py-2 text-[9px] font-bold rounded-lg bg-blue-500/20 text-blue-400' : 'flex-1 py-2 text-[9px] font-bold rounded-lg text-gray-500';
-                document.getElementById('btn-st-efet').className = v === 'efetivada' ? 'flex-1 py-2 text-[9px] font-bold rounded-lg bg-green-500/20 text-green-400' : 'flex-1 py-2 text-[9px] font-bold rounded-lg text-gray-500';
-            }
-            if(p === 'fixa') {
-                document.getElementById('btn-fx-no').className = v === false ? 'flex-1 py-2 text-[9px] font-bold rounded-lg bg-white/20 text-white' : 'flex-1 py-2 text-[9px] font-bold rounded-lg text-gray-500';
-                document.getElementById('btn-fx-yes').className = v === true ? 'flex-1 py-2 text-[9px] font-bold rounded-lg bg-white/20 text-white' : 'flex-1 py-2 text-[9px] font-bold rounded-lg text-gray-500';
-            }
-        }
-
-        function openTransactionModal(t, id = null) {
-            state.editingId = id; setTransType(t);
-            const descEl = document.getElementById('trans-desc-input');
-            const valEl = document.getElementById('trans-val-input');
-            const dateEl = document.getElementById('trans-date-input');
-            
-            if(id) {
-                const tr = state.financas.transacoes.find(x => x.id === id);
-                valEl.value = tr.valor; dateEl.value = tr.data; if(descEl) descEl.value = tr.desc || "";
-                setTransState('status', tr.status); setTransState('fixa', tr.fixa);
-            } else {
-                valEl.value = ""; dateEl.value = new Date().toISOString().split('T')[0]; if(descEl) descEl.value = "";
-                setTransState('status', 'previsivel'); setTransState('fixa', false);
-            }
-            toggleOverlay('transaction');
-        }
-
-        function setTransType(t) {
-            state.financas.temp.type = t;
-            // Estilização dos botões de tipo
-            document.getElementById('btn-tt-despesa').classList.toggle('bg-red-500/20', t==='despesa');
-            document.getElementById('btn-tt-receita').classList.toggle('bg-green-500/20', t==='receita');
-            document.getElementById('btn-tt-transf').classList.toggle('bg-blue-500/20', t==='transferencia');
-            
-            const cats = t === 'receita' ? state.usuario.categorias_receita : state.usuario.categorias_despesa;
-            const sel = document.getElementById('trans-cat-select');
-            if(sel) sel.innerHTML = cats.map(c => `<option value="${c.nome}">${c.nome}</option>`).join('');
-            
-            const accSel = document.getElementById('trans-acc-select');
-            if(accSel) accSel.innerHTML = getFinSelectOptions(t === 'receita' ? 'contas' : 'all');
-        }
-
-        function deleteTransaction(id) {
-            if(confirm("Deseja excluir este lançamento?")) {
-                state.financas.transacoes = state.financas.transacoes.filter(x => x.id !== id);
-                saveDataToCloud(); updateUI(); showToast("Excluído");
-            }
-        }
-
-        function toggleVisibility() { 
-            state.blurred = !state.blurred; 
-            document.querySelectorAll('.btn-eye').forEach(el => el.classList.toggle('hidden', state.blurred));
-            document.querySelectorAll('.btn-eye-off').forEach(el => el.classList.toggle('hidden', !state.blurred));
-            updateUI(); 
-        }
-
-        window.onload = () => { initializeAuthListener(); };
-    </script>
+    window.onload = () => { initializeAuthListener(); };
+</script>
     
 </body>
 </html>
