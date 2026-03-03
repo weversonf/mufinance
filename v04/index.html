@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mu Finance v04.01</title>
+    <title>Mu Finance v04.02</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -208,7 +208,7 @@
             <div class="w-full max-w-md">
                 <div class="text-center mb-10">
                     <h1 class="text-4xl font-bold tracking-tight mb-2">Mu Finance</h1>
-                    <p class="text-[10px] text-gray-500 uppercase tracking-widest font-bold">v04.01</p>
+                    <p class="text-[10px] text-gray-500 uppercase tracking-widest font-bold">v04.02</p>
                 </div>
                 <div class="space-y-4">
                 <div class="bg-black/20 p-4 rounded-2xl border border-white/5">
@@ -231,7 +231,7 @@
         <header class="flex justify-between items-center shrink-0">
             <div>
                 <h1 id="header-title" class="text-2xl font-bold tracking-tight">Mu Finance</h1>
-                <p class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mt-1" id="header-subtitle">Dashboard Geral v04.01</p>
+                <p class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mt-1" id="header-subtitle">Dashboard Geral v04.02</p>
             </div>
             <div class="flex items-center space-x-3">
                 <button onclick="toggleOverlay('notificacoes')" class="relative w-10 h-10 flex items-center justify-center rounded-full bg-[#1E2128] border border-gray-800 active:scale-90 transition-transform">
@@ -1179,11 +1179,11 @@
         let state = {
             isLoggedIn: false, userId: null, viewDate: new Date(), extratoDate: new Date(), blurred: false, editingId: null, editingVehId: null, vehHistoryFilter: 'fuel-maintenance', vehHistoryMonth: new Date(), vehHistoryPage: 1,
             usuario: { 
-                firstName: "Murilo", lastName: "Finance", username: "mufinance", birthDate: "1996-02-26", peso: 100, idade: 30, avatarUrl: null,
+                firstName: "Murilo", lastName: "Finance", username: "mufinance", birthDate: "1996-02-26", peso: 100, idade: 30, avatarUrl: null, salario: 0, visaoImpulso: 'ambos',
                 contas: [
-                    {id: 'wallet', nome: 'Carteira', protected: true, somaSaldo: true}, 
-                    {id: 2, nome: 'Inter', protected: false, somaSaldo: true},
-                    {id: 3, nome: 'Reserva Oculta', protected: false, somaSaldo: false}
+                    {id: 'wallet', nome: 'Carteira', protected: true, somaSaldo: true, cadeado: false, saldo: 0}, 
+                    {id: 2, nome: 'Inter', protected: false, somaSaldo: true, cadeado: false, saldo: 0},
+                    {id: 3, nome: 'Reserva Oculta', protected: false, somaSaldo: false, cadeado: true, saldo: 0}
                 ],
                 categorias_despesa: [
                     {id: 'd1', nome: 'Alimentação', protected: true}, {id: 'd2', nome: 'Combustível', protected: true}, {id: 'd3', nome: 'Manutenção', protected: true}, {id: 'd4', nome: 'Moradia', protected: true}, {id: 'd5', nome: 'Lazer', protected: false}
@@ -1197,7 +1197,7 @@
                 cartoes: [{id:1, nome:'Nubank', cor:'#8b5cf6', limite:5400, bandeira: 'MASTERCARD', vencimento: 10}], 
                 transacoes: [], metas: [], temp: {type:'despesa', status:'previsivel', fixa:false} 
             },
-            veiculo: { tipo: 'moto', nome: 'Fazer 250', hodometro: 12450, mediaGeral: 29.0, oleoIntervalo: 3000, oleoUltimaTrocaKM: 11000, historico: [] },
+            veiculo: { tipo: 'moto', nome: 'Fazer 250', hodometro: 12450, mediaGeral: 29.0, oleoIntervalo: 3000, oleoUltimaTrocaKM: 11000, historico: [], tributos: [] },
             notificacoes: []
         };
 
@@ -1434,13 +1434,34 @@
             if (conta) { conta.somaSaldo = !conta.somaSaldo; saveDataToCloud(); updateUI(); }
         }
 
+        function toggleCadeado(id) {
+            const conta = state.usuario.contas.find(c => c.id.toString() === id.toString());
+            if (conta) { conta.cadeado = !conta.cadeado; saveDataToCloud(); updateUI(); }
+        }
+
+        function openAjusteSaldoModal(contaId) {
+            const conta = state.usuario.contas.find(c => c.id.toString() === contaId.toString());
+            if(!conta) return;
+            const saldoReal = prompt('Qual o saldo real de ' + conta.nome + ' no seu banco?');
+            if(saldoReal === null || saldoReal.trim() === '') return;
+            const valor = parseFloat(saldoReal);
+            if(isNaN(valor)) { showToast('Valor invalido'); return; }
+            const saldoAtual = conta.saldo || 0;
+            const diferenca = valor - saldoAtual;
+            if(Math.abs(diferenca) < 0.01) { showToast('Saldos ja estao sincronizados'); return; }
+            state.financas.transacoes.push({ id:Date.now(), data:new Date().toISOString().split('T')[0], valor:Math.abs(diferenca), tipo:diferenca > 0 ? 'receita' : 'despesa', status:'efetivada', cat:'Ajuste de Saldo', conta:conta.nome, destino:'', fixa:false });
+            conta.saldo = valor;
+            saveDataToCloud(); updateUI(); showToast('Saldo ajustado');
+        }
+
         // ATUALIZAÇÃO: Renderiza a lista de contas mostrando o Tipo (Comum/Investimento)
         function renderFinSettings() {
             document.getElementById('list-contas').innerHTML = state.usuario.contas.map(c => `
                 <div class="flex justify-between items-center bg-black/20 p-3 rounded-xl border border-white/5">
                     <div class="flex flex-col justify-center"><span class="text-xs font-bold block">${c.nome}</span><span class="text-[8px] text-gray-500 uppercase font-bold tracking-widest mt-0.5">${c.tipo || 'Conta Comum'}</span></div>
                     <div class="flex items-center space-x-3">
-                        <label class="flex items-center space-x-1.5 cursor-pointer"><input type="checkbox" onchange="toggleSomaSaldo('${c.id}')" ${c.somaSaldo !== false ? 'checked' : ''} class="w-3 h-3 accent-blue-500"><span class="text-[8px] text-gray-500 uppercase font-bold tracking-widest leading-none">Somar<br>Home</span></label>
+                        <label class="flex items-center space-x-1.5 cursor-pointer"><input type="checkbox" onchange="toggleSomaSaldo('${c.id}')" ${c.somaSaldo !== false ? 'checked' : ''} class="w-3 h-3 accent-blue-500"><span class="text-[8px] text-gray-500 uppercase font-bold tracking-widest leading-none">Somar</span></label>
+                        <label class="flex items-center space-x-1.5 cursor-pointer"><input type="checkbox" onchange="toggleCadeado('${c.id}')" ${c.cadeado ? 'checked' : ''} class="w-3 h-3 accent-yellow-500"><span class="text-[8px] text-gray-500 uppercase font-bold tracking-widest leading-none">Blindar</span></label>
                         <div class="w-px h-4 bg-gray-700 mx-1"></div>
                         ${c.protected ? '<i data-lucide="lock" class="w-4 h-4 text-gray-600"></i>' : `<button onclick="editFinItem('conta', '${c.id}')"><i data-lucide="edit-2" class="w-4 h-4 text-blue-400 hover:text-white transition-colors"></i></button><button onclick="deleteFinItem('conta', '${c.id}')"><i data-lucide="trash-2" class="w-4 h-4 text-red-500/50 hover:text-red-500 transition-colors"></i></button>`}
                     </div>
@@ -1495,7 +1516,7 @@
                 const tipo = tipoEl ? tipoEl.value : 'Conta Comum';
                 const saldo = saldoEl ? parseFloat(saldoEl.value) || 0 : 0;
 
-                state.usuario.contas.push({id: Date.now().toString(), nome: nome, tipo: tipo, protected: false, somaSaldo: true});
+                state.usuario.contas.push({id: Date.now().toString(), nome: nome, tipo: tipo, protected: false, somaSaldo: true, cadeado: false, saldo: saldo});
 
                 // Cria lançamento automático caso tenha saldo informado
                 if (saldo !== 0) {
@@ -1626,6 +1647,13 @@
 
             if(!v || !d) return;
 
+            if(type === 'despesa' && state.usuario.salario > 0) {
+                const horasTrabalhadas = (v / (state.usuario.salario / 160)).toFixed(1);
+                const tanksConsumidos = (v / 50).toFixed(2);
+                let msg = 'Voce vai gastar ' + horasTrabalhadas + ' horas de trabalho';
+                if(!confirm(msg + '. Tem certeza?')) return;
+            }
+
             let c = '', destino = '', status = state.financas.temp.status;
             
             const isCard = state.financas.cartoes.some(card => card.nome === a);
@@ -1646,7 +1674,17 @@
                 const idx = state.financas.transacoes.findIndex(x => x.id === state.editingId); 
                 if(idx !== -1) { state.financas.transacoes[idx] = {...state.financas.transacoes[idx], valor:v, data:d, cat:c, conta:a, destino:destino, tipo:type, status:status}; }
             } else { 
-                state.financas.transacoes.push({ id:Date.now(), data:d, valor:v, tipo:type, status:status, cat:c, conta:a, destino:destino }); 
+                const fixa = state.financas.temp.fixa || false;
+                state.financas.transacoes.push({ id:Date.now(), data:d, valor:v, tipo:type, status:status, cat:c, conta:a, destino:destino, fixa:fixa }); 
+                if(fixa && type !== 'transferencia') {
+                    const baseDate = new Date(d);
+                    for(let i = 1; i <= 12; i++) {
+                        const nextDate = new Date(baseDate);
+                        nextDate.setMonth(nextDate.getMonth() + i);
+                        const nextDateStr = nextDate.toISOString().split('T')[0];
+                        state.financas.transacoes.push({ id:Date.now() + i, data:nextDateStr, valor:v, tipo:type, status:'PREVISTA', cat:c, conta:a, destino:destino, fixa:fixa });
+                    }
+                }
                 if (amigo && amigo.startsWith('@') && type !== 'transferencia') {
                     state.notificacoes.unshift({ titulo: 'Transação Dividida', msg: `Você marcou ${amigo} na transação de ${c}.`, data: new Date().toISOString() });
                 }
@@ -1747,6 +1785,20 @@
 
         function populateVehAccSelects() {
             const accs = getFinSelectOptions('all'); document.getElementById('input-fuel-acc').innerHTML = accs; document.getElementById('input-svc-acc').innerHTML = accs;
+        }
+
+        function openTributosModal() {
+            const tipo = prompt('Tipo de tributo (IPVA/Licenciamento):');
+            if(!tipo) return;
+            const mes = prompt('Mes (1-12):');
+            if(!mes || isNaN(mes) || mes < 1 || mes > 12) return;
+            const valor = prompt('Valor do tributo:');
+            if(!valor || isNaN(valor)) return;
+            const ano = new Date().getFullYear();
+            const data = ano + '-' + String(mes).padStart(2, '0') + '-01';
+            state.veiculo.tributos.push({ id:Date.now(), tipo:tipo, data:data, valor:parseFloat(valor), status:'PREVISTA' });
+            state.financas.transacoes.push({ id:Date.now() + 1, data:data, valor:parseFloat(valor), tipo:'despesa', status:'PREVISTA', cat:tipo + ' - ' + state.veiculo.nome, conta:'', destino:'', fixa:false });
+            saveDataToCloud(); updateUI(); showToast('Tributo adicionado');
         }
 
         function openVehModal(t, id = null) {
@@ -1932,6 +1984,8 @@
         function renderProfileForm() {
             tempAvatar = state.usuario.avatarUrl || null; updateAvatarPreviewUI();
             document.getElementById('prof-first-name').value = state.usuario.firstName; document.getElementById('prof-last-name').value = state.usuario.lastName; document.getElementById('prof-username').value = state.usuario.username; document.getElementById('prof-birth-date').value = state.usuario.birthDate; document.getElementById('prof-weight').value = state.usuario.peso; document.getElementById('prof-water-goal').value = state.saude.aguaMeta; document.getElementById('prof-caf-goal').value = state.saude.cafeinaMeta;
+            if(document.getElementById('prof-salary')) document.getElementById('prof-salary').value = state.usuario.salario;
+            if(document.getElementById('prof-impulso-view')) document.getElementById('prof-impulso-view').value = state.usuario.visaoImpulso;
             renderFinSettings(); refreshIcons();
         }
 
@@ -1969,6 +2023,8 @@
 
         function saveProfile() {
             state.usuario.firstName = document.getElementById('prof-first-name').value; state.usuario.lastName = document.getElementById('prof-last-name').value; state.usuario.username = document.getElementById('prof-username').value; state.usuario.birthDate = document.getElementById('prof-birth-date').value; state.usuario.peso = parseFloat(document.getElementById('prof-weight').value) || 0; state.usuario.avatarUrl = tempAvatar;
+            if(document.getElementById('prof-salary')) state.usuario.salario = parseFloat(document.getElementById('prof-salary').value) || 0;
+            if(document.getElementById('prof-impulso-view')) state.usuario.visaoImpulso = document.getElementById('prof-impulso-view').value;
             const birth = new Date(state.usuario.birthDate); const today = new Date(); let age = today.getFullYear() - birth.getFullYear(); if (today.getMonth() < birth.getMonth() || (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate())) age--; state.usuario.idade = age;
             state.saude.aguaMeta = parseFloat(document.getElementById('prof-water-goal').value) || (state.usuario.peso * 35); state.saude.cafeinaMeta = parseFloat(document.getElementById('prof-caf-goal').value) || 400;
             saveDataToCloud(); closeAllOverlays(); updateUI();
@@ -2012,13 +2068,13 @@
             document.querySelectorAll('.ring-agua-path').forEach(rA => { rA.style.strokeDashoffset = 301.6 - (Math.min(aP, 100)/100 * 301.6); }); document.querySelectorAll('.ring-cafeina-path').forEach(rC => { rC.style.strokeDashoffset = 301.6 - (Math.min(s.cafe/state.saude.cafeinaMeta, 1) * 301.6); });
             document.querySelectorAll('.saude-agua-perc').forEach(el => el.innerText = Math.round(aP) + '%'); document.querySelectorAll('.saude-cafe-valor').forEach(el => el.innerText = s.cafe); document.querySelectorAll('.val-agua-meta-litros').forEach(el => el.innerText = (state.saude.aguaMeta/1000).toFixed(1));
 
-            let saldo = 0, recM = 0, desM = 0; const now = new Date(); const contasSoma = state.usuario.contas.filter(c => c.somaSaldo !== false).map(c => c.nome);
+            let saldo = 0, saldoProtegido = 0, recM = 0, desM = 0; const now = new Date(); const contasSoma = state.usuario.contas.filter(c => c.somaSaldo !== false && !c.cadeado).map(c => c.nome); const contasProtegidas = state.usuario.contas.filter(c => c.cadeado).map(c => c.nome);
             state.financas.transacoes.forEach(t => { 
                 const td = new Date(t.data); const isThisMonth = td.getMonth() === now.getMonth() && td.getFullYear() === now.getFullYear(); const isEffective = t.status === 'efetivada' || t.status === 'fatura_paga';
-                if (t.tipo === 'receita' && isEffective) { if(contasSoma.includes(t.conta)) { saldo += t.valor; if(isThisMonth) recM += t.valor; } } 
-                else if (t.tipo === 'despesa' && isEffective) { if(contasSoma.includes(t.conta)) { saldo -= t.valor; if(isThisMonth) desM += t.valor; } } 
-                else if (t.tipo === 'transferencia') { if(contasSoma.includes(t.conta)) saldo -= t.valor; if(contasSoma.includes(t.destino)) saldo += t.valor; } 
-                else if (t.tipo === 'pagamento_cartao') { if(contasSoma.includes(t.conta)) { saldo -= t.valor; if(isThisMonth) desM += t.valor; } }
+                if (t.tipo === 'receita' && isEffective) { if(contasSoma.includes(t.conta)) { saldo += t.valor; if(isThisMonth) recM += t.valor; } if(contasProtegidas.includes(t.conta)) saldoProtegido += t.valor; } 
+                else if (t.tipo === 'despesa' && isEffective) { if(contasSoma.includes(t.conta)) { saldo -= t.valor; if(isThisMonth) desM += t.valor; } if(contasProtegidas.includes(t.conta)) saldoProtegido -= t.valor; } 
+                else if (t.tipo === 'transferencia') { if(contasSoma.includes(t.conta)) saldo -= t.valor; if(contasSoma.includes(t.destino)) saldo += t.valor; if(contasProtegidas.includes(t.conta)) saldoProtegido -= t.valor; if(contasProtegidas.includes(t.destino)) saldoProtegido += t.valor; } 
+                else if (t.tipo === 'pagamento_cartao') { if(contasSoma.includes(t.conta)) { saldo -= t.valor; if(isThisMonth) desM += t.valor; } if(contasProtegidas.includes(t.conta)) saldoProtegido -= t.valor; }
             });
 
             const setSensitiveVal = (selector, val) => {
@@ -2183,8 +2239,8 @@
             catChartInstance = new Chart(ctxCat, { type: 'doughnut', data: { labels: labels.length ? labels : ['Nenhum Gasto'], datasets: [{ data: data.length ? data : [1], backgroundColor: data.length ? bgColors : ['#374151'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { legend: { display: true, position: 'right', labels: { color: '#e5e7eb', font: {size: 10}, padding: 15 } } } } });
         }
 
-        function changeMonth(s) { state.viewDate.setMonth(state.viewDate.getMonth()+s); renderCalendar(); }
-        function changeExtratoMonth(s) { state.extratoDate.setMonth(state.extratoDate.getMonth()+s); renderExtrato(); }
+        function changeMonth(s) { state.viewDate.setMonth(state.viewDate.getMonth()+s); renderCalendar(); refreshIcons(); }
+        function changeExtratoMonth(s) { state.extratoDate.setMonth(state.extratoDate.getMonth()+s); renderExtrato(); refreshIcons(); }
         
         function toggleVisibility() { 
             state.blurred = !state.blurred; 
