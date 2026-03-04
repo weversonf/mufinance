@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mu Finance v04.10</title>
+    <title>Mu Finance v04.11</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -208,7 +208,7 @@
             <div class="w-full max-w-md">
                 <div class="text-center mb-10">
                     <h1 class="text-4xl font-bold tracking-tight mb-2">Mu Finance</h1>
-                    <p class="text-[10px] text-gray-500 uppercase tracking-widest font-bold">v04.10</p>
+                    <p class="text-[10px] text-gray-500 uppercase tracking-widest font-bold">v04.11</p>
                 </div>
                 <div class="space-y-4">
                 <div class="bg-black/20 p-4 rounded-2xl border border-white/5">
@@ -231,7 +231,7 @@
         <header class="flex justify-between items-center shrink-0">
             <div>
                 <h1 id="header-title" class="text-2xl font-bold tracking-tight">Mu Finance</h1>
-                <p class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mt-1" id="header-subtitle">Dashboard Geral v04.10</p>
+                <p class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mt-1" id="header-subtitle">Dashboard Geral v04.11</p>
             </div>
             <div class="flex items-center space-x-3">
                 <button onclick="toggleOverlay('notificacoes')" class="relative w-10 h-10 flex items-center justify-center rounded-full bg-[#1E2128] border border-gray-800 active:scale-90 transition-transform">
@@ -1100,11 +1100,33 @@
                 <div class="bg-black/20 p-4 rounded-2xl border border-white/5">
                     <label class="text-[9px] text-gray-500 uppercase font-bold block mb-2">Tipo da Conta</label>
                     <select id="add-account-tipo" class="bg-transparent font-bold w-full outline-none text-white border-b border-white/10 pb-2">
+                        <option value="Carteira">Carteira</option>
+                        <option value="Inter">Inter</option>
+                        <option value="Nubank">Nubank</option>
+                        <option value="Banco do Brasil">Banco do Brasil</option>
+                        <option value="Caixa">Caixa</option>
+                        <option value="Bradesco">Bradesco</option>
+                        <option value="Santander">Santander</option>
                         <option value="Conta Comum">Conta Comum</option>
                         <option value="Investimento">Investimento</option>
                         <option value="Poupanca">Poupanca</option>
                         <option value="Cofre">Cofre</option>
                     </select>
+                </div>
+                
+                <div class="bg-black/20 p-4 rounded-2xl border border-white/5">
+                    <label class="text-[9px] text-gray-500 uppercase font-bold block mb-3">Cor do Banco</label>
+                    <div class="grid grid-cols-4 gap-2">
+                        <button type="button" class="color-option w-full aspect-square rounded-xl border-2 border-transparent transition-all" data-color="#38bdf8" style="background-color: #38bdf8;" title="Carteira" onclick="selectNewBankColor('#38bdf8')"></button>
+                        <button type="button" class="color-option w-full aspect-square rounded-xl border-2 border-transparent transition-all" data-color="#ff6b35" style="background-color: #ff6b35;" title="Inter" onclick="selectNewBankColor('#ff6b35')"></button>
+                        <button type="button" class="color-option w-full aspect-square rounded-xl border-2 border-transparent transition-all" data-color="#9b59b6" style="background-color: #9b59b6;" title="Nubank" onclick="selectNewBankColor('#9b59b6')"></button>
+                        <button type="button" class="color-option w-full aspect-square rounded-xl border-2 border-transparent transition-all" data-color="#ffd700" style="background-color: #ffd700;" title="Banco do Brasil" onclick="selectNewBankColor('#ffd700')"></button>
+                        <button type="button" class="color-option w-full aspect-square rounded-xl border-2 border-transparent transition-all" data-color="#0066cc" style="background-color: #0066cc;" title="Caixa" onclick="selectNewBankColor('#0066cc')"></button>
+                        <button type="button" class="color-option w-full aspect-square rounded-xl border-2 border-transparent transition-all" data-color="#cc0000" style="background-color: #cc0000;" title="Bradesco" onclick="selectNewBankColor('#cc0000')"></button>
+                        <button type="button" class="color-option w-full aspect-square rounded-xl border-2 border-transparent transition-all" data-color="#ff0000" style="background-color: #ff0000;" title="Santander" onclick="selectNewBankColor('#ff0000')"></button>
+                        <button type="button" class="color-option w-full aspect-square rounded-xl border-2 border-transparent transition-all" data-color="#6b7280" style="background-color: #6b7280;" title="Outro" onclick="selectNewBankColor('#6b7280')"></button>
+                    </div>
+                    <input type="hidden" id="add-account-cor" value="#38bdf8">
                 </div>
                 
                 <div class="bg-black/20 p-4 rounded-2xl border border-white/5">
@@ -1139,11 +1161,33 @@
                 <div class="bg-black/20 p-4 rounded-2xl border border-white/5">
                     <label class="text-[9px] text-gray-500 uppercase font-bold block mb-2">Tipo da Conta</label>
                     <select id="edit-account-tipo" class="bg-transparent font-bold w-full outline-none text-white border-b border-white/10 pb-2">
+                        <option value="Carteira">Carteira</option>
+                        <option value="Inter">Inter</option>
+                        <option value="Nubank">Nubank</option>
+                        <option value="Banco do Brasil">Banco do Brasil</option>
+                        <option value="Caixa">Caixa</option>
+                        <option value="Bradesco">Bradesco</option>
+                        <option value="Santander">Santander</option>
                         <option value="Conta Comum">Conta Comum</option>
                         <option value="Investimento">Investimento</option>
                         <option value="Poupança">Poupança</option>
                         <option value="Cofre">Cofre</option>
                     </select>
+                </div>
+                
+                <div class="bg-black/20 p-4 rounded-2xl border border-white/5">
+                    <label class="text-[9px] text-gray-500 uppercase font-bold block mb-3">Cor do Banco</label>
+                    <div class="grid grid-cols-4 gap-2">
+                        <button type="button" class="color-option w-full aspect-square rounded-xl border-2 border-transparent transition-all" data-color="#38bdf8" style="background-color: #38bdf8;" title="Carteira" onclick="selectBankColor('#38bdf8')"></button>
+                        <button type="button" class="color-option w-full aspect-square rounded-xl border-2 border-transparent transition-all" data-color="#ff6b35" style="background-color: #ff6b35;" title="Inter" onclick="selectBankColor('#ff6b35')"></button>
+                        <button type="button" class="color-option w-full aspect-square rounded-xl border-2 border-transparent transition-all" data-color="#9b59b6" style="background-color: #9b59b6;" title="Nubank" onclick="selectBankColor('#9b59b6')"></button>
+                        <button type="button" class="color-option w-full aspect-square rounded-xl border-2 border-transparent transition-all" data-color="#ffd700" style="background-color: #ffd700;" title="Banco do Brasil" onclick="selectBankColor('#ffd700')"></button>
+                        <button type="button" class="color-option w-full aspect-square rounded-xl border-2 border-transparent transition-all" data-color="#0066cc" style="background-color: #0066cc;" title="Caixa" onclick="selectBankColor('#0066cc')"></button>
+                        <button type="button" class="color-option w-full aspect-square rounded-xl border-2 border-transparent transition-all" data-color="#cc0000" style="background-color: #cc0000;" title="Bradesco" onclick="selectBankColor('#cc0000')"></button>
+                        <button type="button" class="color-option w-full aspect-square rounded-xl border-2 border-transparent transition-all" data-color="#ff0000" style="background-color: #ff0000;" title="Santander" onclick="selectBankColor('#ff0000')"></button>
+                        <button type="button" class="color-option w-full aspect-square rounded-xl border-2 border-transparent transition-all" data-color="#6b7280" style="background-color: #6b7280;" title="Outro" onclick="selectBankColor('#6b7280')"></button>
+                    </div>
+                    <input type="hidden" id="edit-account-cor" value="#38bdf8">
                 </div>
                 
                 <div class="bg-black/20 p-4 rounded-2xl border border-white/5 flex items-center justify-between">
@@ -1250,11 +1294,9 @@
             const dotsContainer = document.getElementById('saldo-dots');
             if (!carousel || !dotsContainer) return;
             
-            // Contas não-blindadas
             const contasNaoBlinadas = state.usuario.contas.filter(c => !c.protected);
             const currentIndex = state.saldoCarouselIndex || 0;
             
-            // Cores por banco
             const coresBanco = {
                 'Carteira': '#38bdf8',
                 'Inter': '#ff6b35',
@@ -1265,7 +1307,6 @@
                 'Santander': '#ff0000'
             };
             
-            // Calcular saldos por conta
             const saldosPorConta = {};
             state.usuario.contas.forEach(c => { saldosPorConta[c.nome] = 0; });
             
@@ -1280,35 +1321,64 @@
                 }
             });
             
-            // Calcular saldo geral (sem blindadas)
             let saldoGeral = 0;
             contasNaoBlinadas.forEach(c => { saldoGeral += saldosPorConta[c.nome] || 0; });
             
-            // Criar cards
+            let receitaMes = 0, despesaMes = 0;
+            const agora = new Date();
+            const mesAtual = agora.getMonth();
+            const anoAtual = agora.getFullYear();
+            
+            state.financas.transacoes.forEach(t => {
+                const dataTrans = new Date(t.data);
+                if (dataTrans.getMonth() === mesAtual && dataTrans.getFullYear() === anoAtual && (t.status === 'efetivada' || t.status === 'fatura_paga')) {
+                    if (t.tipo === 'receita') receitaMes += t.valor;
+                    else if (t.tipo === 'despesa') despesaMes += t.valor;
+                }
+            });
+            
             let cardsHTML = '';
             
-            // Card Saldo Geral
             cardsHTML += `
-                <div class="flex-shrink-0 card rounded-3xl p-6 bg-gradient-to-br from-blue-500/10 to-blue-500/5 border border-blue-500/20 flex flex-col justify-center min-h-[180px]" style="cursor: pointer; width: 100%; min-width: 100%;">
-                    <div class="flex justify-between items-start mb-4">
-                        <span class="text-blue-400 text-[10px] uppercase font-bold tracking-widest">Saldo Geral</span>
-                        <div class="btn-eye"><i data-lucide="eye" class="w-5 h-5 text-gray-400 hover:text-white transition-colors"></i></div>
+                <div class="flex-shrink-0 w-full" style="width: 100%; min-width: 100%;">
+                    <div class="card rounded-3xl p-6 bg-gradient-to-br from-blue-500/10 to-blue-500/5 border border-blue-500/20 flex flex-col justify-center min-h-[200px] mb-4" style="cursor: pointer;">
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="text-blue-400 text-[10px] uppercase font-bold tracking-widest">Saldo Geral</span>
+                            <i data-lucide="eye" class="w-5 h-5 text-gray-400 hover:text-white transition-colors cursor-pointer" onclick="toggleBlur()"></i>
+                        </div>
+                        <h2 class="text-4xl font-bold sensitive-value" data-value="R$ ${saldoGeral.toLocaleString('pt-BR', {minimumFractionDigits:2})}">R$ ${saldoGeral.toLocaleString('pt-BR', {minimumFractionDigits:2})}</h2>
                     </div>
-                    <h2 class="text-4xl font-bold sensitive-value" data-value="R$ ${saldoGeral.toLocaleString('pt-BR', {minimumFractionDigits:2})}">R$ ${saldoGeral.toLocaleString('pt-BR', {minimumFractionDigits:2})}</h2>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="card rounded-3xl p-4 bg-gradient-to-br from-green-500/10 to-green-500/5 border border-green-500/20 flex flex-col justify-center min-h-[120px]" style="cursor: pointer;">
+                            <div class="flex items-center mb-2">
+                                <i data-lucide="arrow-down-left" class="w-4 h-4 text-green-400 mr-2"></i>
+                                <span class="text-[10px] uppercase font-bold text-green-400">Receita</span>
+                            </div>
+                            <h3 class="text-2xl font-bold text-green-400 sensitive-value" data-value="R$ ${receitaMes.toLocaleString('pt-BR', {minimumFractionDigits:2})}">R$ ${receitaMes.toLocaleString('pt-BR', {minimumFractionDigits:2})}</h3>
+                        </div>
+                        <div class="card rounded-3xl p-4 bg-gradient-to-br from-red-500/10 to-red-500/5 border border-red-500/20 flex flex-col justify-center min-h-[120px]" style="cursor: pointer;">
+                            <div class="flex items-center mb-2">
+                                <i data-lucide="arrow-up-right" class="w-4 h-4 text-red-400 mr-2"></i>
+                                <span class="text-[10px] uppercase font-bold text-red-400">Despesa</span>
+                            </div>
+                            <h3 class="text-2xl font-bold text-red-400 sensitive-value" data-value="R$ ${despesaMes.toLocaleString('pt-BR', {minimumFractionDigits:2})}">R$ ${despesaMes.toLocaleString('pt-BR', {minimumFractionDigits:2})}</h3>
+                        </div>
+                    </div>
                 </div>
             `;
             
-            // Cards de contas não-blindadas
             contasNaoBlinadas.forEach(conta => {
                 const cor = coresBanco[conta.tipo] || '#6b7280';
                 const saldo = saldosPorConta[conta.nome] || 0;
                 cardsHTML += `
-                    <div class="flex-shrink-0 card rounded-3xl p-6 bg-gradient-to-br from-[${cor}]/10 to-[${cor}]/5 border border-[${cor}]/20 flex flex-col justify-center min-h-[180px]" style="cursor: pointer; border-color: ${cor}20; width: 100%; min-width: 100%;">
-                        <div class="flex justify-between items-start mb-4">
-                            <span class="text-[10px] uppercase font-bold tracking-widest" style="color: ${cor}">${conta.tipo}</span>
-                            <div class="btn-eye"><i data-lucide="eye" class="w-5 h-5 text-gray-400 hover:text-white transition-colors"></i></div>
+                    <div class="flex-shrink-0 w-full" style="width: 100%; min-width: 100%;">
+                        <div class="card rounded-3xl p-6 bg-gradient-to-br from-[${cor}]/10 to-[${cor}]/5 border border-[${cor}]/20 flex flex-col justify-center min-h-[200px]" style="cursor: pointer; border-color: ${cor}20;">
+                            <div class="flex justify-between items-start mb-4">
+                                <span class="text-[10px] uppercase font-bold tracking-widest" style="color: ${cor}">${conta.tipo}</span>
+                                <i data-lucide="eye" class="w-5 h-5 text-gray-400 hover:text-white transition-colors cursor-pointer" onclick="toggleBlur()"></i>
+                            </div>
+                            <h2 class="text-4xl font-bold sensitive-value" data-value="R$ ${saldo.toLocaleString('pt-BR', {minimumFractionDigits:2})}" style="color: ${cor}">R$ ${saldo.toLocaleString('pt-BR', {minimumFractionDigits:2})}</h2>
                         </div>
-                        <h2 class="text-4xl font-bold sensitive-value" data-value="R$ ${saldo.toLocaleString('pt-BR', {minimumFractionDigits:2})}" style="color: ${cor}">R$ ${saldo.toLocaleString('pt-BR', {minimumFractionDigits:2})}</h2>
                     </div>
                 `;
             });
@@ -1316,27 +1386,25 @@
             carousel.innerHTML = cardsHTML;
             carousel.style.transform = `translateX(-${currentIndex * 100}%)`;
             
-            // Criar pontinhos
             let dotsHTML = '';
-            for (let i = 0; i <= contasNaoBlinadas.length; i++) {
+            const totalSlides = 1 + contasNaoBlinadas.length;
+            for (let i = 0; i < totalSlides; i++) {
                 const isActive = i === currentIndex;
                 const cor = i === 0 ? '#38bdf8' : (coresBanco[contasNaoBlinadas[i-1]?.tipo] || '#6b7280');
                 dotsHTML += `<button onclick="setSaldoCarouselIndex(${i})" class="w-2 h-2 rounded-full transition-all ${isActive ? 'w-6' : ''}" style="background-color: ${isActive ? cor : '#4b5563'};"></button>`;
             }
             dotsContainer.innerHTML = dotsHTML;
             
-            // Adicionar swipe
             let touchStartX = 0;
             carousel.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; });
             carousel.addEventListener('touchend', e => {
                 const touchEndX = e.changedTouches[0].clientX;
-                if (touchStartX - touchEndX > 50) setSaldoCarouselIndex(Math.min(currentIndex + 1, contasNaoBlinadas.length));
+                if (touchStartX - touchEndX > 50) setSaldoCarouselIndex(Math.min(currentIndex + 1, totalSlides - 1));
                 else if (touchEndX - touchStartX > 50) setSaldoCarouselIndex(Math.max(currentIndex - 1, 0));
             });
             
-            // Click para navegar
             carousel.addEventListener('click', () => {
-                setSaldoCarouselIndex((currentIndex + 1) % (contasNaoBlinadas.length + 1));
+                setSaldoCarouselIndex((currentIndex + 1) % totalSlides);
             });
             
             refreshIcons();
@@ -1581,6 +1649,18 @@
             if (conta) { conta.somaSaldo = !conta.somaSaldo; saveDataToCloud(); updateUI(); }
         }
 
+                window.selectBankColor = function(color) {
+            document.getElementById('edit-account-cor').value = color;
+            document.querySelectorAll('.color-option').forEach(btn => {
+                if (btn.getAttribute('data-color') === color) {
+                    btn.style.borderColor = 'white';
+                    btn.style.borderWidth = '3px';
+                } else {
+                    btn.style.borderColor = 'transparent';
+                    btn.style.borderWidth = '2px';
+                }
+            });
+        };
         window.openEditAccountModal = function(id) {
             const conta = state.usuario.contas.find(c => c.id.toString() === id.toString());
             if(!conta) return;
@@ -1589,8 +1669,10 @@
             document.getElementById('edit-account-saldo').value = conta.saldo || 0;
             document.getElementById('edit-account-tipo').value = conta.tipo || 'Conta Comum';
             document.getElementById('edit-account-blindar').checked = conta.somaSaldo === false;
+            document.getElementById('edit-account-cor').value = conta.cor || '#38bdf8';
             
             window.editingAccountId = id;
+            setTimeout(() => selectBankColor(conta.cor || '#38bdf8'), 100);
             toggleOverlay('edit-account');
         }
         
@@ -1603,13 +1685,15 @@
             const novoSaldo = parseFloat(document.getElementById('edit-account-saldo').value) || 0;
             const novoTipo = document.getElementById('edit-account-tipo').value;
             const blindar = document.getElementById('edit-account-blindar').checked;
+            const novaCor = document.getElementById('edit-account-cor').value;
             
             if(!novoNome) { showToast('Nome da conta é obrigatório'); return; }
             
             conta.nome = novoNome;
             conta.saldo = novoSaldo;
             conta.tipo = novoTipo;
-            conta.somaSaldo = !blindar; // Se blindar = true, somaSaldo = false
+            conta.somaSaldo = !blindar;
+            conta.cor = novaCor;
             
             saveDataToCloud();
             updateUI();
@@ -1716,10 +1800,24 @@
         }
 
         // ATUALIZAÇÃO: Captura Tipo e Saldo Inicial na criação de novas Contas
+                window.selectNewBankColor = function(color) {
+            document.getElementById('add-account-cor').value = color;
+            document.querySelectorAll('#overlay-add-account .color-option').forEach(btn => {
+                if (btn.getAttribute('data-color') === color) {
+                    btn.style.borderColor = 'white';
+                    btn.style.borderWidth = '3px';
+                } else {
+                    btn.style.borderColor = 'transparent';
+                    btn.style.borderWidth = '2px';
+                }
+            });
+        };
         function openAddAccountModal() {
             document.getElementById('add-account-nome').value = '';
-            document.getElementById('add-account-tipo').value = 'Conta Comum';
+            document.getElementById('add-account-tipo').value = 'Carteira';
             document.getElementById('add-account-saldo').value = '';
+            document.getElementById('add-account-cor').value = '#38bdf8';
+            setTimeout(() => selectNewBankColor('#38bdf8'), 100);
             toggleOverlay('overlay-add-account');
         }
 
@@ -1727,10 +1825,11 @@
             const nome = document.getElementById('add-account-nome').value.trim();
             const tipo = document.getElementById('add-account-tipo').value;
             const saldo = parseFloat(document.getElementById('add-account-saldo').value) || 0;
+            const cor = document.getElementById('add-account-cor').value;
 
             if (!nome) { showToast('Informe o nome da conta.'); return; }
 
-            state.usuario.contas.push({id: Date.now().toString(), nome: nome, tipo: tipo, protected: false, somaSaldo: true});
+            state.usuario.contas.push({id: Date.now().toString(), nome: nome, tipo: tipo, cor: cor, protected: false, somaSaldo: true});
 
             if (saldo !== 0) {
                 state.financas.transacoes.push({ id: Date.now() + 1, data: new Date().toISOString().split('T')[0], valor: Math.abs(saldo), tipo: saldo > 0 ? 'receita' : 'despesa', cat: 'Saldo Inicial', conta: nome, destino: '', status: 'efetivada' });
