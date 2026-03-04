@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mu Finance v04.21</title>
+    <title>Mu Finance v04.22</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -220,7 +220,7 @@
             <div class="w-full max-w-md">
                 <div class="text-center mb-10">
                     <h1 class="text-4xl font-bold tracking-tight mb-2">Mu Finance</h1>
-                    <p class="text-[10px] text-gray-500 uppercase tracking-widest font-bold">v04.21</p>
+                    <p class="text-[10px] text-gray-500 uppercase tracking-widest font-bold">v04.22</p>
                 </div>
                 <div class="space-y-4">
                 <div class="bg-black/20 p-4 rounded-2xl border border-white/5">
@@ -243,7 +243,7 @@
         <header class="flex justify-between items-center shrink-0">
             <div>
                 <h1 id="header-title" class="text-2xl font-bold tracking-tight">Mu Finance</h1>
-                <p class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mt-1" id="header-subtitle">Dashboard Geral v04.21</p>
+                <p class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mt-1" id="header-subtitle">Dashboard Geral v04.22</p>
             </div>
             <div class="flex items-center space-x-3">
                 <button onclick="toggleOverlay('notificacoes')" class="relative w-10 h-10 flex items-center justify-center rounded-full bg-[#1E2128] border border-gray-800 active:scale-90 transition-transform">
@@ -642,6 +642,25 @@
 </nav>
 
         <div id="backdrop" class="backdrop" onclick="closeAllOverlays()"></div>
+		
+<div id="overlay-nova-conta" class="overlay">
+    <div class="w-12 h-1 bg-gray-800 rounded-full mx-auto mt-4 mb-4 shrink-0"></div>
+    <div class="px-6 flex justify-between items-center mb-6">
+        <h2 class="text-xl font-bold">Nova Conta Bancária</h2>
+        <button onclick="closeAllOverlays()"><i data-lucide="x" class="w-6 h-6 text-gray-500"></i></button>
+    </div>
+    <div class="overlay-content space-y-4">
+        <div class="bg-black/20 p-4 rounded-2xl border border-white/5">
+            <label class="text-[9px] text-gray-500 uppercase font-bold block mb-1">Nome da Conta</label>
+            <input type="text" id="conta-name-input" placeholder="Ex: Itaú, Bradesco" class="bg-transparent font-bold w-full outline-none">
+        </div>
+        <div class="bg-black/20 p-4 rounded-2xl border border-white/5">
+            <label class="text-[9px] text-gray-500 uppercase font-bold block mb-1">Saldo Inicial (R$)</label>
+            <input type="number" id="conta-saldo-input" placeholder="0.00" class="bg-transparent font-bold w-full outline-none">
+        </div>
+        <button onclick="saveNewAccount()" class="w-full py-5 rounded-3xl bg-green-500 text-black font-bold uppercase tracking-widest mt-4 active:scale-95 transition-transform">Salvar Conta</button>
+    </div>
+</div>		
 
         <div id="overlay-proposito-config" class="overlay">
             <div class="w-12 h-1 bg-gray-800 rounded-full mx-auto mt-4 mb-4 shrink-0"></div>
@@ -1617,7 +1636,7 @@
             closeAllOverlays(); updateUI();
         }
 
-        function toggleOverlay(id) {
+function toggleOverlay(id) {
             const el = document.getElementById('overlay-' + id);
             if(!el) return;
             if(el.classList.contains('active')) { closeAllOverlays(); }
@@ -1627,7 +1646,13 @@
                 document.getElementById('backdrop').classList.add('active'); 
                 
                 if(id === 'relatorios-fin') setTimeout(initCharts, 200); 
-                if(id === 'perfil') renderProfileForm(); 
+                
+                // --- ALTERAÇÃO AQUI: adicionado o checkUsernameCooldown ---
+                if(id === 'perfil') {
+                    renderProfileForm(); 
+                    checkUsernameCooldown();
+                }
+                
                 if(id === 'veh-config') {
                     setVehType(state.veiculo.tipo);
                     document.getElementById('input-veh-name').value = state.veiculo.nome;
@@ -2543,11 +2568,37 @@ function deleteTransaction(id) {
             }
         }
 
-        function saveProfile() {
-            state.usuario.firstName = document.getElementById('prof-first-name').value; state.usuario.lastName = document.getElementById('prof-last-name').value; state.usuario.username = document.getElementById('prof-username').value; state.usuario.birthDate = document.getElementById('prof-birth-date').value; state.usuario.peso = parseFloat(document.getElementById('prof-weight').value) || 0; state.usuario.avatarUrl = tempAvatar;
-            const birth = new Date(state.usuario.birthDate); const today = new Date(); let age = today.getFullYear() - birth.getFullYear(); if (today.getMonth() < birth.getMonth() || (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate())) age--; state.usuario.idade = age;
-            state.saude.aguaMeta = parseFloat(document.getElementById('prof-water-goal').value) || (state.usuario.peso * 35); state.saude.cafeinaMeta = parseFloat(document.getElementById('prof-caf-goal').value) || 400;
-            saveDataToCloud(); closeAllOverlays(); updateUI();
+function saveProfile() {
+            // Verifica se houve mudança no @usuario para registrar a data (Regra de 90 dias)
+            const novoUsername = document.getElementById('prof-username').value.trim();
+            const usernameAtual = state.usuario.username || '';
+            
+            if (novoUsername !== usernameAtual) {
+                localStorage.setItem('lastUsernameChange', Date.now().toString());
+            }
+
+            // Salva os dados no estado
+            state.usuario.firstName = document.getElementById('prof-first-name').value; 
+            state.usuario.lastName = document.getElementById('prof-last-name').value; 
+            state.usuario.username = novoUsername; 
+            state.usuario.birthDate = document.getElementById('prof-birth-date').value; 
+            state.usuario.peso = parseFloat(document.getElementById('prof-weight').value) || 0; 
+            state.usuario.avatarUrl = tempAvatar;
+            
+            // Calcula a idade
+            const birth = new Date(state.usuario.birthDate); 
+            const today = new Date(); 
+            let age = today.getFullYear() - birth.getFullYear(); 
+            if (today.getMonth() < birth.getMonth() || (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate())) age--; 
+            state.usuario.idade = age;
+            
+            // Metas de saúde
+            state.saude.aguaMeta = parseFloat(document.getElementById('prof-water-goal').value) || (state.usuario.peso * 35); 
+            state.saude.cafeinaMeta = parseFloat(document.getElementById('prof-caf-goal').value) || 400;
+            
+            saveDataToCloud(); 
+            closeAllOverlays(); 
+            updateUI();
         }
 
         function updateUI() {
@@ -2868,6 +2919,47 @@ function renderCalendar() {
             }); 
         }
 
+		function openAddAccountModal() {
+			toggleOverlay('nova-conta');
+		}
+
+		function saveNewAccount() {
+			const nome = document.getElementById('conta-name-input').value;
+			const saldo = document.getElementById('conta-saldo-input').value;
+
+			if(!nome) {
+				alert("Preencha o nome da conta.");
+				return;
+			}
+
+			// Lógica para salvar a conta no seu sistema de estados/banco de dados
+			console.log("Conta adicionada:", nome, saldo);
+
+			// Limpa os campos e fecha a tela
+			document.getElementById('conta-name-input').value = '';
+			document.getElementById('conta-saldo-input').value = '';
+			closeAllOverlays();
+		}
+		
+function checkUsernameCooldown() {
+    const usernameInput = document.getElementById('prof-username');
+    const lastChange = localStorage.getItem('lastUsernameChange'); 
+
+    if (lastChange) {
+        const daysSinceChange = (Date.now() - parseInt(lastChange)) / (1000 * 60 * 60 * 24);
+        
+        if (daysSinceChange < 90) {
+            usernameInput.disabled = true;
+            usernameInput.classList.add('opacity-50', 'cursor-not-allowed');
+            return false;
+        }
+    }
+    
+    usernameInput.disabled = false;
+    usernameInput.classList.remove('opacity-50', 'cursor-not-allowed');
+    return true;
+}
+		
         window.onload = () => { 
             if(!state.isLoggedIn) { document.getElementById('login-screen').classList.remove('hidden'); }
             initializeAuthListener();
