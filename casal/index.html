@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mu Finance Casal v03.6</title>
+    <title>Mu Finance Casal v03.7</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
 
@@ -58,7 +58,7 @@
             </div>
             <div class="bg-white/5 border border-white/10 rounded-2xl p-4">
                 <label class="text-[9px] text-gray-500 font-bold uppercase block mb-1">Senha</label>
-                <input type="password" id="login-pass" placeholder="••••••" class="bg-transparent w-full outline-none font-bold text-white text-sm">
+                <input type="password" id="login-pass" placeholder="••••••" class="bg-transparent w-full outline-none font-bold text-white text-sm" onkeypress="if(event.key === 'Enter') handleLogin()">
             </div>
             <button onclick="handleLogin()" id="btn-login" class="w-full py-5 bg-blue-500 text-black font-black rounded-3xl uppercase tracking-widest active:scale-95 transition-all text-xs">Entrar</button>
         </div>
@@ -177,17 +177,13 @@ const CONFIG = {
 
 let session = { user:null, coupleId:null, userId:null, name:'' };
 
-let db = {
-    transacoes: [],
-    veiculo: []
-};
+let db = { transacoes: [], veiculo: [] };
 
 window.onload = () => {
     if(window.lucide) lucide.createIcons();
 };
 
-async function handleLogin(){
-
+async function handleLogin() {
     const user = document.getElementById('login-user').value.trim();
     const pass = document.getElementById('login-pass').value.trim();
     const btn = document.getElementById('btn-login');
@@ -200,60 +196,57 @@ async function handleLogin(){
     btn.innerText = "AUTENTICANDO...";
     btn.disabled = true;
 
-    try{
-
+    try {
         const resp = await fetch(`${CONFIG.sheetUrl}?action=login&user=${encodeURIComponent(user)}&pass=${encodeURIComponent(pass)}`);
-        const data = await resp.json();
+        
+        // Verifica se a resposta não é um HTML (Página de login do Google por erro de permissão)
+        const textResp = await resp.text();
+        let data;
+        
+        try {
+            data = JSON.parse(textResp);
+        } catch (err) {
+            throw new Error("Erro de permissão. O Google Script retornou HTML. Verifique o Deploy.");
+        }
 
         if(data.success){
-
             session = {
                 user,
-                coupleId:data.coupleId,
-                userId:data.userId,
-                name:data.name
+                coupleId: data.coupleId,
+                userId: data.userId,
+                name: data.name
             };
 
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('app-content').classList.remove('hidden');
 
             initApp();
-
-        }else{
-
+        } else {
             showToast(data.message || "Acesso negado");
             btn.innerText = "ENTRAR";
             btn.disabled = false;
-
         }
 
-    }catch(e){
-
+    } catch(e) {
         console.error(e);
-        showToast("Erro ao conectar com Google Script");
+        showToast(e.message.includes("Deploy") ? e.message : "Erro ao conectar com Google Script");
         btn.innerText = "ENTRAR";
         btn.disabled = false;
-
     }
-
 }
 
 function initApp(){
-
     document.getElementById('header-subtitle').innerText = `Olá, ${session.name}`;
     document.getElementById('user-initials').innerText = session.name.substring(0,2).toUpperCase();
     document.getElementById('profile-name').innerText = session.name;
 
     const catSel = document.getElementById('t-cat');
-
     catSel.innerHTML = CONFIG.cats.map(c=>`<option value="${c}">${c}</option>`).join('');
 
     syncSheet('pull');
-
 }
 
 function saveTransaction(){
-
     const val = parseFloat(document.getElementById('t-val').value);
     const desc = document.getElementById('t-desc').value.trim() || "Lançamento";
     const cat = document.getElementById('t-cat').value;
@@ -268,78 +261,56 @@ function saveTransaction(){
     const compositeId = `${Date.now().toString().slice(-4)}_${session.coupleId}_${session.userId}`;
 
     const newTrans = {
-
-        id:compositeId,
-        data:new Date().toISOString().split('T')[0],
-        valor:val,
-        desc:desc,
-        quem:session.userId,
-        cat:cat,
-        acc:acc,
-        tipo:type
-
+        id: compositeId,
+        data: new Date().toISOString().split('T')[0],
+        valor: val,
+        desc: desc,
+        quem: session.userId,
+        cat: cat,
+        acc: acc,
+        tipo: type
     };
 
     db.transacoes.unshift(newTrans);
-
     updateUI();
-
     closeOverlays();
-
     syncSheet('push', newTrans);
-
 }
 
 function updateUI(){
-
     let saldo = 0;
     let rec = 0;
     let des = 0;
 
-    db.transacoes.forEach(t=>{
+    // Garante que não quebra se transacoes for undefined
+    const listTransacoes = db.transacoes || [];
 
+    listTransacoes.forEach(t=>{
         const valor = Number(t.valor);
-
         if(t.tipo === "Entrada"){
-
             saldo += valor;
             rec += valor;
-
         }else{
-
             saldo -= valor;
             des += valor;
-
         }
-
     });
 
-    document.getElementById('main-saldo').innerText =
-        `R$ ${saldo.toLocaleString('pt-BR',{minimumFractionDigits:2})}`;
-
-    document.getElementById('main-receita').innerText =
-        `R$ ${rec.toLocaleString('pt-BR',{minimumFractionDigits:2})}`;
-
-    document.getElementById('main-despesa').innerText =
-        `R$ ${des.toLocaleString('pt-BR',{minimumFractionDigits:2})}`;
+    document.getElementById('main-saldo').innerText = `R$ ${saldo.toLocaleString('pt-BR',{minimumFractionDigits:2})}`;
+    document.getElementById('main-receita').innerText = `R$ ${rec.toLocaleString('pt-BR',{minimumFractionDigits:2})}`;
+    document.getElementById('main-despesa').innerText = `R$ ${des.toLocaleString('pt-BR',{minimumFractionDigits:2})}`;
 
     const list = document.getElementById('recent-list');
-
-    list.innerHTML = db.transacoes.slice(0,5).map(t=>`
-
+    list.innerHTML = listTransacoes.slice(0,5).map(t=>`
         <div class="card p-4 rounded-2xl flex justify-between items-center">
-
             <div class="truncate">
                 <span class="block text-sm font-bold truncate">${t.desc}</span>
                 <span class="block text-[8px] text-gray-500 font-bold uppercase">${t.id}</span>
             </div>
-
             <span class="text-sm font-black ${t.tipo === 'Entrada' ? 'text-green-400':'text-red-400'}">
                 R$ ${Number(t.valor).toFixed(2)}
             </span>
-
         </div>
-
     `).join('') || `
         <p class="text-center py-6 text-gray-700 text-[10px] font-bold uppercase">
         Vazio
@@ -347,99 +318,69 @@ function updateUI(){
     `;
 
     const extrato = document.getElementById('extrato-list');
-
-    extrato.innerHTML = db.transacoes.map(t=>`
-
+    extrato.innerHTML = listTransacoes.map(t=>`
         <div class="card p-4 rounded-2xl flex justify-between items-center">
-
             <div class="flex-1 truncate">
                 <span class="block text-sm font-bold truncate">${t.desc}</span>
                 <span class="block text-[9px] text-gray-500 font-bold uppercase">
                     ${t.data} • ${t.cat}
                 </span>
             </div>
-
             <span class="text-sm font-black ${t.tipo === 'Entrada' ? 'text-green-400':'text-red-400'}">
                 R$ ${Number(t.valor).toFixed(2)}
             </span>
-
         </div>
-
     `).join('');
-
 }
 
 function navigate(page){
-
     document.querySelectorAll('.page-content').forEach(p=>p.classList.add('hidden'));
-
     document.getElementById(page).classList.remove('hidden');
-
     document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
-
     if(page === 'page-financas') document.getElementById('nav-home').classList.add('active');
     if(page === 'page-veiculo') document.getElementById('nav-moto').classList.add('active');
-
 }
 
 function toggleOverlay(name){
-
     document.getElementById('overlay-'+name).classList.add('active');
     document.getElementById('backdrop').classList.add('active');
-
 }
 
 function closeOverlays(){
-
     document.querySelectorAll('.overlay').forEach(o=>o.classList.remove('active'));
     document.getElementById('backdrop').classList.remove('active');
-
 }
 
 function showToast(msg){
-
     alert(msg);
-
 }
 
 async function syncSheet(mode, payload=null){
-
     try{
-
         if(mode === 'pull'){
-
             const resp = await fetch(`${CONFIG.sheetUrl}?action=list&coupleId=${session.coupleId}`);
             const data = await resp.json();
-
             if(data.success){
-
                 db.transacoes = data.transacoes || [];
-
                 updateUI();
-
             }
-
         }
-
+        
         if(mode === 'push'){
-
-            fetch(CONFIG.sheetUrl,{
-                method:'POST',
-                body:JSON.stringify({
-                    action:'add',
-                    coupleId:session.coupleId,
-                    transacao:payload
+            fetch(CONFIG.sheetUrl, {
+                method: 'POST',
+                // Content-Type alterado para text/plain para evitar bloqueio de CORS no Google Apps Script
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({
+                    action: 'add',
+                    coupleId: session.coupleId,
+                    transacao: payload
                 })
             });
-
         }
-
     }catch(e){
-
         console.error("Erro sync", e);
-
     }
-
 }
 
 </script>
