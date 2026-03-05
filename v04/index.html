@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mu Finance v04.30</title>
+    <title>Mu Finance v04.31</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -243,7 +243,7 @@
         <header class="flex justify-between items-center shrink-0">
             <div>
                 <h1 id="header-title" class="text-2xl font-bold tracking-tight">Mu Finance</h1>
-                <p class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mt-1" id="header-subtitle">Dashboard Geral v04.30</p>
+                <p class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mt-1" id="header-subtitle">Dashboard Geral v04.31</p>
             </div>
             <div class="flex items-center space-x-3">
                 <button onclick="toggleOverlay('notificacoes')" class="relative w-10 h-10 flex items-center justify-center rounded-full bg-[#1E2128] border border-gray-800 active:scale-90 transition-transform">
@@ -3267,7 +3267,29 @@ function deleteTransaction(id) {
             });
         }
 
-                function updateHealthBars() {
+                
+        function checkCriticalMaintenance() {
+            const isMoto = state.veiculo.tipo === 'moto';
+            
+            // Óleo
+            const dOleo = state.veiculo.hodometro - (state.veiculo.oleoUltimaTrocaKM || 0);
+            const oleoPerc = Math.max(0, 100 - (dOleo / (state.veiculo.oleoIntervalo || 3000) * 100));
+            if (oleoPerc < 10) showToast("⚠️ Atenção: Troca de Óleo necessária em breve!", 5000);
+            
+            // Pneus
+            const dPneus = state.veiculo.hodometro - (state.veiculo.pneusUltimaTrocaKM || 0);
+            const pneusPerc = Math.max(0, 100 - (dPneus / (state.veiculo.pneusIntervalo || 15000) * 100));
+            if (pneusPerc < 10) setTimeout(() => showToast("⚠️ Atenção: Verifique o desgaste dos Pneus!", 5000), 1000);
+            
+            // Corrente (Apenas Moto)
+            if (isMoto) {
+                const dCorr = state.veiculo.hodometro - (state.veiculo.correnteUltimaTrocaKM || 0);
+                const corrPerc = Math.max(0, 100 - (dCorr / (state.veiculo.correnteIntervalo || 20000) * 100));
+                if (corrPerc < 10) setTimeout(() => showToast("⚠️ Atenção: Manutenção da Corrente necessária!", 5000), 2000);
+            }
+        }
+
+        function updateHealthBars() {
             const isMoto = state.veiculo.tipo === 'moto';
             
             // Óleo
@@ -3307,6 +3329,8 @@ function deleteTransaction(id) {
         window.onload = () => { 
             if(!state.isLoggedIn) { document.getElementById('login-screen').classList.remove('hidden'); }
             initializeAuthListener();
+            // Pequeno delay para verificar manutenções críticas após carregar dados
+            setTimeout(() => { if(state.isLoggedIn) checkCriticalMaintenance(); }, 3000);
         };
     </script>
     
