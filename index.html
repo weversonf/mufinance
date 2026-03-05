@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mu Finance v04.20</title>
+    <title>Mu Finance v05.01</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -64,11 +64,65 @@
         padding-bottom: calc(130px + env(safe-area-inset-bottom));
         scroll-behavior: smooth;
     }
+	
+	
+		/* Ajustes do Calendário de Saúde */
+	.day-circle { width: 32px; height: 32px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; cursor: pointer; position: relative; transition: all 0.2s; border: 1px solid rgba(255,255,255,0.05); }
+	.day-circle:active { scale: 0.9; background: rgba(255,255,255,0.1); }
+	.day-circle.goal-met { background: rgba(56, 189, 248, 0.2); border-color: #38bdf8; color: #38bdf8; }
+
+	.dot { width: 4px; height: 4px; border-radius: 50%; margin: 0 1px; }
+	.dot-agua { background-color: #38bdf8; }
+	.dot-cafe { background-color: #eab308; }
+	.dot-cafe-alert { background-color: #ef4444;
+	}
     
     .card { background-color: var(--bg-card); border: 1px solid rgba(255,255,255,0.05); }
     ::-webkit-scrollbar { display: none; }
     .fade-in { animation: fadeIn 0.3s ease-in-out; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .bubbles {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+        pointer-events: none;
+    }
+    .bubbles::before,
+    .bubbles::after {
+        content: "";
+        position: absolute;
+        bottom: -50%;
+        width: 200%;
+        height: 200%;
+        background-repeat: repeat;
+        animation: bubbleRise linear infinite;
+        opacity: 0.25;
+    }
+    .bubbles::before {
+        animation-duration: 6s;
+        background-image:
+            radial-gradient(circle at 20% 80%, white 6px, transparent 7px),
+            radial-gradient(circle at 60% 70%, white 8px, transparent 9px),
+            radial-gradient(circle at 40% 90%, white 5px, transparent 6px),
+            radial-gradient(circle at 80% 85%, white 7px, transparent 8px);
+    }
+    .bubbles::after {
+        animation-duration: 9s;
+        opacity: 0.15;
+        background-image:
+            radial-gradient(circle at 30% 85%, white 5px, transparent 6px),
+            radial-gradient(circle at 70% 75%, white 7px, transparent 8px),
+            radial-gradient(circle at 50% 95%, white 6px, transparent 7px);
+    }
+    @keyframes bubbleRise {
+        from { transform: translateY(0); }
+        to { transform: translateY(-50%); }
+    }
+    .progress-fill {
+        position: relative;
+        overflow: hidden;
+    }
     .sensitive-value.blurred { filter: blur(10px); transition: filter 0.3s ease; }
     
     /* OVERLAYS & BACKDROP */
@@ -208,7 +262,7 @@
             <div class="w-full max-w-md">
                 <div class="text-center mb-10">
                     <h1 class="text-4xl font-bold tracking-tight mb-2">Mu Finance</h1>
-                    <p class="text-[10px] text-gray-500 uppercase tracking-widest font-bold">v04.20</p>
+                    <p class="text-[10px] text-gray-500 uppercase tracking-widest font-bold">v05.01</p>
                 </div>
                 <div class="space-y-4">
                 <div class="bg-black/20 p-4 rounded-2xl border border-white/5">
@@ -231,7 +285,7 @@
         <header class="flex justify-between items-center shrink-0">
             <div>
                 <h1 id="header-title" class="text-2xl font-bold tracking-tight">Mu Finance</h1>
-                <p class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mt-1" id="header-subtitle">Dashboard Geral v04.20</p>
+                <p class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mt-1" id="header-subtitle">Dashboard Geral v05.01</p>
             </div>
             <div class="flex items-center space-x-3">
                 <button onclick="toggleOverlay('notificacoes')" class="relative w-10 h-10 flex items-center justify-center rounded-full bg-[#1E2128] border border-gray-800 active:scale-90 transition-transform">
@@ -275,7 +329,7 @@
                         <button onclick="toggleOverlay('proposito-config')" class="p-1"><i data-lucide="settings" class="w-4 h-4 text-gray-500 hover:text-white transition-colors"></i></button>
                     </div>
                     <div class="w-full bg-gray-800 h-2.5 rounded-full overflow-hidden mt-4">
-                        <div class="bg-[#34d399] h-full transition-all duration-1000 ui-prop-bar" style="width: 0%"></div>
+                        <div class="bg-[#34d399] h-full transition-all duration-1000 ui-prop-bar progress-fill" style="width: 0%"><div class="bubbles"></div></div>
                     </div>
                     <div class="flex justify-between mt-2 text-[9px] font-bold text-gray-500 uppercase tracking-widest">
                         <span class="ui-prop-days-passed">0 dias</span>
@@ -304,9 +358,15 @@
                 <div onclick="navigate('nav-veiculo', 'page-veiculo', 'Veículo')" class="card rounded-3xl p-5 flex items-center justify-between cursor-pointer active:scale-[0.98] transition-all">
                     <div class="flex items-center space-x-4">
                         <div id="home-veh-icon" class="w-12 h-12 rounded-2xl bg-orange-500/10 flex items-center justify-center text-orange-500"><i data-lucide="bike" id="icon-home-veh"></i></div>
-                        <div>
+                        <div class="flex-1">
                             <h3 class="font-bold veh-name-text">Fazer 250</h3>
-                            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest"><span id="home-veh-media">29</span> km/l • <span id="home-veh-km">0</span> km</p>
+                            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-2"><span id="home-veh-media">29</span> km/l • <span id="home-veh-km">0</span> km</p>
+                            <div class="w-full space-y-1">
+                                <div class="flex justify-between text-[8px] font-bold uppercase text-gray-500"><span>Saúde do Óleo</span><span id="home-veh-oleo-perc">0%</span></div>
+                                <div class="w-full bg-black/40 rounded-full h-1.5 overflow-hidden">
+                                    <div id="home-veh-oleo-bar" class="bg-blue-500 h-full transition-all duration-500 progress-fill" style="width: 0%;"><div class="bubbles"></div></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <i data-lucide="chevron-right" class="w-5 h-5 text-gray-700"></i>
@@ -384,7 +444,14 @@
                 <div class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-2 -mx-6 px-6 relative mt-6 hide-scroll" id="card-carousel"></div>
 
                 <div class="card rounded-3xl p-6 shadow-sm mt-6">
-                    <div class="flex justify-between items-center mb-4"><h2 class="text-gray-400 font-medium text-sm">Transações Recentes</h2><span class="text-xs text-[#38bdf8] font-bold cursor-pointer hover:underline" onclick="navigate('nav-financas', 'page-extrato', 'Extrato')">Ver tudo</span></div>
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-gray-400 font-medium text-sm">Transações Recentes</h2>
+                        <div class="flex items-center space-x-2 bg-white/5 rounded-xl px-2 py-1">
+                            <button onclick="changeRecentTransMonth(-1)"><i data-lucide="chevron-left" class="w-3 h-3"></i></button>
+                            <span id="recent-trans-month-label" class="text-[9px] font-bold min-w-[80px] text-center uppercase">--</span>
+                            <button onclick="changeRecentTransMonth(1)"><i data-lucide="chevron-right" class="w-3 h-3"></i></button>
+                        </div>
+                    </div>
                     <div id="recent-trans-list" class="space-y-4"></div>
                 </div>
             </div>
@@ -404,144 +471,77 @@
                     </button>
                 </div>
                 <div id="extrato-month-content" class="space-y-2 pb-10"></div>
+            </div>
             <div id="page-cartoes" class="page-content hidden space-y-6 fade-in">
                 <div class="flex items-center justify-between">
                     <button onclick="navigate('nav-financas', 'page-financas', 'Finanças')" class="w-9 h-9 bg-white/5 rounded-full flex items-center justify-center"><i data-lucide="chevron-left" class="w-5 h-5"></i></button>
                     <h1 class="text-lg font-bold">Cartões de Crédito</h1>
-                    <div class="w-9"></div>
+                    <button onclick="toggleOverlay('new-card')" class="text-[#38bdf8] text-xs font-bold"><i data-lucide="plus" class="w-5 h-5"></i></button>
                 </div>
                 
+                <div class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-2 -mx-6 px-6 relative mt-6 hide-scroll" id="cartoes-carousel"></div>
+
                 <div class="card rounded-3xl p-6 shadow-sm">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-gray-400 font-medium text-sm">Seus Cartões</h2>
-                        <button class="text-[#38bdf8] text-xs font-bold hover:underline">+ Adicionar</button>
-                    </div>
-                    <div id="cartoes-list" class="space-y-3">
-                        <div class="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-4 text-white">
-                            <div class="flex justify-between items-start mb-8">
-                                <div>
-                                    <p class="text-xs opacity-75 uppercase tracking-widest">Cartão Principal</p>
-                                    <p class="text-sm font-bold mt-1">Visa</p>
-                                </div>
-                                <i data-lucide="credit-card" class="w-6 h-6"></i>
-                            </div>
-                            <p class="text-lg font-mono tracking-widest mb-4">•••• •••• •••• 1234</p>
-                            <div class="flex justify-between items-end text-xs">
-                                <div>
-                                    <p class="opacity-75">Titular</p>
-                                    <p class="font-bold">SEU NOME</p>
-                                </div>
-                                <div class="text-right">
-                                    <p class="opacity-75">Vencimento</p>
-                                    <p class="font-bold">12/26</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="card rounded-3xl p-6 shadow-sm">
-                    <h2 class="text-gray-400 font-medium text-sm mb-4">Resumo de Gastos</h2>
-                    <div class="space-y-3">
-                        <div class="flex justify-between items-center p-3 bg-black/20 rounded-xl">
-                            <span class="text-xs font-bold">Limite Disponível</span>
-                            <span class="text-sm font-bold text-green-400">R$ 5.000,00</span>
-                        </div>
-                        <div class="flex justify-between items-center p-3 bg-black/20 rounded-xl">
-                            <span class="text-xs font-bold">Gasto Este Mês</span>
-                            <span class="text-sm font-bold text-orange-400">R$ 2.150,00</span>
-                        </div>
-                        <div class="flex justify-between items-center p-3 bg-black/20 rounded-xl">
-                            <span class="text-xs font-bold">Vencimento da Fatura</span>
-                            <span class="text-sm font-bold text-blue-400">15 de Março</span>
-                        </div>
-                    </div>
+                    <h2 class="text-gray-400 font-medium text-sm mb-4">Resumo de Gastos por Cartão</h2>
+                    <div id="cartoes-resumo" class="space-y-4"></div>
                 </div>
             </div>
             <div id="page-orcamento" class="page-content hidden space-y-6 fade-in">
                 <div class="flex items-center justify-between">
                     <button onclick="navigate('nav-financas', 'page-financas', 'Finanças')" class="w-9 h-9 bg-white/5 rounded-full flex items-center justify-center"><i data-lucide="chevron-left" class="w-5 h-5"></i></button>
-                    <h1 class="text-lg font-bold">Orçamento</h1>
-                    <div class="w-9"></div>
+                    
+                    <div class="flex items-center space-x-2 bg-white/5 rounded-xl px-2 py-1">
+                        <button onclick="changeOrcamentoMonth(-1)"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
+                        <span id="orcamento-month-label" class="text-[10px] font-bold min-w-[100px] text-center uppercase">--</span>
+                        <button onclick="changeOrcamentoMonth(1)"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
+                    </div>
+
+                    <button onclick="toggleOverlay('new-orcamento')" class="w-9 h-9 bg-white/5 rounded-full flex items-center justify-center"><i data-lucide="plus" class="w-5 h-5 text-[#38bdf8]"></i></button>
                 </div>
                 
                 <div class="card rounded-3xl p-6 shadow-sm">
                     <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-gray-400 font-medium text-sm">Orçamento Mensal</h2>
-                        <button class="text-[#38bdf8] text-xs font-bold hover:underline">+ Novo</button>
+                        <h2 class="text-gray-400 font-medium text-sm">Limite Total Mensal</h2>
+                        <button onclick="editLimiteMensalTotal()" class="text-[#38bdf8] text-xs font-bold"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
                     </div>
-                    <div id="orcamento-list" class="space-y-4">
-                        <div class="bg-black/20 p-4 rounded-2xl border border-white/5">
-                            <div class="flex justify-between items-center mb-3">
-                                <div class="flex items-center gap-2">
-                                    <i data-lucide="shopping-cart" class="w-5 h-5 text-red-400"></i>
-                                    <span class="font-bold text-sm">Alimentação</span>
-                                </div>
-                                <span class="text-xs font-bold text-gray-500">R$ 600,00</span>
-                            </div>
-                            <div class="w-full bg-black/40 rounded-full h-2 overflow-hidden">
-                                <div class="bg-red-500 h-full" style="width: 65%;"></div>
-                            </div>
-                            <div class="flex justify-between items-center mt-2 text-xs text-gray-500">
-                                <span>R$ 390,00 gasto</span>
-                                <span>65%</span>
-                            </div>
+                    <div class="bg-black/30 p-6 rounded-2xl border border-white/5 text-center">
+                        <span class="text-[10px] text-gray-500 uppercase font-bold tracking-widest">Orçamento Total</span>
+                        <div class="text-4xl font-bold mt-2 text-white" id="limite-total-display">R$ 5.000,00</div>
+                        <div class="w-full bg-black/40 rounded-full h-2 overflow-hidden mt-4">
+                            <div id="limite-total-bar" class="bg-blue-500 h-full transition-all duration-500 progress-fill" style="width: 0%;"><div class="bubbles"></div></div>
                         </div>
-                        
-                        <div class="bg-black/20 p-4 rounded-2xl border border-white/5">
-                            <div class="flex justify-between items-center mb-3">
-                                <div class="flex items-center gap-2">
-                                    <i data-lucide="zap" class="w-5 h-5 text-yellow-400"></i>
-                                    <span class="font-bold text-sm">Contas Fixas</span>
-                                </div>
-                                <span class="text-xs font-bold text-gray-500">R$ 1.500,00</span>
-                            </div>
-                            <div class="w-full bg-black/40 rounded-full h-2 overflow-hidden">
-                                <div class="bg-yellow-500 h-full" style="width: 100%;"></div>
-                            </div>
-                            <div class="flex justify-between items-center mt-2 text-xs text-gray-500">
-                                <span>R$ 1.500,00 gasto</span>
-                                <span>100%</span>
-                            </div>
-                        </div>
-                        
-                        <div class="bg-black/20 p-4 rounded-2xl border border-white/5">
-                            <div class="flex justify-between items-center mb-3">
-                                <div class="flex items-center gap-2">
-                                    <i data-lucide="heart" class="w-5 h-5 text-pink-400"></i>
-                                    <span class="font-bold text-sm">Lazer</span>
-                                </div>
-                                <span class="text-xs font-bold text-gray-500">R$ 400,00</span>
-                            </div>
-                            <div class="w-full bg-black/40 rounded-full h-2 overflow-hidden">
-                                <div class="bg-pink-500 h-full" style="width: 30%;"></div>
-                            </div>
-                            <div class="flex justify-between items-center mt-2 text-xs text-gray-500">
-                                <span>R$ 120,00 gasto</span>
-                                <span>30%</span>
-                            </div>
+                        <div class="flex justify-between items-center mt-3 text-xs text-gray-500">
+                            <span id="limite-total-gasto">R$ 0,00 gasto</span>
+                            <span id="limite-total-perc">0%</span>
                         </div>
                     </div>
                 </div>
                 
                 <div class="card rounded-3xl p-6 shadow-sm">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-gray-400 font-medium text-sm">Orçamento por Categoria</h2>
+                        <button onclick="toggleOverlay('new-orcamento')" class="text-[#38bdf8] text-xs font-bold hover:underline">+ Novo</button>
+                    </div>
+                    <div id="orcamento-list" class="space-y-4"></div>
+                </div>
+                
+                <div class="card rounded-3xl p-6 shadow-sm">
                     <h2 class="text-gray-400 font-medium text-sm mb-4">Resumo Total</h2>
-                    <div class="space-y-2">
+                    <div class="space-y-3">
                         <div class="flex justify-between items-center text-sm">
                             <span class="text-gray-400">Orçado</span>
-                            <span class="font-bold">R$ 2.500,00</span>
+                            <span class="font-bold" id="resumo-orcado">R$ 0,00</span>
                         </div>
                         <div class="flex justify-between items-center text-sm">
                             <span class="text-gray-400">Gasto</span>
-                            <span class="font-bold text-orange-400">R$ 2.010,00</span>
+                            <span class="font-bold text-orange-400" id="resumo-gasto">R$ 0,00</span>
                         </div>
                         <div class="flex justify-between items-center text-sm pt-2 border-t border-white/10">
-                            <span class="text-gray-400">Disponível</span>
-                            <span class="font-bold text-green-400">R$ 490,00</span>
+                            <span class="text-gray-400">Disponível para Gastar</span>
+                            <span class="font-bold text-green-400" id="resumo-disponivel">R$ 0,00</span>
                         </div>
                     </div>
                 </div>
-            </div>
             </div>
 
             <div id="page-veiculo" class="page-content hidden space-y-6 fade-in">
@@ -559,18 +559,92 @@
                     </div>
                     <div class="mt-6 space-y-1.5">
                         <div class="flex justify-between text-[8px] font-bold uppercase text-gray-500"><span>Saúde do Óleo</span><span id="veh-oleo-perc">0%</span></div>
-                        <div class="w-full bg-white/5 h-1.5 rounded-full overflow-hidden"><div id="veh-oleo-bar" class="h-full bg-blue-500 transition-all duration-700" style="width: 0%"></div></div>
+                        <div class="w-full bg-white/5 h-1.5 rounded-full overflow-hidden"><div id="veh-oleo-bar" class="h-full bg-blue-500 transition-all duration-700 progress-fill" style="width: 0%"><div class="bubbles"></div></div></div>
                     </div>
                 </div>
-                <div class="grid grid-cols-3 gap-3">
+
+
+                <div id="veh-main-actions" class="grid grid-cols-2 gap-3">
                     <button onclick="openVehModal('rota')" class="card py-5 rounded-2xl flex flex-col items-center border border-white/5 active:bg-green-500/10 transition-colors"><i data-lucide="map-pin" class="w-6 h-6 text-green-500 mb-2"></i><span class="text-[10px] font-bold uppercase">Rota</span></button>
                     <button onclick="openVehModal('abastecer')" class="card py-5 rounded-2xl flex flex-col items-center border border-white/5 active:bg-orange-500/10 transition-colors"><i data-lucide="fuel" class="w-6 h-6 text-orange-500 mb-2"></i><span class="text-[10px] font-bold uppercase">Abastecer</span></button>
                     <button onclick="openVehModal('servico')" class="card py-5 rounded-2xl flex flex-col items-center border border-white/5 active:bg-blue-500/10 transition-colors"><i data-lucide="wrench" class="w-6 h-6 text-blue-500 mb-2"></i><span class="text-[10px] font-bold uppercase">Manutenção</span></button>
+                    <button onclick="switchVehTab('relatorio')" class="card py-5 rounded-2xl flex flex-col items-center border border-white/5 active:bg-purple-500/10 transition-colors"><i data-lucide="bar-chart-2" class="w-6 h-6 text-purple-500 mb-2"></i><span class="text-[10px] font-bold uppercase">Relatório</span></button>
                 </div>
                 <div class="space-y-4">
                     <h3 class="text-[10px] font-bold text-gray-500 uppercase tracking-widest px-1">Histórico</h3>
                     <div id="veh-timeline" class="space-y-3 pb-10"></div>
                 </div>
+                <div id="veh-relatorio" class="hidden space-y-6">
+                    <div class="flex items-center gap-3 mb-2">
+                        <button onclick="switchVehTab('resumo')" class="w-8 h-8 bg-white/5 rounded-full flex items-center justify-center"><i data-lucide="arrow-left" class="w-4 h-4"></i></button>
+                        <span class="text-sm font-bold uppercase tracking-widest text-gray-400">Relatório de Inteligência</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-black/20 p-4 rounded-2xl border border-white/5">
+                            <span class="text-[9px] text-gray-500 font-bold uppercase block mb-1">Média Real</span>
+                            <span class="text-lg font-bold text-orange-400" id="veh-media-real">--</span>
+                            <span class="text-[8px] text-gray-600 block mt-1">Meta: 29 km/L</span>
+                        </div>
+                        <div class="bg-black/20 p-4 rounded-2xl border border-white/5">
+                            <span class="text-[9px] text-gray-500 font-bold uppercase block mb-1">Custo por KM</span>
+                            <span class="text-lg font-bold text-blue-400" id="veh-cpk">--</span>
+                            <span class="text-[8px] text-gray-600 block mt-1">R$ por km</span>
+                        </div>
+                        <div class="bg-black/20 p-4 rounded-2xl border border-white/5">
+                            <span class="text-[9px] text-gray-500 font-bold uppercase block mb-1">Próx. Troca Óleo</span>
+                            <span class="text-lg font-bold text-green-400" id="veh-oleo-prox">--</span>
+                            <span class="text-[8px] text-gray-600 block mt-1">km restantes</span>
+                        </div>
+                        <div class="bg-black/20 p-4 rounded-2xl border border-white/5">
+                            <span class="text-[9px] text-gray-500 font-bold uppercase block mb-1">Gasto Mensal</span>
+                            <span class="text-lg font-bold text-red-400" id="veh-gasto-mensal">--</span>
+                            <span class="text-[8px] text-gray-600 block mt-1">Combustível + Manutenção</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-black/20 p-4 rounded-2xl border border-white/5">
+                        <span class="text-[9px] text-gray-500 font-bold uppercase block mb-4">Evolução do Consumo (km/L)</span>
+                        <canvas id="veh-chart-consumo" height="80"></canvas>
+                    </div>
+
+                    <div class="space-y-3">
+                        <span class="text-[9px] text-gray-500 font-bold uppercase block">Saúde dos Consumíveis</span>
+                        <div class="bg-black/20 p-4 rounded-2xl border border-white/5">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-[9px] text-gray-400">Óleo</span>
+                                <span class="text-[9px] font-bold" id="veh-health-oleo-perc">0%</span>
+                            </div>
+                            <div class="w-full bg-black/40 h-2 rounded-full overflow-hidden">
+                                <div id="veh-health-oleo-bar" class="h-full bg-green-500 transition-all duration-700 progress-fill" style="width: 0%"><div class="bubbles"></div></div>
+                            </div>
+                        </div>
+
+                        <div class="bg-black/20 p-4 rounded-2xl border border-white/5">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-[9px] text-gray-400">Corrente/Relação</span>
+                                <span class="text-[9px] font-bold" id="veh-health-corrente-perc">0%</span>
+                            </div>
+                            <div class="w-full bg-black/40 h-2 rounded-full overflow-hidden">
+                                <div id="veh-health-corrente-bar" class="h-full bg-green-500 transition-all duration-700 progress-fill" style="width: 0%"><div class="bubbles"></div></div>
+                            </div>
+                        </div>
+                        <div class="bg-black/20 p-4 rounded-2xl border border-white/5">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-[9px] text-gray-400">Pneus</span>
+                                <span class="text-[9px] font-bold" id="veh-health-pneus-perc">0%</span>
+                            </div>
+                            <div class="w-full bg-black/40 h-2 rounded-full overflow-hidden">
+                                <div id="veh-health-pneus-bar" class="h-full bg-green-500 transition-all duration-700 progress-fill" style="width: 0%"><div class="bubbles"></div></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-black/20 p-4 rounded-2xl border border-white/5">
+                        <span class="text-[9px] text-gray-500 font-bold uppercase block mb-4">Distribuição de Gastos</span>
+                        <canvas id="veh-chart-gastos" height="80"></canvas>
+                    </div>
+                </div>
+
             </div>
 
         </main>
@@ -630,6 +704,8 @@
 </nav>
 
         <div id="backdrop" class="backdrop" onclick="closeAllOverlays()"></div>
+		
+	
 
         <div id="overlay-proposito-config" class="overlay">
             <div class="w-12 h-1 bg-gray-800 rounded-full mx-auto mt-4 mb-4 shrink-0"></div>
@@ -718,80 +794,102 @@
             </div>
         </div>
 
+<!-- MODAL DE EXCLUSÃO INTELIGENTE -->
+<div id="overlay-delete-options" class="overlay flex items-center justify-center p-4">
+    <div class="w-full max-w-xs bg-[#1E2128] rounded-[2rem] p-6 border border-white/10 shadow-2xl text-center">
+        <div class="w-12 h-12 bg-red-500/10 text-red-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <i data-lucide="trash-2" class="w-6 h-6"></i>
+        </div>
+        <h3 class="text-sm font-black uppercase tracking-widest text-white mb-2">Excluir Transação</h3>
+        <p class="text-[10px] text-gray-500 uppercase font-bold mb-6">Esta é uma transação fixa. Como deseja prosseguir?</p>
+        
+        <div class="space-y-3">
+            <button id="btn-del-all" class="w-full py-3 bg-red-500/10 text-red-500 rounded-xl font-black text-[9px] uppercase tracking-widest border border-red-500/20">1. Excluir Todas</button>
+            <button id="btn-del-future" class="w-full py-3 bg-white/5 text-white rounded-xl font-black text-[9px] uppercase tracking-widest border border-white/5">2. Desta em diante</button>
+            <button id="btn-del-only" class="w-full py-3 bg-white/5 text-gray-400 rounded-xl font-black text-[9px] uppercase tracking-widest border border-white/5">3. Somente esta</button>
+            <button onclick="closeAllOverlays()" class="w-full py-3 text-gray-600 font-black text-[9px] uppercase tracking-widest mt-2">Cancelar</button>
+        </div>
+    </div>
+</div>
+		
         <div id="overlay-transaction" class="overlay">
-            <div class="w-12 h-1 bg-gray-800 rounded-full mx-auto mt-4 mb-4 shrink-0"></div>
-            <div class="px-6 flex justify-between items-center mb-6">
-                <h2 class="text-xl font-bold" id="trans-title">Nova Despesa</h2>
-                <button onclick="closeAllOverlays()"><i data-lucide="x" class="w-6 h-6 text-gray-500"></i></button>
-            </div>
-            <div class="overlay-content space-y-5">
-                <div class="flex bg-black/30 rounded-xl p-1 mb-2">
-                    <button onclick="setTransType('despesa')" id="btn-tt-despesa" class="flex-1 py-2 text-[10px] font-bold rounded-lg transition-all">Despesa</button>
-                    <button onclick="setTransType('receita')" id="btn-tt-receita" class="flex-1 py-2 text-[10px] font-bold rounded-lg transition-all">Receita</button>
-                    <button onclick="setTransType('transferencia')" id="btn-tt-transf" class="flex-1 py-2 text-[10px] font-bold rounded-lg transition-all">Transf.</button>
-                </div>
-                <div class="bg-black/30 p-8 rounded-3xl border border-white/5 text-center">
-                    <span class="text-[10px] text-gray-500 uppercase font-bold tracking-widest">Valor</span>
-                    <div class="text-4xl font-bold mt-2 flex justify-center items-center">
-                        <span class="text-gray-600 mr-2 text-2xl">R$</span>
-                        <input type="number" id="trans-val-input" class="bg-transparent outline-none w-48 text-center" placeholder="0.00" step="0.01">
-                    </div>
-                </div>
-                
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="bg-black/20 p-4 rounded-2xl border border-white/5">
-                        <label class="text-[9px] text-gray-500 uppercase font-bold block mb-1">Data</label>
-                        <input type="date" id="trans-date-input" class="bg-transparent font-bold w-full outline-none text-xs">
-                    </div>
-                    <div class="bg-black/20 p-4 rounded-2xl border border-white/5">
-                        <label id="trans-acc-label" class="text-[9px] text-gray-500 uppercase font-bold block mb-1">Conta / Cartão</label>
-                        <select id="trans-acc-select" class="bg-transparent font-bold w-full outline-none text-xs"></select>
-                    </div>
-                </div>
-
-
-                <div id="trans-dest-container" class="hidden bg-black/20 p-4 rounded-2xl border border-white/5 border-l-4 border-l-blue-500">
-                    <label class="text-[9px] text-blue-400 uppercase font-bold block mb-1">Para qual conta? (Destino)</label>
-                    <select id="trans-dest-select" class="bg-transparent font-bold w-full outline-none text-xs"></select>
-                </div>
-                
-                <div id="trans-cat-status-container" class="space-y-5">
-                    <div class="bg-black/20 p-4 rounded-2xl border border-white/5">
-                        <label class="text-[9px] text-gray-500 uppercase font-bold block mb-1">Categoria</label>
-                        <select id="trans-cat-select" class="bg-transparent font-bold w-full outline-none text-xs"></select>
-                    </div>
-                    
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="space-y-1">
-                            <label class="text-[9px] text-gray-500 font-bold ml-2 uppercase">Status</label>
-                            <div class="flex bg-black/30 rounded-xl p-1">
-                                <button onclick="setTransState('status','previsivel')" id="btn-st-prev" class="flex-1 py-2 text-[9px] font-bold rounded-lg transition-all">Previsível</button>
-                                <button onclick="setTransState('status','efetivada')" id="btn-st-efet" class="flex-1 py-2 text-[9px] font-bold rounded-lg transition-all">Efetivada</button>
-                            </div>
-                        </div>
-                        <div class="space-y-1">
-                            <label class="text-[9px] text-gray-500 font-bold ml-2 uppercase">Tipo</label>
-                            <div class="flex bg-black/30 rounded-xl p-1">
-                                <button onclick="setTransState('fixa',false)" id="btn-fx-no" class="flex-1 py-2 text-[9px] font-bold rounded-lg transition-all">Única</button>
-                                <button onclick="setTransState('fixa',true)" id="btn-fx-yes" class="flex-1 py-2 text-[9px] font-bold rounded-lg transition-all">Fixa</button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="bg-black/20 p-4 rounded-2xl border border-white/5 flex items-center space-x-3">
-                        <div class="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center shrink-0">
-                            <i data-lucide="at-sign" class="w-4 h-4 text-blue-500"></i>
-                        </div>
-                        <div class="flex-1">
-                            <label class="text-[9px] text-gray-500 uppercase font-bold block mb-0.5">Marcar Amigo (Opcional)</label>
-                            <input type="text" id="trans-amigo-input" placeholder="@usuario" class="bg-transparent font-bold w-full outline-none text-xs">
-                        </div>
-                    </div>
-                </div>
-
-                <button onclick="saveTransaction()" class="w-full py-5 rounded-3xl bg-blue-500 text-black font-bold text-lg mt-4 uppercase">Salvar</button>
+    <div class="w-12 h-1 bg-gray-800 rounded-full mx-auto mt-4 mb-4 shrink-0"></div>
+    <div class="px-6 flex justify-between items-center mb-6">
+        <h2 class="text-xl font-bold" id="trans-title">Nova Despesa</h2>
+        <button onclick="closeAllOverlays()"><i data-lucide="x" class="w-6 h-6 text-gray-500"></i></button>
+    </div>
+    <div class="overlay-content space-y-5">
+        <div class="flex bg-black/30 rounded-xl p-1 mb-2">
+            <button onclick="setTransType('despesa')" id="btn-tt-despesa" class="flex-1 py-2 text-[10px] font-bold rounded-lg transition-all">Despesa</button>
+            <button onclick="setTransType('receita')" id="btn-tt-receita" class="flex-1 py-2 text-[10px] font-bold rounded-lg transition-all">Receita</button>
+            <button onclick="setTransType('transferencia')" id="btn-tt-transf" class="flex-1 py-2 text-[10px] font-bold rounded-lg transition-all">Transf.</button>
+        </div>
+        <div class="bg-black/30 p-8 rounded-3xl border border-white/5 text-center">
+            <span class="text-[10px] text-gray-500 uppercase font-bold tracking-widest">Valor</span>
+            <div class="text-4xl font-bold mt-2 flex justify-center items-center">
+                <span class="text-gray-600 mr-2 text-2xl">R$</span>
+                <input type="number" id="trans-val-input" class="bg-transparent outline-none w-48 text-center" placeholder="0.00" step="0.01">
             </div>
         </div>
+        
+        <div class="grid grid-cols-2 gap-4">
+            <div class="bg-black/20 p-4 rounded-2xl border border-white/5">
+                <label class="text-[9px] text-gray-500 uppercase font-bold block mb-1">Data</label>
+                <input type="date" id="trans-date-input" class="bg-transparent font-bold w-full outline-none text-xs">
+            </div>
+            <div class="bg-black/20 p-4 rounded-2xl border border-white/5">
+                <label id="trans-acc-label" class="text-[9px] text-gray-500 uppercase font-bold block mb-1">Conta / Cartão</label>
+                <select id="trans-acc-select" class="bg-transparent font-bold w-full outline-none text-xs"></select>
+            </div>
+        </div>
+
+        <div id="trans-dest-container" class="hidden bg-black/20 p-4 rounded-2xl border border-white/5 border-l-4 border-l-blue-500">
+            <label class="text-[9px] text-blue-400 uppercase font-bold block mb-1">Para qual conta? (Destino)</label>
+            <select id="trans-dest-select" class="bg-transparent font-bold w-full outline-none text-xs"></select>
+        </div>
+        
+            <div id="trans-cat-status-container" class="space-y-5">
+            <div class="bg-black/20 p-4 rounded-2xl border border-white/5">
+                <label class="text-[9px] text-gray-500 uppercase font-bold block mb-1">Categoria</label>
+                <select id="trans-cat-select" class="bg-transparent font-bold w-full outline-none text-xs"></select>
+            </div>
+
+            <div class="bg-black/20 p-4 rounded-2xl border border-white/5">
+                <label class="text-[9px] text-gray-500 uppercase font-bold block mb-1">Descrição</label>
+                <input type="text" id="trans-descricao-input" placeholder="Ex: Aluguel, Supermercado..." class="bg-transparent font-bold w-full outline-none text-xs">
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div class="space-y-1">
+                    <label class="text-[9px] text-gray-500 font-bold ml-2 uppercase">Status</label>
+                    <div class="flex bg-black/30 rounded-xl p-1">
+                        <button onclick="setTransState('status','previsivel')" id="btn-st-prev" class="flex-1 py-2 text-[9px] font-bold rounded-lg transition-all">Previsível</button>
+                        <button onclick="setTransState('status','efetivada')" id="btn-st-efet" class="flex-1 py-2 text-[9px] font-bold rounded-lg transition-all">Efetivada</button>
+                    </div>
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[9px] text-gray-500 font-bold ml-2 uppercase">Tipo</label>
+                    <div class="flex bg-black/30 rounded-xl p-1">
+                        <button onclick="setTransState('fixa',false)" id="btn-fx-no" class="flex-1 py-2 text-[9px] font-bold rounded-lg bg-white/20 text-white transition-all">Única</button>
+                        <button onclick="setTransState('fixa',true)" id="btn-fx-yes" class="flex-1 py-2 text-[9px] font-bold rounded-lg transition-all">Fixo (12m)</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-black/20 p-4 rounded-2xl border border-white/5 flex items-center space-x-3">
+                <div class="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center shrink-0">
+                    <i data-lucide="at-sign" class="w-4 h-4 text-blue-500"></i>
+                </div>
+                <div class="flex-1">
+                    <label class="text-[9px] text-gray-500 uppercase font-bold block mb-0.5">Marcar Amigo (Opcional)</label>
+                    <input type="text" id="trans-amigo-input" placeholder="@usuario" class="bg-transparent font-bold w-full outline-none text-xs">
+                </div>
+            </div>
+        </div>
+
+        <button onclick="saveTransaction()" class="w-full py-5 rounded-3xl bg-blue-500 text-black font-bold text-lg mt-4 uppercase">Salvar</button>
+    </div>
+</div>
 
         <div id="overlay-pay-invoice" class="overlay">
             <div class="w-12 h-1 bg-gray-800 rounded-full mx-auto mt-4 mb-4 shrink-0"></div>
@@ -894,9 +992,25 @@
 
         <div id="overlay-veh-abastecer" class="overlay">
             <div class="w-12 h-1 bg-gray-800 rounded-full mx-auto mt-4 mb-4 shrink-0"></div>
-            <div class="px-6 flex justify-between items-center mb-6"><h2 class="text-xl font-bold" id="veh-fuel-title">Abastecer</h2><button onclick="closeAllOverlays()"><i data-lucide="x" class="w-6 h-6 text-gray-500"></i></button></div>
+            <div class="px-6 flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold" id="veh-fuel-title">Abastecer</h2>
+                <div class="flex items-center space-x-3">
+                    <button onclick="document.getElementById('fuel-ocr-upload').click()" class="w-10 h-10 bg-orange-500/10 rounded-full flex items-center justify-center active:scale-90 transition-transform" title="Anexar foto da bomba">
+                        <i data-lucide="paperclip" class="w-5 h-5 text-orange-500"></i>
+                    </button>
+                    <input type="file" id="fuel-ocr-upload" class="hidden" accept="image/*" onchange="handleFuelOCR(event)">
+                    <button onclick="closeAllOverlays()"><i data-lucide="x" class="w-6 h-6 text-gray-500"></i></button>
+                </div>
+            </div>
             <div class="overlay-content space-y-4">
-                <div class="grid grid-cols-2 gap-4"><div class="bg-black/20 p-4 rounded-2xl border border-white/5"><label class="text-[10px] text-gray-500 uppercase font-bold block mb-1">Preço/L (R$)</label><input type="number" id="input-fuel-price" oninput="calcFuel('price')" class="bg-transparent font-bold w-full outline-none text-orange-400" placeholder="0.00" step="0.01"></div><div class="bg-black/20 p-4 rounded-2xl border border-white/5"><label class="text-[10px] text-gray-500 uppercase font-bold block mb-1">Litros</label><input type="number" id="input-fuel-liters" oninput="calcFuel('liters')" class="bg-transparent font-bold w-full outline-none" placeholder="0.00" step="0.01"></div></div>
+                                <div class="bg-black/20 p-4 rounded-2xl border border-white/5 mb-4">
+                    <label class="text-[10px] text-gray-500 uppercase font-bold block mb-1">Tipo de Combustível</label>
+                    <select id="input-fuel-type" class="bg-transparent font-bold w-full outline-none text-white text-xs">
+                        <option value="Gasolina" class="bg-[#1E2128]">Gasolina</option>
+                        <option value="Aditivada" class="bg-[#1E2128]">Aditivada</option>
+                        <option value="Etanol" class="bg-[#1E2128]">Etanol</option>
+                    </select>
+                </div><div class="grid grid-cols-2 gap-4"><div class="bg-black/20 p-4 rounded-2xl border border-white/5"><label class="text-[10px] text-gray-500 uppercase font-bold block mb-1">Preço/L (R$)</label><input type="number" id="input-fuel-price" oninput="calcFuel('price')" class="bg-transparent font-bold w-full outline-none text-orange-400" placeholder="0.00" step="0.01"></div><div class="bg-black/20 p-4 rounded-2xl border border-white/5"><label class="text-[10px] text-gray-500 uppercase font-bold block mb-1">Litros</label><input type="number" id="input-fuel-liters" oninput="calcFuel('liters')" class="bg-transparent font-bold w-full outline-none" placeholder="0.00" step="0.01"></div></div>
                 <div class="bg-black/30 p-6 rounded-2xl border border-white/5 text-center"><label class="text-[10px] text-gray-500 uppercase font-bold block mb-1">Total Pago (R$)</label><input type="number" id="input-fuel-total" oninput="calcFuel('total')" class="bg-transparent font-black text-3xl w-full outline-none text-center" placeholder="0.00"></div>
                 
                 <div class="grid grid-cols-2 gap-4">
@@ -923,8 +1037,8 @@
 
                 <div class="flex items-center justify-between p-4 bg-orange-500/10 rounded-2xl border border-orange-500/20 mt-4">
                     <div>
-                        <span class="text-xs font-bold text-orange-400 block">Encheu o Tanque?</span>
-                        <span class="text-[9px] text-gray-500 font-bold uppercase">Ajuda a prever gastos futuros</span>
+                        <span class="text-xs font-bold text-orange-400 block">Completou o Tanque?</span>
+                        <span class="text-[9px] text-gray-500 font-bold uppercase">Cálculo de média real (estilo Drivvo)</span>
                     </div>
                     <input type="checkbox" id="input-fuel-full" class="w-6 h-6 accent-orange-500 rounded cursor-pointer">
                 </div>
@@ -937,7 +1051,17 @@
             <div class="w-12 h-1 bg-gray-800 rounded-full mx-auto mt-4 mb-4 shrink-0"></div>
             <div class="px-6 flex justify-between items-center mb-6"><h2 class="text-xl font-bold" id="veh-svc-title">Manutenção</h2><button onclick="closeAllOverlays()"><i data-lucide="x" class="w-6 h-6 text-gray-500"></i></button></div>
             <div class="overlay-content space-y-4">
-                <div class="bg-black/20 p-4 rounded-2xl border border-white/5"><label class="text-[10px] text-gray-500 uppercase font-bold block mb-1">Descrição</label><input type="text" id="input-svc-name" class="bg-transparent font-bold w-full outline-none" placeholder="Troca de Pneus"></div>
+                                <div class="bg-black/20 p-4 rounded-2xl border border-white/5">
+                    <label class="text-[10px] text-gray-500 uppercase font-bold block mb-1">Tipo de Manutenção</label>
+                    <select id="input-svc-type" class="bg-transparent font-bold w-full outline-none text-white text-xs" onchange="updateSvcDescription()">
+                        <option value="Geral" class="bg-[#1E2128]">Geral / Outros</option>
+                        <option value="Óleo" class="bg-[#1E2128]">Troca de Óleo</option>
+                        <option value="Pneus" class="bg-[#1E2128]">Troca de Pneus</option>
+                        <option value="Corrente" class="bg-[#1E2128]" id="opt-svc-corrente">Corrente / Relação</option>
+                        <option value="Filtros" class="bg-[#1E2128]">Filtros</option>
+                        <option value="Freios" class="bg-[#1E2128]">Sistema de Freios</option>
+                    </select>
+                </div><div class="bg-black/20 p-4 rounded-2xl border border-white/5"><label class="text-[10px] text-gray-500 uppercase font-bold block mb-1">Descrição</label><input type="text" id="input-svc-name" class="bg-transparent font-bold w-full outline-none" placeholder="Troca de Pneus"></div>
                 <div class="grid grid-cols-2 gap-4">
                     <div class="bg-black/20 p-4 rounded-2xl border border-white/5"><label class="text-[10px] text-gray-500 uppercase font-bold block mb-1">Data</label><input type="date" id="input-svc-data" class="bg-transparent font-bold w-full outline-none text-white"></div>
                     <div class="bg-black/20 p-4 rounded-2xl border border-white/5"><label class="text-[10px] text-gray-500 uppercase font-bold block mb-1">Hora</label><input type="time" id="input-svc-hora" class="bg-transparent font-bold w-full outline-none text-white"></div>
@@ -1206,6 +1330,10 @@
                         <label class="text-[10px] text-gray-500 uppercase font-bold block mb-1">Final da Placa (Licenciamento CE)</label>
                         <input type="number" id="input-veh-plate" min="0" max="9" class="bg-transparent font-bold w-full outline-none" placeholder="Ex: 7">
                     </div>
+                    <div class="bg-black/20 p-4 rounded-2xl border border-white/5">
+                        <label class="text-[10px] text-gray-500 uppercase font-bold block mb-1">Consumo Médio (km/L)</label>
+                        <input type="number" id="input-veh-avg-consumption" step="0.1" class="bg-transparent font-bold w-full outline-none" placeholder="Ex: 30.0" onclick="showToast('Nota: Alterar este valor manualmente substituirá o cálculo automático.')">
+                    </div>
                 </div>
                 <button onclick="saveVehSettings()" class="w-full py-4 rounded-3xl bg-orange-500 text-black font-bold uppercase tracking-widest active:scale-95 transition-transform">Salvar</button>
             </div>
@@ -1267,10 +1395,24 @@
             </div>
         </div>
 
+	<div id="overlay-aviso-usuario" class="overlay">
+    <div class="w-12 h-1 bg-gray-800 rounded-full mx-auto mt-4 mb-4 shrink-0"></div>
+    <div class="px-6 flex justify-between items-center mb-6">
+        <h2 class="text-xl font-bold text-red-500">Ação Bloqueada</h2>
+        <button onclick="closeAllOverlays()"><i data-lucide="x" class="w-6 h-6 text-gray-500"></i></button>
+    </div>
+    <div class="px-6 pb-6 text-center space-y-4">
+        <div class="bg-black/20 p-4 rounded-2xl border border-white/5">
+            <p class="text-gray-300 text-sm" id="texto-aviso-usuario"></p>
+        </div>
+        <button onclick="closeAllOverlays()" class="w-full py-4 rounded-3xl bg-gray-800 text-white font-bold uppercase tracking-widest mt-4 active:scale-95 transition-transform">Entendi</button>
+    </div>
+</div>
+		
         <div id="overlay-edit-account" class="overlay">
             <div class="w-12 h-1 bg-gray-800 rounded-full mx-auto mt-4 mb-4 shrink-0"></div>
             <div class="px-6 flex justify-between items-center mb-6">
-                <h2 class="text-xl font-bold">Editar Conta</h2>
+				<h2 id="titulo-modal-conta" class="text-xl font-bold">Editar Conta</h2>
                 <button onclick="closeAllOverlays()"><i data-lucide="x" class="w-6 h-6 text-gray-500"></i></button>
             </div>
             <div class="overlay-content space-y-4">
@@ -1368,7 +1510,7 @@
         window.firebaseGetDoc = getDoc;
     </script>
 
-    <script>
+<script>
         let barChartInstance = null, catChartInstance = null, chartsInitialized = false;
         let tempAvatar = null;
         let currentViewCardId = null;
@@ -1388,7 +1530,7 @@
         ];
 
         let state = {
-            isLoggedIn: false, userId: null, viewDate: new Date(), extratoDate: new Date(), blurred: false, editingId: null, editingVehId: null,
+            isLoggedIn: false, userId: null, viewDate: new Date(), extratoDate: new Date(), recentTransDate: new Date(), orcamentoDate: new Date(), blurred: false, editingId: null, editingVehId: null,
             usuario: { 
                 firstName: "Murilo", lastName: "Finance", username: "mufinance", birthDate: "1996-02-26", peso: 100, idade: 30, avatarUrl: null,
                 contas: [
@@ -1405,14 +1547,33 @@
             },
             saude: { aguaMeta: 3500, cafeinaMeta: 400, historico: {}, proposito: {ativo: false, nome: '', inicio: '', dias: 0, celebrado: false} },
             financas: { 
-                cartoes: [{id:1, nome:'Nubank', cor:'#8b5cf6', limite:5400, bandeira: 'MASTERCARD', vencimento: 10}], 
-                transacoes: [], metas: [], temp: {type:'despesa', status:'previsivel', fixa:false} 
+                cartoes: [
+                    {id:1, nome:'Nubank', cor:'#8b5cf6', limite:5400, bandeira: 'MASTERCARD', vencimento: 10},
+                    {id:2, nome:'Itaú', cor:'#ff6b35', limite:8000, bandeira: 'VISA', vencimento: 15},
+                    {id:3, nome:'Bradesco', cor:'#cc0000', limite:3000, bandeira: 'ELO', vencimento: 20}
+                ], 
+                transacoes: [
+                    {id:1, tipo:'despesa', cat:'Alimentação', valor:150, conta:'Nubank', data:'2026-03-01', status:'efetivada', desc:'Supermercado'},
+                    {id:2, tipo:'despesa', cat:'Combustível', valor:200, conta:'Nubank', data:'2026-03-02', status:'efetivada', desc:'Gasolina'},
+                    {id:3, tipo:'despesa', cat:'Lazer', valor:80, conta:'Itaú', data:'2026-03-03', status:'efetivada', desc:'Cinema'},
+                    {id:4, tipo:'despesa', cat:'Alimentação', valor:120, conta:'Itaú', data:'2026-03-04', status:'efetivada', desc:'Restaurante'},
+                    {id:5, tipo:'despesa', cat:'Manutenção', valor:300, conta:'Bradesco', data:'2026-03-05', status:'efetivada', desc:'Mecânico'},
+                    {id:6, tipo:'receita', cat:'Salário', valor:5000, conta:'Carteira', data:'2026-03-01', status:'efetivada', desc:'Salário mensal'}
+                ], 
+                metas: [], 
+                orcamentos: [
+                    {id:'orc1', categoria:'Alimentação', limite:500},
+                    {id:'orc2', categoria:'Combustível', limite:400},
+                    {id:'orc3', categoria:'Lazer', limite:300},
+                    {id:'orc4', categoria:'Manutenção', limite:600}
+                ], 
+                limiteMensalTotal: 5000, 
+                temp: {type:'despesa', status:'previsivel', fixa:false} 
             },
-            veiculo: { tipo: 'moto', nome: 'Fazer 250', hodometro: 12450, mediaGeral: 29.0, oleoIntervalo: 3000, oleoUltimaTrocaKM: 11000, placaFinal: '', historico: [] },
+            veiculo: { tipo: 'moto', nome: 'Fazer 250', hodometro: 12450, mediaGeral: 29.0, oleoIntervalo: 3000, oleoUltimaTrocaKM: 11000, pneusUltimaTrocaKM: 10000, pneusIntervalo: 15000, correnteUltimaTrocaKM: 10000, correnteIntervalo: 20000, placaFinal: '', historico: [] },
             notificacoes: []
         };
 
-        // V04.09: Renderizar carrossel de saldo com contas
         function renderSaldoCarousel() {
             if (!state.usuario.contas || state.usuario.contas.length === 0) return;
             
@@ -1548,13 +1709,11 @@
             setTimeout(() => { toast.remove(); }, 3000);
         }
         
-        // NOVO: Função para o Menu Retrátil
         window.toggleSidebar = function() {
             document.body.classList.toggle('sidebar-collapsed');
             if (window.lucide) { lucide.createIcons(); }
         };
 
-        // Atalho Ctrl + B para Barra Lateral
         document.addEventListener('keydown', (e) => {
             if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b') {
                 e.preventDefault();
@@ -1586,6 +1745,8 @@
             document.getElementById('header-title').innerText = title;
             document.getElementById('header-subtitle').innerText = title === 'Visão Geral' ? 'Dashboard Geral' : 'Controle de ' + title;
             closeAllOverlays(); updateUI();
+            if(pageId === 'page-cartoes') { renderCards(); renderCartoesResumo(); }
+            if(pageId === 'page-orcamento') { renderOrcamento(); renderOrcamentos(); }
         }
 
         function toggleOverlay(id) {
@@ -1598,12 +1759,25 @@
                 document.getElementById('backdrop').classList.add('active'); 
                 
                 if(id === 'relatorios-fin') setTimeout(initCharts, 200); 
-                if(id === 'perfil') renderProfileForm(); 
+                
+                if(id === 'perfil') {
+                    renderProfileForm(); 
+                    checkUsernameCooldown();
+                }
+                
                 if(id === 'veh-config') {
                     setVehType(state.veiculo.tipo);
                     document.getElementById('input-veh-name').value = state.veiculo.nome;
                     document.getElementById('input-veh-oil-interval').value = state.veiculo.oleoIntervalo;
                     document.getElementById('input-veh-plate').value = state.veiculo.placaFinal || '';
+                }
+                if(id === 'new-orcamento') {
+                    const selectCat = document.getElementById('orcamento-categoria-select');
+                    if (selectCat) {
+                        selectCat.innerHTML = state.usuario.categorias_despesa.map(cat => `<option value="${cat.nome}">${cat.nome}</option>`).join('');
+                    }
+                    document.getElementById('orcamento-limite-input').value = '';
+                    document.getElementById('new-orcamento-title').innerText = 'Novo Orçamento';
                 }
                 if(id === 'proposito-config') {
                     if(state.saude.proposito && state.saude.proposito.ativo) {
@@ -1741,7 +1915,6 @@
                         state.isLoggedIn = false; state.userId = null; loginScreen.classList.remove('hidden');
                     }
 
-                    // Remove Splash Screen suavemente
                     if (splashScreen) {
                         splashScreen.classList.add('opacity-0');
                         setTimeout(() => splashScreen.classList.add('hidden'), 500);
@@ -1772,7 +1945,7 @@
             if (conta) { conta.somaSaldo = !conta.somaSaldo; saveDataToCloud(); updateUI(); }
         }
 
-                window.selectBankColor = function(color) {
+        window.selectBankColor = function(color) {
             document.getElementById('edit-account-cor').value = color;
             document.querySelectorAll('.color-option').forEach(btn => {
                 if (btn.getAttribute('data-color') === color) {
@@ -1784,6 +1957,7 @@
                 }
             });
         };
+        
         window.openEditAccountModal = function(id) {
             const conta = state.usuario.contas.find(c => c.id.toString() === id.toString());
             if(!conta) return;
@@ -1853,7 +2027,7 @@
         window.verificarPrevisaoDetran = function() {
             if(!state.veiculo.placaFinal || state.veiculo.placaFinal === '') return;
             const anoAtual = new Date().getFullYear();
-            const calcMes = parseInt(state.veiculo.placaFinal); // Regra simplificada CE
+            const calcMes = parseInt(state.veiculo.placaFinal); 
             const mesLicenciamento = calcMes === 0 ? 12 : calcMes + 2; 
             
             const jaPreviu = state.financas.transacoes.find(t => t.cat === 'Licenciamento/IPVA' && t.data.startsWith(anoAtual.toString()));
@@ -1866,12 +2040,11 @@
 
         window.calcularValorTanqueCheio = function() {
             const abastecimentosCheios = state.veiculo.historico.filter(h => h.tipo === 'abastecimento' && h.tanqueCheio === true);
-            if(abastecimentosCheios.length === 0) return 70.00; // Média inicial estimada para Fazer 250
+            if(abastecimentosCheios.length === 0) return 70.00; 
             const total = abastecimentosCheios.reduce((acc, curr) => acc + curr.total, 0);
             return total / abastecimentosCheios.length;
         }
 
-        // ATUALIZAÇÃO: Renderiza a lista de contas mostrando o Tipo (Comum/Investimento) e Cadeado
         function renderFinSettings() {
             document.getElementById('list-contas').innerHTML = state.usuario.contas.map(c => `
                 <div class="flex justify-between items-center bg-black/20 p-3 rounded-xl border ${c.somaSaldo === false ? 'border-purple-500/30 bg-purple-500/5' : 'border-white/5'}">
@@ -1922,8 +2095,7 @@
             saveDataToCloud(); renderFinSettings(); updateUI();
         }
 
-        // ATUALIZAÇÃO: Captura Tipo e Saldo Inicial na criação de novas Contas
-                window.selectNewBankColor = function(color) {
+        window.selectNewBankColor = function(color) {
             document.getElementById('add-account-cor').value = color;
             document.querySelectorAll('#overlay-add-account .color-option').forEach(btn => {
                 if (btn.getAttribute('data-color') === color) {
@@ -1936,7 +2108,6 @@
             });
         };
         
-        // Swipe down para fechar páginas (Relatório, Metas, Extrato, Cartões, Orçamento)
         let touchStartY = 0;
         let touchEndY = 0;
         
@@ -1959,18 +2130,42 @@
             const diff = touchEndY - touchStartY;
             
             if (diff > swipeThreshold) {
-                // Swipe down detectado - fechar página
                 navigate('nav-financas', 'page-financas', 'Finanças');
             }
         }
 
+        let editingAccountId = null;
+
+        function selectNewBankColor(cor) {
+            const inputCor = document.getElementById('add-account-cor');
+            if (inputCor) inputCor.value = cor;
+            
+            document.querySelectorAll('.color-option').forEach(el => {
+                el.classList.remove('ring-2', 'ring-white', 'scale-110');
+            });
+            
+            const bolinhaSelecionada = document.querySelector(`.color-option[data-color="${cor}"]`);
+            if(bolinhaSelecionada) {
+                bolinhaSelecionada.classList.add('ring-2', 'ring-white', 'scale-110');
+            }
+        }
+
         function openAddAccountModal() {
+            editingAccountId = null; 
+            
+            const titulo = document.getElementById('titulo-modal-conta');
+            if (titulo) titulo.innerText = "Adicionar Conta";
+            
             document.getElementById('add-account-nome').value = '';
             document.getElementById('add-account-tipo').value = 'Carteira';
             document.getElementById('add-account-saldo').value = '';
-            document.getElementById('add-account-cor').value = '#38bdf8';
-            setTimeout(() => selectNewBankColor('#38bdf8'), 100);
-            toggleOverlay('overlay-add-account');
+            
+            const inputCor = document.getElementById('add-account-cor');
+            if(inputCor) inputCor.value = '#38bdf8';
+            
+            setTimeout(() => selectNewBankColor('#38bdf8'), 50);
+            
+            toggleOverlay('add-account'); 
         }
 
         function saveNewAccount() {
@@ -2007,7 +2202,6 @@
 
                 state.usuario.contas.push({id: Date.now().toString(), nome: nome, tipo: tipo, protected: false, somaSaldo: true});
 
-                // Cria lançamento automático caso tenha saldo informado
                 if (saldo !== 0) {
                     state.financas.transacoes.push({ id: Date.now() + 1, data: new Date().toISOString().split('T')[0], valor: Math.abs(saldo), tipo: saldo > 0 ? 'receita' : 'despesa', cat: 'Saldo Inicial', conta: nome, destino: '', status: 'efetivada' });
                 }
@@ -2040,6 +2234,11 @@
             if(novoLimite && !isNaN(novoLimite)) { card.limite = parseFloat(novoLimite); saveDataToCloud(); renderCardDetails(); updateUI(); showToast("Limite atualizado!"); }
         }
 
+
+        function renderOrcamento() {
+            renderOrcamentos();
+        }
+
         function renderMetasList() {
             const list = document.getElementById('metas-list');
             if(!state.financas.metas || state.financas.metas.length === 0) {
@@ -2050,7 +2249,7 @@
                 return `<div class="card p-4 rounded-2xl border border-white/5 cursor-pointer hover:border-purple-500/30 transition-all active:scale-95" onclick="openMetaAddModal(${m.id})">
                     <div class="flex justify-between items-center mb-2"><span class="text-sm font-bold text-white">${m.nome}</span>${isComplete ? '<span class="text-[9px] bg-green-500 text-black px-2 py-0.5 rounded-full font-bold uppercase">Atingida</span>' : `<span class="text-xs text-purple-400 font-bold">${perc.toFixed(0)}%</span>`}</div>
                     <div class="flex justify-between items-end mb-2"><div><span class="text-[9px] text-gray-500 font-bold uppercase block">Guardado</span><span class="text-sm font-bold">R$ ${m.reservado.toLocaleString('pt-BR', {minimumFractionDigits:2})}</span></div><div class="text-right"><span class="text-[9px] text-gray-500 font-bold uppercase block">Alvo</span><span class="text-xs font-bold text-gray-400">R$ ${m.alvo.toLocaleString('pt-BR', {minimumFractionDigits:2})}</span></div></div>
-                    <div class="w-full bg-gray-800 h-1.5 rounded-full overflow-hidden"><div class="${isComplete ? 'bg-green-500' : 'bg-purple-500'} h-full transition-all duration-700" style="width: ${perc}%"></div></div>
+                    <div class="w-full bg-gray-800 h-1.5 rounded-full overflow-hidden"><div class="${isComplete ? 'bg-green-500' : 'bg-purple-500'} h-full transition-all duration-700 progress-fill" style="width: ${perc}%"><div class="bubbles"></div></div></div>
                 </div>`;
             }).join('');
         }
@@ -2118,49 +2317,57 @@
             if(id) { 
                 const tr = state.financas.transacoes.find(x => x.id === id); 
                 document.getElementById('trans-val-input').value = tr.valor; document.getElementById('trans-date-input').value = tr.data; document.getElementById('trans-acc-select').value = tr.conta; 
+                document.getElementById('trans-descricao-input').value = tr.descricao || '';
                 if (t === 'transferencia') { document.getElementById('trans-dest-select').value = tr.destino; } 
                 else { document.getElementById('trans-cat-select').value = tr.cat; setTransState('status', tr.status); }
             } else { 
-                document.getElementById('trans-val-input').value = ''; document.getElementById('trans-date-input').value = new Date().toISOString().split('T')[0]; setTransState('status', 'previsivel'); 
+                document.getElementById('trans-val-input').value = ''; document.getElementById('trans-date-input').value = new Date().toISOString().split('T')[0]; 
+                document.getElementById('trans-descricao-input').value = ''; 
+                setTransState('status', 'previsivel'); setTransState('fixa', false);
             }
             toggleOverlay('transaction');
         }
 
-        // ATUALIZADO V04: Interceptar compra por impulso
-        function saveTransaction() {
-            const v = parseFloat(document.getElementById('trans-val-input').value);
-            const d = document.getElementById('trans-date-input').value;
-            const a = document.getElementById('trans-acc-select').value;
-            const type = state.financas.temp.type;
 
-            if(!v || !d) return;
+function saveTransaction() {
+    const v = parseFloat(document.getElementById('trans-val-input').value);
+    const dStr = document.getElementById('trans-date-input').value;
+    const a = document.getElementById('trans-acc-select').value;
+    const c = document.getElementById('trans-cat-select').value;
+    const desc = document.getElementById('trans-descricao-input').value || '';
+    const type = state.financas.temp.type;
+    const status = state.financas.temp.status;
+    const isFixa = state.financas.temp.fixa;
 
-            let c = '', destino = '', status = state.financas.temp.status;
-            const isCard = state.financas.cartoes.some(card => card.nome === a);
+    if(!v || !dStr) return;
 
-            if (type === 'transferencia') {
-                destino = document.getElementById('trans-dest-select').value; c = 'Transferência'; status = 'efetivada';
-                if (a === destino) { showToast("Contas iguais não permitido."); return; }
-            } else {
-                c = document.getElementById('trans-cat-select').value;
-                if (isCard && type === 'despesa') status = 'efetivada';
-            }
-
-            const amigo = document.getElementById('trans-amigo-input')?.value.trim();
-            const transObj = { id:Date.now(), data:d, valor:v, tipo:type, status:status, cat:c, conta:a, destino:destino };
-
-            if(state.editingId) { 
-                const idx = state.financas.transacoes.findIndex(x => x.id === state.editingId); 
-                if(idx !== -1) state.financas.transacoes[idx] = {...state.financas.transacoes[idx], valor:v, data:d, cat:c, conta:a, destino:destino, tipo:type, status:status}; 
-                saveDataToCloud(); closeAllOverlays(); updateUI(); showToast("Lançamento atualizado!");
-            } else { 
-                state.financas.transacoes.push(transObj); 
-                if (amigo && amigo.startsWith('@') && type !== 'transferencia') {
-                    state.notificacoes.unshift({ titulo: 'Transação Dividida', msg: `Você marcou ${amigo} na transação de ${c}.`, data: new Date().toISOString() });
-                }
-                saveDataToCloud(); closeAllOverlays(); updateUI(); showToast("Lançamento realizado!");
-            }
+    if(state.editingId) { 
+        const idx = state.financas.transacoes.findIndex(x => x.id === state.editingId); 
+        if(idx !== -1) { state.financas.transacoes[idx] = {...state.financas.transacoes[idx], valor:v, data:dStr, cat:c, conta:a, tipo:type, status:status, descricao:desc}; }
+    } else { 
+        const groupId = isFixa ? Date.now() : null;
+        const parcelas = isFixa ? 12 : 1;
+        const [year, month, day] = dStr.split('-').map(Number);
+        
+        for(let i = 0; i < parcelas; i++) {
+            let dataParcela = new Date(year, month - 1 + i, day);
+            if (dataParcela.getMonth() !== ((month - 1 + i) % 12)) dataParcela.setDate(0); 
+            
+            const pY = dataParcela.getFullYear();
+            const pM = String(dataParcela.getMonth() + 1).padStart(2, '0');
+            const pD = String(dataParcela.getDate()).padStart(2, '0');
+            
+            const statusParcela = i === 0 ? status : 'previsivel';
+            
+            state.financas.transacoes.push({ 
+                id: Date.now() + i, groupId: groupId, data: `${pY}-${pM}-${pD}`, valor: v, tipo: type, status: statusParcela, cat: c, conta: a, descricao: desc
+            });
         }
+    }
+    saveDataToCloud(); closeAllOverlays(); updateUI(); 
+    const toastMsg = isFixa ? "Lançamento fixo (12 meses) realizado!" : "Lançamento realizado!";
+    showToast(toastMsg);
+}
 
         function setTransState(p, v) { 
             state.financas.temp[p] = v; 
@@ -2251,10 +2458,38 @@
             saveDataToCloud(); toggleOverlay('perfil'); updateUI(); 
         }
 
-        function deleteTransaction(id) { state.financas.transacoes = state.financas.transacoes.filter(x => x.id !== id); saveDataToCloud(); updateUI(); }
+function deleteTransaction(id) { 
+    const t = state.financas.transacoes.find(x => x.id === id);
+    if(!t) return;
+
+    if(t.groupId) {
+        toggleOverlay('delete-options');
+        document.getElementById('btn-del-all').onclick = () => { state.financas.transacoes = state.financas.transacoes.filter(x => x.groupId !== t.groupId); finishDelete(); };
+        document.getElementById('btn-del-future').onclick = () => { state.financas.transacoes = state.financas.transacoes.filter(x => x.groupId !== t.groupId || new Date(x.data) < new Date(t.data)); finishDelete(); };
+        document.getElementById('btn-del-only').onclick = () => { state.financas.transacoes = state.financas.transacoes.filter(x => x.id !== id); finishDelete(); };
+    } else {
+        state.financas.transacoes = state.financas.transacoes.filter(x => x.id !== id);
+        finishDelete();
+    }
+
+    function finishDelete() { saveDataToCloud(); closeAllOverlays(); updateUI(); showToast("Excluído!"); }
+}
 
         function populateVehAccSelects() {
             const accs = getFinSelectOptions('all'); document.getElementById('input-fuel-acc').innerHTML = accs; document.getElementById('input-svc-acc').innerHTML = accs;
+        }
+
+        
+        function updateSvcDescription() {
+            const type = document.getElementById('input-svc-type').value;
+            const desc = document.getElementById('input-svc-name');
+            if (type !== 'Geral') desc.value = 'Troca de ' + type;
+        }
+
+        function populateSvcTypes() {
+            const isMoto = state.veiculo.tipo === 'moto';
+            const optCorrente = document.getElementById('opt-svc-corrente');
+            if (optCorrente) optCorrente.style.display = isMoto ? 'block' : 'none';
         }
 
         function openVehModal(t, id = null) {
@@ -2265,7 +2500,7 @@
                     document.getElementById('input-fuel-price').value = (h.total / h.liters).toFixed(2); document.getElementById('input-fuel-liters').value = h.liters; document.getElementById('input-fuel-total').value = h.total; document.getElementById('input-fuel-km').value = h.km; if(h.conta) document.getElementById('input-fuel-acc').value = h.conta;
                     document.getElementById('input-fuel-data').value = h.data || new Date().toISOString().split('T')[0];
                     document.getElementById('input-fuel-hora').value = h.hora || new Date().toTimeString().slice(0, 5);
-                    document.getElementById('input-fuel-full').checked = h.tanqueCheio || false;
+                    document.getElementById('input-fuel-full').checked = h.tanqueCheio || false; document.getElementById('input-fuel-type').value = h.combustivel || 'Gasolina';
                 } else { 
                     document.getElementById('input-fuel-price').value = ''; document.getElementById('input-fuel-liters').value = ''; document.getElementById('input-fuel-total').value = ''; document.getElementById('input-fuel-km').value = state.veiculo.hodometro; 
                     document.getElementById('input-fuel-data').value = new Date().toISOString().split('T')[0];
@@ -2276,7 +2511,7 @@
             } else if (t === 'servico') {
                 if(id) { 
                     const h = state.veiculo.historico.find(x => x.id === id); 
-                    document.getElementById('input-svc-name').value = h.nome; document.getElementById('input-svc-val').value = h.valor; document.getElementById('input-svc-km').value = h.km; document.getElementById('input-svc-isoil').checked = h.isOil; if(h.conta) document.getElementById('input-svc-acc').value = h.conta;
+                    document.getElementById('input-svc-name').value = h.nome; document.getElementById('input-svc-type').value = h.svcType || 'Geral'; document.getElementById('input-svc-val').value = h.valor; document.getElementById('input-svc-km').value = h.km; document.getElementById('input-svc-isoil').checked = h.isOil; if(h.conta) document.getElementById('input-svc-acc').value = h.conta;
                     document.getElementById('input-svc-data').value = h.data || new Date().toISOString().split('T')[0];
                     document.getElementById('input-svc-hora').value = h.hora || new Date().toTimeString().slice(0, 5);
                 } else { 
@@ -2284,11 +2519,10 @@
                     document.getElementById('input-svc-data').value = new Date().toISOString().split('T')[0];
                     document.getElementById('input-svc-hora').value = new Date().toTimeString().slice(0, 5);
                 }
-                toggleOverlay('veh-servico');
+                populateSvcTypes(); toggleOverlay('veh-servico');
 
         } else if (t === 'rota') {
                 if(id) {
-                    // MODO EDIÇÃO: Carrega os dados da rota existente
                     const h = state.veiculo.historico.find(x => x.id === id);
                     document.getElementById('input-rota-km').value = h.km;
                     document.getElementById('input-rota-data').value = h.data;
@@ -2297,7 +2531,6 @@
                     document.getElementById('input-rota-motivo').value = h.motivo || 'Dia a Dia';
                     document.getElementById('rota-dist-preview').innerText = h.distancia + ' km';
                 } else {
-                    // MODO NOVO: Limpa os campos
                     document.getElementById('input-rota-km').value = ''; 
                     document.getElementById('input-rota-data').value = new Date().toISOString().split('T')[0];
                     document.getElementById('input-rota-hora').value = new Date().toTimeString().slice(0, 5);
@@ -2313,7 +2546,6 @@
         function calcRota() {
             const inputVal = parseInt(document.getElementById('input-rota-km').value); 
             const preview = document.getElementById('rota-dist-preview');
-            // No modo edição, o cálculo de distância pode ser diferente, mas mantemos o padrão de comparação com o hodômetro atual para simplificar
             if (!inputVal || inputVal <= (state.editingVehId ? 0 : state.veiculo.hodometro)) { 
                 preview.innerText = '0 km'; 
             } else { 
@@ -2333,7 +2565,6 @@
                 if (!km) { showToast("Informe o KM."); return; }
 
                 if(state.editingVehId) {
-                    // ATUALIZANDO ROTA EXISTENTE
                     const idx = state.veiculo.historico.findIndex(x => x.id === state.editingVehId);
                     if(idx > -1) {
                         state.veiculo.historico[idx].km = km;
@@ -2342,11 +2573,9 @@
                         state.veiculo.historico[idx].origem = origem;
                         state.veiculo.historico[idx].destino = destino;
                         state.veiculo.historico[idx].motivo = motivo;
-                        // Recalcula a distância baseada no KM anterior se necessário, ou mantém a original
                         showToast("Registro de rota atualizado!");
                     }
                 } else {
-                    // CRIANDO NOVA ROTA
                     if (km <= state.veiculo.hodometro) { showToast("O hodômetro deve ser maior que o atual."); return; }
                     const dist = km - state.veiculo.hodometro;
                     const item = { id: Date.now(), tipo: 'rota', data: dataRota, hora: horaRota, km: km, distancia: dist, origem: origem, destino: destino, motivo: motivo };
@@ -2365,7 +2594,27 @@
             else if (trig === 'total') { if (t && p) document.getElementById('input-fuel-liters').value = (t / p).toFixed(2); else if (t && l) document.getElementById('input-fuel-price').value = (t / l).toFixed(2); }
         }
 
-        // ATUALIZADO V04: Checkbox de tanque cheio no save
+        async function handleFuelOCR(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            showToast('Lendo imagem da bomba...');
+            
+            // Simulação de OCR (Em um app real, aqui chamaria uma API de Visão Computacional)
+            setTimeout(() => {
+                const simulatedPrice = 5.89;
+                const simulatedTotal = 50.00;
+                const simulatedLiters = (simulatedTotal / simulatedPrice).toFixed(2);
+                
+                document.getElementById('input-fuel-price').value = simulatedPrice;
+                document.getElementById('input-fuel-total').value = simulatedTotal;
+                document.getElementById('input-fuel-liters').value = simulatedLiters;
+                
+                showToast('Dados extraídos com sucesso!');
+                refreshIcons();
+            }, 2000);
+        }
+
         function saveRefueling() {
             try {
                 const kmInput = parseInt(document.getElementById('input-fuel-km').value); const km = !isNaN(kmInput) ? kmInput : state.veiculo.hodometro; const t = parseFloat(document.getElementById('input-fuel-total').value) || 0; const l = parseFloat(document.getElementById('input-fuel-liters').value) || 0; const acc = document.getElementById('input-fuel-acc').value;
@@ -2376,8 +2625,8 @@
                 const newId = state.editingVehId || Date.now(); let med = 29.0; const last = state.veiculo.historico.find(h => h.tipo === 'abastecimento' && h.id !== newId);
                 if(last && km > last.km && l > 0) med = (km - last.km) / l;
                 
-                const isFull = document.getElementById('input-fuel-full')?.checked || false;
-                const item = { id: newId, tipo: 'abastecimento', data: dataFuel, hora: horaFuel, km, total: t, litros: l, media: med, conta: acc, tanqueCheio: isFull };
+                const isFull = document.getElementById('input-fuel-full')?.checked || false; const fuelType = document.getElementById('input-fuel-type').value;
+                const item = { id: newId, tipo: 'abastecimento', data: dataFuel, hora: horaFuel, km, total: t, litros: l, media: med, conta: acc, tanqueCheio: isFull, combustivel: fuelType };
                 
                 if(state.editingVehId) { 
                     const idx = state.veiculo.historico.findIndex(x => x.id === newId); if (idx > -1) state.veiculo.historico[idx] = item; 
@@ -2394,7 +2643,7 @@
 
         function saveService() {
             try {
-                const n = document.getElementById('input-svc-name').value; const v = parseFloat(document.getElementById('input-svc-val').value) || 0; const kmInput = parseInt(document.getElementById('input-svc-km').value); const k = !isNaN(kmInput) ? kmInput : state.veiculo.hodometro; const o = document.getElementById('input-svc-isoil').checked; const acc = document.getElementById('input-svc-acc').value;
+                const n = document.getElementById('input-svc-name').value; const svcType = document.getElementById('input-svc-type').value; const v = parseFloat(document.getElementById('input-svc-val').value) || 0; const kmInput = parseInt(document.getElementById('input-svc-km').value); const k = !isNaN(kmInput) ? kmInput : state.veiculo.hodometro; const o = document.getElementById('input-svc-isoil').checked; const acc = document.getElementById('input-svc-acc').value;
                 const dataSvc = document.getElementById('input-svc-data').value || new Date().toISOString().split('T')[0];
                 const horaSvc = document.getElementById('input-svc-hora').value || new Date().toTimeString().slice(0, 5);
                 if(!n) { showToast("Preencha a descrição."); return; }
@@ -2409,17 +2658,24 @@
                     state.veiculo.historico.unshift(item); state.financas.transacoes.push({ id: Date.now()+1, refId: newId, data: item.data, hora: item.hora, valor: v, tipo: 'despesa', status: 'efetivada', cat: 'Manutenção', conta: acc }); 
                 }
                 if(o) state.veiculo.oleoUltimaTrocaKM = k; state.veiculo.hodometro = Math.max(state.veiculo.hodometro, k);
+                if (svcType === 'Óleo') state.veiculo.oleoUltimaTrocaKM = k;
+                if (svcType === 'Pneus') state.veiculo.pneusUltimaTrocaKM = k;
+                if (svcType === 'Corrente') state.veiculo.correnteUltimaTrocaKM = k;
+
                 saveDataToCloud(); closeAllOverlays(); updateUI();
             } catch(e) { showToast("Erro ao salvar manutenção."); }
         }
 
         function deleteVehActivity(id) { state.veiculo.historico = state.veiculo.historico.filter(x => x.id !== id); state.financas.transacoes = state.financas.transacoes.filter(x => x.refId !== id); saveDataToCloud(); updateUI(); }
         
-        // ATUALIZADO V04: Salva a placa final
         function saveVehSettings() { 
             state.veiculo.nome = document.getElementById('input-veh-name').value; 
             state.veiculo.oleoIntervalo = parseInt(document.getElementById('input-veh-oil-interval').value) || 3000; 
             state.veiculo.placaFinal = document.getElementById('input-veh-plate').value;
+            const manualAvg = parseFloat(document.getElementById('input-veh-avg-consumption').value);
+            if (!isNaN(manualAvg) && manualAvg > 0) {
+                state.veiculo.consumoManual = manualAvg;
+            }
             saveDataToCloud(); closeAllOverlays(); updateUI(); 
         }
 
@@ -2463,7 +2719,7 @@
 
         function renderProfileForm() {
             tempAvatar = state.usuario.avatarUrl || null; updateAvatarPreviewUI();
-            document.getElementById('prof-first-name').value = state.usuario.firstName; document.getElementById('prof-last-name').value = state.usuario.lastName; document.getElementById('prof-username').value = state.usuario.username; document.getElementById('prof-birth-date').value = state.usuario.birthDate; document.getElementById('prof-weight').value = state.usuario.peso; document.getElementById('prof-water-goal').value = state.saude.aguaMeta; document.getElementById('prof-caf-goal').value = state.saude.cafeinaMeta;
+            document.getElementById('prof-first-name').value = state.usuario.firstName; document.getElementById('prof-last-name').value = state.usuario.lastName; document.getElementById('prof-username').value = state.usuario.username; document.getElementById('prof-username').disabled = true; document.getElementById('prof-username').classList.add('opacity-50', 'cursor-not-allowed'); document.getElementById('prof-birth-date').value = state.usuario.birthDate; document.getElementById('prof-weight').value = state.usuario.peso; document.getElementById('prof-water-goal').value = state.saude.aguaMeta; document.getElementById('prof-caf-goal').value = state.saude.cafeinaMeta;
             renderFinSettings(); refreshIcons();
         }
 
@@ -2500,10 +2756,32 @@
         }
 
         function saveProfile() {
-            state.usuario.firstName = document.getElementById('prof-first-name').value; state.usuario.lastName = document.getElementById('prof-last-name').value; state.usuario.username = document.getElementById('prof-username').value; state.usuario.birthDate = document.getElementById('prof-birth-date').value; state.usuario.peso = parseFloat(document.getElementById('prof-weight').value) || 0; state.usuario.avatarUrl = tempAvatar;
-            const birth = new Date(state.usuario.birthDate); const today = new Date(); let age = today.getFullYear() - birth.getFullYear(); if (today.getMonth() < birth.getMonth() || (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate())) age--; state.usuario.idade = age;
-            state.saude.aguaMeta = parseFloat(document.getElementById('prof-water-goal').value) || (state.usuario.peso * 35); state.saude.cafeinaMeta = parseFloat(document.getElementById('prof-caf-goal').value) || 400;
-            saveDataToCloud(); closeAllOverlays(); updateUI();
+            const novoUsername = document.getElementById('prof-username').value.trim();
+            const usernameAtual = state.usuario.username || '';
+            
+            if (novoUsername !== usernameAtual) {
+                localStorage.setItem('lastUsernameChange', Date.now().toString());
+            }
+
+            state.usuario.firstName = document.getElementById('prof-first-name').value; 
+            state.usuario.lastName = document.getElementById('prof-last-name').value; 
+            state.usuario.username = novoUsername; 
+            state.usuario.birthDate = document.getElementById('prof-birth-date').value; 
+            state.usuario.peso = parseFloat(document.getElementById('prof-weight').value) || 0; 
+            state.usuario.avatarUrl = tempAvatar;
+            
+            const birth = new Date(state.usuario.birthDate); 
+            const today = new Date(); 
+            let age = today.getFullYear() - birth.getFullYear(); 
+            if (today.getMonth() < birth.getMonth() || (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate())) age--; 
+            state.usuario.idade = age;
+            
+            state.saude.aguaMeta = parseFloat(document.getElementById('prof-water-goal').value) || (state.usuario.peso * 35); 
+            state.saude.cafeinaMeta = parseFloat(document.getElementById('prof-caf-goal').value) || 400;
+            
+            saveDataToCloud(); 
+            closeAllOverlays(); 
+            updateUI();
         }
 
         function updateUI() {
@@ -2511,7 +2789,6 @@
             if (state.usuario.avatarUrl) { headerBtn.innerHTML = `<img src="${state.usuario.avatarUrl}" class="w-full h-full object-cover">`; } 
             else { headerBtn.innerHTML = (state.usuario.firstName[0] + (state.usuario.lastName ? state.usuario.lastName[0] : "")).toUpperCase(); }
 
-            // NOVO: Atualiza o perfil na Sidebar (Desktop)
             const sidebarAvatar = document.getElementById('sidebar-avatar-preview');
             const sidebarName = document.getElementById('sidebar-user-name');
             if (sidebarAvatar && sidebarName) {
@@ -2568,27 +2845,43 @@
             document.querySelectorAll('.veh-name-text').forEach(el => el.innerText = state.veiculo.nome); document.getElementById('veh-km-total').innerText = state.veiculo.hodometro.toLocaleString(); document.getElementById('home-veh-km').innerText = state.veiculo.hodometro.toLocaleString();
             const d = state.veiculo.hodometro - state.veiculo.oleoUltimaTrocaKM; const op = Math.max(0, 100 - (d/state.veiculo.oleoIntervalo*100));
             document.getElementById('veh-oleo-perc').innerText = Math.round(op) + '%'; document.getElementById('veh-oleo-bar').style.width = op + '%'; document.getElementById('veh-oleo-km').innerText = (state.veiculo.oleoUltimaTrocaKM + state.veiculo.oleoIntervalo).toLocaleString() + ' km';
+            const homeOleoPerc = document.getElementById('home-veh-oleo-perc'); if(homeOleoPerc) homeOleoPerc.innerText = Math.round(op) + '%';
+            const homeOleoBar = document.getElementById('home-veh-oleo-bar'); if(homeOleoBar) homeOleoBar.style.width = op + '%';
 
-            const fills = state.veiculo.historico.filter(h => h.tipo === 'abastecimento' && h.media > 0); const mg = fills.length ? fills.reduce((acc,curr)=>acc+curr.media,0)/fills.length : 29.0;
+            const fills = state.veiculo.historico.filter(h => h.tipo === 'abastecimento' && h.media > 0); 
+            let mg = state.veiculo.consumoManual || (fills.length ? fills.reduce((acc,curr)=>acc+curr.media,0)/fills.length : 29.0);
             document.getElementById('veh-media-geral').innerText = mg.toFixed(1); document.getElementById('home-veh-media').innerText = mg.toFixed(1);
+            const inputAvg = document.getElementById('input-veh-avg-consumption'); if(inputAvg) inputAvg.value = mg.toFixed(1);
 
             renderCards(); if(document.getElementById('overlay-card-details').classList.contains('active')) renderCardDetails();
             renderExtrato(); renderRecentTrans(); renderVehTimeline(); renderCalendar(); renderNotifs(); renderMetasList(); refreshIcons();
+            console.log('Chamando renderCartoesResumo...');
+            renderCartoesResumo();
+            console.log('Chamando renderOrcamentos...');
+            renderOrcamentos();
             
-            // V04: Checagem da previsão de tributos do veículo
             verificarPrevisaoDetran();
         }
 
         function renderCards() {
-            const c = document.getElementById('card-carousel'); if(!c) return;
-            c.innerHTML = state.financas.cartoes.map(x => {
+            const c = document.getElementById('card-carousel');
+            const list = document.getElementById('cards-list');
+            if(!c && !list) return;
+
+            const cardsHtml = state.financas.cartoes.map(x => {
                 let f = 0; state.financas.transacoes.forEach(t => { if(t.conta === x.nome && t.status === 'efetivada') { if (t.tipo === 'receita') f -= t.valor; else f += t.valor; } });
                 return `<div class="snap-center shrink-0 w-[85%] card rounded-3xl p-6 shadow-sm relative overflow-hidden bg-gradient-to-br from-[#1E2128] to-[#121418] border border-gray-700 cursor-pointer active:scale-[0.98] transition-transform" onclick="openCardDetails(${x.id})">
                     <div class="flex justify-between items-center mb-6"><div class="flex items-center space-x-2"><i data-lucide="credit-card" class="w-5 h-5" style="color: ${x.cor || '#8b5cf6'}"></i><span class="text-sm font-medium text-gray-300">${x.nome}</span></div><span class="text-sm font-bold italic text-gray-400" style="color: ${x.cor || '#8b5cf6'}">${x.bandeira || 'MASTERCARD'}</span></div>
                     <div class="mb-4"><span class="text-xs text-gray-400 block mb-1">Fatura Atual (Vence dia ${x.vencimento || 10})</span><span class="text-3xl font-bold sensitive-value text-white" data-value="R$ ${Math.max(0,f).toLocaleString('pt-BR', {minimumFractionDigits: 2})}">${state.blurred ? 'R$ •••••' : 'R$ ' + Math.max(0,f).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span></div>
                     <div class="flex justify-between items-end mt-6"><div><span class="text-xs text-gray-500 block mb-1">Limite Disponível</span><span class="text-sm font-semibold text-green-400 sensitive-value" data-value="R$ ${(x.limite - f).toLocaleString('pt-BR', {minimumFractionDigits: 2})}">${state.blurred ? 'R$ •••••' : 'R$ ' + (x.limite - f).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span></div><span class="text-xs text-gray-500 font-mono tracking-widest">•••• 4321</span></div>
                 </div>`;
-            }).join('') + `<div class="snap-center shrink-0 w-[30%] card rounded-3xl p-6 shadow-sm flex flex-col items-center justify-center border border-dashed border-gray-700 cursor-pointer hover:bg-gray-800 transition-colors" onclick="toggleOverlay('new-card')"><div class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 mb-2"><i data-lucide="plus" class="w-5 h-5"></i></div></div>`;
+            }).join('');
+
+            const addCardBtn = `<div class="snap-center shrink-0 w-[30%] card rounded-3xl p-6 shadow-sm flex flex-col items-center justify-center border border-dashed border-gray-700 cursor-pointer hover:bg-gray-800 transition-colors" onclick="toggleOverlay('new-card')"><div class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 mb-2"><i data-lucide="plus" class="w-5 h-5"></i></div></div>`;
+
+            if(c) c.innerHTML = cardsHtml + addCardBtn;
+            if(list) list.innerHTML = cardsHtml;
+            refreshIcons();
         }
 
         function renderTransItem(t) {
@@ -2598,7 +2891,7 @@
             const catName = isTransf ? `Transf. p/ ${t.destino}` : (isPgto ? `Fatura ${t.destino}` : t.cat); const subtitle = isTransf ? `De ${t.conta}` : t.conta;
 
             return `<div class="flex justify-between items-center group card p-4 rounded-2xl border border-white/5">
-                <div class="flex items-center space-x-3 overflow-hidden"><div class="w-10 h-10 rounded-full ${bgClass} flex items-center justify-center shrink-0"><i data-lucide="${icon}" class="w-5 h-5"></i></div><div class="truncate"><span class="block text-sm font-medium truncate">${catName}</span><span class="block text-[10px] text-gray-500 uppercase tracking-wider truncate">${subtitle} <span class="text-blue-500 font-bold">• ${t.status === 'fatura_paga' ? 'Paga' : t.status}</span></span></div></div>
+                <div class="flex items-center space-x-3 overflow-hidden"><div class="w-10 h-10 rounded-full ${bgClass} flex items-center justify-center shrink-0"><i data-lucide="${icon}" class="w-5 h-5"></i></div><div class="truncate"><span class="block text-sm font-medium truncate">${catName}</span><span class="block text-[10px] text-gray-500 uppercase tracking-wider truncate">${subtitle} <span class="text-blue-500 font-bold">• ${t.status === 'fatura_paga' ? 'Paga' : t.status}</span> ${t.groupId ? '<i data-lucide="repeat" class="inline w-2.5 h-2.5 ml-1 text-blue-400"></i>' : ''}</span></div></div>
                 <div class="flex flex-col items-end shrink-0 ml-2"><span class="text-sm font-semibold ${colorClass}">${prefix} R$ ${t.valor.toLocaleString('pt-BR', {minimumFractionDigits:2})}</span><div class="flex space-x-3 mt-1.5 opacity-80">${(!isTransf && !isPgto && t.status !== 'fatura_paga') ? `<button class="text-gray-500 hover:text-white transition-colors" onclick="openTransactionModal('${t.tipo}', ${t.id})"><i data-lucide="edit-2" class="w-3.5 h-3.5"></i></button>` : ''}<button class="text-gray-500 hover:text-red-400 transition-colors" onclick="deleteTransaction(${t.id})"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button></div></div>
             </div>`;
         }
@@ -2646,9 +2939,10 @@
                         </div>
                         <div class="flex-1 min-w-0">
                             <p class="text-sm font-bold text-white truncate">${title}</p>
-                            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-0.5">${banco} • ${statusLabel}</p>
+                            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-0.5">${banco} • ${statusLabel} ${t.groupId ? '<i data-lucide="repeat" class="inline w-2.5 h-2.5 ml-1 text-blue-400"></i>' : ''}</p>
                         </div>
                         <div class="flex-shrink-0 text-right">
+
                             <p class="text-sm font-bold ${textClass}">${prefix}R$ ${Math.abs(t.valor).toFixed(2)}</p>
                             <p class="text-[9px] text-gray-500 font-bold mt-1">${data}</p>
                         </div>
@@ -2667,8 +2961,21 @@
         }
 
         function renderRecentTrans() {
-            const sorted = [...state.financas.transacoes].sort((a,b) => new Date(b.data) - new Date(a.data)).slice(0, 3);
-            document.getElementById('recent-trans-list').innerHTML = sorted.length ? sorted.map(t => renderTransItem(t)).join('') : '<p class="text-center text-gray-600 py-4 text-xs font-bold uppercase tracking-widest">Nenhuma atividade recente</p>';
+            const m = state.recentTransDate.getMonth(), y = state.recentTransDate.getFullYear();
+            const monthNames = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+            const lbl = document.getElementById('recent-trans-month-label');
+            if(lbl) lbl.innerText = `${monthNames[m]} ${y}`;
+
+            const filtered = state.financas.transacoes.filter(t => {
+                const d = new Date(t.data);
+                return d.getMonth() === m && d.getFullYear() === y;
+            }).sort((a,b) => new Date(b.data) - new Date(a.data));
+
+            const list = document.getElementById('recent-trans-list');
+            if(!list) return;
+
+            list.innerHTML = filtered.length ? filtered.map(t => renderTransItem(t)).join('') : '<p class="text-center text-gray-600 py-4 text-xs font-bold uppercase tracking-widest">Nenhuma atividade no mês</p>';
+            refreshIcons();
         }
 
         function renderVehTimeline() {
@@ -2734,11 +3041,22 @@
             const grid = document.getElementById('calendar-grid'); const headers = Array.from(grid.children).slice(0, 7); grid.innerHTML = ''; headers.forEach(h => grid.appendChild(h));
             const m = state.viewDate.getMonth(), y = state.viewDate.getFullYear(); const first = new Date(y, m, 1).getDay(), days = new Date(y, m+1, 0).getDate();
             for(let i=0; i<first; i++) grid.appendChild(document.createElement('div'));
+            
             for(let d=1; d<=days; d++) {
-                const k = `${y}-${(m+1).toString().padStart(2,'0')}-${d.toString().padStart(2,'0')}`; const v = state.saude.historico[k] || {agua:0};
+                const k = `${y}-${(m+1).toString().padStart(2,'0')}-${d.toString().padStart(2,'0')}`; 
+                const v = state.saude.historico[k] || {agua:0, cafe:0};
+                
                 const dayDiv = document.createElement('div'); dayDiv.className = 'flex justify-center';
-                let cls = 'day-circle'; if(v.agua > 0) cls += ' water-tracked'; if(v.agua >= state.saude.aguaMeta) cls += ' goal-met';
-                dayDiv.innerHTML = `<div class="${cls}" onclick="openSaudeDiaModal('${k}')">${d}</div>`; grid.appendChild(dayDiv);
+                
+                let markers = '';
+                if(v.agua > 0) markers += '<div class="dot dot-agua"></div>';
+                if(v.cafe > 0) { const cafeCls = v.cafe > state.saude.cafeinaMeta ? 'dot-cafe-alert' : 'dot-cafe'; markers += `<div class="dot ${cafeCls}"></div>`; }
+
+                let circleCls = 'day-circle';
+                if(v.agua >= state.saude.aguaMeta && state.saude.aguaMeta > 0) circleCls += ' goal-met';
+
+                dayDiv.innerHTML = `<div class="${circleCls}" onclick="openSaudeDiaModal('${k}')">${d}<div class="absolute bottom-1 flex justify-center w-full">${markers}</div></div>`; 
+                grid.appendChild(dayDiv);
             }
             document.getElementById('calendar-month-year').innerText = new Date(y, m).toLocaleDateString('pt-BR', {month:'short', year:'numeric'}).toUpperCase();
         }
@@ -2801,6 +3119,8 @@
 
         function changeMonth(s) { state.viewDate.setMonth(state.viewDate.getMonth()+s); renderCalendar(); }
         function changeExtratoMonth(s) { state.extratoDate.setMonth(state.extratoDate.getMonth()+s); renderExtrato(); }
+        function changeRecentTransMonth(s) { state.recentTransDate.setMonth(state.recentTransDate.getMonth()+s); renderRecentTrans(); }
+        function changeOrcamentoMonth(s) { state.orcamentoDate.setMonth(state.orcamentoDate.getMonth()+s); renderOrcamentos(); }
         
         function toggleVisibility() { 
             state.blurred = !state.blurred; 
@@ -2812,11 +3132,485 @@
             }); 
         }
 
+        function checkUsernameCooldown() {
+            const usernameInput = document.getElementById('prof-username');
+            const lastChange = localStorage.getItem('lastUsernameChange'); 
+
+            if (lastChange) {
+                const daysSinceChange = (Date.now() - parseInt(lastChange)) / (1000 * 60 * 60 * 24);
+                
+                if (daysSinceChange < 90) {
+                    const daysLeft = Math.ceil(90 - daysSinceChange);
+                    
+                    usernameInput.readOnly = true;
+                    usernameInput.classList.add('opacity-50', 'cursor-pointer');
+                    
+                    usernameInput.onclick = function() {
+                        document.getElementById('texto-aviso-usuario').innerText = `Você só pode alterar o seu @usuário a cada 90 dias.\n\nFaltam ${daysLeft} dias para poder alterar novamente.`;
+                        toggleOverlay('aviso-usuario');
+                    };
+                    
+                    return false;
+                }
+            }
+            
+            usernameInput.readOnly = false;
+            usernameInput.classList.remove('opacity-50', 'cursor-pointer');
+            usernameInput.onclick = null;
+            return true;
+        }
+        
+
+        // ===== FUNÇÕES DE RELATÓRIO VEICULAR =====
+        
+        function switchVehTab(tab) {
+            const pageVeh = document.getElementById('page-veiculo');
+            const relatorioDiv = document.getElementById('veh-relatorio');
+            const timelineDiv = document.getElementById('veh-timeline').parentElement;
+            const mainActions = document.getElementById('veh-main-actions');
+            const resumoCard = pageVeh.querySelector('.card.rounded-3xl.p-6.relative');
+
+            if (tab === 'relatorio') {
+                resumoCard.classList.add('hidden');
+                mainActions.classList.add('hidden');
+                timelineDiv.classList.add('hidden');
+                relatorioDiv.classList.remove('hidden');
+                setTimeout(() => { renderVehRelatorio(); refreshIcons(); }, 100);
+            } else {
+                resumoCard.classList.remove('hidden');
+                mainActions.classList.remove('hidden');
+                timelineDiv.classList.remove('hidden');
+                relatorioDiv.classList.add('hidden');
+                refreshIcons();
+            }
+        }
+
+        function renderVehRelatorio() {
+            calcularMediaReal();
+            calcularCPK();
+            calcularProximaTrocaOleo();
+            calcularGastoMensal();
+            renderVehCharts();
+            updateHealthBars();
+        }
+
+        function calcularMediaReal() {
+            const fills = state.veiculo.historico.filter(h => h.tipo === 'abastecimento' && h.tanqueCheio);
+            let mediaReal = 29.0;
+            if (fills.length >= 2) {
+                let totalKm = 0, totalLitros = 0;
+                for (let i = 1; i < fills.length; i++) {
+                    const kmDiff = fills[i].km - fills[i-1].km;
+                    if (kmDiff > 0) {
+                        totalKm += kmDiff;
+                        totalLitros += fills[i].litros;
+                    }
+                }
+                if (totalLitros > 0) mediaReal = totalKm / totalLitros;
+            }
+            const el = document.getElementById('veh-media-real');
+            if (el) el.innerText = mediaReal.toFixed(1) + ' km/L';
+            return mediaReal;
+        }
+
+        function calcularCPK() {
+            let totalGasto = 0, totalKm = state.veiculo.hodometro;
+            state.veiculo.historico.forEach(h => {
+                if (h.tipo === 'abastecimento') totalGasto += h.total;
+                else if (h.tipo === 'servico') totalGasto += h.valor;
+            });
+            const cpk = totalKm > 0 ? totalGasto / totalKm : 0;
+            const el = document.getElementById('veh-cpk');
+            if (el) el.innerText = 'R$ ' + cpk.toFixed(2);
+            return cpk;
+        }
+
+        function calcularProximaTrocaOleo() {
+            const kmRestantes = (state.veiculo.oleoUltimaTrocaKM + state.veiculo.oleoIntervalo) - state.veiculo.hodometro;
+            const el = document.getElementById('veh-oleo-prox');
+            if (el) el.innerText = Math.max(0, kmRestantes).toFixed(0) + ' km';
+            return kmRestantes;
+        }
+
+        function calcularGastoMensal() {
+            const agora = new Date();
+            const mesAtual = agora.getMonth();
+            const anoAtual = agora.getFullYear();
+            let gastoMes = 0;
+            state.veiculo.historico.forEach(h => {
+                const dataH = new Date(h.data);
+                if (dataH.getMonth() === mesAtual && dataH.getFullYear() === anoAtual) {
+                    if (h.tipo === 'abastecimento') gastoMes += h.total;
+                    else if (h.tipo === 'servico') gastoMes += h.valor;
+                }
+            });
+            const el = document.getElementById('veh-gasto-mensal');
+            if (el) el.innerText = 'R$ ' + gastoMes.toFixed(2);
+            return gastoMes;
+        }
+
+        function renderVehCharts() {
+            renderConsumoChart();
+            renderGastosChart();
+        }
+
+        function renderConsumoChart() {
+            const ctx = document.getElementById('veh-chart-consumo');
+            if (!ctx) return;
+            const fills = state.veiculo.historico.filter(h => h.tipo === 'abastecimento').sort((a, b) => new Date(a.data) - new Date(b.data));
+            const labels = fills.map(f => new Date(f.data).toLocaleDateString('pt-BR', {day: '2-digit', month: 'short'}));
+            const data = fills.map(f => f.media || 0);
+            if (window.consumoChartInstance) window.consumoChartInstance.destroy();
+            window.consumoChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'km/L',
+                        data: data,
+                        borderColor: '#f97316',
+                        backgroundColor: 'rgba(249, 115, 22, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#f97316'
+                    }, {
+                        label: 'Meta (29 km/L)',
+                        data: Array(labels.length).fill(29),
+                        borderColor: '#38bdf8',
+                        borderDash: [5, 5],
+                        borderWidth: 1,
+                        fill: false,
+                        pointRadius: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: { legend: { display: true, labels: { color: '#9ca3af', font: { size: 10 } } } },
+                    scales: {
+                        y: { beginAtZero: true, max: 40, ticks: { color: '#6b7280', font: { size: 9 } }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                        x: { ticks: { color: '#6b7280', font: { size: 9 } }, grid: { color: 'rgba(255,255,255,0.05)' } }
+                    }
+                }
+            });
+        }
+
+        function renderGastosChart() {
+            const ctx = document.getElementById('veh-chart-gastos');
+            if (!ctx) return;
+            let combustivel = 0, preventiva = 0, corretiva = 0;
+            state.veiculo.historico.forEach(h => {
+                if (h.tipo === 'abastecimento') combustivel += h.total;
+                else if (h.tipo === 'servico') {
+                    if (h.isOil) preventiva += h.valor;
+                    else corretiva += h.valor;
+                }
+            });
+            if (window.gastosChartInstance) window.gastosChartInstance.destroy();
+            window.gastosChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Combustível', 'Manutenção Preventiva', 'Manutenção Corretiva'],
+                    datasets: [{
+                        label: 'Gastos (R$)',
+                        data: [combustivel, preventiva, corretiva],
+                        backgroundColor: ['#f97316', '#34d399', '#fb7185'],
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { ticks: { color: '#6b7280', font: { size: 9 } }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                        y: { ticks: { color: '#6b7280', font: { size: 9 } }, grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+                
+        function checkCriticalMaintenance() {
+            const isMoto = state.veiculo.tipo === 'moto';
+            
+            // Óleo
+            const dOleo = state.veiculo.hodometro - (state.veiculo.oleoUltimaTrocaKM || 0);
+            const oleoPerc = Math.max(0, 100 - (dOleo / (state.veiculo.oleoIntervalo || 3000) * 100));
+            if (oleoPerc < 10) showToast("⚠️ Atenção: Troca de Óleo necessária em breve!", 5000);
+            
+            // Pneus
+            const dPneus = state.veiculo.hodometro - (state.veiculo.pneusUltimaTrocaKM || 0);
+            const pneusPerc = Math.max(0, 100 - (dPneus / (state.veiculo.pneusIntervalo || 15000) * 100));
+            if (pneusPerc < 10) setTimeout(() => showToast("⚠️ Atenção: Verifique o desgaste dos Pneus!", 5000), 1000);
+            
+            // Corrente (Apenas Moto)
+            if (isMoto) {
+                const dCorr = state.veiculo.hodometro - (state.veiculo.correnteUltimaTrocaKM || 0);
+                const corrPerc = Math.max(0, 100 - (dCorr / (state.veiculo.correnteIntervalo || 20000) * 100));
+                if (corrPerc < 10) setTimeout(() => showToast("⚠️ Atenção: Manutenção da Corrente necessária!", 5000), 2000);
+            }
+        }
+
+        function updateHealthBars() {
+            const isMoto = state.veiculo.tipo === 'moto';
+            
+            // Óleo
+            const dOleo = state.veiculo.hodometro - (state.veiculo.oleoUltimaTrocaKM || 0);
+            const oleoPerc = Math.max(0, 100 - (dOleo / (state.veiculo.oleoIntervalo || 3000) * 100));
+            updateHealthBar('oleo', oleoPerc);
+            
+            // Pneus
+            const dPneus = state.veiculo.hodometro - (state.veiculo.pneusUltimaTrocaKM || 0);
+            const pneusPerc = Math.max(0, 100 - (dPneus / (state.veiculo.pneusIntervalo || 15000) * 100));
+            updateHealthBar('pneus', pneusPerc);
+            
+            // Corrente (Apenas Moto)
+            const correnteContainer = document.getElementById('veh-health-corrente-perc')?.parentElement?.parentElement;
+            if (isMoto) {
+                if (correnteContainer) correnteContainer.classList.remove('hidden');
+                const dCorr = state.veiculo.hodometro - (state.veiculo.correnteUltimaTrocaKM || 0);
+                const corrPerc = Math.max(0, 100 - (dCorr / (state.veiculo.correnteIntervalo || 20000) * 100));
+                updateHealthBar('corrente', corrPerc);
+            } else {
+                if (correnteContainer) correnteContainer.classList.add('hidden');
+            }
+        }
+
+        function updateHealthBar(type, percentage) {
+            const bar = document.getElementById('veh-health-' + type + '-bar');
+            const perc = document.getElementById('veh-health-' + type + '-perc');
+            if (bar && perc) {
+                bar.style.width = percentage + '%';
+                perc.innerText = Math.round(percentage) + '%';
+                if (percentage < 60) bar.style.backgroundColor = '#34d399';
+                else if (percentage < 85) bar.style.backgroundColor = '#eab308';
+                else bar.style.backgroundColor = '#fb7185';
+            }
+        }
+
         window.onload = () => { 
             if(!state.isLoggedIn) { document.getElementById('login-screen').classList.remove('hidden'); }
             initializeAuthListener();
+            // Pequeno delay para verificar manutenções críticas após carregar dados
+            setTimeout(() => { if(state.isLoggedIn) checkCriticalMaintenance(); }, 3000);
         };
+
+        // ===== FUNÇÕES DE CARTÕES COM BARRAS DE PROGRESSO =====
+        function renderCartoesResumo() {
+            const resumoDiv = document.getElementById('cartoes-resumo');
+            const carouselDiv = document.getElementById('cartoes-carousel');
+            if (!resumoDiv || !carouselDiv || !state.financas.cartoes) return;
+            
+            const cardsHtml = state.financas.cartoes.map(x => {
+                let f = 0; state.financas.transacoes.forEach(t => { if(t.conta === x.nome && t.status === 'efetivada') { if (t.tipo === 'receita') f -= t.valor; else f += t.valor; } });
+                return `<div class="snap-center shrink-0 w-[85%] card rounded-3xl p-6 shadow-sm relative overflow-hidden bg-gradient-to-br from-[#1E2128] to-[#121418] border border-gray-700 cursor-pointer active:scale-[0.98] transition-transform" onclick="openCardDetails(${x.id})">
+                    <div class="flex justify-between items-center mb-6"><div class="flex items-center space-x-2"><i data-lucide="credit-card" class="w-5 h-5" style="color: ${x.cor || '#8b5cf6'}"></i><span class="text-sm font-medium text-gray-300">${x.nome}</span></div><span class="text-sm font-bold italic text-gray-400" style="color: ${x.cor || '#8b5cf6'}">${x.bandeira || 'MASTERCARD'}</span></div>
+                    <div class="mb-4"><span class="text-xs text-gray-400 block mb-1">Fatura Atual (Vence dia ${x.vencimento || 10})</span><span class="text-3xl font-bold sensitive-value text-white" data-value="R$ ${Math.max(0,f).toLocaleString('pt-BR', {minimumFractionDigits: 2})}">${state.blurred ? 'R$ •••••' : 'R$ ' + Math.max(0,f).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span></div>
+                    <div class="flex justify-between items-end mt-6"><div><span class="text-xs text-gray-500 block mb-1">Limite Disponível</span><span class="text-sm font-semibold text-green-400 sensitive-value" data-value="R$ ${(x.limite - f).toLocaleString('pt-BR', {minimumFractionDigits: 2})}">${state.blurred ? 'R$ •••••' : 'R$ ' + (x.limite - f).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span></div><span class="text-xs text-gray-500 font-mono tracking-widest">•••• 4321</span></div>
+                </div>`;
+            }).join('');
+
+            const addCardBtn = `<div class="snap-center shrink-0 w-[30%] card rounded-3xl p-6 shadow-sm flex flex-col items-center justify-center border border-dashed border-gray-700 cursor-pointer hover:bg-gray-800 transition-colors" onclick="toggleOverlay('new-card')"><div class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 mb-2"><i data-lucide="plus" class="w-5 h-5"></i></div></div>`;
+
+            carouselDiv.innerHTML = cardsHtml + addCardBtn;
+            
+            let resumoHTML = '';
+            state.financas.cartoes.forEach(card => {
+                let fatura = 0;
+                state.financas.transacoes.forEach(t => {
+                    if (t.conta === card.nome && t.status === 'efetivada') {
+                        if (t.tipo === 'receita') fatura -= t.valor;
+                        else fatura += t.valor;
+                    }
+                });
+                const percentualUso = (Math.max(0, fatura) / card.limite) * 100;
+                let corBarra = '#34d399';
+                if (percentualUso > 70) corBarra = '#fb7185';
+                else if (percentualUso > 50) corBarra = '#f97316';
+                
+                resumoHTML += `<div class="bg-black/20 p-4 rounded-2xl border border-white/5">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-bold text-sm">${card.nome}</span>
+                        <span class="text-xs text-gray-500">R$ ${card.limite.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span>
+                    </div>
+                    <div class="w-full bg-black/40 rounded-full h-2 overflow-hidden">
+                        <div class="h-full progress-fill" style="width: ${Math.min(percentualUso, 100)}%; background-color: ${corBarra};"><div class="bubbles"></div></div>
+                    </div>
+                    <div class="flex justify-between items-center mt-2 text-xs text-gray-500">
+                        <span>R$ ${Math.max(0, fatura).toLocaleString('pt-BR', {minimumFractionDigits: 2})} gasto</span>
+                        <span>${Math.round(percentualUso)}%</span>
+                    </div>
+                </div>`;
+            });
+            
+            resumoDiv.innerHTML = resumoHTML || '<p class="text-center text-gray-500 py-4 text-xs">Nenhum cartão cadastrado</p>';
+            refreshIcons();
+        }
+
+        function renderOrcamentos() {
+            try {
+                const orcamentoList = document.getElementById('orcamento-list');
+                if (!orcamentoList) return;
+                if (!state || !state.financas || !state.financas.orcamentos) return;
+                
+                const m = state.orcamentoDate.getMonth(), y = state.orcamentoDate.getFullYear();
+                const monthNames = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+                const lbl = document.getElementById('orcamento-month-label');
+                if(lbl) lbl.innerText = `${monthNames[m]} ${y}`;
+
+                const gastosPorCategoria = {};
+                state.usuario.categorias_despesa.forEach(cat => { gastosPorCategoria[cat.nome] = 0; });
+                state.financas.transacoes.forEach(t => {
+                    const dataTrans = new Date(t.data);
+                    if (dataTrans.getMonth() === m && dataTrans.getFullYear() === y && t.tipo === 'despesa' && (t.status === 'efetivada' || t.status === 'fatura_paga')) {
+                        if (gastosPorCategoria.hasOwnProperty(t.cat)) gastosPorCategoria[t.cat] += t.valor;
+                    }
+                });
+
+                const orcamentosMes = state.financas.orcamentos.filter(o => o.mes === m && o.ano === y);
+
+                const orcamentosHTML = orcamentosMes.map(orc => {
+                    const gasto = gastosPorCategoria[orc.categoria] || 0;
+                    const percentual = (gasto / orc.limite) * 100;
+                    let corBarra = '#34d399';
+                    if (percentual > 80) corBarra = '#fb7185';
+                    else if (percentual > 50) corBarra = '#eab308';
+                    return `<div class="bg-black/20 p-4 rounded-2xl border border-white/5">
+                        <div class="flex justify-between items-center mb-3">
+                            <div class="flex items-center gap-2 flex-1">
+                                <span class="font-bold text-sm">${orc.categoria}</span>
+                            </div>
+                            <span class="text-xs font-bold text-gray-500">R$ ${orc.limite.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span>
+                            <button onclick="deleteOrcamento('${orc.id}')" class="ml-2 text-red-500 hover:text-red-400"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                        </div>
+                        <div class="w-full bg-black/40 rounded-full h-2 overflow-hidden">
+                            <div class="h-full transition-all duration-500 progress-fill" style="width: ${Math.min(percentual, 100)}%; background-color: ${corBarra};"><div class="bubbles"></div></div>
+                        </div>
+                        <div class="flex justify-between items-center mt-2 text-xs text-gray-500">
+                            <span>R$ ${gasto.toLocaleString('pt-BR', {minimumFractionDigits: 2})} gasto</span>
+                            <span>${Math.round(percentual)}%</span>
+                        </div>
+                    </div>`;
+                }).join('');
+
+                orcamentoList.innerHTML = orcamentosHTML || '<p class="text-center text-gray-600 py-10 text-xs font-bold uppercase tracking-widest">Nenhum orçamento para este mês</p>';
+                
+                const totalOrcado = orcamentosMes.reduce((sum, orc) => sum + orc.limite, 0);
+                const totalGasto = Object.values(gastosPorCategoria).reduce((sum, gasto) => sum + gasto, 0);
+                const disponivel = totalOrcado - totalGasto;
+                
+                const resumoOrcado = document.getElementById('resumo-orcado');
+                const resumoGasto = document.getElementById('resumo-gasto');
+                const resumoDisponivel = document.getElementById('resumo-disponivel');
+                if (resumoOrcado) resumoOrcado.innerText = 'R$ ' + totalOrcado.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+                if (resumoGasto) resumoGasto.innerText = 'R$ ' + totalGasto.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+                if (resumoDisponivel) resumoDisponivel.innerText = 'R$ ' + Math.max(0, disponivel).toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            const limiteTotalDisplay = document.getElementById('limite-total-display');
+            const limiteTotalBar = document.getElementById('limite-total-bar');
+            const limiteTotalGasto = document.getElementById('limite-total-gasto');
+            const limiteTotalPerc = document.getElementById('limite-total-perc');
+            if (limiteTotalDisplay) {
+                limiteTotalDisplay.innerText = 'R$ ' + state.financas.limiteMensalTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+                const percentualTotal = (totalGasto / state.financas.limiteMensalTotal) * 100;
+                if (limiteTotalBar) limiteTotalBar.style.width = Math.min(percentualTotal, 100) + '%';
+                if (limiteTotalGasto) limiteTotalGasto.innerText = 'R$ ' + totalGasto.toLocaleString('pt-BR', {minimumFractionDigits: 2}) + ' gasto';
+                if (limiteTotalPerc) limiteTotalPerc.innerText = Math.round(percentualTotal) + '%';
+            }
+                refreshIcons();
+            } catch(e) {
+                console.error('Erro em renderOrcamentos:', e);
+            }
+        }
+
+        function editLimiteMensalTotal() {
+            document.getElementById('input-limite-mensal').value = state.financas.limiteMensalTotal;
+            toggleOverlay('edit-limite');
+        }
+
+        function saveLimiteMensalTotal() {
+            const novoLimite = parseFloat(document.getElementById('input-limite-mensal').value);
+            if (!novoLimite || novoLimite <= 0) { showToast('Informe um limite válido.'); return; }
+            state.financas.limiteMensalTotal = novoLimite;
+            saveDataToCloud(); closeAllOverlays(); updateUI(); showToast('Limite mensal atualizado!');
+        }
+
+        function saveOrcamento() {
+            const selectCat = document.getElementById('orcamento-categoria-select');
+            const categoria = selectCat.value;
+            const limite = parseFloat(document.getElementById('orcamento-limite-input').value);
+            const mes = state.orcamentoDate.getMonth();
+            const ano = state.orcamentoDate.getFullYear();
+            
+            if (!categoria || isNaN(limite) || limite <= 0) { 
+                showToast('Preencha todos os campos corretamente.'); 
+                return; 
+            }
+            
+            if (!state.financas.orcamentos) state.financas.orcamentos = [];
+            
+            const existente = state.financas.orcamentos.find(o => o.categoria === categoria && o.mes === mes && o.ano === ano);
+            if (existente) { 
+                existente.limite = limite; 
+            } else {
+                state.financas.orcamentos.push({ 
+                    id: Date.now().toString(), 
+                    categoria: categoria, 
+                    limite: limite,
+                    mes: mes,
+                    ano: ano
+                });
+            }
+            
+            saveDataToCloud(); 
+            closeAllOverlays(); 
+            updateUI(); 
+            showToast('Orçamento salvo com sucesso!');
+        }
+
+        function deleteOrcamento(id) {
+            state.financas.orcamentos = state.financas.orcamentos.filter(o => o.id !== id);
+            saveDataToCloud(); updateUI(); showToast('Orçamento removido!');
+        }
     </script>
     
+
+        <div id="overlay-edit-limite" class="overlay">
+            <div class="w-12 h-1 bg-gray-800 rounded-full mx-auto mt-4 mb-4 shrink-0"></div>
+            <div class="px-6 flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold">Editar Limite Mensal</h2>
+                <button onclick="closeAllOverlays()"><i data-lucide="x" class="w-6 h-6 text-gray-500"></i></button>
+            </div>
+            <div class="overlay-content space-y-4">
+                <div class="bg-black/20 p-4 rounded-2xl border border-white/5">
+                    <label class="text-[9px] text-gray-500 uppercase font-bold block mb-2">Limite Total Mensal (R$)</label>
+                    <input type="number" id="input-limite-mensal" class="bg-transparent font-bold w-full outline-none text-2xl text-blue-400" placeholder="0.00">
+                </div>
+                <button onclick="saveLimiteMensalTotal()" class="w-full py-5 rounded-3xl bg-blue-500 text-black font-bold uppercase tracking-widest mt-4 active:scale-95 transition-transform">Salvar</button>
+            </div>
+        </div>
+
+        <div id="overlay-new-orcamento" class="overlay">
+            <div class="w-12 h-1 bg-gray-800 rounded-full mx-auto mt-4 mb-4 shrink-0"></div>
+            <div class="px-6 flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold" id="new-orcamento-title">Novo Orçamento</h2>
+                <button onclick="closeAllOverlays()"><i data-lucide="x" class="w-6 h-6 text-gray-500"></i></button>
+            </div>
+            <div class="overlay-content space-y-4">
+                <div class="bg-black/20 p-4 rounded-2xl border border-white/5">
+                    <label class="text-[9px] text-gray-500 uppercase font-bold block mb-2">Categoria</label>
+                    <select id="orcamento-categoria-select" class="bg-transparent font-bold w-full outline-none text-white text-sm"></select>
+                </div>
+                <div class="bg-black/20 p-4 rounded-2xl border border-white/5">
+                    <label class="text-[9px] text-gray-500 uppercase font-bold block mb-2">Limite (R$)</label>
+                    <input type="number" id="orcamento-limite-input" class="bg-transparent font-bold w-full outline-none text-white" placeholder="0.00">
+                </div>
+                <button onclick="saveOrcamento()" class="w-full py-5 rounded-3xl bg-green-500 text-black font-bold uppercase tracking-widest mt-4 active:scale-95 transition-transform">Salvar Orçamento</button>
+            </div>
+        </div>
+
 </body>
 </html>
