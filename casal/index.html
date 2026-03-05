@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mu Finance Casal v02.5</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <meta name="theme-color" content="#121418">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+<style>
+    :root {
+        --bg-main: #121418;
+        --bg-card: #1E2128;
+        --accent-blue: #38bdf8;
+        --danger: #fb7185;
+        --success: #34d399;
+    }
+    
+    html, body { 
+        height: 100dvh; 
+        min-height: 100dvh; 
+        margin: 0; 
+        overflow: hidden; 
+        background-color: #000; 
+        color: white; 
+        font-family: 'Inter', sans-serif; 
+        -webkit-tap-highlight-color: transparent; 
+    }
+    
+    .app-container { 
+        background-color: var(--bg-main); 
+        width: 100%; 
+        height: 100%; 
+        position: relative; 
+        display: flex; 
+        flex-direction: column; 
+    }
+    
+    header { flex-shrink: 0; padding: 15px 20px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    
+    main { 
+        flex: 1; 
+        overflow-y: auto; 
+        overflow-x: hidden; 
+        padding-bottom: calc(120px + env(safe-area-inset-bottom)); 
+        scroll-behavior: smooth; 
+    }
+	
+    .card { background-color: var(--bg-card); border: 1px solid rgba(255,255,255,0.05); }
+    ::-webkit-scrollbar { display: none; }
+    
+    .fade-in { animation: fadeIn 0.3s ease-in-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .sensitive-value.blurred { filter: blur(10px); transition: filter 0.3s ease; }
+    
+    /* ESTILOS DOS OVERLAYS */
+    .overlay { 
+        position: fixed; bottom: -100%; left: 0; width: 100%; height: 92%; 
+        background-color: var(--bg-card); border-top-left-radius: 32px; border-top-right-radius: 32px; 
+        z-index: 100; transition: bottom 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
+        box-shadow: 0 -10px 40px rgba(0,0,0,0.8); border-top: 1px solid rgba(255,255,255,0.1); 
+        display: flex; flex-direction: column; 
+    }
+    .overlay.active { bottom: 0; }
+    .overlay-content { flex: 1; overflow-y: auto; padding: 0 24px 40px 24px; }
+    
+    .backdrop { position: fixed; inset: 0; background-color: rgba(0,0,0,0.7); z-index: 90; display: none; }
+    .backdrop.active { display: block; }
+
+    /* NAVEGAÇÃO */
+    nav { 
+        position: fixed; bottom: 0; left: 0; right: 0; width: 100%; 
+        background-color: #16181D; border-top-left-radius: 32px; border-top-right-radius: 32px;
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 5px 15px calc(15px + env(safe-area-inset-bottom)) 15px; 
+        z-index: 80; box-shadow: 0 -10px 40px rgba(0,0,0,0.6);
+    }
+    
+    .nav-btn { 
+        position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+        color: #6b7280; border: none; background: none; cursor: pointer; flex: 1; transition: all 0.2s; padding-top: 15px;
+    }
+    .nav-btn.active { color: var(--accent-blue); }
+    .nav-btn span { font-size: 10px; font-weight: 600; margin-top: 4px; }
+    
+    .active-indicator { position: absolute; top: 0; width: 22px; height: 3px; background-color: var(--accent-blue); border-radius: 4px; opacity: 0; transform: scaleX(0); transition: all 0.3s; }
+    .nav-btn.active .active-indicator { opacity: 1; transform: scaleX(1); }
+
+    /* BOTÃO DE ACÇÃO (FAB) */
+    .fab-container { position: relative; display: flex; justify-content: center; width: 70px; margin-top: -35px; }
+    .main-fab { 
+        background-color: var(--accent-blue); color: #000; width: 56px; height: 56px; 
+        border-radius: 50%; display: flex; justify-content: center; align-items: center; 
+        box-shadow: 0 5px 20px rgba(56,189,248,0.4); z-index: 85; border: 4px solid var(--bg-main);
+        transition: transform 0.2s;
+    }
+    .main-fab:active { transform: scale(0.9); }
+
+    @media (min-width: 768px) {
+        nav { top: 0; left: 0; width: 260px; height: 100%; flex-direction: column; border-radius: 0; border-right: 1px solid rgba(255,255,255,0.05); padding: 40px 16px; justify-content: flex-start; gap: 8px; }
+        header, main { margin-left: 260px; }
+        .nav-btn { flex: none; flex-direction: row; height: 48px; width: 100%; justify-content: flex-start; padding: 0 16px; border-radius: 12px; }
+        .nav-btn.active { background: rgba(56, 189, 248, 0.08); }
+        .nav-btn span { margin-top: 0; margin-left: 14px; font-size: 14px; }
+        .active-indicator { left: 0; top: 50%; transform: translateY(-50%) scaleY(0); width: 4px; height: 20px; border-radius: 0 4px 4px 0; }
+        .nav-btn.active .active-indicator { transform: translateY(-50%) scaleY(1); opacity: 1; }
+        
+        /* Botão FAB no Desktop: Canto inferior direito */
+        .fab-container {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: auto;
+            margin-top: 0;
+            display: flex;
+            z-index: 99;
+        }
+        .main-fab { width: 64px; height: 64px; }
+    }
+</style>
+
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <header class="flex justify-between items-center shrink-0">
+            <div>
+                <h1 class="text-2xl font-bold tracking-tight">Mu Finance <span class="text-blue-400">Casal</span></h1>
+                <p class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mt-1">Gestão de <span id="header-couple-names">Nós</span></p>
+            </div>
+            <button onclick="toggleOverlay('perfil')" class="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 p-[2px] active:scale-90 transition-transform">
+                <div class="w-full h-full rounded-full bg-[#1E2128] flex items-center justify-center text-[10px] font-bold overflow-hidden">NÓS</div>
+            </button>
+        </header>
+
+        <main id="main-scroll" class="px-6 py-4">
+            
+            <!-- SECÇÃO: FINANÇAS -->
+            <div id="page-financas" class="page-content space-y-6 fade-in">
+                <div class="card rounded-3xl p-6 shadow-sm relative overflow-hidden">
+                    <div class="absolute top-4 right-4 z-20 cursor-pointer p-1" onclick="toggleVisibility()">
+                        <i data-lucide="eye" class="w-5 h-5 text-gray-400 btn-eye"></i>
+                        <i data-lucide="eye-off" class="w-5 h-5 text-gray-400 btn-eye-off hidden"></i>
+                    </div>
+                    <div class="relative z-10">
+                        <span class="text-gray-400 text-sm">Saldo Combinado</span>
+                        <h2 class="text-4xl font-bold mt-1 mb-4 sensitive-value fin-total-saldo" data-value="R$ 0,00">R$ 0,00</h2>
+                        <div class="flex justify-between items-center mt-6 border-t border-white/5 pt-4">
+                            <div><span class="text-[9px] text-gray-500 uppercase font-bold block mb-1">Entradas</span><span class="text-sm font-semibold text-green-400 sensitive-value fin-receita-mes" data-value="R$ 0,00">R$ 0,00</span></div>
+                            <div class="w-px h-8 bg-gray-700"></div>
+                            <div class="text-right"><span class="text-[9px] text-gray-500 uppercase font-bold block mb-1">Saídas</span><span class="text-sm font-semibold text-red-400 sensitive-value fin-despesa-mes" data-value="R$ 0,00">R$ 0,00</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <button onclick="navigate('nav-financas', 'page-cartoes', 'Cartões')" class="card p-4 rounded-2xl flex items-center space-x-3 active:scale-95 transition-transform">
+                        <i data-lucide="credit-card" class="w-6 h-6 text-purple-400"></i>
+                        <span class="text-[10px] font-bold uppercase">Cartões</span>
+                    </button>
+                    <button onclick="navigate('nav-financas', 'page-extrato', 'Extrato')" class="card p-4 rounded-2xl flex items-center space-x-3 active:scale-95 transition-transform">
+                        <i data-lucide="list" class="w-6 h-6 text-yellow-400"></i>
+                        <span class="text-[10px] font-bold uppercase">Extrato</span>
+                    </button>
+                </div>
+
+                <div class="card rounded-3xl p-5">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Orçamento Mensal</h3>
+                        <span id="budget-perc" class="text-xs font-bold text-blue-400">0%</span>
+                    </div>
+                    <div class="w-full bg-black/40 h-2 rounded-full overflow-hidden">
+                        <div id="budget-bar" class="bg-blue-500 h-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <h3 class="text-[10px] font-bold text-gray-500 uppercase tracking-widest px-1">Atividades Recentes</h3>
+                    <div id="recent-trans-list" class="space-y-3"></div>
+                </div>
+            </div>
+
+            <!-- SECÇÃO: CARTÕES -->
+            <div id="page-cartoes" class="page-content hidden space-y-6 fade-in">
+                <div class="flex items-center space-x-4">
+                    <button onclick="navigate('nav-financas', 'page-financas', 'Finanças')" class="w-9 h-9 bg-white/5 rounded-full flex items-center justify-center"><i data-lucide="chevron-left" class="w-5 h-5"></i></button>
+                    <h2 class="text-xl font-bold">Nossos Cartões</h2>
+                </div>
+                <div id="cartoes-list" class="space-y-4"></div>
+            </div>
+
+            <!-- SECÇÃO: EXTRATO -->
+            <div id="page-extrato" class="page-content hidden space-y-6 fade-in">
+                <div class="flex items-center justify-between">
+                    <button onclick="navigate('nav-financas', 'page-financas', 'Finanças')" class="w-9 h-9 bg-white/5 rounded-full flex items-center justify-center"><i data-lucide="chevron-left" class="w-5 h-5"></i></button>
+                    <div class="flex items-center space-x-2 bg-white/5 rounded-xl px-2 py-1">
+                        <button onclick="changeExtratoMonth(-1)"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
+                        <span id="extrato-month-label" class="text-[10px] font-bold min-w-[120px] text-center uppercase">--</span>
+                        <button onclick="changeExtratoMonth(1)"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
+                    </div>
+                </div>
+                <div id="extrato-month-content" class="space-y-3 pb-20"></div>
+            </div>
+
+            <!-- SECÇÃO: VEÍCULO -->
+            <div id="page-veiculo" class="page-content hidden space-y-6 fade-in">
+                <div class="card rounded-3xl p-6 relative">
+                    <div class="flex justify-between items-start mb-6">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-12 h-12 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-400">
+                                <i data-lucide="car" class="w-7 h-7"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-2xl font-bold">Nosso Veículo</h2>
+                                <p class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mt-1">Painel • <span id="veh-km-total">0</span> km</p>
+                            </div>
+                        </div>
+                        <button onclick="toggleOverlay('perfil')" class="w-9 h-9 bg-white/5 rounded-full flex items-center justify-center"><i data-lucide="settings" class="w-4 h-4"></i></button>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-black/30 p-4 rounded-2xl border border-white/5"><span class="text-[9px] text-gray-500 font-bold uppercase block mb-1">Manutenção em</span><span class="text-lg font-bold text-blue-400" id="veh-oleo-prox">--</span></div>
+                        <div class="bg-black/30 p-4 rounded-2xl border border-white/5"><span class="text-[9px] text-gray-500 font-bold uppercase block mb-1">Consumo km/L</span><span class="text-lg font-bold text-orange-400" id="veh-media-geral">29.0</span></div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <button onclick="toggleOverlay('veh-manutencao')" class="card py-6 rounded-2xl flex flex-col items-center border border-white/5 active:scale-95 transition-transform">
+                        <i data-lucide="wrench" class="w-6 h-6 text-blue-500 mb-2"></i>
+                        <span class="text-[10px] font-bold uppercase">Manutenção</span>
+                    </button>
+                    <button onclick="toggleOverlay('veh-abastecer')" class="card py-6 rounded-2xl flex flex-col items-center border border-white/5 active:scale-95 transition-transform">
+                        <i data-lucide="fuel" class="w-6 h-6 text-orange-500 mb-2"></i>
+                        <span class="text-[10px] font-bold uppercase">Abastecer</span>
+                    </button>
+                </div>
+
+                <div class="space-y-4">
+                    <h3 class="text-[10px] font-bold text-gray-500 uppercase tracking-widest px-1">Histórico</h3>
+                    <div id="veh-timeline" class="space-y-3 pb-20"></div>
+                </div>
+            </div>
+
+        </main>
+
+        <nav id="main-nav">
+            <button onclick="navigate('nav-financas', 'page-financas', 'Finanças')" id="nav-financas" class="nav-btn active">
+                <div class="active-indicator"></div>
+                <i data-lucide="dollar-sign" class="w-6 h-6"></i><span>Finanças</span>
+            </button>
+
+            <div class="fab-container">
+                <button onclick="toggleOverlay('transaction')" class="main-fab">
+                    <i data-lucide="plus" class="w-8 h-8 text-black"></i>
+                </button>
+            </div>
+
+            <button onclick="navigate('nav-veiculo', 'page-veiculo', 'Veículo')" id="nav-veiculo" class="nav-btn">
+                <div class="active-indicator"></div>
+                <i data-lucide="car" class="w-6 h-6"></i><span>Veículo</span>
+            </button>
+        </nav>
+
+        <div id="backdrop" class="backdrop" onclick="closeAllOverlays()"></div>
+
+        <!-- OVERLAY: REGISTO FINANCEIRO -->
+        <div id="overlay-transaction" class="overlay">
+            <div class="w-12 h-1 bg-gray-800 rounded-full mx-auto mt-4 mb-4 shrink-0"></div>
+            <div class="px-6 flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold" id="trans-title">Novo Registo</h2>
+                <button onclick="closeAllOverlays()"><i data-lucide="x" class="w-6 h-6 text-gray-500"></i></button>
+            </div>
+            <div class="overlay-content space-y-5">
+                <div class="flex bg-black/30 rounded-xl p-1 mb-2">
+                    <button onclick="setTransType('despesa')" id="btn-tt-despesa" class="flex-1 py-2 text-[10px] font-bold rounded-lg transition-all">Gasto</button>
+                    <button onclick="setTransType('receita')" id="btn-tt-receita" class="flex-1 py-2 text-[10px] font-bold rounded-lg transition-all">Ganho</button>
+                </div>
+                <div class="bg-black/30 p-8 rounded-3xl border border-white/5 text-center">
+                    <span class="text-[10px] text-gray-500 uppercase font-bold tracking-widest">Valor</span>
+                    <div class="text-4xl font-bold mt-2 flex justify-center items-center">
+                        <span class="text-gray-600 mr-2 text-2xl">R$</span>
+                        <input type="number" id="trans-val" class="bg-transparent outline-none w-48 text-center text-white" placeholder="0.00" step="0.01">
+                    </div>
+                </div>
+
+                <div class="bg-black/20 p-4 rounded-2xl border border-white/5">
+                    <label class="text-[9px] text-gray-500 uppercase font-bold block mb-1">Responsável</label>
+                    <select id="trans-resp" class="bg-transparent font-bold w-full outline-none text-sm text-blue-400"></select>
+                </div>
+
+                <div class="bg-black/20 p-4 rounded-2xl border border-white/5">
+                    <label class="text-[9px] text-gray-500 uppercase font-bold block mb-1">Categoria</label>
+                    <select id="trans-cat" class="bg-transparent font-bold w-full outline-none text-sm text-white"></select>
+                </div>
+
+                <div class="bg-black/20 p-4 rounded-2xl border border-white/5">
+                    <label class="text-[9px] text-gray-500 uppercase font-bold block mb-1">Descrição</label>
+                    <input type="text" id="trans-desc" placeholder="Ex: Supermercado" class="bg-transparent font-bold w-full outline-none text-sm">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-black/20 p-4 rounded-2xl border border-white/5">
+                        <label class="text-[9px] text-gray-500 uppercase font-bold block mb-1">Data</label>
+                        <input type="date" id="trans-date" class="bg-transparent font-bold w-full outline-none text-xs text-white">
+                    </div>
+                    <div class="bg-black/20 p-4 rounded-2xl border border-white/5">
+                        <label class="text-[9px] text-gray-500 uppercase font-bold block mb-1">Conta/Cartão</label>
+                        <select id="trans-acc" class="bg-transparent font-bold w-full outline-none text-xs text-white"></select>
+                    </div>
+                </div>
+
+                <button onclick="saveTransaction()" class="w-full py-5 rounded-3xl bg-blue-500 text-black font-bold text-lg mt-4 uppercase tracking-widest active:scale-95 transition-transform">Confirmar</button>
+            </div>
+        </div>
+
+        <!-- OVERLAY: CONFIGURAÇÕES -->
+        <div id="overlay-perfil" class="overlay">
+            <div class="w-12 h-1 bg-gray-800 rounded-full mx-auto mt-4 mb-4 shrink-0"></div>
+            <div class="px-6 flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold">Configurações</h2>
+                <button onclick="closeAllOverlays()"><i data-lucide="x" class="w-6 h-6 text-gray-500"></i></button>
+            </div>
+            <div class="overlay-content space-y-8">
+                <section class="space-y-4">
+                    <h3 class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Perfis</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-black/20 p-4 rounded-2xl border border-white/5"><label class="text-[9px] text-gray-500 uppercase block mb-1">Nome Ele</label><input type="text" id="cfg-he" class="bg-transparent font-bold w-full outline-none"></div>
+                        <div class="bg-black/20 p-4 rounded-2xl border border-white/5"><label class="text-[9px] text-gray-500 uppercase block mb-1">Nome Ela</label><input type="text" id="cfg-she" class="bg-transparent font-bold w-full outline-none"></div>
+                    </div>
+                </section>
+
+                <section class="space-y-4">
+                    <h3 class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Orçamento</h3>
+                    <div class="bg-black/20 p-4 rounded-2xl border border-white/5">
+                        <label class="text-[9px] text-gray-500 uppercase block mb-1">Meta Mensal (R$)</label>
+                        <input type="number" id="cfg-budget" class="bg-transparent font-bold w-full outline-none">
+                    </div>
+                </section>
+
+                <section class="space-y-4">
+                    <h3 class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Sincronização</h3>
+                    <div class="bg-black/20 p-4 rounded-2xl border border-white/5">
+                        <label class="text-[9px] text-gray-500 uppercase block mb-1">Webhook URL (Google Sheets)</label>
+                        <input type="text" id="cfg-sheet-url" placeholder="https://script.google.com/..." class="bg-transparent font-bold w-full outline-none text-[10px] text-blue-400">
+                    </div>
+                    <div class="flex space-x-2">
+                        <button onclick="syncSheet('push')" class="flex-1 py-4 rounded-2xl bg-white/5 text-white font-bold uppercase text-[10px] border border-white/5 active:bg-white/10">Push (Subir)</button>
+                        <button onclick="syncSheet('pull')" class="flex-1 py-4 rounded-2xl bg-green-500 text-black font-bold uppercase text-[10px] active:scale-95">Pull (Baixar)</button>
+                    </div>
+                </section>
+
+                <button onclick="saveGlobalConfigs()" class="w-full py-5 rounded-3xl bg-blue-500 text-black font-bold uppercase tracking-widest mt-2 active:scale-95 transition-transform">Gravar Tudo</button>
+            </div>
+        </div>
+
+        <!-- OVERLAY: VEÍCULO - MANUTENÇÃO -->
+        <div id="overlay-veh-manutencao" class="overlay">
+            <div class="w-12 h-1 bg-gray-800 rounded-full mx-auto mt-4 mb-4 shrink-0"></div>
+            <div class="px-6 flex justify-between items-center mb-6"><h2 class="text-xl font-bold">Manutenção</h2><button onclick="closeAllOverlays()"><i data-lucide="x" class="w-6 h-6 text-gray-500"></i></button></div>
+            <div class="overlay-content space-y-4">
+                <div class="bg-black/30 p-8 rounded-3xl border border-white/5 text-center">
+                    <label class="text-[10px] text-gray-500 uppercase font-bold mb-2 block">Custo (R$)</label>
+                    <input type="number" id="v-man-total" class="bg-transparent text-4xl font-black text-blue-400 w-full text-center outline-none" placeholder="0.00" step="0.01">
+                </div>
+                <div class="bg-black/20 p-4 rounded-2xl border border-white/5"><label class="text-[9px] text-gray-500 uppercase block mb-1">KM Atual</label><input type="number" id="v-man-km" class="bg-transparent font-bold w-full outline-none"></div>
+                <div class="bg-black/20 p-4 rounded-2xl border border-white/5"><label class="text-[9px] text-gray-500 uppercase block mb-1">Serviço</label><input type="text" id="v-man-desc" class="bg-transparent font-bold w-full outline-none" placeholder="Ex: Óleo, Filtros..."></div>
+                <button onclick="saveVehicleAction('manutencao')" class="w-full py-5 rounded-3xl bg-blue-500 text-black font-bold uppercase tracking-widest active:scale-95">Registar</button>
+            </div>
+        </div>
+
+        <!-- OVERLAY: VEÍCULO - ABASTECER -->
+        <div id="overlay-veh-abastecer" class="overlay">
+            <div class="w-12 h-1 bg-gray-800 rounded-full mx-auto mt-4 mb-4 shrink-0"></div>
+            <div class="px-6 flex justify-between items-center mb-6"><h2 class="text-xl font-bold">Abastecer</h2><button onclick="closeAllOverlays()"><i data-lucide="x" class="w-6 h-6 text-gray-500"></i></button></div>
+            <div class="overlay-content space-y-4">
+                <div class="bg-black/30 p-8 rounded-3xl border border-white/5 text-center">
+                    <label class="text-[10px] text-gray-500 uppercase font-bold mb-2 block">Total Pago (R$)</label>
+                    <input type="number" id="v-fuel-total" class="bg-transparent text-4xl font-black text-orange-400 w-full text-center outline-none" placeholder="0.00" step="0.01">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-black/20 p-4 rounded-2xl border border-white/5"><label class="text-[9px] text-gray-500 uppercase block mb-1">KM Painel</label><input type="number" id="v-fuel-km" class="bg-transparent font-bold w-full outline-none"></div>
+                    <div class="bg-black/20 p-4 rounded-2xl border border-white/5"><label class="text-[9px] text-gray-500 uppercase block mb-1">Litros</label><input type="number" id="v-fuel-liters" class="bg-transparent font-bold w-full outline-none" step="0.01"></div>
+                </div>
+                <button onclick="saveVehicleAction('abastecer')" class="w-full py-5 rounded-3xl bg-orange-500 text-black font-bold uppercase tracking-widest active:scale-95">Confirmar</button>
+            </div>
+        </div>
+
+    </div>
+
+<script>
+    // ESTADO DA APLICAÇÃO
+    let state = {
+        names: { he: 'Murilo', she: 'Ela' },
+        sheetUrl: '',
+        blurred: false,
+        extratoMonth: new Date(),
+        budget: 4500,
+        accounts: ['Carteira', 'Conta Corrente', 'Cartão Comum'],
+        categories_expense: ['Alimentação', 'Moradia', 'Transporte', 'Lazer', 'Manutenção', 'Veículo', 'Saúde', 'Internet/TV', 'Outros'],
+        categories_income: ['Salário', 'Freelance', 'Investimento', 'Venda'],
+        cartoes: [
+            {id: 1, nome: 'Nubank Casal', cor: '#8b5cf6', limite: 5000, vencimento: 10}
+        ],
+        transacoes: [],
+        veiculo: {
+            hodometro: 12500,
+            oleoIntervalo: 3000,
+            oleoUltimaTrocaKM: 11000,
+            historico: []
+        },
+        temp: { type: 'despesa' }
+    };
+
+    // INICIALIZAÇÃO NO CARREGAMENTO
+    window.onload = () => {
+        loadData();
+        updateUI();
+        setTimeout(() => { if(window.lucide) lucide.createIcons(); }, 300);
+    };
+
+    function loadData() {
+        const saved = localStorage.getItem('mu_finance_casal_v2_5');
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            state = {...state, ...parsed};
+            state.extratoMonth = new Date(state.extratoMonth);
+        }
+    }
+
+    function saveData() {
+        localStorage.setItem('mu_finance_casal_v2_5', JSON.stringify(state));
+    }
+
+    // LÓGICA DE ACTUALIZAÇÃO DA INTERFACE
+    function updateUI() {
+        renderFinances();
+        renderExtrato();
+        renderVehicle();
+        renderCartoes();
+        document.getElementById('header-couple-names').innerText = `${state.names.he} & ${state.names.she}`;
+        saveData();
+        if(window.lucide) lucide.createIcons();
+    }
+
+    function renderFinances() {
+        let saldo = 0, recM = 0, desM = 0;
+        const now = new Date();
+        const m = now.getMonth(), y = now.getFullYear();
+
+        state.transacoes.forEach(t => {
+            const dt = new Date(t.data);
+            if (t.type === 'receita') {
+                saldo += t.valor;
+                if(dt.getMonth() === m && dt.getFullYear() === y) recM += t.valor;
+            } else {
+                saldo -= t.valor;
+                if(dt.getMonth() === m && dt.getFullYear() === y) desM += t.valor;
+            }
+        });
+
+        const setV = (sel, val) => {
+            const str = 'R$ ' + val.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            document.querySelectorAll(sel).forEach(el => {
+                el.setAttribute('data-value', str);
+                el.innerText = state.blurred ? 'R$ •••••' : str;
+            });
+        };
+
+        setV('.fin-total-saldo', saldo);
+        setV('.fin-receita-mes', recM);
+        setV('.fin-despesa-mes', desM);
+
+        const p = (desM / state.budget) * 100;
+        document.getElementById('budget-bar').style.width = Math.min(p, 100) + '%';
+        document.getElementById('budget-perc').innerText = Math.round(p) + '%';
+
+        renderRecent();
+    }
+
+    function renderRecent() {
+        const list = document.getElementById('recent-trans-list');
+        const sorted = [...state.transacoes].sort((a,b) => new Date(b.data) - new Date(a.data)).slice(0, 5);
+        list.innerHTML = sorted.map(t => `
+            <div class="card p-4 rounded-2xl flex justify-between items-center border border-white/5">
+                <div class="flex items-center space-x-3 truncate">
+                    <div class="w-10 h-10 rounded-full ${t.type === 'receita' ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'} flex items-center justify-center shrink-0">
+                        <i data-lucide="${t.type === 'receita' ? 'trending-up' : 'trending-down'}" class="w-5 h-5"></i>
+                    </div>
+                    <div class="truncate">
+                        <span class="block text-sm font-bold truncate">${t.desc}</span>
+                        <span class="block text-[9px] text-gray-500 uppercase font-bold">${t.resp} • ${t.cat}</span>
+                    </div>
+                </div>
+                <span class="text-sm font-bold ${t.type === 'receita' ? 'text-green-400' : 'text-red-400'}">R$ ${t.valor.toFixed(2)}</span>
+            </div>
+        `).join('') || '<p class="text-center py-6 text-gray-600 text-[10px] uppercase font-bold">Sem atividades</p>';
+    }
+
+    function renderVehicle() {
+        const v = state.veiculo;
+        document.getElementById('veh-km-total').innerText = v.hodometro.toLocaleString();
+        const dOleo = v.hodometro - v.oleoUltimaTrocaKM;
+        const prox = v.oleoIntervalo - dOleo;
+        document.getElementById('veh-oleo-prox').innerText = (prox > 0 ? prox : 0).toLocaleString() + ' km';
+        
+        document.getElementById('veh-timeline').innerHTML = v.historico.slice(0, 6).map(h => `
+            <div class="card p-4 rounded-2xl flex items-center space-x-4 border border-white/5">
+                <div class="w-10 h-10 rounded-full ${h.type === 'abastecer' ? 'bg-orange-500/10 text-orange-400' : 'bg-blue-500/10 text-blue-400'} flex items-center justify-center shrink-0">
+                    <i data-lucide="${h.type === 'abastecer' ? 'fuel' : 'wrench'}" class="w-5 h-5"></i>
+                </div>
+                <div class="flex-1">
+                    <div class="flex justify-between items-start">
+                        <span class="text-sm font-bold">${h.desc}</span>
+                        <span class="text-xs font-bold ${h.type === 'abastecer' ? 'text-orange-400' : 'text-blue-400'}">${h.valor ? 'R$ '+h.valor.toFixed(2) : ''}</span>
+                    </div>
+                    <span class="text-[9px] text-gray-500 font-bold uppercase mt-1 block">${h.data} • Hodómetro: ${h.km} km</span>
+                </div>
+            </div>
+        `).join('') || '<p class="text-center py-10 text-gray-600 text-[10px] uppercase font-bold">Sem registos</p>';
+    }
+
+    function renderCartoes() {
+        const list = document.getElementById('cartoes-list');
+        list.innerHTML = state.cartoes.map(c => {
+            let fatura = 0;
+            state.transacoes.forEach(t => { if(t.acc === c.nome) { if(t.type === 'receita') fatura -= t.valor; else fatura += t.valor; }});
+            return `
+                <div class="card rounded-3xl p-6 bg-gradient-to-br from-[#1E2128] to-[#121418] border border-gray-700">
+                    <div class="flex justify-between items-center mb-6">
+                        <div class="flex items-center space-x-2"><i data-lucide="credit-card" class="w-5 h-5" style="color: ${c.cor}"></i><span class="text-sm font-bold text-gray-300 uppercase">${c.nome}</span></div>
+                    </div>
+                    <div class="mb-4">
+                        <span class="text-[10px] text-gray-500 block mb-1 uppercase font-bold">Saldo em Aberto</span>
+                        <h2 class="text-3xl font-bold">R$ ${Math.max(0, fatura).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</h2>
+                    </div>
+                    <div class="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
+                        <div class="h-full bg-blue-500" style="width: ${Math.min((fatura/c.limite)*100, 100)}%"></div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function renderExtrato() {
+        const m = state.extratoMonth.getMonth(), y = state.extratoMonth.getFullYear();
+        const labels = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+        document.getElementById('extrato-month-label').innerText = `${labels[m]} ${y}`;
+
+        const filtered = state.transacoes.filter(t => {
+            const d = new Date(t.data);
+            return d.getMonth() === m && d.getFullYear() === y;
+        }).sort((a,b) => new Date(b.data) - new Date(a.data));
+
+        document.getElementById('extrato-month-content').innerHTML = filtered.map(t => `
+            <div class="flex items-center gap-4 p-4 bg-black/20 rounded-2xl border border-white/5">
+                <div class="flex-1 truncate">
+                    <p class="text-sm font-bold truncate">${t.desc}</p>
+                    <p class="text-[9px] text-gray-500 font-bold uppercase">${t.cat} • ${t.resp} • ${t.data.split('-').reverse().join('/')}</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-sm font-bold ${t.type==='receita' ? 'text-green-400' : 'text-red-400'}">R$ ${t.valor.toFixed(2)}</p>
+                    <button onclick="deleteTrans(${t.id})" class="text-gray-700 hover:text-red-500 p-1"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                </div>
+            </div>
+        `).join('') || '<p class="text-center py-10 text-gray-600 text-[10px] uppercase font-bold tracking-widest">Mês vazio</p>';
+    }
+
+    // GESTÃO DE MODAIS E NAVEGAÇÃO
+    function toggleOverlay(id) {
+        const el = document.getElementById('overlay-' + id);
+        if (el.classList.contains('active')) { closeAllOverlays(); }
+        else { 
+            closeAllOverlays(); el.classList.add('active'); document.getElementById('backdrop').classList.add('active'); 
+            if(id === 'transaction') prepareTransModal();
+            if(id === 'perfil') preparePerfilModal();
+        }
+        refreshIcons();
+    }
+
+    function closeAllOverlays() { 
+        document.querySelectorAll('.overlay').forEach(o => o.classList.remove('active')); 
+        document.getElementById('backdrop').classList.remove('active'); 
+    }
+
+    function navigate(navId, pageId, title) {
+        document.querySelectorAll('.page-content').forEach(p => p.classList.add('hidden'));
+        document.getElementById(pageId).classList.remove('hidden');
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(navId).classList.add('active');
+        closeAllOverlays();
+        updateUI();
+    }
+
+    function prepareTransModal() {
+        const resp = document.getElementById('trans-resp');
+        resp.innerHTML = `<option value="${state.names.he}">${state.names.he}</option><option value="${state.names.she}">${state.names.she}</option><option value="Casal">Casal</option>`;
+        
+        const acc = document.getElementById('trans-acc');
+        let options = state.accounts.map(a => `<option value="${a}">${a}</option>`).join('');
+        options += state.cartoes.map(c => `<option value="${c.nome}">💳 ${c.nome}</option>`).join('');
+        acc.innerHTML = options;
+        
+        document.getElementById('trans-date').value = new Date().toISOString().split('T')[0];
+        setTransType(state.temp.type);
+    }
+
+    function setTransType(t) {
+        state.temp.type = t;
+        const catSelect = document.getElementById('trans-cat');
+        const cats = t === 'receita' ? state.categories_income : state.categories_expense;
+        catSelect.innerHTML = cats.map(c => `<option value="${c}">${c}</option>`).join('');
+
+        document.getElementById('btn-tt-despesa').className = t === 'despesa' ? 'flex-1 py-2 text-[10px] font-bold rounded-lg bg-red-500/20 text-red-400' : 'flex-1 py-2 text-[10px] font-bold text-gray-500';
+        document.getElementById('btn-tt-receita').className = t === 'receita' ? 'flex-1 py-2 text-[10px] font-bold rounded-lg bg-green-500/20 text-green-400' : 'flex-1 py-2 text-[10px] font-bold text-gray-500';
+    }
+
+    function saveTransaction() {
+        const val = parseFloat(document.getElementById('trans-val').value);
+        const desc = document.getElementById('trans-desc').value || 'Lançamento';
+        const date = document.getElementById('trans-date').value;
+        const resp = document.getElementById('trans-resp').value;
+        const acc = document.getElementById('trans-acc').value;
+        const cat = document.getElementById('trans-cat').value;
+
+        if (!val || !date) return;
+
+        state.transacoes.push({ id: Date.now(), valor: val, desc, data: date, resp, acc, cat, type: state.temp.type });
+        closeAllOverlays();
+        updateUI();
+        showToast("Registo salvo!");
+    }
+
+    function deleteTrans(id) {
+        state.transacoes = state.transacoes.filter(t => t.id !== id);
+        updateUI();
+    }
+
+    function saveVehicleAction(type) {
+        if(type === 'manutencao') {
+            const km = parseInt(document.getElementById('v-man-km').value);
+            const total = parseFloat(document.getElementById('v-man-total').value);
+            const desc = document.getElementById('v-man-desc').value || 'Manutenção';
+            if(!km || !total) return;
+            
+            state.veiculo.historico.unshift({ id: Date.now(), tipo: 'manutencao', desc, km, valor: total, data: new Date().toLocaleDateString('pt-BR') });
+            state.veiculo.hodometro = Math.max(state.veiculo.hodometro, km);
+            
+            if(desc.toLowerCase().includes('óleo')) state.veiculo.oleoUltimaTrocaKM = km;
+
+            state.transacoes.push({ id: Date.now()+1, valor: total, desc: `Manut.: ${desc}`, data: new Date().toISOString().split('T')[0], resp: state.names.he, acc: 'Carteira', cat: 'Manutenção', type: 'despesa' });
+        } else if (type === 'abastecer') {
+            const km = parseInt(document.getElementById('v-fuel-km').value);
+            const total = parseFloat(document.getElementById('v-fuel-total').value);
+            const litros = parseFloat(document.getElementById('v-fuel-liters').value);
+            if(!km || !total) return;
+            
+            state.veiculo.historico.unshift({ id: Date.now(), tipo: 'abastecer', desc: 'Abastecimento', km, valor: total, litros, data: new Date().toLocaleDateString('pt-BR') });
+            state.veiculo.hodometro = Math.max(state.veiculo.hodometro, km);
+            
+            state.transacoes.push({ id: Date.now()+1, valor: total, desc: 'Combustível Veículo', data: new Date().toISOString().split('T')[0], resp: state.names.he, acc: 'Carteira', cat: 'Veículo', type: 'despesa' });
+        }
+        closeAllOverlays();
+        updateUI();
+        showToast("Dados guardados!");
+    }
+
+    function preparePerfilModal() {
+        document.getElementById('cfg-he').value = state.names.he;
+        document.getElementById('cfg-she').value = state.names.she;
+        document.getElementById('cfg-sheet-url').value = state.sheetUrl;
+        document.getElementById('cfg-budget').value = state.budget;
+    }
+
+    function saveGlobalConfigs() {
+        state.names.he = document.getElementById('cfg-he').value || 'Ele';
+        state.names.she = document.getElementById('cfg-she').value || 'Ela';
+        state.budget = parseFloat(document.getElementById('cfg-budget').value) || 4500;
+        state.sheetUrl = document.getElementById('cfg-sheet-url').value;
+        closeAllOverlays();
+        updateUI();
+        showToast("Perfil actualizado!");
+    }
+
+    // SINCRONIZAÇÃO COM GOOGLE SHEETS
+    async function syncSheet(action) {
+        if(!state.sheetUrl) { showToast("URL do Webhook ausente!"); return; }
+        showToast(action === 'push' ? "A enviar..." : "A carregar...");
+        
+        try {
+            if(action === 'push') {
+                await fetch(state.sheetUrl, {
+                    method: 'POST', mode: 'no-cors', cache: 'no-cache',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(state)
+                });
+                showToast("Dados enviados (Push)");
+            } else {
+                const response = await fetch(state.sheetUrl);
+                const data = await response.json();
+                if(data) { 
+                    state = {...state, ...data}; 
+                    state.extratoMonth = new Date(); 
+                    updateUI(); 
+                    showToast("Dados carregados (Pull)"); 
+                }
+            }
+        } catch (e) { showToast("Erro de rede."); }
+    }
+
+    function changeExtratoMonth(s) {
+        state.extratoMonth.setMonth(state.extratoMonth.getMonth() + s);
+        renderExtrato();
+    }
+
+    function toggleVisibility() {
+        state.blurred = !state.blurred;
+        updateUI();
+    }
+
+    function showToast(msg) {
+        const t = document.createElement('div');
+        t.className = 'fixed top-12 left-1/2 -translate-x-1/2 bg-black/95 text-white px-6 py-3 rounded-full text-[10px] font-bold uppercase z-[9999] border border-white/10 shadow-xl';
+        t.innerText = msg;
+        document.body.appendChild(t);
+        setTimeout(() => t.remove(), 2500);
+    }
+
+    function refreshIcons() { if(window.lucide) lucide.createIcons(); }
+</script>
+</body>
+</html>
