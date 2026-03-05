@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mu Finance v04.35</title>
+    <title>Mu Finance v04.36</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -82,9 +82,6 @@
     .fade-in { animation: fadeIn 0.3s ease-in-out; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     .sensitive-value.blurred { filter: blur(10px); transition: filter 0.3s ease; }
-    .hidden { display: none !important; }
-    .page-content { width: 100%; }
-    .page-content.hidden { display: none !important; }
     
     /* OVERLAYS & BACKDROP */
     .overlay { 
@@ -246,7 +243,7 @@
         <header class="flex justify-between items-center shrink-0">
             <div>
                 <h1 id="header-title" class="text-2xl font-bold tracking-tight">Mu Finance</h1>
-                <p class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mt-1" id="header-subtitle">Dashboard Geral v04.35</p>
+                <p class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mt-1" id="header-subtitle">Dashboard Geral v04.36</p>
             </div>
             <div class="flex items-center space-x-3">
                 <button onclick="toggleOverlay('notificacoes')" class="relative w-10 h-10 flex items-center justify-center rounded-full bg-[#1E2128] border border-gray-800 active:scale-90 transition-transform">
@@ -1647,12 +1644,8 @@
         });
 
         function navigate(navId, pageId, title) {
-            console.log('Navigate called:', navId, pageId, title);
             document.querySelectorAll('.page-content').forEach(p => p.classList.add('hidden'));
-            const pageEl = document.getElementById(pageId);
-            console.log('Page element:', pageEl);
-            if(pageEl) pageEl.classList.remove('hidden');
-            else console.error('Page not found:', pageId);
+            document.getElementById(pageId).classList.remove('hidden');
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(navId)?.classList.add('active');
             document.getElementById('header-title').innerText = title;
@@ -2948,6 +2941,7 @@ function deleteTransaction(id) {
                 const filterValue = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0'); document.getElementById('filter-cat-chart').value = filterValue;
                 const cbContainer = document.getElementById('month-checkboxes');
                 if(cbContainer) {
+
                     const monthNames = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
                     cbContainer.innerHTML = monthNames.map((m, i) => `<label class="flex items-center space-x-1.5 bg-black/20 p-1.5 rounded-lg cursor-pointer border border-white/5 hover:bg-white/5 transition-colors"><input type="checkbox" value="${i}" class="month-cb accent-blue-500 w-3 h-3" ${i <= now.getMonth() ? 'checked' : ''}><span class="text-gray-300 font-bold text-[9px] uppercase">${m}</span></label>`).join('');
                 }
@@ -3149,6 +3143,7 @@ function deleteTransaction(id) {
                         pointRadius: 4,
                         pointBackgroundColor: '#f97316'
                     }, {
+
                         label: 'Meta (29 km/L)',
                         data: Array(labels.length).fill(29),
                         borderColor: '#38bdf8',
@@ -3274,85 +3269,65 @@ function deleteTransaction(id) {
 
         // ===== FUNÇÕES DE CARTÕES COM BARRAS DE PROGRESSO =====
         function renderCartoesResumo() {
-            try {
-                const resumoDiv = document.getElementById('cartoes-resumo');
-                if (!resumoDiv) return;
-                const carouselDiv = document.getElementById('cartoes-carousel');
-                if (!carouselDiv) return;
-                if (!state || !state.financas || !state.financas.cartoes) return;
-
-            const carouselHTML = state.financas.cartoes.map(card => {
+            const resumoDiv = document.getElementById('cartoes-resumo');
+            const carouselDiv = document.getElementById('cartoes-carousel');
+            if (!resumoDiv || !carouselDiv || !state.financas.cartoes) return;
+            
+            if (state.financas.cartoes.length === 0) {
+                carouselDiv.innerHTML = '';
+                resumoDiv.innerHTML = '<p class="text-center text-gray-500 py-4 text-xs">Nenhum cartão cadastrado</p>';
+                return;
+            }
+            
+            let carouselHTML = '';
+            let resumoHTML = '';
+            
+            state.financas.cartoes.forEach(card => {
                 let fatura = 0;
-                state.financas.transacoes.forEach(t => {
-                    if (t.conta === card.nome && t.status === 'efetivada') {
-                        if (t.tipo === 'receita') fatura -= t.valor;
-                        else fatura += t.valor;
-                    }
-                });
+                if (state.financas.transacoes) {
+                    state.financas.transacoes.forEach(t => {
+                        if (t.conta === card.nome && t.status === 'efetivada') {
+                            if (t.tipo === 'receita') fatura -= t.valor;
+                            else fatura += t.valor;
+                        }
+                    });
+                }
+                
                 const percentualUso = (Math.max(0, fatura) / card.limite) * 100;
                 let corBarra = '#34d399';
                 if (percentualUso > 70) corBarra = '#fb7185';
                 else if (percentualUso > 50) corBarra = '#f97316';
-                return `<div class="snap-center shrink-0 w-[85%] card rounded-3xl p-6 shadow-sm relative overflow-hidden bg-gradient-to-br from-[#1E2128] to-[#121418] border border-gray-700 cursor-pointer active:scale-[0.98] transition-transform" onclick="openCardDetails(${card.id})">
-                    <div class="flex justify-between items-center mb-6">
-                        <div class="flex items-center space-x-2">
-                            <i data-lucide="credit-card" class="w-5 h-5" style="color: ${card.cor || '#8b5cf6'}"></i>
-                            <span class="text-sm font-medium text-gray-300">${card.nome}</span>
-                        </div>
-                        <span class="text-sm font-bold italic text-gray-400" style="color: ${card.cor || '#8b5cf6'}">${card.bandeira || 'MASTERCARD'}</span>
+                
+                carouselHTML += `<div class="snap-center shrink-0 w-[85%] card rounded-3xl p-6 shadow-sm bg-gradient-to-br from-[#1E2128] to-[#121418] border border-gray-700">
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="text-sm font-bold">${card.nome}</span>
+                        <span class="text-xs text-gray-400">${card.bandeira || 'MASTERCARD'}</span>
                     </div>
-                    <div class="mb-4">
-                        <span class="text-xs text-gray-400 block mb-1">Fatura Atual (Vence dia ${card.vencimento || 10})</span>
-                        <span class="text-3xl font-bold sensitive-value text-white" data-value="R$ ${Math.max(0,fatura).toLocaleString('pt-BR', {minimumFractionDigits: 2})}">${state.blurred ? 'R$ •••••' : 'R$ ' + Math.max(0,fatura).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span>
+                    <div class="text-2xl font-bold mb-2">R$ ${Math.max(0, fatura).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+                    <div class="w-full bg-black/40 rounded-full h-2 mb-2" style="overflow: hidden;">
+                        <div class="h-full" style="width: ${Math.min(percentualUso, 100)}%; background-color: ${corBarra};"></div>
                     </div>
-                    <div class="w-full bg-black/40 rounded-full h-2 overflow-hidden mb-2">
-                        <div class="h-full transition-all duration-500" style="width: ${Math.min(percentualUso, 100)}%; background-color: ${corBarra};"></div>
-                    </div>
-                    <div class="flex justify-between items-end">
-                        <div>
-                            <span class="text-xs text-gray-500 block mb-1">Limite Disponível</span>
-                            <span class="text-sm font-semibold text-green-400 sensitive-value" data-value="R$ ${(card.limite - fatura).toLocaleString('pt-BR', {minimumFractionDigits: 2})}">${state.blurred ? 'R$ •••••' : 'R$ ' + (card.limite - fatura).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span>
-                        </div>
-                        <span class="text-xs text-gray-500 font-mono tracking-widest">${Math.round(percentualUso)}%</span>
-                    </div>
+                    <div class="text-xs text-gray-500">${Math.round(percentualUso)}% do limite</div>
                 </div>`;
-            }).join('');
-            carouselDiv.innerHTML = carouselHTML + `<div class="snap-center shrink-0 w-[30%] card rounded-3xl p-6 shadow-sm flex flex-col items-center justify-center border border-dashed border-gray-700 cursor-pointer hover:bg-gray-800 transition-colors" onclick="toggleOverlay('new-card')"><div class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 mb-2"><i data-lucide="plus" class="w-5 h-5"></i></div></div>`;
-
-            const resumoHTML = state.financas.cartoes.map(card => {
-                let fatura = 0;
-                state.financas.transacoes.forEach(t => {
-                    if (t.conta === card.nome && t.status === 'efetivada') {
-                        if (t.tipo === 'receita') fatura -= t.valor;
-                        else fatura += t.valor;
-                    }
-                });
-                const percentualUso = (Math.max(0, fatura) / card.limite) * 100;
-                let corBarra = '#34d399';
-                if (percentualUso > 70) corBarra = '#fb7185';
-                else if (percentualUso > 50) corBarra = '#f97316';
-                return `<div class="bg-black/20 p-4 rounded-2xl border border-white/5">
-                    <div class="flex justify-between items-center mb-3">
-                        <div class="flex items-center gap-2">
-                            <i data-lucide="credit-card" class="w-5 h-5" style="color: ${card.cor || '#8b5cf6'}"></i>
-                            <span class="font-bold text-sm">${card.nome}</span>
-                        </div>
-                        <span class="text-xs font-bold text-gray-500">R$ ${card.limite.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span>
+                
+                resumoHTML += `<div class="bg-black/20 p-4 rounded-2xl border border-white/5">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-bold text-sm">${card.nome}</span>
+                        <span class="text-xs text-gray-500">R$ ${card.limite.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span>
                     </div>
-                    <div class="w-full bg-black/40 rounded-full h-2 overflow-hidden">
-                        <div class="h-full transition-all duration-500" style="width: ${Math.min(percentualUso, 100)}%; background-color: ${corBarra};"></div>
+                    <div class="w-full bg-black/40 rounded-full h-2" style="overflow: hidden;">
+                        <div class="h-full" style="width: ${Math.min(percentualUso, 100)}%; background-color: ${corBarra};"></div>
                     </div>
                     <div class="flex justify-between items-center mt-2 text-xs text-gray-500">
                         <span>R$ ${Math.max(0, fatura).toLocaleString('pt-BR', {minimumFractionDigits: 2})} gasto</span>
                         <span>${Math.round(percentualUso)}%</span>
                     </div>
                 </div>`;
-            }).join('');
-                resumoDiv.innerHTML = resumoHTML;
-                refreshIcons();
-            } catch(e) {
-                console.error('Erro em renderCartoesResumo:', e);
-            }
+            });
+            
+            carouselDiv.innerHTML = carouselHTML;
+            resumoDiv.innerHTML = resumoHTML;
+            refreshIcons();
         }
 
         function renderOrcamentos() {
