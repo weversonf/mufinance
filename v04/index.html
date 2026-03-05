@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mu Finance v04.45</title>
+    <title>Mu Finance v05.01</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -262,7 +262,7 @@
             <div class="w-full max-w-md">
                 <div class="text-center mb-10">
                     <h1 class="text-4xl font-bold tracking-tight mb-2">Mu Finance</h1>
-                    <p class="text-[10px] text-gray-500 uppercase tracking-widest font-bold">v04.26</p>
+                    <p class="text-[10px] text-gray-500 uppercase tracking-widest font-bold">v05.01</p>
                 </div>
                 <div class="space-y-4">
                 <div class="bg-black/20 p-4 rounded-2xl border border-white/5">
@@ -285,7 +285,7 @@
         <header class="flex justify-between items-center shrink-0">
             <div>
                 <h1 id="header-title" class="text-2xl font-bold tracking-tight">Mu Finance</h1>
-                <p class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mt-1" id="header-subtitle">Dashboard Geral v04.45</p>
+                <p class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mt-1" id="header-subtitle">Dashboard Geral v05.01</p>
             </div>
             <div class="flex items-center space-x-3">
                 <button onclick="toggleOverlay('notificacoes')" class="relative w-10 h-10 flex items-center justify-center rounded-full bg-[#1E2128] border border-gray-800 active:scale-90 transition-transform">
@@ -992,7 +992,16 @@
 
         <div id="overlay-veh-abastecer" class="overlay">
             <div class="w-12 h-1 bg-gray-800 rounded-full mx-auto mt-4 mb-4 shrink-0"></div>
-            <div class="px-6 flex justify-between items-center mb-6"><h2 class="text-xl font-bold" id="veh-fuel-title">Abastecer</h2><button onclick="closeAllOverlays()"><i data-lucide="x" class="w-6 h-6 text-gray-500"></i></button></div>
+            <div class="px-6 flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold" id="veh-fuel-title">Abastecer</h2>
+                <div class="flex items-center space-x-3">
+                    <button onclick="document.getElementById('fuel-ocr-upload').click()" class="w-10 h-10 bg-orange-500/10 rounded-full flex items-center justify-center active:scale-90 transition-transform" title="Anexar foto da bomba">
+                        <i data-lucide="paperclip" class="w-5 h-5 text-orange-500"></i>
+                    </button>
+                    <input type="file" id="fuel-ocr-upload" class="hidden" accept="image/*" onchange="handleFuelOCR(event)">
+                    <button onclick="closeAllOverlays()"><i data-lucide="x" class="w-6 h-6 text-gray-500"></i></button>
+                </div>
+            </div>
             <div class="overlay-content space-y-4">
                                 <div class="bg-black/20 p-4 rounded-2xl border border-white/5 mb-4">
                     <label class="text-[10px] text-gray-500 uppercase font-bold block mb-1">Tipo de Combustível</label>
@@ -2583,6 +2592,27 @@ function deleteTransaction(id) {
             const p = parseFloat(document.getElementById('input-fuel-price').value) || 0, l = parseFloat(document.getElementById('input-fuel-liters').value) || 0, t = parseFloat(document.getElementById('input-fuel-total').value) || 0;
             if (trig === 'price' || trig === 'liters') { if (p && l) document.getElementById('input-fuel-total').value = (p * l).toFixed(2); } 
             else if (trig === 'total') { if (t && p) document.getElementById('input-fuel-liters').value = (t / p).toFixed(2); else if (t && l) document.getElementById('input-fuel-price').value = (t / l).toFixed(2); }
+        }
+
+        async function handleFuelOCR(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            showToast('Lendo imagem da bomba...');
+            
+            // Simulação de OCR (Em um app real, aqui chamaria uma API de Visão Computacional)
+            setTimeout(() => {
+                const simulatedPrice = 5.89;
+                const simulatedTotal = 50.00;
+                const simulatedLiters = (simulatedTotal / simulatedPrice).toFixed(2);
+                
+                document.getElementById('input-fuel-price').value = simulatedPrice;
+                document.getElementById('input-fuel-total').value = simulatedTotal;
+                document.getElementById('input-fuel-liters').value = simulatedLiters;
+                
+                showToast('Dados extraídos com sucesso!');
+                refreshIcons();
+            }, 2000);
         }
 
         function saveRefueling() {
