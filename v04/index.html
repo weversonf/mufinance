@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mu Finance v04.32</title>
+    <title>Mu Finance v04.33</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -243,7 +243,7 @@
         <header class="flex justify-between items-center shrink-0">
             <div>
                 <h1 id="header-title" class="text-2xl font-bold tracking-tight">Mu Finance</h1>
-                <p class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mt-1" id="header-subtitle">Dashboard Geral v04.32</p>
+                <p class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mt-1" id="header-subtitle">Dashboard Geral v04.33</p>
             </div>
             <div class="flex items-center space-x-3">
                 <button onclick="toggleOverlay('notificacoes')" class="relative w-10 h-10 flex items-center justify-center rounded-full bg-[#1E2128] border border-gray-800 active:scale-90 transition-transform">
@@ -2731,8 +2731,9 @@ function deleteTransaction(id) {
             document.getElementById('veh-media-geral').innerText = mg.toFixed(1); document.getElementById('home-veh-media').innerText = mg.toFixed(1);
 
             renderCards(); if(document.getElementById('overlay-card-details').classList.contains('active')) renderCardDetails();
-            renderCartoesResumo(); renderOrcamentos();
             renderExtrato(); renderRecentTrans(); renderVehTimeline(); renderCalendar(); renderNotifs(); renderMetasList(); refreshIcons();
+            try { renderCartoesResumo(); } catch(e) { console.log('renderCartoesResumo error:', e); }
+            try { renderOrcamentos(); } catch(e) { console.log('renderOrcamentos error:', e); }
             
             verificarPrevisaoDetran();
         }
@@ -3266,10 +3267,12 @@ function deleteTransaction(id) {
 
         // ===== FUNÇÕES DE CARTÕES COM BARRAS DE PROGRESSO =====
         function renderCartoesResumo() {
-            const resumoDiv = document.getElementById('cartoes-resumo');
-            if (!resumoDiv) return;
-            const carouselDiv = document.getElementById('cartoes-carousel');
-            if (!carouselDiv) return;
+            try {
+                const resumoDiv = document.getElementById('cartoes-resumo');
+                if (!resumoDiv) return;
+                const carouselDiv = document.getElementById('cartoes-carousel');
+                if (!carouselDiv) return;
+                if (!state || !state.financas || !state.financas.cartoes) return;
 
             const carouselHTML = state.financas.cartoes.map(card => {
                 let fatura = 0;
@@ -3338,15 +3341,20 @@ function deleteTransaction(id) {
                     </div>
                 </div>`;
             }).join('');
-            resumoDiv.innerHTML = resumoHTML;
-            refreshIcons();
+                resumoDiv.innerHTML = resumoHTML;
+                refreshIcons();
+            } catch(e) {
+                console.error('Erro em renderCartoesResumo:', e);
+            }
         }
 
         function renderOrcamentos() {
-            const orcamentoList = document.getElementById('orcamento-list');
-            if (!orcamentoList) return;
-            const agora = new Date();
-            const mesAtual = agora.getMonth();
+            try {
+                const orcamentoList = document.getElementById('orcamento-list');
+                if (!orcamentoList) return;
+                if (!state || !state.financas || !state.financas.orcamentos) return;
+                const agora = new Date();
+                const mesAtual = agora.getMonth();
             const anoAtual = agora.getFullYear();
             const gastosPorCategoria = {};
             state.usuario.categorias_despesa.forEach(cat => { gastosPorCategoria[cat.nome] = 0; });
@@ -3400,7 +3408,10 @@ function deleteTransaction(id) {
                 if (limiteTotalGasto) limiteTotalGasto.innerText = 'R$ ' + totalGasto.toLocaleString('pt-BR', {minimumFractionDigits: 2}) + ' gasto';
                 if (limiteTotalPerc) limiteTotalPerc.innerText = Math.round(percentualTotal) + '%';
             }
-            refreshIcons();
+                refreshIcons();
+            } catch(e) {
+                console.error('Erro em renderOrcamentos:', e);
+            }
         }
 
         function editLimiteMensalTotal() {
