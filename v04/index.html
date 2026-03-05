@@ -424,15 +424,7 @@
                     <button onclick="toggleOverlay('new-card')" class="text-[#38bdf8] text-xs font-bold"><i data-lucide="plus" class="w-5 h-5"></i></button>
                 </div>
                 
-                <div id="cartoes-carousel" class="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-2" style="scroll-behavior: smooth; -webkit-overflow-scrolling: touch;"></div>
-                
-                <div class="card rounded-3xl p-6 shadow-sm">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-gray-400 font-medium text-sm">Seus Cartões</h2>
-                        <button onclick="toggleOverlay('new-card')" class="text-[#38bdf8] text-xs font-bold hover:underline">+ Novo</button>
-                    </div>
-                    <div id="list-cartoes-page" class="space-y-3"></div>
-                </div>
+                <div class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-2 -mx-6 px-6 relative mt-6 hide-scroll" id="cartoes-carousel"></div>
 
                 <div class="card rounded-3xl p-6 shadow-sm">
                     <h2 class="text-gray-400 font-medium text-sm mb-4">Resumo de Gastos por Cartão</h2>
@@ -2782,17 +2774,11 @@ function deleteTransaction(id) {
                 </div>`;
             }).join('');
 
-            if(c) c.innerHTML = cardsHtml + `<div class="snap-center shrink-0 w-[30%] card rounded-3xl p-6 shadow-sm flex flex-col items-center justify-center border border-dashed border-gray-700 cursor-pointer hover:bg-gray-800 transition-colors" onclick="toggleOverlay('new-card')"><div class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 mb-2"><i data-lucide="plus" class="w-5 h-5"></i></div></div>`;
+            const addCardBtn = `<div class="snap-center shrink-0 w-[30%] card rounded-3xl p-6 shadow-sm flex flex-col items-center justify-center border border-dashed border-gray-700 cursor-pointer hover:bg-gray-800 transition-colors" onclick="toggleOverlay('new-card')"><div class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 mb-2"><i data-lucide="plus" class="w-5 h-5"></i></div></div>`;
+
+            if(c) c.innerHTML = cardsHtml + addCardBtn;
             if(list) list.innerHTML = cardsHtml;
             refreshIcons();
-            c.innerHTML = state.financas.cartoes.map(x => {
-                let f = 0; state.financas.transacoes.forEach(t => { if(t.conta === x.nome && t.status === 'efetivada') { if (t.tipo === 'receita') f -= t.valor; else f += t.valor; } });
-                return `<div class="snap-center shrink-0 w-[85%] card rounded-3xl p-6 shadow-sm relative overflow-hidden bg-gradient-to-br from-[#1E2128] to-[#121418] border border-gray-700 cursor-pointer active:scale-[0.98] transition-transform" onclick="openCardDetails(${x.id})">
-                    <div class="flex justify-between items-center mb-6"><div class="flex items-center space-x-2"><i data-lucide="credit-card" class="w-5 h-5" style="color: ${x.cor || '#8b5cf6'}"></i><span class="text-sm font-medium text-gray-300">${x.nome}</span></div><span class="text-sm font-bold italic text-gray-400" style="color: ${x.cor || '#8b5cf6'}">${x.bandeira || 'MASTERCARD'}</span></div>
-                    <div class="mb-4"><span class="text-xs text-gray-400 block mb-1">Fatura Atual (Vence dia ${x.vencimento || 10})</span><span class="text-3xl font-bold sensitive-value text-white" data-value="R$ ${Math.max(0,f).toLocaleString('pt-BR', {minimumFractionDigits: 2})}">${state.blurred ? 'R$ •••••' : 'R$ ' + Math.max(0,f).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span></div>
-                    <div class="flex justify-between items-end mt-6"><div><span class="text-xs text-gray-500 block mb-1">Limite Disponível</span><span class="text-sm font-semibold text-green-400 sensitive-value" data-value="R$ ${(x.limite - f).toLocaleString('pt-BR', {minimumFractionDigits: 2})}">${state.blurred ? 'R$ •••••' : 'R$ ' + (x.limite - f).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span></div><span class="text-xs text-gray-500 font-mono tracking-widest">•••• 4321</span></div>
-                </div>`;
-            }).join('') + `<div class="snap-center shrink-0 w-[30%] card rounded-3xl p-6 shadow-sm flex flex-col items-center justify-center border border-dashed border-gray-700 cursor-pointer hover:bg-gray-800 transition-colors" onclick="toggleOverlay('new-card')"><div class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 mb-2"><i data-lucide="plus" class="w-5 h-5"></i></div></div>`;
         }
 
         function renderTransItem(t) {
@@ -3301,42 +3287,32 @@ function deleteTransaction(id) {
             const carouselDiv = document.getElementById('cartoes-carousel');
             if (!resumoDiv || !carouselDiv || !state.financas.cartoes) return;
             
-            if (state.financas.cartoes.length === 0) {
-                carouselDiv.innerHTML = '';
-                resumoDiv.innerHTML = '<p class="text-center text-gray-500 py-4 text-xs">Nenhum cartão cadastrado</p>';
-                return;
-            }
+            const cardsHtml = state.financas.cartoes.map(x => {
+                let f = 0; state.financas.transacoes.forEach(t => { if(t.conta === x.nome && t.status === 'efetivada') { if (t.tipo === 'receita') f -= t.valor; else f += t.valor; } });
+                return `<div class="snap-center shrink-0 w-[85%] card rounded-3xl p-6 shadow-sm relative overflow-hidden bg-gradient-to-br from-[#1E2128] to-[#121418] border border-gray-700 cursor-pointer active:scale-[0.98] transition-transform" onclick="openCardDetails(${x.id})">
+                    <div class="flex justify-between items-center mb-6"><div class="flex items-center space-x-2"><i data-lucide="credit-card" class="w-5 h-5" style="color: ${x.cor || '#8b5cf6'}"></i><span class="text-sm font-medium text-gray-300">${x.nome}</span></div><span class="text-sm font-bold italic text-gray-400" style="color: ${x.cor || '#8b5cf6'}">${x.bandeira || 'MASTERCARD'}</span></div>
+                    <div class="mb-4"><span class="text-xs text-gray-400 block mb-1">Fatura Atual (Vence dia ${x.vencimento || 10})</span><span class="text-3xl font-bold sensitive-value text-white" data-value="R$ ${Math.max(0,f).toLocaleString('pt-BR', {minimumFractionDigits: 2})}">${state.blurred ? 'R$ •••••' : 'R$ ' + Math.max(0,f).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span></div>
+                    <div class="flex justify-between items-end mt-6"><div><span class="text-xs text-gray-500 block mb-1">Limite Disponível</span><span class="text-sm font-semibold text-green-400 sensitive-value" data-value="R$ ${(x.limite - f).toLocaleString('pt-BR', {minimumFractionDigits: 2})}">${state.blurred ? 'R$ •••••' : 'R$ ' + (x.limite - f).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span></div><span class="text-xs text-gray-500 font-mono tracking-widest">•••• 4321</span></div>
+                </div>`;
+            }).join('');
+
+            const addCardBtn = `<div class="snap-center shrink-0 w-[30%] card rounded-3xl p-6 shadow-sm flex flex-col items-center justify-center border border-dashed border-gray-700 cursor-pointer hover:bg-gray-800 transition-colors" onclick="toggleOverlay('new-card')"><div class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 mb-2"><i data-lucide="plus" class="w-5 h-5"></i></div></div>`;
+
+            carouselDiv.innerHTML = cardsHtml + addCardBtn;
             
-            let carouselHTML = '';
             let resumoHTML = '';
-            
             state.financas.cartoes.forEach(card => {
                 let fatura = 0;
-                if (state.financas.transacoes) {
-                    state.financas.transacoes.forEach(t => {
-                        if (t.conta === card.nome && t.status === 'efetivada') {
-                            if (t.tipo === 'receita') fatura -= t.valor;
-                            else fatura += t.valor;
-                        }
-                    });
-                }
-                
+                state.financas.transacoes.forEach(t => {
+                    if (t.conta === card.nome && t.status === 'efetivada') {
+                        if (t.tipo === 'receita') fatura -= t.valor;
+                        else fatura += t.valor;
+                    }
+                });
                 const percentualUso = (Math.max(0, fatura) / card.limite) * 100;
                 let corBarra = '#34d399';
                 if (percentualUso > 70) corBarra = '#fb7185';
                 else if (percentualUso > 50) corBarra = '#f97316';
-                
-                carouselHTML += `<div class="snap-center shrink-0 w-[85%] card rounded-3xl p-6 shadow-sm bg-gradient-to-br from-[#1E2128] to-[#121418] border border-gray-700">
-                    <div class="flex justify-between items-center mb-4">
-                        <span class="text-sm font-bold">${card.nome}</span>
-                        <span class="text-xs text-gray-400">${card.bandeira || 'MASTERCARD'}</span>
-                    </div>
-                    <div class="text-2xl font-bold mb-2">R$ ${Math.max(0, fatura).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
-                    <div class="w-full bg-black/40 rounded-full h-2 mb-2" style="overflow: hidden;">
-                        <div class="h-full" style="width: ${Math.min(percentualUso, 100)}%; background-color: ${corBarra};"></div>
-                    </div>
-                    <div class="text-xs text-gray-500">${Math.round(percentualUso)}% do limite</div>
-                </div>`;
                 
                 resumoHTML += `<div class="bg-black/20 p-4 rounded-2xl border border-white/5">
                     <div class="flex justify-between items-center mb-2">
@@ -3353,31 +3329,7 @@ function deleteTransaction(id) {
                 </div>`;
             });
             
-            carouselDiv.innerHTML = carouselHTML;
-            resumoDiv.innerHTML = resumoHTML;
-
-            const pageList = document.getElementById('list-cartoes-page');
-            if (pageList) {
-                pageList.innerHTML = state.financas.cartoes.map(c => `
-                    <div class="flex justify-between items-center bg-black/20 p-4 rounded-2xl border border-white/5">
-                        <div class="flex items-center space-x-3">
-                            <div class="w-3 h-3 rounded-full" style="background-color: ${c.cor || '#8b5cf6'}"></div>
-                            <div>
-                                <span class="text-sm font-bold block">${c.nome}</span>
-                                <span class="text-[10px] text-gray-500 uppercase tracking-widest font-bold block">${c.bandeira || 'MASTERCARD'} • Dia ${c.vencimento || 10}</span>
-                            </div>
-                        </div>
-                        <div class="flex space-x-3">
-                            <button onclick="editFinItem('cartao', '${c.id}')" class="p-2 bg-blue-500/10 rounded-xl active:scale-90 transition-all">
-                                <i data-lucide="edit-2" class="w-4 h-4 text-blue-400"></i>
-                            </button>
-                            <button onclick="deleteFinItem('cartao', '${c.id}')" class="p-2 bg-red-500/10 rounded-xl active:scale-90 transition-all">
-                                <i data-lucide="trash-2" class="w-4 h-4 text-red-500/50"></i>
-                            </button>
-                        </div>
-                    </div>`).join('');
-            }
-
+            resumoDiv.innerHTML = resumoHTML || '<p class="text-center text-gray-500 py-4 text-xs">Nenhum cartão cadastrado</p>';
             refreshIcons();
         }
 
@@ -3460,13 +3412,28 @@ function deleteTransaction(id) {
         }
 
         function saveOrcamento() {
-            const categoria = document.getElementById('orcamento-categoria-select').value;
+            const selectCat = document.getElementById('orcamento-categoria-select');
+            const categoria = selectCat.value;
             const limite = parseFloat(document.getElementById('orcamento-limite-input').value);
-            if (!categoria || !limite || limite <= 0) { showToast('Preencha todos os campos.'); return; }
-            const existente = state.financas.orcamentos.find(o => o.categoria === categoria);
-            if (existente) { existente.limite = limite; } else {
-                state.financas.orcamentos.push({ id: Date.now().toString(), categoria: categoria, limite: limite });
+            
+            if (!categoria || isNaN(limite) || limite <= 0) { 
+                showToast('Preencha todos os campos corretamente.'); 
+                return; 
             }
+            
+            if (!state.financas.orcamentos) state.financas.orcamentos = [];
+            
+            const existente = state.financas.orcamentos.find(o => o.categoria === categoria);
+            if (existente) { 
+                existente.limite = limite; 
+            } else {
+                state.financas.orcamentos.push({ 
+                    id: Date.now().toString(), 
+                    categoria: categoria, 
+                    limite: limite 
+                });
+            }
+            
             saveDataToCloud(); 
             closeAllOverlays(); 
             updateUI(); 
