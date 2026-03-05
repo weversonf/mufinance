@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mu Finance Casal v02.5</title>
+    <title>Mu Finance Casal v02.6</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
 
@@ -58,7 +58,6 @@
 
     .sensitive-value.blurred { filter: blur(10px); transition: filter 0.3s ease; }
     
-    /* ESTILOS DOS OVERLAYS */
     .overlay { 
         position: fixed; bottom: -100%; left: 0; width: 100%; height: 92%; 
         background-color: var(--bg-card); border-top-left-radius: 32px; border-top-right-radius: 32px; 
@@ -72,7 +71,6 @@
     .backdrop { position: fixed; inset: 0; background-color: rgba(0,0,0,0.7); z-index: 90; display: none; }
     .backdrop.active { display: block; }
 
-    /* NAVEGAÇÃO */
     nav { 
         position: fixed; bottom: 0; left: 0; right: 0; width: 100%; 
         background-color: #16181D; border-top-left-radius: 32px; border-top-right-radius: 32px;
@@ -91,7 +89,6 @@
     .active-indicator { position: absolute; top: 0; width: 22px; height: 3px; background-color: var(--accent-blue); border-radius: 4px; opacity: 0; transform: scaleX(0); transition: all 0.3s; }
     .nav-btn.active .active-indicator { opacity: 1; transform: scaleX(1); }
 
-    /* BOTÃO DE ACÇÃO (FAB) */
     .fab-container { position: relative; display: flex; justify-content: center; width: 70px; margin-top: -35px; }
     .main-fab { 
         background-color: var(--accent-blue); color: #000; width: 56px; height: 56px; 
@@ -110,7 +107,6 @@
         .active-indicator { left: 0; top: 50%; transform: translateY(-50%) scaleY(0); width: 4px; height: 20px; border-radius: 0 4px 4px 0; }
         .nav-btn.active .active-indicator { transform: translateY(-50%) scaleY(1); opacity: 1; }
         
-        /* Botão FAB no Desktop: Canto inferior direito */
         .fab-container {
             position: fixed;
             bottom: 30px;
@@ -249,6 +245,17 @@
         </main>
 
         <nav id="main-nav">
+            <!-- LOGO PARA DESKTOP -->
+            <div class="hidden md:flex items-center space-x-3 px-4 mb-8 mt-4">
+                <div class="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center text-black shadow-lg shadow-blue-500/20">
+                    <i data-lucide="wallet" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h2 class="text-sm font-black tracking-tighter leading-none">MU FINANCE</h2>
+                    <span class="text-[10px] text-blue-400 font-bold uppercase tracking-widest">Casal</span>
+                </div>
+            </div>
+
             <button onclick="navigate('nav-financas', 'page-financas', 'Finanças')" id="nav-financas" class="nav-btn active">
                 <div class="active-indicator"></div>
                 <i data-lucide="dollar-sign" class="w-6 h-6"></i><span>Finanças</span>
@@ -396,7 +403,7 @@
     // ESTADO DA APLICAÇÃO
     let state = {
         names: { he: 'Murilo', she: 'Ela' },
-        sheetUrl: '',
+        sheetUrl: '', // COLOQUE SUA URL AQUI PARA FICAR FIXA: 'https://script.google.com/...'
         blurred: false,
         extratoMonth: new Date(),
         budget: 4500,
@@ -424,7 +431,7 @@
     };
 
     function loadData() {
-        const saved = localStorage.getItem('mu_finance_casal_v2_5');
+        const saved = localStorage.getItem('mu_finance_casal_v2_6');
         if (saved) {
             const parsed = JSON.parse(saved);
             state = {...state, ...parsed};
@@ -433,7 +440,7 @@
     }
 
     function saveData() {
-        localStorage.setItem('mu_finance_casal_v2_5', JSON.stringify(state));
+        localStorage.setItem('mu_finance_casal_v2_6', JSON.stringify(state));
     }
 
     // LÓGICA DE ACTUALIZAÇÃO DA INTERFACE
