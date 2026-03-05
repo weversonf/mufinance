@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mu Finance v04.33</title>
+    <title>Mu Finance v04.34</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -243,7 +243,7 @@
         <header class="flex justify-between items-center shrink-0">
             <div>
                 <h1 id="header-title" class="text-2xl font-bold tracking-tight">Mu Finance</h1>
-                <p class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mt-1" id="header-subtitle">Dashboard Geral v04.33</p>
+                <p class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mt-1" id="header-subtitle">Dashboard Geral v04.34</p>
             </div>
             <div class="flex items-center space-x-3">
                 <button onclick="toggleOverlay('notificacoes')" class="relative w-10 h-10 flex items-center justify-center rounded-full bg-[#1E2128] border border-gray-800 active:scale-90 transition-transform">
@@ -1644,8 +1644,12 @@
         });
 
         function navigate(navId, pageId, title) {
+            console.log('Navigate called:', navId, pageId, title);
             document.querySelectorAll('.page-content').forEach(p => p.classList.add('hidden'));
-            document.getElementById(pageId).classList.remove('hidden');
+            const pageEl = document.getElementById(pageId);
+            console.log('Page element:', pageEl);
+            if(pageEl) pageEl.classList.remove('hidden');
+            else console.error('Page not found:', pageId);
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(navId)?.classList.add('active');
             document.getElementById('header-title').innerText = title;
