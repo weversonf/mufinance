@@ -2,7 +2,7 @@
 <html lang="pt-BR"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mu Finance v05.22</title>
+    <title>Mu Finance v05.23</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -448,7 +448,7 @@ nav {
         <button onclick="toggleOutros()" class="text-gray-400 mr-4">
             <i class="fas fa-chevron-left text-xl"></i>
         </button>
-        <h2 class="text-lg font-bold text-white uppercase tracking-wider">Ajustes e Opções v05.22</h2>
+        <h2 class="text-lg font-bold text-white uppercase tracking-wider">Ajustes e Opções v05.23</h2>
     </div>
 
     <div class="p-5 overflow-y-auto flex-1 pb-32">
@@ -2028,21 +2028,42 @@ async function loadDataFromCloud() {
                 if (docSnap.exists()) {
                     const cd = docSnap.data();
                     
+                    // Guarda as categorias base para não perdê-las se o Firebase estiver desatualizado
+                    const defaultCatDespesa = JSON.parse(JSON.stringify(state.usuario.categorias_despesa));
+                    const defaultCatReceita = JSON.parse(JSON.stringify(state.usuario.categorias_receita));
+
                     // Carregamento do Perfil e Usuário
                     state.usuario = cd.usuario || state.usuario; 
+                    if (!state.usuario.contas) state.usuario.contas = [];
+                    if (!state.usuario.categorias_despesa) state.usuario.categorias_despesa = [];
+                    if (!state.usuario.categorias_receita) state.usuario.categorias_receita = [];
+
+                    // Reinsere categorias novas que estejam faltando
+                    defaultCatDespesa.forEach(defCat => {
+                        if (!state.usuario.categorias_despesa.some(c => c.nome === defCat.nome)) {
+                            state.usuario.categorias_despesa.push(defCat);
+                        }
+                    });
+                    defaultCatReceita.forEach(defCat => {
+                        if (!state.usuario.categorias_receita.some(c => c.nome === defCat.nome)) {
+                            state.usuario.categorias_receita.push(defCat);
+                        }
+                    });
                     
                     // Carregamento de Saúde e Propósito
                     state.saude = cd.saude || state.saude;
-                    if(!state.saude.proposito) {
-                        state.saude.proposito = { ativo: false, nome: '', inicio: '', dias: 0, celebrado: false };
-                    }
+                    if(!state.saude.proposito) state.saude.proposito = { ativo: false, nome: '', inicio: '', dias: 0, celebrado: false };
                     
                     // Carregamento de Finanças e Metas
                     state.financas = cd.financas || state.financas; 
                     if(!state.financas.metas) state.financas.metas = [];
+                    if(!state.financas.cartoes) state.financas.cartoes = []; // Evita crash no modal
+                    if(!state.financas.transacoes) state.financas.transacoes = [];
+                    if(!state.financas.orcamentos) state.financas.orcamentos = [];
                     
                     // Carregamento de Veículo e Notificações
                     state.veiculo = cd.veiculo || state.veiculo; 
+                    if(!state.veiculo.historico) state.veiculo.historico = [];
                     state.notificacoes = cd.notificacoes || state.notificacoes;
                     
                     // Tratamento para novas flags de contas (Blindagem/Soma)
@@ -2053,7 +2074,6 @@ async function loadDataFromCloud() {
                     }
 
                     // --- INTEGRAÇÃO SOCIAL ---
-                    // Chama a verificação de transações enviadas por amigos via @usuario
                     await checkSharedTransactions();
                 }
             } catch (e) { 
@@ -2555,8 +2575,11 @@ function renderCardAndCatSettings() {
 
         function getFinSelectOptions(type = 'all') {
             let options = '';
-            if (type === 'all' || type === 'contas') options += state.usuario.contas.map(a => `<option value="${a.nome}">🏦 ${a.nome}</option>`).join('');
-            if (type === 'all' || type === 'cartoes') options += state.financas.cartoes.map(c => `<option value="${c.nome}">💳 Cartão ${c.nome} (${c.bandeira || 'MASTERCARD'})</option>`).join('');
+            const contas = state.usuario.contas || [];
+            const cartoes = state.financas.cartoes || [];
+            
+            if (type === 'all' || type === 'contas') options += contas.map(a => `<option value="${a.nome}">🏦 ${a.nome}</option>`).join('');
+            if (type === 'all' || type === 'cartoes') options += cartoes.map(c => `<option value="${c.nome}">💳 Cartão ${c.nome} (${c.bandeira || 'MASTERCARD'})</option>`).join('');
             return options;
         }
 
