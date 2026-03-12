@@ -2,7 +2,7 @@
 <html lang="pt-BR"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mu Finance v05.05</title>
+    <title>Mu Finance v05.06</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -1263,6 +1263,27 @@
                         <div class="bg-black/20 p-4 rounded-2xl border border-white/5"><label class="text-[9px] text-gray-500 uppercase block mb-1">Sobrenome</label><input type="text" id="prof-last-name" class="bg-transparent font-bold w-full outline-none"></div>
                     </div>
                     <div class="bg-black/20 p-4 rounded-2xl border border-white/5"><label class="text-[9px] text-gray-500 uppercase block mb-1">@Usuário</label><input type="text" id="prof-username" class="bg-transparent font-bold w-full outline-none"></div>
+					<section class="space-y-4">
+    <label class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Localização e Fuso</label>
+    <div class="grid grid-cols-2 gap-4">
+        <div class="bg-black/20 p-4 rounded-2xl border border-white/5">
+            <label class="text-[9px] text-gray-500 uppercase block mb-1">Cidade</label>
+            <input type="text" id="prof-cidade" class="bg-transparent font-bold w-full outline-none">
+        </div>
+        <div class="bg-black/20 p-4 rounded-2xl border border-white/5">
+            <label class="text-[9px] text-gray-500 uppercase block mb-1">Estado</label>
+            <input type="text" id="prof-estado" class="bg-transparent font-bold w-full outline-none">
+        </div>
+    </div>
+    <div class="bg-black/20 p-4 rounded-2xl border border-white/5">
+        <label class="text-[9px] text-gray-500 uppercase block mb-1">Fuso Horário (Timezone)</label>
+        <select id="prof-fuso" class="bg-transparent font-bold w-full outline-none text-xs">
+            <option value="America/Fortaleza">Fortaleza (Brasília - UTC-3)</option>
+            <option value="America/Sao_Paulo">São Paulo (UTC-3)</option>
+            <option value="America/Manaus">Manaus (UTC-4)</option>
+        </select>
+    </div>
+</section>
                 </section>
                 <section class="space-y-4">
                     <label class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Bio (Sincronizado)</label>
@@ -1600,7 +1621,7 @@
         let state = {
             isLoggedIn: false, userId: null, viewDate: new Date(), extratoDate: new Date(), recentTransDate: new Date(), orcamentoDate: new Date(), blurred: false, editingId: null, editingVehId: null,
             usuario: { 
-                firstName: "Murilo", lastName: "Finance", username: "mufinance", birthDate: "1996-02-26", peso: 100, idade: 30, avatarUrl: null,
+                firstName: "Murilo", lastName: "Finance", username: "mufinance", cidade: "Fortaleza", estado: "CE", fuso: "America/Fortaleza", birthDate: "1996-02-26", peso: 100, idade: 30, avatarUrl: null,
                 contas: [
                     {id: 'wallet', nome: 'Carteira', protected: true, somaSaldo: true}, 
                     {id: 2, nome: 'Inter', protected: false, somaSaldo: true},
@@ -2414,6 +2435,8 @@ function toggleSubmenu(id) {
         function saveTransaction() {
             const v = parseFloat(document.getElementById('trans-val-input').value);
             const dStr = document.getElementById('trans-date-input').value;
+			// Força o fuso de Fortaleza para evitar que o UTC retroceda o dia
+			const dataCorrigida = new Date(dStr + "T12:00:00");
             const a = document.getElementById('trans-acc-select').value;
             const c = document.getElementById('trans-cat-select').value;
             const desc = document.getElementById('trans-descricao-input').value || '';
@@ -2799,10 +2822,36 @@ function toggleSubmenu(id) {
         function desistirProposito() { state.saude.proposito = { ativo: false, nome: '', inicio: '', dias: 0, celebrado: false }; saveDataToCloud(); closeAllOverlays(); updateUI(); }
         function fecharComemoracao() { document.getElementById('modal-congratulations').classList.add('hidden'); }
 
-        function renderProfileForm() {
-            tempAvatar = state.usuario.avatarUrl || null; updateAvatarPreviewUI();
-            document.getElementById('prof-first-name').value = state.usuario.firstName; document.getElementById('prof-last-name').value = state.usuario.lastName; document.getElementById('prof-username').value = state.usuario.username; document.getElementById('prof-username').disabled = true; document.getElementById('prof-username').classList.add('opacity-50', 'cursor-not-allowed'); document.getElementById('prof-birth-date').value = state.usuario.birthDate; document.getElementById('prof-weight').value = state.usuario.peso; document.getElementById('prof-water-goal').value = state.saude.aguaMeta; document.getElementById('prof-caf-goal').value = state.saude.cafeinaMeta;
-            renderFinSettings(); refreshIcons();
+function renderProfileForm() {
+            tempAvatar = state.usuario.avatarUrl || null; 
+            updateAvatarPreviewUI();
+
+            // Identidade e Perfil
+            document.getElementById('prof-first-name').value = state.usuario.firstName || '';
+            document.getElementById('prof-last-name').value = state.usuario.lastName || '';
+            document.getElementById('prof-username').value = state.usuario.username || '';
+            document.getElementById('prof-username').disabled = true;
+            document.getElementById('prof-username').classList.add('opacity-50', 'cursor-not-allowed');
+            
+            // Bio e Metas
+            document.getElementById('prof-birth-date').value = state.usuario.birthDate || '';
+            document.getElementById('prof-weight').value = state.usuario.peso || '';
+            document.getElementById('prof-water-goal').value = state.saude.aguaMeta || 3500;
+            document.getElementById('prof-caf-goal').value = state.saude.cafeinaMeta || 400;
+
+            // Localização e Fuso (Novos campos)
+            if (document.getElementById('prof-cidade')) {
+                document.getElementById('prof-cidade').value = state.usuario.cidade || 'Fortaleza';
+            }
+            if (document.getElementById('prof-estado')) {
+                document.getElementById('prof-estado').value = state.usuario.estado || 'CE';
+            }
+            if (document.getElementById('prof-fuso')) {
+                document.getElementById('prof-fuso').value = state.usuario.fuso || 'America/Fortaleza';
+            }
+
+            renderFinSettings(); 
+            refreshIcons();
         }
 
         function updateAvatarPreviewUI() {
@@ -2837,33 +2886,47 @@ function toggleSubmenu(id) {
             }
         }
 
-        function saveProfile() {
+     function saveProfile() {
             const novoUsername = document.getElementById('prof-username').value.trim();
             const usernameAtual = state.usuario.username || '';
             
+            // Controle de cooldown para troca de username (90 dias)
             if (novoUsername !== usernameAtual) {
                 localStorage.setItem('lastUsernameChange', Date.now().toString());
             }
 
+            // Identidade e Avatar
             state.usuario.firstName = document.getElementById('prof-first-name').value; 
             state.usuario.lastName = document.getElementById('prof-last-name').value; 
             state.usuario.username = novoUsername; 
+            state.usuario.avatarUrl = tempAvatar;
+
+            // Localização e Fuso (Campos novos)
+            state.usuario.cidade = document.getElementById('prof-cidade').value;
+            state.usuario.estado = document.getElementById('prof-estado').value;
+            state.usuario.fuso = document.getElementById('prof-fuso').value;
+
+            // Bio e Idade
             state.usuario.birthDate = document.getElementById('prof-birth-date').value; 
             state.usuario.peso = parseFloat(document.getElementById('prof-weight').value) || 0; 
-            state.usuario.avatarUrl = tempAvatar;
             
-            const birth = new Date(state.usuario.birthDate); 
-            const today = new Date(); 
-            let age = today.getFullYear() - birth.getFullYear(); 
-            if (today.getMonth() < birth.getMonth() || (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate())) age--; 
-            state.usuario.idade = age;
+            if (state.usuario.birthDate) {
+                const birth = new Date(state.usuario.birthDate + "T12:00:00"); // Força meio-dia para evitar erro de fuso no cálculo
+                const today = new Date(); 
+                let age = today.getFullYear() - birth.getFullYear(); 
+                if (today.getMonth() < birth.getMonth() || (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate())) age--; 
+                state.usuario.idade = age;
+            }
             
+            // Metas de Saúde
             state.saude.aguaMeta = parseFloat(document.getElementById('prof-water-goal').value) || (state.usuario.peso * 35); 
             state.saude.cafeinaMeta = parseFloat(document.getElementById('prof-caf-goal').value) || 400;
             
+            // Sincronização e Feedback
             saveDataToCloud(); 
             closeAllOverlays(); 
             updateUI();
+            showToast("Perfil atualizado em " + state.usuario.cidade);
         }
 
         function updateUI() {
