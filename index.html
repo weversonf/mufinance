@@ -2,7 +2,7 @@
 <html lang="pt-BR"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mu Finance v05.14</title>
+    <title>Mu Finance v05.15</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -50,11 +50,11 @@
 #painel-outros {
     position: fixed;
     top: 0;
-    right: -100%; /* Começa escondido à direita */
-    width: 100%;  /* No celular ocupa a largura toda */
-    height: 100dvh; /* Usa a altura dinâmica do navegador */
-    background-color: #121418; /* Garante que o fundo não seja transparente */
-    z-index: 110; /* Aumentado para 110 para ficar ACIMA do backdrop (90) */
+    right: -100%; 
+    width: 100%;  
+    height: 100dvh; 
+    background-color: #121418; /* Cor sólida para não ver o fundo */
+    z-index: 200; /* Aumentado para ficar acima de QUALQUER outro elemento */
     transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     flex-direction: column;
@@ -62,7 +62,6 @@
     box-shadow: -10px 0 50px rgba(0,0,0,0.8);
 }
 
-/* Classe ativa que o JS vai injetar */
 #painel-outros.right-0 {
     right: 0 !important;
 }
@@ -4303,49 +4302,33 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 	
 function toggleOutros() {
-    // 1. Procuramos o painel lateral
-    const painel = document.getElementById('painel-outros');
-    
-    // 2. Procuramos o overlay ou backdrop
-    const overlay = document.getElementById('overlay-outros') || document.getElementById('backdrop');
-    
-    // 3. Verificamos se o painel está escondido
-    if (painel && painel.classList.contains('-right-full')) {
-        
-        // 4. CARREGAR OS DADOS
-        if (typeof renderFinSettings === 'function') {
-            renderFinSettings();
-        }
-        
-        // 5. Abre o painel visualmente
-        function toggleOutros() {
     const painel = document.getElementById('painel-outros');
     const backdrop = document.getElementById('backdrop');
     
     if (!painel) return;
 
-    // Verificamos se o painel está fechado (se contém a classe de posição negativa)
+    // Se o painel estiver fechado, vamos abrir
     if (painel.classList.contains('-right-full')) {
-        // 1. CARREGAR OS DADOS ANTES DE ABRIR
+        // 1. Carrega os dados de saldo das contas
         if (typeof renderFinSettings === 'function') {
             renderFinSettings();
         }
         
-        // 2. ABRE O PAINEL: Remove a classe de fechado e adiciona a de aberto
+        // 2. Remove a classe de fechado e adiciona a de aberto
         painel.classList.remove('-right-full');
         painel.classList.add('right-0');
         
-        // 3. ATIVA O BACKDROP (Escurecimento do fundo)
+        // 3. Ativa o backdrop global do sistema
         if (backdrop) {
-            backdrop.classList.add('active');
-            backdrop.style.display = 'block'; // Garante visibilidade
+            backdrop.style.display = 'block';
+            setTimeout(() => backdrop.classList.add('active'), 10);
         }
     } else {
-        // 4. FECHA O PAINEL: Remove a classe de aberto e volta a de fechado
+        // 4. Se já estiver aberto, vamos fechar
         painel.classList.remove('right-0');
         painel.classList.add('-right-full');
         
-        // 5. DESATIVA O BACKDROP
+        // 5. Esconde o backdrop
         if (backdrop) {
             backdrop.classList.remove('active');
             setTimeout(() => { 
@@ -4353,27 +4336,6 @@ function toggleOutros() {
                     backdrop.style.display = 'none'; 
                 }
             }, 300);
-        }
-    }
-}
-        
-        // 6. Ativa o overlay se ele existir
-        if (overlay) {
-            overlay.classList.remove('hidden');
-            if (overlay.classList.contains('backdrop')) {
-                overlay.classList.add('active'); 
-            }
-            setTimeout(() => overlay.classList.add('opacity-100'), 10);
-        }
-    } else if (painel) {
-        // Fecha o painel visualmente
-        painel.classList.replace('right-0', '-right-full');
-        
-        // Oculta o overlay
-        if (overlay) {
-            overlay.classList.remove('opacity-100');
-            overlay.classList.remove('active');
-            setTimeout(() => overlay.classList.add('hidden'), 300);
         }
     }
 }
@@ -4435,7 +4397,7 @@ function ativarAdmin() {
             </div>
         </div>
 	
-<div id="overlay-outros" class="fixed inset-0 bg-black/60 z-40 hidden opacity-0 transition-opacity duration-300" onclick="toggleOutros()"></div>
+
 
 	
 </body>
