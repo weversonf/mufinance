@@ -2,7 +2,7 @@
 <html lang="pt-BR"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mu Finance v05.08</title>
+    <title>Mu Finance v05.09</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -1367,11 +1367,18 @@
             </div>
         </div>
 
-        <div id="overlay-notificacoes" class="overlay">
-            <div class="w-12 h-1 bg-gray-800 rounded-full mx-auto mt-4 mb-4 shrink-0"></div>
-            <div class="px-6 flex justify-between items-center mb-6"><h2 class="text-xl font-bold">Avisos</h2><button onclick="closeAllOverlays()"><i data-lucide="x" class="w-6 h-6 text-gray-500"></i></button></div>
-            <div id="notif-list" class="overlay-content space-y-3"></div>
+<div id="overlay-notificacoes" class="overlay">
+    <div class="w-12 h-1 bg-gray-800 rounded-full mx-auto mt-4 mb-4 shrink-0"></div>
+    <div class="px-6 flex justify-between items-center mb-6">
+        <div>
+            <h2 class="text-xl font-bold">Avisos</h2>
+            <p class="text-[9px] text-gray-500 uppercase font-bold tracking-widest">Central de Mensagens</p>
         </div>
+        <button onclick="clearAllNotifs()" class="text-[9px] bg-red-500/10 text-red-500 px-3 py-2 rounded-xl font-bold uppercase tracking-widest active:scale-95 transition-all">Limpar Tudo</button>
+    </div>
+    <div id="notif-list" class="overlay-content space-y-3 px-4">
+        </div>
+</div>
 
         <div id="overlay-relatorios-fin" class="overlay">
             <div class="w-12 h-1 bg-gray-800 rounded-full mx-auto mt-4 mb-4 shrink-0"></div>
@@ -3345,11 +3352,66 @@ function renderProfileForm() {
             document.getElementById('calendar-month-year').innerText = new Date(y, m).toLocaleDateString('pt-BR', {month:'short', year:'numeric'}).toUpperCase();
         }
 
-        function renderNotifs() {
-            const b = document.getElementById('notif-badge');
-            if(state.notificacoes.length > 0) { b.classList.remove('hidden'); document.getElementById('notif-list').innerHTML = state.notificacoes.map(n => `<div class="bg-white/5 p-4 rounded-2xl border border-white/5"><p class="text-sm font-bold text-[#38bdf8] uppercase tracking-widest">${n.titulo}</p><p class="text-xs text-gray-400 mt-1">${n.msg}</p></div>`).join(''); }
-            else { b.classList.add('hidden'); document.getElementById('notif-list').innerHTML = '<p class="text-center text-gray-600 py-10 font-bold uppercase text-[10px]">Sem alertas no momento</p>'; }
-        }
+function renderNotifs() {
+    const badge = document.getElementById('notif-badge');
+    const list = document.getElementById('notif-list');
+    if (!list) return;
+
+    if (state.notificacoes.length > 0) {
+        if(badge) badge.classList.remove('hidden');
+        
+        list.innerHTML = state.notificacoes.map((n, idx) => {
+            // Inteligência de Ícone
+            let icon = 'bell';
+            let color = 'text-blue-400';
+            let bg = 'bg-blue-500/10';
+            
+            if (n.titulo.toLowerCase().includes('fatura')) { icon = 'credit-card'; color = 'text-purple-400'; bg = 'bg-purple-500/10'; }
+            if (n.titulo.toLowerCase().includes('óleo') || n.titulo.toLowerCase().includes('manutenção')) { icon = 'alert-triangle'; color = 'text-orange-400'; bg = 'bg-orange-500/10'; }
+            if (n.titulo.toLowerCase().includes('meta')) { icon = 'target'; color = 'text-green-400'; bg = 'bg-green-500/10'; }
+
+            return `
+            <div class="bg-white/5 p-4 rounded-[2rem] border border-white/10 flex items-start gap-4 fade-in relative overflow-hidden">
+                <div class="w-10 h-10 rounded-2xl ${bg} flex items-center justify-center shrink-0">
+                    <i data-lucide="${icon}" class="w-5 h-5 ${color}"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex justify-between items-start">
+                        <p class="text-xs font-black text-white uppercase tracking-tight truncate pr-4">${n.titulo}</p>
+                        <button onclick="removeNotif(${idx})" class="text-gray-600 hover:text-red-400 transition-colors">
+                            <i data-lucide="x" class="w-3 h-3"></i>
+                        </button>
+                    </div>
+                    <p class="text-[11px] text-gray-400 mt-1 leading-relaxed">${n.msg}</p>
+                    <p class="text-[8px] text-gray-600 font-bold uppercase mt-2 tracking-tighter italic">
+                        ${new Date(n.data).toLocaleDateString('pt-BR')} • ${new Date(n.data).toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'})}
+                    </p>
+                </div>
+            </div>`;
+        }).join('');
+    } else {
+        if(badge) badge.classList.add('hidden');
+        list.innerHTML = `
+            <div class="flex flex-col items-center justify-center py-20 opacity-20">
+                <i data-lucide="check-circle-2" class="w-16 h-16 mb-4"></i>
+                <p class="font-bold uppercase text-[10px] tracking-[0.2em]">Tudo em ordem por aqui</p>
+            </div>`;
+    }
+    refreshIcons();
+}
+
+// Funções de Gestão de Notificações
+window.removeNotif = function(index) {
+    state.notificacoes.splice(index, 1);
+    saveDataToCloud();
+    renderNotifs();
+};
+
+window.clearAllNotifs = function() {
+    state.notificacoes = [];
+    saveDataToCloud();
+    renderNotifs();
+};
 
         function initCharts() {
             const now = new Date();
