@@ -2,7 +2,7 @@
 <html lang="pt-BR"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mu Finance v05.07</title>
+    <title>Mu Finance v05.08</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -187,12 +187,24 @@
     .sidebar-profile { display: none; }
     .sidebar-logo-container { display: none; } /* Oculto no Mobile */
 
-    /* NAVEGAÇÃO - Desktop (Sidebar Lateral) */
+  /* NAVEGAÇÃO - Desktop (Sidebar Lateral) */
     @media (min-width: 768px) {
         header { margin-left: 260px; padding: 20px 30px; transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         main { margin-left: 260px; padding-bottom: 20px; transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .overlay { left: 260px; width: calc(100% - 260px); transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1), bottom 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
         .backdrop { left: 260px; width: calc(100% - 260px); transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+
+        /* AJUSTE PAINEL OUTROS DESKTOP */
+        #painel-outros {
+            right: -100%;
+            left: auto;
+            width: calc(100% - 260px);
+            transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        #painel-outros.right-0 {
+            right: 0 !important;
+        }
 
         /* Regras da Logo Desktop */
         .sidebar-logo-container { display: flex; margin-top: 50px; justify-content: center; }
@@ -246,6 +258,7 @@
         /* MODO RETRÁTIL (Sidebar Collapsed) */
         body.sidebar-collapsed header, body.sidebar-collapsed main { margin-left: 80px; }
         body.sidebar-collapsed .overlay, body.sidebar-collapsed .backdrop { left: 80px; width: calc(100% - 80px); }
+        body.sidebar-collapsed #painel-outros { width: calc(100% - 80px); }
         body.sidebar-collapsed nav { width: 80px; padding-left: 12px; padding-right: 12px; }
         body.sidebar-collapsed .nav-btn { justify-content: center; padding: 0; width: 56px; }
         body.sidebar-collapsed .nav-btn span, body.sidebar-collapsed .sidebar-user-info { opacity: 0; width: 0; visibility: hidden; display: none; }
@@ -1826,17 +1839,38 @@
             if (fab && fab.classList.contains('active') && !fab.contains(e.target)) fab.classList.remove('active');
         });
 
-        function navigate(navId, pageId, title) {
-            document.querySelectorAll('.page-content').forEach(p => p.classList.add('hidden'));
-            document.getElementById(pageId).classList.remove('hidden');
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(navId)?.classList.add('active');
-            document.getElementById('header-title').innerText = title;
-            document.getElementById('header-subtitle').innerText = title === 'Visão Geral' ? 'Dashboard Geral' : 'Controle de ' + title;
-            closeAllOverlays(); updateUI();
-            if(pageId === 'page-cartoes') { renderCards(); renderCartoesResumo(); }
-            if(pageId === 'page-orcamento') { renderOrcamento(); renderOrcamentos(); }
-        }
+function navigate(navId, pageId, title) {
+    // 1. Esconde todas as páginas
+    document.querySelectorAll('.page-content').forEach(p => p.classList.add('hidden'));
+    
+    // 2. Mostra a página alvo
+    const targetPage = document.getElementById(pageId);
+    if(targetPage) targetPage.classList.remove('hidden');
+    
+    // 3. Atualiza os botões da nav
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    const activeBtn = document.getElementById(navId);
+    if(activeBtn) activeBtn.classList.add('active');
+
+    // 4. CORREÇÃO: Fecha o painel "Outros" se estiver aberto
+    const painel = document.getElementById('painel-outros');
+    if (painel && painel.classList.contains('right-0')) {
+        toggleOutros();
+    }
+
+    // 5. Fecha qualquer overlay aberto (metas, transações, etc)
+    closeAllOverlays(); 
+    
+    // 6. Atualiza UI e títulos
+    if(document.getElementById('header-title')) {
+        document.getElementById('header-title').innerText = title;
+    }
+    updateUI();
+
+    // 7. Gatilhos específicos de página
+    if(pageId === 'page-cartoes') { renderCards(); renderCartoesResumo(); }
+    if(pageId === 'page-orcamento') { renderOrcamento(); renderOrcamentos(); }
+}
 			
 			
 function toggleSubmenu(id) {
@@ -3966,7 +4000,44 @@ function toggleOutros() {
         }
         
         // 5. Abre o painel visualmente
-        painel.classList.replace('-right-full', 'right-0');
+        function toggleOutros() {
+    const painel = document.getElementById('painel-outros');
+    const backdrop = document.getElementById('backdrop');
+    
+    if (!painel) return;
+
+    // Verificamos se o painel está fechado (se contém a classe de posição negativa)
+    if (painel.classList.contains('-right-full')) {
+        // 1. CARREGAR OS DADOS ANTES DE ABRIR
+        if (typeof renderFinSettings === 'function') {
+            renderFinSettings();
+        }
+        
+        // 2. ABRE O PAINEL: Remove a classe de fechado e adiciona a de aberto
+        painel.classList.remove('-right-full');
+        painel.classList.add('right-0');
+        
+        // 3. ATIVA O BACKDROP (Escurecimento do fundo)
+        if (backdrop) {
+            backdrop.classList.add('active');
+            backdrop.style.display = 'block'; // Garante visibilidade
+        }
+    } else {
+        // 4. FECHA O PAINEL: Remove a classe de aberto e volta a de fechado
+        painel.classList.remove('right-0');
+        painel.classList.add('-right-full');
+        
+        // 5. DESATIVA O BACKDROP
+        if (backdrop) {
+            backdrop.classList.remove('active');
+            setTimeout(() => { 
+                if (!document.querySelector('.overlay.active')) {
+                    backdrop.style.display = 'none'; 
+                }
+            }, 300);
+        }
+    }
+}
         
         // 6. Ativa o overlay se ele existir
         if (overlay) {
