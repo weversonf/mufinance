@@ -2,7 +2,7 @@
 <html lang="pt-BR"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mu Finance v05.11</title>
+    <title>Mu Finance v05.12</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -2525,18 +2525,38 @@ function renderCardAndCatSettings() {
             }
         }
 
-        function openTransactionModal(t, id = null) {
-            state.editingId = id; document.getElementById('trans-amigo-input').value = ''; setTransType(t);
+function openTransactionModal(t, id = null) {
+            state.editingId = id; 
+            // Limpa o campo de amigo por padrão
+            document.getElementById('trans-amigo-input').value = ''; 
+            setTransType(t);
+
             if(id) { 
                 const tr = state.financas.transacoes.find(x => x.id === id); 
-                document.getElementById('trans-val-input').value = tr.valor; document.getElementById('trans-date-input').value = tr.data; document.getElementById('trans-acc-select').value = tr.conta; 
-                document.getElementById('trans-descricao-input').value = tr.descricao || '';
-                if (t === 'transferencia') { document.getElementById('trans-dest-select').value = tr.destino; } 
-                else { document.getElementById('trans-cat-select').value = tr.cat; setTransState('status', tr.status); }
+                if (tr) {
+                    document.getElementById('trans-val-input').value = tr.valor; 
+                    document.getElementById('trans-date-input').value = tr.data; 
+                    document.getElementById('trans-acc-select').value = tr.conta; 
+                    document.getElementById('trans-descricao-input').value = tr.descricao || '';
+                    
+                    // --- CORREÇÃO AQUI: Recupera o amigo salvo ---
+                    if (tr.amigo) {
+                        document.getElementById('trans-amigo-input').value = tr.amigo;
+                    }
+
+                    if (t === 'transferencia') { 
+                        document.getElementById('trans-dest-select').value = tr.destino; 
+                    } else { 
+                        document.getElementById('trans-cat-select').value = tr.cat; 
+                        setTransState('status', tr.status); 
+                    }
+                }
             } else { 
-                document.getElementById('trans-val-input').value = ''; document.getElementById('trans-date-input').value = new Date().toISOString().split('T')[0]; 
+                document.getElementById('trans-val-input').value = ''; 
+                document.getElementById('trans-date-input').value = getTodayByTimezone(); 
                 document.getElementById('trans-descricao-input').value = ''; 
-                setTransState('status', 'previsivel'); setTransState('fixa', false);
+                setTransState('status', 'previsivel'); 
+                setTransState('fixa', false);
             }
             toggleOverlay('transaction');
         }
