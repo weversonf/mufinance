@@ -2,7 +2,7 @@
 <html lang="pt-BR"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mu Finance v05.21</title>
+    <title>Mu Finance v05.22</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -568,7 +568,35 @@ nav {
                         <i data-lucide="download" class="w-4 h-4 text-green-400"></i>
                     </button>
                 </div>
-                <div id="extrato-month-content" class="space-y-2 pb-10"></div>
+                <div id="extrato-month-content" class="space-y-2"></div>
+
+<div id="extrato-resumo-mes" class="mt-6 pb-10 hidden fade-in">
+    <h3 class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3 px-1">Balanço do Mês</h3>
+    <div class="card rounded-3xl p-5 border border-white/5 space-y-4">
+        <div class="flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <div class="w-8 h-8 rounded-full bg-green-500/10 flex items-center justify-center"><i data-lucide="arrow-down-left" class="w-4 h-4 text-green-500"></i></div>
+                <span class="text-xs font-bold text-gray-400">Receitas</span>
+            </div>
+            <span id="extrato-resumo-receita" class="text-sm font-bold text-green-400">R$ 0,00</span>
+        </div>
+        <div class="flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <div class="w-8 h-8 rounded-full bg-red-500/10 flex items-center justify-center"><i data-lucide="arrow-up-right" class="w-4 h-4 text-red-500"></i></div>
+                <span class="text-xs font-bold text-gray-400">Despesas</span>
+            </div>
+            <span id="extrato-resumo-despesa" class="text-sm font-bold text-red-400">R$ 0,00</span>
+        </div>
+        <div class="w-full h-px bg-white/5 my-2"></div>
+        <div class="bg-black/30 p-4 rounded-2xl border border-white/5 cursor-pointer active:scale-[0.98] transition-transform flex justify-between items-center" onclick="toggleExtratoSaldo()">
+            <div>
+                <span id="extrato-resumo-saldo-label" class="text-[10px] text-gray-500 uppercase font-bold tracking-widest block mb-1">Saldo Efetivado</span>
+                <span id="extrato-resumo-saldo-valor" class="text-xl font-black text-white sensitive-value" data-value="0">R$ 0,00</span>
+            </div>
+            <i data-lucide="refresh-cw" class="w-4 h-4 text-gray-600"></i>
+        </div>
+    </div>
+</div>
             </div>
             <div id="page-cartoes" class="page-content hidden space-y-6 fade-in">
                 
@@ -2583,7 +2611,7 @@ function openTransactionModal(t, id = null) {
                 }
             } else { 
                 document.getElementById('trans-val-input').value = ''; 
-                document.getElementById('trans-date-input').value = getTodayByTimezone(); 
+               document.getElementById('trans-date-input').value = new Date().toISOString().split('T')[0];
                 document.getElementById('trans-descricao-input').value = ''; 
                 setTransState('status', 'previsivel'); 
                 setTransState('fixa', false);
@@ -3399,28 +3427,39 @@ function renderTransItem(t) {
             }).sort((a,b) => new Date(b.data) - new Date(a.data));
             
             const content = document.getElementById('extrato-month-content');
+            const resumoBlock = document.getElementById('extrato-resumo-mes');
             if(!content) return;
             
             if(fil.length === 0) {
                 content.innerHTML = '<p class="text-center text-gray-600 py-10 text-xs font-bold uppercase tracking-widest">Nenhuma transação no mês</p>';
+                if(resumoBlock) resumoBlock.classList.add('hidden');
                 return;
             }
+
+            // Variáveis para somar o balanço do mês
+            let recEfet = 0, desEfet = 0, recPrev = 0, desPrev = 0;
             
             content.innerHTML = `<div class="space-y-3">${fil.map((t) => {
                 let icon = 'arrow-down', colorClass = 'bg-red-500', textClass = 'text-red-400', iconBg = 'bg-red-500/20';
                 let title = t.cat || 'Transação';
                 let prefix = '- ';
                 
+                // Lógica visual e Acúmulo de Valores
                 if(t.tipo === 'receita') {
                     icon = 'arrow-down-left'; colorClass = 'bg-green-500'; textClass = 'text-green-400'; iconBg = 'bg-green-500/20';
                     prefix = '+ ';
+                    if (t.status === 'efetivada' || t.status === 'fatura_paga') recEfet += t.valor; else recPrev += t.valor;
+                } else if(t.tipo === 'despesa' || t.tipo === 'pagamento_cartao') {
+                    icon = 'arrow-up-right'; colorClass = 'bg-red-500'; textClass = 'text-red-400'; iconBg = 'bg-red-500/20';
+                    prefix = '- ';
+                    if (t.status === 'efetivada' || t.status === 'fatura_paga') desEfet += t.valor; else desPrev += t.valor;
                 } else if(t.tipo === 'transferencia') {
                     icon = 'arrow-right'; colorClass = 'bg-blue-500'; textClass = 'text-blue-400'; iconBg = 'bg-blue-500/20';
                     prefix = '↔ ';
                 }
                 
                 const dataFormatada = new Date(t.data + "T12:00:00").toLocaleDateString('pt-BR');
-                const statusLabel = t.status === 'efetivada' ? 'EFETIVADA' : 'PREVISTO';
+                const statusLabel = (t.status === 'efetivada' || t.status === 'fatura_paga') ? (t.status === 'fatura_paga' ? 'PAGA' : 'EFETIVADA') : 'PREVISTO';
                 const banco = t.conta ? t.conta.toUpperCase() : 'SEM CONTA';
                 
                 // TAG DE AMIGO: Aparece em azul se houver um @marcado
@@ -3454,7 +3493,45 @@ function renderTransItem(t) {
                     </div>
                 `;
             }).join('')}</div>`;
+
+            // Alimentando o Card de Resumo Mensal
+            if (resumoBlock) {
+                resumoBlock.classList.remove('hidden');
+                
+                // Variável global para controlar o toggle Efetivado/Previsto
+                window.extratoPrevisto = window.extratoPrevisto || false;
+                
+                const totalRec = window.extratoPrevisto ? (recEfet + recPrev) : recEfet;
+                const totalDes = window.extratoPrevisto ? (desEfet + desPrev) : desEfet;
+                const saldo = totalRec - totalDes;
+
+                document.getElementById('extrato-resumo-receita').innerText = `R$ ${totalRec.toLocaleString('pt-BR', {minimumFractionDigits:2})}`;
+                document.getElementById('extrato-resumo-despesa').innerText = `R$ ${totalDes.toLocaleString('pt-BR', {minimumFractionDigits:2})}`;
+                
+                const label = document.getElementById('extrato-resumo-saldo-label');
+                const valor = document.getElementById('extrato-resumo-saldo-valor');
+                
+                label.innerText = window.extratoPrevisto ? 'Saldo Previsto (Total)' : 'Saldo Efetivado';
+                valor.innerText = `R$ ${saldo.toLocaleString('pt-BR', {minimumFractionDigits:2})}`;
+                
+                // Muda a cor dependendo se o saldo é positivo ou negativo
+                valor.className = `text-xl font-black sensitive-value ${saldo >= 0 ? 'text-blue-400' : 'text-red-400'}`;
+                valor.setAttribute('data-value', `R$ ${saldo.toLocaleString('pt-BR', {minimumFractionDigits:2})}`);
+                
+                // Respeita o olho mágico (blur)
+                if (state.blurred) {
+                    valor.classList.add('blurred');
+                    valor.innerText = 'R$ •••••';
+                }
+            }
+
             refreshIcons();
+        }
+
+        // Adicione esta pequena função logo abaixo do renderExtrato() se ainda não tiver adicionado
+        window.toggleExtratoSaldo = function() {
+            window.extratoPrevisto = !window.extratoPrevisto;
+            renderExtrato();
         }
 
         function renderRecentTrans() {
