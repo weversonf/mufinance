@@ -2,7 +2,7 @@
 <html lang="pt-BR"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mu Finance v05.15</title>
+    <title>Mu Finance v05.16</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -53,12 +53,12 @@
     right: -100%; 
     width: 100%;  
     height: 100dvh; 
-    background-color: #121418; /* Cor sólida para não ver o fundo */
-    z-index: 200; /* Aumentado para ficar acima de QUALQUER outro elemento */
+    background-color: #121418;
+    z-index: 190; /* Um nível abaixo do nav (200) */
     transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     flex-direction: column;
-    padding: 0;
+    padding-bottom: 90px; /* Espaço para não esconder nada atrás do menu */
     box-shadow: -10px 0 50px rgba(0,0,0,0.8);
 }
 
@@ -178,12 +178,13 @@
     .day-circle.goal-met { background-color: var(--accent-blue); border-color: var(--accent-blue); color: #000; box-shadow: 0 0 15px rgba(56, 189, 248, 0.3); }
     
     /* NAVEGAÇÃO - Mobile (Sempre na base) */
-    nav { 
+nav { 
         position: fixed; bottom: 0; left: 0; right: 0; width: 100%; 
         background-color: #16181D; border-top-left-radius: 32px; border-top-right-radius: 32px;
         display: flex; justify-content: space-between; align-items: center;
-        padding: 5px 15px calc(15px + env(safe-area-inset-bottom)) 15px; 
-        z-index: 80; box-shadow: 0 -10px 40px rgba(0,0,0,0.6); height: auto;
+        padding: 5px 15px calc(5px + env(safe-area-inset-bottom)) 15px; 
+        z-index: 200; /* Aumentado para ficar sempre no topo */
+        box-shadow: 0 -10px 40px rgba(0,0,0,0.6); height: auto;
     }
     
     .nav-btn { 
@@ -4304,38 +4305,29 @@ document.addEventListener('DOMContentLoaded', () => {
 function toggleOutros() {
     const painel = document.getElementById('painel-outros');
     const backdrop = document.getElementById('backdrop');
+    const navOutros = document.getElementById('nav-outros');
     
     if (!painel) return;
 
-    // Se o painel estiver fechado, vamos abrir
-    if (painel.classList.contains('-right-full')) {
-        // 1. Carrega os dados de saldo das contas
-        if (typeof renderFinSettings === 'function') {
-            renderFinSettings();
-        }
+    if (painel.classList.contains('right-0')) {
+        // FECHAR
+        painel.classList.remove('right-0');
+        painel.classList.add('-right-full');
+        if (navOutros) navOutros.classList.remove('active');
+        if (backdrop) backdrop.classList.remove('active');
+    } else {
+        // ABRIR
+        if (typeof renderFinSettings === 'function') renderFinSettings();
         
-        // 2. Remove a classe de fechado e adiciona a de aberto
         painel.classList.remove('-right-full');
         painel.classList.add('right-0');
         
-        // 3. Ativa o backdrop global do sistema
+        // Ativa o ícone no menu
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        if (navOutros) navOutros.classList.add('active');
+
         if (backdrop) {
-            backdrop.style.display = 'block';
-            setTimeout(() => backdrop.classList.add('active'), 10);
-        }
-    } else {
-        // 4. Se já estiver aberto, vamos fechar
-        painel.classList.remove('right-0');
-        painel.classList.add('-right-full');
-        
-        // 5. Esconde o backdrop
-        if (backdrop) {
-            backdrop.classList.remove('active');
-            setTimeout(() => { 
-                if (!document.querySelector('.overlay.active')) {
-                    backdrop.style.display = 'none'; 
-                }
-            }, 300);
+            backdrop.classList.add('active');
         }
     }
 }
