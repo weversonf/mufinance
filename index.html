@@ -2,7 +2,7 @@
 <html lang="pt-BR"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mu Finance v05.06</title>
+    <title>Mu Finance v05.07</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -282,7 +282,7 @@
             <div class="w-full max-w-md">
                 <div class="text-center mb-10">
                     <h1 class="text-4xl font-bold tracking-tight mb-2">Mu Finance</h1>
-                    <p class="text-[10px] text-gray-500 uppercase tracking-widest font-bold">v05.05</p>
+                    <p class="text-[10px] text-gray-500 uppercase tracking-widest font-bold">v05.07</p>
                 </div>
                 <div class="space-y-4">
                 <div class="bg-black/20 p-4 rounded-2xl border border-white/5">
@@ -2148,31 +2148,71 @@ function toggleSubmenu(id) {
             return total / abastecimentosCheios.length;
         }
 
-        function renderFinSettings() {
-            document.getElementById('list-contas').innerHTML = state.usuario.contas.map(c => `
-                <div class="flex justify-between items-center bg-black/20 p-3 rounded-xl border ${c.somaSaldo === false ? 'border-purple-500/30 bg-purple-500/5' : 'border-white/5'}">
-                    <div class="flex flex-col justify-center">
-                        <span class="text-xs font-bold flex items-center gap-1">${c.nome} ${c.somaSaldo === false ? '<i data-lucide="lock" class="w-3 h-3 text-purple-400"></i>' : ''}</span>
-                        <span class="text-[8px] text-gray-500 uppercase font-bold tracking-widest mt-0.5">${c.tipo || 'Conta Comum'}</span>
-                    </div>
-                    <div class="flex items-center space-x-3">
-                        <button onclick="ajustarSaldoConta('${c.id}')" title="Ajustar Saldo (Pânico)" class="p-1.5 bg-blue-500/10 rounded-lg active:scale-90 transition-all"><i data-lucide="target" class="w-4 h-4 text-blue-400"></i></button>
-                        <button onclick="toggleSomaSaldo('${c.id}')" title="Blindar/Desblindar" class="p-1.5 ${c.somaSaldo === false ? 'bg-purple-500/20' : 'bg-gray-800'} rounded-lg active:scale-90 transition-all"><i data-lucide="${c.somaSaldo === false ? 'lock' : 'unlock'}" class="w-4 h-4 ${c.somaSaldo === false ? 'text-purple-400' : 'text-gray-500'}"></i></button>
-                        <div class="w-px h-4 bg-gray-700 mx-1"></div>
-                        ${c.protected ? '<i data-lucide="shield" class="w-4 h-4 text-gray-600"></i>' : `<button onclick="openEditAccountModal('${c.id}')" title="Editar Conta"><i data-lucide="edit-2" class="w-4 h-4 text-blue-400 hover:text-white transition-colors"></i></button><button onclick="deleteFinItem('conta', '${c.id}')"><i data-lucide="trash-2" class="w-4 h-4 text-red-500/50 hover:text-red-500 transition-colors"></i></button>`}
-                    </div>
-                </div>`).join('');
+       function renderFinSettings() {
+    const listContas = document.getElementById('list-contas');
+    if (!listContas) return;
 
-            document.getElementById('list-cartoes').innerHTML = state.financas.cartoes.map(c => `
-                <div class="flex justify-between items-center bg-black/20 p-3 rounded-xl border border-white/5">
-                    <div class="flex items-center space-x-3"><div class="w-3 h-3 rounded-full" style="background-color: ${c.cor || '#8b5cf6'}"></div><div><span class="text-xs font-bold block">${c.nome}</span><span class="text-[9px] text-gray-500 uppercase tracking-widest font-bold block">${c.bandeira || 'MASTERCARD'} • Dia ${c.vencimento || 10}</span></div></div>
-                    <div class="flex space-x-2"><button onclick="editFinItem('cartao', '${c.id}')"><i data-lucide="edit-2" class="w-4 h-4 text-blue-400 hover:text-white transition-colors"></i></button><button onclick="deleteFinItem('cartao', '${c.id}')"><i data-lucide="trash-2" class="w-4 h-4 text-red-500/50 hover:text-red-500 transition-colors"></i></button></div>
-                </div>`).join('');
+    // Cálculo prévio dos saldos por conta
+    const saldosPorConta = {};
+    state.usuario.contas.forEach(c => { saldosPorConta[c.nome] = 0; });
 
-            document.getElementById('list-cat-despesa').innerHTML = state.usuario.categorias_despesa.map(c => `<div class="flex items-center space-x-2 bg-red-500/10 text-red-400 px-3 py-1.5 rounded-lg border border-red-500/20"><span class="text-[10px] font-bold uppercase">${c.nome}</span>${c.protected ? '<i data-lucide="lock" class="w-3 h-3 text-red-900/50"></i>' : `<button onclick="editFinItem('cat-despesa', '${c.id}')"><i data-lucide="edit-2" class="w-3 h-3 hover:text-white"></i></button><button onclick="deleteFinItem('cat-despesa', '${c.id}')"><i data-lucide="x" class="w-3 h-3 hover:text-white"></i></button>`}</div>`).join('');
-            document.getElementById('list-cat-receita').innerHTML = state.usuario.categorias_receita.map(c => `<div class="flex items-center space-x-2 bg-green-500/10 text-green-400 px-3 py-1.5 rounded-lg border border-green-500/20"><span class="text-[10px] font-bold uppercase">${c.nome}</span>${c.protected ? '<i data-lucide="lock" class="w-3 h-3 text-green-900/50"></i>' : `<button onclick="editFinItem('cat-receita', '${c.id}')"><i data-lucide="edit-2" class="w-3 h-3 hover:text-white"></i></button><button onclick="deleteFinItem('cat-receita', '${c.id}')"><i data-lucide="x" class="w-3 h-3 hover:text-white"></i></button>`}</div>`).join('');
-            refreshIcons();
+    state.financas.transacoes.forEach(t => {
+        const isEffective = t.status === 'efetivada' || t.status === 'fatura_paga';
+        if (isEffective) {
+            if (t.tipo === 'receita') {
+                if (saldosPorConta.hasOwnProperty(t.conta)) saldosPorConta[t.conta] += t.valor;
+            } else if (t.tipo === 'despesa' || t.tipo === 'pagamento_cartao') {
+                if (saldosPorConta.hasOwnProperty(t.conta)) saldosPorConta[t.conta] -= t.valor;
+            } else if (t.tipo === 'transferencia') {
+                if (saldosPorConta.hasOwnProperty(t.conta)) saldosPorConta[t.conta] -= t.valor;
+                if (saldosPorConta.hasOwnProperty(t.destino)) saldosPorConta[t.destino] += t.valor;
+            }
         }
+    });
+
+    listContas.innerHTML = state.usuario.contas.map(c => {
+        const saldoAtual = saldosPorConta[c.nome] || 0;
+        const saldoFormatado = 'R$ ' + saldoAtual.toLocaleString('pt-BR', {minimumFractionDigits:2});
+        
+        return `
+        <div class="flex justify-between items-center bg-black/20 p-3 rounded-xl border ${c.somaSaldo === false ? 'border-purple-500/30 bg-purple-500/5' : 'border-white/5'}">
+            <div class="flex flex-col justify-center">
+                <span class="text-xs font-bold flex items-center gap-1">
+                    ${c.nome} ${c.somaSaldo === false ? '<i data-lucide="lock" class="w-3 h-3 text-purple-400"></i>' : ''}
+                </span>
+                <span class="text-[10px] font-black text-blue-400 sensitive-value mt-0.5" data-value="${saldoFormatado}">
+                    ${state.blurred ? 'R$ •••••' : saldoFormatado}
+                </span>
+                <span class="text-[8px] text-gray-500 uppercase font-bold tracking-widest mt-0.5">${c.tipo || 'Conta Comum'}</span>
+            </div>
+            <div class="flex items-center space-x-3">
+                <button onclick="ajustarSaldoConta('${c.id}')" title="Ajustar Saldo" class="p-1.5 bg-blue-500/10 rounded-lg active:scale-90 transition-all"><i data-lucide="target" class="w-4 h-4 text-blue-400"></i></button>
+                <button onclick="toggleSomaSaldo('${c.id}')" title="Blindar/Desblindar" class="p-1.5 ${c.somaSaldo === false ? 'bg-purple-500/20' : 'bg-gray-800'} rounded-lg active:scale-90 transition-all"><i data-lucide="${c.somaSaldo === false ? 'lock' : 'unlock'}" class="w-4 h-4 ${c.somaSaldo === false ? 'text-purple-400' : 'text-gray-500'}"></i></button>
+                <div class="w-px h-4 bg-gray-700 mx-1"></div>
+                ${c.protected ? '<i data-lucide="shield" class="w-4 h-4 text-gray-600"></i>' : `
+                    <button onclick="openEditAccountModal('${c.id}')" title="Editar"><i data-lucide="edit-2" class="w-4 h-4 text-blue-400 hover:text-white transition-colors"></i></button>
+                    <button onclick="deleteFinItem('conta', '${c.id}')"><i data-lucide="trash-2" class="w-4 h-4 text-red-500/50 hover:text-red-500 transition-colors"></i></button>
+                `}
+            </div>
+        </div>`;
+    }).join('');
+
+    // Atualiza os outros itens (Cartões e Categorias) que já estavam na função
+    renderCardAndCatSettings(); 
+    refreshIcons();
+}
+
+// Função auxiliar para manter o resto das configurações limpas
+function renderCardAndCatSettings() {
+    document.getElementById('list-cartoes').innerHTML = state.financas.cartoes.map(c => `
+        <div class="flex justify-between items-center bg-black/20 p-3 rounded-xl border border-white/5">
+            <div class="flex items-center space-x-3"><div class="w-3 h-3 rounded-full" style="background-color: ${c.cor || '#8b5cf6'}"></div><div><span class="text-xs font-bold block">${c.nome}</span><span class="text-[9px] text-gray-500 uppercase tracking-widest font-bold block">${c.bandeira || 'MASTERCARD'} • Dia ${c.vencimento || 10}</span></div></div>
+            <div class="flex space-x-2"><button onclick="editFinItem('cartao', '${c.id}')"><i data-lucide="edit-2" class="w-4 h-4 text-blue-400 hover:text-white transition-colors"></i></button><button onclick="deleteFinItem('cartao', '${c.id}')"><i data-lucide="trash-2" class="w-4 h-4 text-red-500/50 hover:text-red-500 transition-colors"></i></button></div>
+        </div>`).join('');
+
+    document.getElementById('list-cat-despesa').innerHTML = state.usuario.categorias_despesa.map(c => `<div class="flex items-center space-x-2 bg-red-500/10 text-red-400 px-3 py-1.5 rounded-lg border border-red-500/20"><span class="text-[10px] font-bold uppercase">${c.nome}</span>${c.protected ? '<i data-lucide="lock" class="w-3 h-3 text-red-900/50"></i>' : `<button onclick="deleteFinItem('cat-despesa', '${c.id}')"><i data-lucide="x" class="w-3 h-3 hover:text-white"></i></button>`}</div>`).join('');
+    document.getElementById('list-cat-receita').innerHTML = state.usuario.categorias_receita.map(c => `<div class="flex items-center space-x-2 bg-green-500/10 text-green-400 px-3 py-1.5 rounded-lg border border-green-500/20"><span class="text-[10px] font-bold uppercase">${c.nome}</span>${c.protected ? '<i data-lucide="lock" class="w-3 h-3 text-green-900/50"></i>' : `<button onclick="deleteFinItem('cat-receita', '${c.id}')"><i data-lucide="x" class="w-3 h-3 hover:text-white"></i></button>`}</div>`).join('');
+}
 
         function editFinItem(type, id) {
             let novo = null;
