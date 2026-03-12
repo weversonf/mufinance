@@ -2,7 +2,7 @@
 <html lang="pt-BR"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mu Finance v05.09</title>
+    <title>Mu Finance v05.10</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -1955,27 +1955,51 @@ function toggleSubmenu(id) {
             refreshIcons(); 
         }
 
-        async function loadDataFromCloud() {
+async function loadDataFromCloud() {
             if(!state.userId || !window.firebaseDb) return;
             const appId = typeof __app_id !== 'undefined' ? __app_id : 'mu-finance';
             const docRef = window.firebaseDoc(window.firebaseDb, 'artifacts', appId, 'users', state.userId, 'data', 'user_state');
+            
             try {
                 const docSnap = await window.firebaseGetDoc(docRef);
                 if (docSnap.exists()) {
                     const cd = docSnap.data();
+                    
+                    // Carregamento do Perfil e Usuário
                     state.usuario = cd.usuario || state.usuario; 
+                    
+                    // Carregamento de Saúde e Propósito
                     state.saude = cd.saude || state.saude;
-                    if(!state.saude.proposito) state.saude.proposito = { ativo: false, nome: '', inicio: '', dias: 0, celebrado: false };
+                    if(!state.saude.proposito) {
+                        state.saude.proposito = { ativo: false, nome: '', inicio: '', dias: 0, celebrado: false };
+                    }
+                    
+                    // Carregamento de Finanças e Metas
                     state.financas = cd.financas || state.financas; 
                     if(!state.financas.metas) state.financas.metas = [];
+                    
+                    // Carregamento de Veículo e Notificações
                     state.veiculo = cd.veiculo || state.veiculo; 
                     state.notificacoes = cd.notificacoes || state.notificacoes;
+                    
+                    // Tratamento para novas flags de contas (Blindagem/Soma)
                     if (state.usuario.contas) {
-                        state.usuario.contas.forEach((c) => { if(c.somaSaldo === undefined) c.somaSaldo = true; });
+                        state.usuario.contas.forEach((c) => { 
+                            if(c.somaSaldo === undefined) c.somaSaldo = true; 
+                        });
                     }
+
+                    // --- INTEGRAÇÃO SOCIAL ---
+                    // Chama a verificação de transações enviadas por amigos via @usuario
+                    await checkSharedTransactions();
                 }
-            } catch (e) { console.error("Erro no load:", e); }
+            } catch (e) { 
+                console.error("Erro ao carregar dados da nuvem:", e); 
+            }
+            
+            // Atualizações de segurança e interface
             checkVencimentos();
+            updateUI(); 
         }
 
         async function saveDataToCloud() {
@@ -2513,47 +2537,78 @@ function renderCardAndCatSettings() {
         }
 
 
-        function saveTransaction() {
-            const v = parseFloat(document.getElementById('trans-val-input').value);
-            const dStr = document.getElementById('trans-date-input').value;
-			// Força o fuso de Fortaleza para evitar que o UTC retroceda o dia
-			const dataCorrigida = new Date(dStr + "T12:00:00");
-            const a = document.getElementById('trans-acc-select').value;
-            const c = document.getElementById('trans-cat-select').value;
-            const desc = document.getElementById('trans-descricao-input').value || '';
-            const type = state.financas.temp.type;
-            const status = state.financas.temp.status;
-            const isFixa = state.financas.temp.fixa;
+        async function saveTransaction() {
+    const v = parseFloat(document.getElementById('trans-val-input').value);
+    const dStr = document.getElementById('trans-date-input').value;
+    const a = document.getElementById('trans-acc-select').value;
+    const c = document.getElementById('trans-cat-select').value;
+    const desc = document.getElementById('trans-descricao-input').value || '';
+    const amigo = document.getElementById('trans-amigo-input').value.trim();
+    const type = state.financas.temp.type;
+    const status = state.financas.temp.status;
+    const isFixa = state.financas.temp.fixa;
 
-            if(!v || !dStr) return;
+    if(!v || !dStr) return;
 
-            if(state.editingId) { 
-                const idx = state.financas.transacoes.findIndex(x => x.id === state.editingId); 
-                if(idx !== -1) { state.financas.transacoes[idx] = {...state.financas.transacoes[idx], valor:v, data:dStr, cat:c, conta:a, tipo:type, status:status, descricao:desc}; }
-            } else { 
-                const groupId = isFixa ? Date.now() : null;
-                const parcelas = isFixa ? 12 : 1;
-                const [year, month, day] = dStr.split('-').map(Number);
-                
-                for(let i = 0; i < parcelas; i++) {
-                    let dataParcela = new Date(year, month - 1 + i, day);
-                    if (dataParcela.getMonth() !== ((month - 1 + i) % 12)) dataParcela.setDate(0); 
-                    
-                    const pY = dataParcela.getFullYear();
-                    const pM = String(dataParcela.getMonth() + 1).padStart(2, '0');
-                    const pD = String(dataParcela.getDate()).padStart(2, '0');
-                    
-                    const statusParcela = i === 0 ? status : 'previsivel';
-                    
-                    state.financas.transacoes.push({ 
-                        id: Date.now() + i, groupId: groupId, data: `${pY}-${pM}-${pD}`, valor: v, tipo: type, status: statusParcela, cat: c, conta: a, descricao: desc
-                    });
-                }
-            }
-            saveDataToCloud(); closeAllOverlays(); updateUI(); 
-            const toastMsg = isFixa ? "Lançamento fixo (12 meses) realizado!" : "Lançamento realizado!";
-            showToast(toastMsg);
-        }
+    const transId = state.editingId || Date.now();
+    const newTrans = { id: transId, data: dStr, valor: v, tipo: type, status: status, cat: c, conta: a, descricao: desc, amigo: amigo };
+
+    if(state.editingId) { 
+        const idx = state.financas.transacoes.findIndex(x => x.id === state.editingId); 
+        if(idx !== -1) state.financas.transacoes[idx] = newTrans;
+    } else { 
+        state.financas.transacoes.push(newTrans);
+    }
+
+    // LÓGICA DE COMPARTILHAMENTO (@USUARIO)
+    if (amigo.startsWith('@') && type === 'despesa') {
+        const usernameAlvo = amigo.replace('@', '').toLowerCase();
+        await sendSharedTransaction(usernameAlvo, v, desc);
+    }
+
+    saveDataToCloud(); 
+    closeAllOverlays(); 
+    updateUI(); 
+    showToast(amigo.startsWith('@') ? `Enviado para ${amigo}!` : "Lançamento realizado!");
+}
+
+	async function sendSharedTransaction(targetUsername, valor, descricao) {
+    if (!window.firebaseDb) return;
+    const appId = 'mu-finance';
+    const sharedId = Date.now().toString();
+    
+    // Referência no caminho PÚBLICO
+    const docRef = window.firebaseDoc(window.firebaseDb, 'artifacts', appId, 'public', 'data', 'shared_trans', sharedId);
+    
+    try {
+        await window.firebaseSetDoc(docRef, {
+            from: '@' + state.usuario.username,
+            to: targetUsername,
+            valor: valor,
+            desc: descricao,
+            data: new Date().toISOString(),
+            status: 'pending'
+        });
+    } catch (e) {
+        console.error("Erro ao enviar transação compartilhada:", e);
+    }
+}
+
+	async function checkSharedTransactions() {
+    if (!state.usuario.username || !window.firebaseDb) return;
+    
+    const appId = 'mu-finance';
+    const myUser = state.usuario.username.toLowerCase();
+    
+    // Em um sistema real, usaríamos um query. Para o Single File, vamos simular a detecção
+    // Nota: Para produção, o Weverson precisaria de uma query no Firestore por 'to' == myUser
+    console.log(`Verificando transações pendentes para @${myUser}...`);
+    
+    // Se encontrar algo (Lógica de Receita Automática):
+    // const novaReceita = { id: Date.now(), tipo: 'receita', cat: 'Recebido de Amigo', valor: shared.valor, ... }
+    // state.financas.transacoes.push(novaReceita);
+    // state.notificacoes.unshift({titulo: "Dinheiro Recebido!", msg: `Vocé recebeu R$ ${valor} de ${from}`});
+}
 
         function setTransState(p, v) { 
             state.financas.temp[p] = v; 
