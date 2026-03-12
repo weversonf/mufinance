@@ -2,7 +2,7 @@
 <html lang="pt-BR"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mu Finance v05.19</title>
+    <title>Mu Finance v05.20</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -1669,11 +1669,21 @@ nav {
                     {id: 3, nome: 'Reserva Oculta', protected: false, somaSaldo: false}
                 ],
                 categorias_despesa: [
-                    {id: 'd1', nome: 'Alimentação', protected: true}, {id: 'd2', nome: 'Combustível', protected: true}, {id: 'd3', nome: 'Manutenção', protected: true}, {id: 'd4', nome: 'Moradia', protected: true}, {id: 'd5', nome: 'Lazer', protected: false}
+                    {id: 'd1', nome: 'Alimentação', icon: 'utensils', protected: true}, 
+                    {id: 'd2', nome: 'Combustível', icon: 'fuel', protected: true}, 
+                    {id: 'd3', nome: 'Manutenção', icon: 'wrench', protected: true}, 
+                    {id: 'd4', nome: 'Estacionamento', icon: 'map-pin', protected: false}, 
+                    {id: 'd5', nome: 'Serviços', icon: 'briefcase', protected: false},
+                    {id: 'd6', nome: 'Educação', icon: 'graduation-cap', protected: false},
+                    {id: 'd7', nome: 'Assinaturas', icon: 'refresh-cw', protected: false},
+                    {id: 'd8', nome: 'Saúde', icon: 'heart', protected: false},
+                    {id: 'd9', nome: 'Cuidados Pessoais', icon: 'user', protected: false}
                 ],
                 categorias_receita: [
-                    {id: 'r1', nome: 'Salário', protected: true}, {id: 'r2', nome: 'Freelance', protected: false}
-                ]
+					{id: 'r1', nome: 'Salário', icon: 'banknote', protected: true},
+                    {id: 'r2', nome: 'Freelance', icon: 'laptop', protected: false},
+                    {id: 'r3', nome: 'Bônus', icon: 'award', protected: false},
+                    {id: 'r4', nome: 'Outros', icon: 'plus-circle', protected: false}                ]
             },
             saude: { aguaMeta: 3500, cafeinaMeta: 400, historico: {}, proposito: {ativo: false, nome: '', inicio: '', dias: 0, celebrado: false} },
             financas: { 
