@@ -2,7 +2,7 @@
 <html lang="pt-BR"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mu Finance v05.10</title>
+    <title>Mu Finance v05.11</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -1593,8 +1593,8 @@
 <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
+        import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+		
         const firebaseConfig = {
             apiKey: "AIzaSyCWlVvnA29CnKco7mBG6LvpzDtcYmr28cY",
             authDomain: "projetomu-d5722.firebaseapp.com",
@@ -1617,6 +1617,11 @@
         window.firebaseDoc = doc;
         window.firebaseSetDoc = setDoc;
         window.firebaseGetDoc = getDoc;
+		window.firebaseCollection = collection;
+		window.firebaseQuery = query;
+		window.firebaseWhere = where;
+		window.firebaseGetDocs = getDocs;
+		window.firebaseUpdateDoc = updateDoc;
     </script>
 
 <script>
@@ -2537,39 +2542,90 @@ function renderCardAndCatSettings() {
         }
 
 
-        async function saveTransaction() {
+    async function saveTransaction() {
     const v = parseFloat(document.getElementById('trans-val-input').value);
     const dStr = document.getElementById('trans-date-input').value;
     const a = document.getElementById('trans-acc-select').value;
     const c = document.getElementById('trans-cat-select').value;
     const desc = document.getElementById('trans-descricao-input').value || '';
-    const amigo = document.getElementById('trans-amigo-input').value.trim();
+    let amigoInput = document.getElementById('trans-amigo-input').value.trim();
     const type = state.financas.temp.type;
     const status = state.financas.temp.status;
     const isFixa = state.financas.temp.fixa;
 
-    if(!v || !dStr) return;
-
-    const transId = state.editingId || Date.now();
-    const newTrans = { id: transId, data: dStr, valor: v, tipo: type, status: status, cat: c, conta: a, descricao: desc, amigo: amigo };
-
-    if(state.editingId) { 
-        const idx = state.financas.transacoes.findIndex(x => x.id === state.editingId); 
-        if(idx !== -1) state.financas.transacoes[idx] = newTrans;
-    } else { 
-        state.financas.transacoes.push(newTrans);
+    if (!v || !dStr) {
+        showToast("Preencha o valor e a data.");
+        return;
     }
 
-    // LÓGICA DE COMPARTILHAMENTO (@USUARIO)
-    if (amigo.startsWith('@') && type === 'despesa') {
-        const usernameAlvo = amigo.replace('@', '').toLowerCase();
+    // --- LÓGICA DE TRADUÇÃO: E-MAIL PARA @USUARIO ---
+    let amigoFinal = amigoInput;
+    if (amigoInput.includes('@') && !amigoInput.startsWith('@')) {
+        showToast("Buscando amigo...");
+        try {
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'mu-finance';
+            const emailKey = amigoInput.toLowerCase().replace(/[.#$[\]]/g, "_");
+            const dirRef = window.firebaseDoc(window.firebaseDb, 'artifacts', appId, 'public', 'directory', emailKey);
+            const dirSnap = await window.firebaseGetDoc(dirRef);
+
+            if (dirSnap.exists()) {
+                const userData = dirSnap.data();
+                amigoFinal = '@' + userData.username;
+                showToast(`Encontrado: ${userData.firstName} (${amigoFinal})`);
+            }
+        } catch (e) {
+            console.error("Erro na busca de diretório:", e);
+        }
+    }
+
+    // --- SALVAMENTO LOCAL (ESTADO) ---
+    if (state.editingId) {
+        const idx = state.financas.transacoes.findIndex(x => x.id === state.editingId);
+        if (idx !== -1) {
+            state.financas.transacoes[idx] = { ...state.financas.transacoes[idx], valor: v, data: dStr, cat: c, conta: a, tipo: type, status: status, descricao: desc, amigo: amigoFinal };
+        }
+    } else {
+        const groupId = isFixa ? Date.now() : null;
+        const parcelas = isFixa ? 12 : 1;
+        const [year, month, day] = dStr.split('-').map(Number);
+
+        for (let i = 0; i < parcelas; i++) {
+            let dataParcela = new Date(year, month - 1 + i, day);
+            if (dataParcela.getMonth() !== ((month - 1 + i) % 12)) dataParcela.setDate(0);
+
+            const pY = dataParcela.getFullYear();
+            const pM = String(dataParcela.getMonth() + 1).padStart(2, '0');
+            const pD = String(dataParcela.getDate()).padStart(2, '0');
+            const statusParcela = i === 0 ? status : 'previsivel';
+
+            state.financas.transacoes.push({
+                id: Date.now() + i,
+                groupId: groupId,
+                data: `${pY}-${pM}-${pD}`,
+                valor: v,
+                tipo: type,
+                status: statusParcela,
+                cat: c,
+                conta: a,
+                descricao: desc,
+                amigo: i === 0 ? amigoFinal : '' // Marca apenas a primeira do grupo
+            });
+        }
+    }
+
+    // --- LÓGICA DE COMPARTILHAMENTO (NUVEM) ---
+    if (amigoFinal.startsWith('@') && type === 'despesa') {
+        const usernameAlvo = amigoFinal.replace('@', '').toLowerCase();
         await sendSharedTransaction(usernameAlvo, v, desc);
     }
 
-    saveDataToCloud(); 
-    closeAllOverlays(); 
-    updateUI(); 
-    showToast(amigo.startsWith('@') ? `Enviado para ${amigo}!` : "Lançamento realizado!");
+    // --- FINALIZAÇÃO ---
+    await saveDataToCloud();
+    closeAllOverlays();
+    updateUI();
+
+    const msgSucesso = amigoFinal.startsWith('@') ? `Lançado e enviado para ${amigoFinal}` : "Lançamento realizado!";
+    showToast(msgSucesso);
 }
 
 	async function sendSharedTransaction(targetUsername, valor, descricao) {
@@ -2597,17 +2653,79 @@ function renderCardAndCatSettings() {
 	async function checkSharedTransactions() {
     if (!state.usuario.username || !window.firebaseDb) return;
     
-    const appId = 'mu-finance';
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'mu-finance';
     const myUser = state.usuario.username.toLowerCase();
     
-    // Em um sistema real, usaríamos um query. Para o Single File, vamos simular a detecção
-    // Nota: Para produção, o Weverson precisaria de uma query no Firestore por 'to' == myUser
-    console.log(`Verificando transações pendentes para @${myUser}...`);
-    
-    // Se encontrar algo (Lógica de Receita Automática):
-    // const novaReceita = { id: Date.now(), tipo: 'receita', cat: 'Recebido de Amigo', valor: shared.valor, ... }
-    // state.financas.transacoes.push(novaReceita);
-    // state.notificacoes.unshift({titulo: "Dinheiro Recebido!", msg: `Vocé recebeu R$ ${valor} de ${from}`});
+    try {
+        // 1. Aponta para a pasta de transações compartilhadas
+        const sharedRef = window.firebaseCollection(window.firebaseDb, 'artifacts', appId, 'public', 'data', 'shared_trans');
+        
+        // 2. Cria uma busca por transações destinadas a VOCÊ que estão pendentes
+        const q = window.firebaseQuery(sharedRef, 
+            window.firebaseWhere("to", "==", myUser),
+            window.firebaseWhere("status", "==", "pending")
+        );
+        
+        const querySnapshot = await window.firebaseGetDocs(q);
+        
+        if (querySnapshot.empty) return;
+
+        let novasReceitas = 0;
+
+        // 3. Processa cada transação encontrada
+        for (const docSnap of querySnapshot.docs) {
+            const data = docSnap.data();
+            const docId = docSnap.id;
+
+            // Evita duplicidade: verifica se já processamos este ID antes
+            const jaExiste = state.financas.transacoes.some(t => t.sharedRefId === docId);
+            
+            if (!jaExiste) {
+                // Cria a Receita no seu extrato
+                const novaReceita = {
+                    id: Date.now() + Math.random(),
+                    sharedRefId: docId, // Vincula para nunca duplicar
+                    data: new Date().toISOString().split('T')[0],
+                    valor: data.valor,
+                    tipo: 'receita',
+                    status: 'efetivada',
+                    cat: 'Transferência Recebida',
+                    conta: state.usuario.contas[0]?.nome || 'Carteira',
+                    descricao: `Recebido de ${data.from}: ${data.desc || ''}`
+                };
+
+                state.financas.transacoes.push(novaReceita);
+                
+                // Gera a Notificação visual no seu novo layout
+                state.notificacoes.unshift({
+                    titulo: "Dinheiro Recebido! 💸",
+                    msg: `O usuário ${data.from} enviou R$ ${data.valor.toFixed(2)} para você. Já adicionei ao seu extrato!`,
+                    data: new Date().toISOString()
+                });
+
+                // 4. Marca como 'received' no Firebase para ninguém mais mexer nela
+                const docRef = window.firebaseDoc(window.firebaseDb, 'artifacts', appId, 'public', 'data', 'shared_trans', docId);
+                await window.firebaseUpdateDoc(docRef, { 
+                    status: 'received',
+                    receivedAt: new Date().toISOString()
+                });
+
+                novasReceitas++;
+            }
+        }
+
+        if (novasReceitas > 0) {
+            await saveDataToCloud();
+            updateUI();
+            showToast(`Sucesso! Você recebeu ${novasReceitas} nova(s) transferência(s).`);
+            
+            // Som de sucesso (opcional)
+            if (window.navigator.vibrate) window.navigator.vibrate([100, 50, 100]);
+        }
+
+    } catch (e) {
+        console.error("Erro ao verificar transações compartilhadas:", e);
+    }
 }
 
         function setTransState(p, v) { 
@@ -3022,47 +3140,71 @@ function renderProfileForm() {
             }
         }
 
-     function saveProfile() {
+     async function saveProfile() {
             const novoUsername = document.getElementById('prof-username').value.trim();
             const usernameAtual = state.usuario.username || '';
+            const userAuth = window.firebaseAuth.currentUser;
             
-            // Controle de cooldown para troca de username (90 dias)
+            if (!userAuth) {
+                showToast("Erro: Usuário não autenticado.");
+                return;
+            }
+
+            const emailUser = userAuth.email.toLowerCase();
+
+            // 1. Controle de cooldown para troca de username (90 dias)
             if (novoUsername !== usernameAtual) {
                 localStorage.setItem('lastUsernameChange', Date.now().toString());
             }
 
-            // Identidade e Avatar
+            // 2. Atualização da Identidade e Localização no Estado Local
             state.usuario.firstName = document.getElementById('prof-first-name').value; 
             state.usuario.lastName = document.getElementById('prof-last-name').value; 
             state.usuario.username = novoUsername; 
             state.usuario.avatarUrl = tempAvatar;
-
-            // Localização e Fuso (Campos novos)
             state.usuario.cidade = document.getElementById('prof-cidade').value;
             state.usuario.estado = document.getElementById('prof-estado').value;
             state.usuario.fuso = document.getElementById('prof-fuso').value;
 
-            // Bio e Idade
+            // 3. Cálculo de Bio e Idade
             state.usuario.birthDate = document.getElementById('prof-birth-date').value; 
             state.usuario.peso = parseFloat(document.getElementById('prof-weight').value) || 0; 
             
             if (state.usuario.birthDate) {
-                const birth = new Date(state.usuario.birthDate + "T12:00:00"); // Força meio-dia para evitar erro de fuso no cálculo
+                const birth = new Date(state.usuario.birthDate + "T12:00:00");
                 const today = new Date(); 
                 let age = today.getFullYear() - birth.getFullYear(); 
                 if (today.getMonth() < birth.getMonth() || (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate())) age--; 
                 state.usuario.idade = age;
             }
             
-            // Metas de Saúde
+            // 4. Metas de Saúde
             state.saude.aguaMeta = parseFloat(document.getElementById('prof-water-goal').value) || (state.usuario.peso * 35); 
             state.saude.cafeinaMeta = parseFloat(document.getElementById('prof-caf-goal').value) || 400;
+
+            // 5. PUBLICAÇÃO NO DIRETÓRIO PÚBLICO (Para busca por e-mail)
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'mu-finance';
+            // Sanitização do e-mail para servir como ID de documento no Firestore
+            const emailKey = emailUser.replace(/[.#$[\]]/g, "_");
+            const directoryRef = window.firebaseDoc(window.firebaseDb, 'artifacts', appId, 'public', 'directory', emailKey);
             
-            // Sincronização e Feedback
-            saveDataToCloud(); 
+            try {
+                await window.firebaseSetDoc(directoryRef, {
+                    username: novoUsername,
+                    firstName: state.usuario.firstName,
+                    email: emailUser,
+                    updatedAt: new Date().toISOString()
+                });
+                console.log("Identidade pública atualizada: ", emailKey);
+            } catch (e) { 
+                console.error("Erro ao publicar diretório público:", e); 
+            }
+
+            // 6. Sincronização Final e UI
+            await saveDataToCloud(); 
             closeAllOverlays(); 
             updateUI();
-            showToast("Perfil atualizado em " + state.usuario.cidade);
+            showToast(`Perfil atualizado! Você agora é localizável como ${novoUsername}`);
         }
 
         function updateUI() {
