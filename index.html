@@ -2,7 +2,7 @@
 <html lang="pt-BR"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mu Finance v05.13</title>
+    <title>Mu Finance v05.14</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -50,15 +50,16 @@
 #painel-outros {
     position: fixed;
     top: 0;
-    right: -100%; /* Começa escondido */
-    width: 100%;  /* Ocupa tudo no mobile */
-    height: 100%;
-    background-color: var(--bg-main);
-    z-index: 100; /* Fica ACIMA do backdrop que é 90 */
-    transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    right: -100%; /* Começa escondido à direita */
+    width: 100%;  /* No celular ocupa a largura toda */
+    height: 100dvh; /* Usa a altura dinâmica do navegador */
+    background-color: #121418; /* Garante que o fundo não seja transparente */
+    z-index: 110; /* Aumentado para 110 para ficar ACIMA do backdrop (90) */
+    transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     flex-direction: column;
-    padding: 0; /* Padding será controlado internamente para não quebrar o cabeçalho */
+    padding: 0;
+    box-shadow: -10px 0 50px rgba(0,0,0,0.8);
 }
 
 /* Classe ativa que o JS vai injetar */
