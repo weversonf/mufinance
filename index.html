@@ -2,7 +2,7 @@
 <html lang="pt-BR"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mu Finance v05.23</title>
+    <title>Mu Finance v05.24</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -448,7 +448,7 @@ nav {
         <button onclick="toggleOutros()" class="text-gray-400 mr-4">
             <i class="fas fa-chevron-left text-xl"></i>
         </button>
-        <h2 class="text-lg font-bold text-white uppercase tracking-wider">Ajustes e Opções v05.23</h2>
+        <h2 class="text-lg font-bold text-white uppercase tracking-wider">Ajustes e Opções v05.24</h2>
     </div>
 
     <div class="p-5 overflow-y-auto flex-1 pb-32">
@@ -2549,9 +2549,29 @@ function renderCardAndCatSettings() {
             document.getElementById('input-meta-id').value = ''; document.getElementById('input-meta-nome').value = ''; document.getElementById('input-meta-alvo').value = ''; document.getElementById('input-meta-reservado').value = ''; document.getElementById('meta-modal-title').innerText = 'Nova Meta'; toggleOverlay('nova-meta');
         }
 
-        function openMetaAddModal(id) {
-            document.getElementById('input-meta-add-id').value = id; document.getElementById('input-meta-add-valor').value = ''; toggleOverlay('meta-add');
+        // Localize e substitua por esta lógica:
+function openMetaAddModal(id) {
+    document.getElementById('input-meta-add-id').value = id;
+    const inputVal = document.getElementById('input-meta-add-valor');
+    inputVal.value = '';
+
+    // Lógica do Filtro de Impulso (Conversão em Tanques)
+    inputVal.oninput = () => {
+        const val = parseFloat(inputVal.value) || 0;
+        const precoTanque = calcularValorTanqueCheio(); // Puxa a média dos seus abastecimentos
+        const qtdTanques = (val / precoTanque).toFixed(1);
+        
+        const feedback = document.getElementById('meta-impulso-feedback');
+        if(val > 0) {
+            feedback.innerHTML = `✨ Esse esforço equivale a <b>${qtdTanques} tanques</b> da sua Fazer 250!`;
+            feedback.classList.remove('hidden');
+        } else {
+            feedback.classList.add('hidden');
         }
+    };
+
+    toggleOverlay('meta-add');
+}
 
         function saveMeta() {
             const nome = document.getElementById('input-meta-nome').value; const alvo = parseFloat(document.getElementById('input-meta-alvo').value); const res = parseFloat(document.getElementById('input-meta-reservado').value) || 0; const id = document.getElementById('input-meta-id').value;
@@ -2709,8 +2729,41 @@ function openTransactionModal(t, id = null) {
                 cat: c,
                 conta: a,
                 descricao: desc,
-                amigo: i === 0 ? amigoFinal : '' // Marca apenas a primeira do grupo
+                amigo: i === 0 ? amigoFinal : '' 
             });
+        }
+    }
+
+    // --- ALERTA DE ORÇAMENTO CRÍTICO (v05.24) ---
+    if (type === 'despesa') {
+        const dataTrans = new Date(dStr + "T12:00:00");
+        const m = dataTrans.getMonth();
+        const y = dataTrans.getFullYear();
+        
+        const orcamentoCat = state.financas.orcamentos.find(o => o.categoria === c && o.mes === m && o.ano === y);
+        
+        if (orcamentoCat) {
+            const gastoTotalCat = state.financas.transacoes
+                .filter(t => t.cat === c && t.tipo === 'despesa' && (t.status === 'efetivada' || t.status === 'fatura_paga'))
+                .filter(t => {
+                    const dt = new Date(t.data + "T12:00:00");
+                    return dt.getMonth() === m && dt.getFullYear() === y;
+                })
+                .reduce((sum, t) => sum + t.valor, 0);
+
+            const percentual = (gastoTotalCat / orcamentoCat.limite) * 100;
+
+            if (percentual >= 90) {
+                const tituloNotif = `⚠️ Orçamento Crítico: ${c}`;
+                const msgNotif = `Atenção Weverson! Você atingiu ${percentual.toFixed(0)}% do limite planejado para ${c}.`;
+                
+                state.notificacoes.unshift({
+                    titulo: tituloNotif,
+                    msg: msgNotif,
+                    data: new Date().toISOString()
+                });
+                showToast(msgNotif);
+            }
         }
     }
 
