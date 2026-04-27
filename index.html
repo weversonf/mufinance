@@ -16,7 +16,7 @@
         :root {
             --bg-main: #0E1012;
             --bg-card: #1A1D21;
-            --accent: #2DD4BF; /* Teal do layout referência */
+            --accent: #2DD4BF;
             --danger: #FF5C5C;
             --warning: #FACC15;
             --success: #34D399;
@@ -32,11 +32,9 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* Arredondamento Premium Referência */
         .rounded-premium { border-radius: 2.5rem; }
         .card { background-color: var(--bg-card); border: 1px solid rgba(255,255,255,0.03); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
         
-        /* Sidebar Estilo AIZCRM */
         .sidebar {
             width: 260px;
             height: 100dvh;
@@ -64,7 +62,6 @@
             color: #000;
         }
 
-        /* Glassmorphism sutil para Overlays */
         .overlay { 
             position: fixed; bottom: -100%; left: 0; width: 100%; height: 94%; 
             background-color: rgba(26, 29, 33, 0.98); 
@@ -75,19 +72,15 @@
         }
         .overlay.active { bottom: 0; }
 
-        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
 
-        /* Animações */
         .fade-in { animation: fadeIn 0.4s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Ring Progress Referência */
         .progress-ring__circle { transition: stroke-dashoffset 0.6s ease; transform: rotate(-90deg); transform-origin: 50% 50%; }
 
-        /* Mobile Bottom Nav */
         @media (max-width: 768px) {
             .sidebar { display: none; }
             .mobile-nav { 
@@ -102,7 +95,7 @@
 </head>
 <body>
 
-    <div id="splash-screen" class="fixed inset-0 bg-[#0E1012] z-[1000] flex flex-col justify-center items-center">
+    <div id="splash-screen" class="fixed inset-0 bg-[#0E1012] z-[1000] flex flex-col justify-center items-center transition-opacity duration-500">
         <div class="w-16 h-16 bg-[#2DD4BF] rounded-premium animate-pulse flex items-center justify-center">
             <i data-lucide="trending-up" class="text-black w-8 h-8"></i>
         </div>
@@ -152,7 +145,7 @@
             <header class="h-20 flex items-center justify-between px-6 md:px-10 shrink-0">
                 <div>
                     <h2 class="text-xs text-muted font-bold uppercase tracking-widest mb-1" id="global-month-label">April 2026</h2>
-                    <h1 class="text-2xl font-extrabold" id="header-title">Dashboard</h1>
+                    <h1 class="text-2xl font-extrabold" id="header-title">Overview</h1>
                 </div>
                 <div class="flex items-center gap-4">
                     <button onclick="toggleOverlay('notificacoes')" class="relative p-3 bg-[#1A1D21] rounded-2xl border border-white/5">
@@ -168,13 +161,12 @@
             <div id="main-scroll" class="flex-1 overflow-y-auto px-6 md:px-10 pb-32 pt-2 custom-scrollbar">
                 
                 <div id="page-home" class="page-content fade-in grid grid-cols-1 lg:grid-cols-12 gap-6">
-                    
                     <div class="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="card rounded-premium p-8 relative overflow-hidden flex flex-col justify-between h-[280px]">
                             <div class="flex justify-between items-start z-10">
                                 <div>
                                     <p class="text-muted text-xs font-bold uppercase tracking-widest mb-1">Total Balance</p>
-                                    <h2 class="text-5xl font-black sensitive-value fin-total-saldo" data-value="R$ 0,00">R$ 0,00</h2>
+                                    <h2 class="text-5xl font-black sensitive-value fin-total-saldo" data-value="R$ 14.500,00">R$ 14.500,00</h2>
                                 </div>
                                 <button onclick="toggleVisibility()" class="p-2 hover:bg-white/5 rounded-xl transition-all">
                                     <i data-lucide="eye" class="w-5 h-5 text-muted btn-eye"></i>
@@ -213,7 +205,7 @@
                     </div>
 
                     <div class="lg:col-span-4 space-y-6">
-                        <div class="card rounded-premium p-6 cursor-pointer active:scale-95 transition-transform" onclick="navigate('nav-veiculo', 'page-veiculo', 'Veículo')">
+                        <div class="card rounded-premium p-6 cursor-pointer active:scale-95 transition-transform" onclick="navigate('nav-veiculo', 'page-veiculo', 'Vehicle')">
                             <div class="flex items-center gap-4">
                                 <div class="w-14 h-14 bg-orange-500/10 rounded-[1.5rem] flex items-center justify-center text-orange-400">
                                     <i data-lucide="bike" class="w-8 h-8"></i>
@@ -266,8 +258,9 @@
                         <div id="recent-trans-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             </div>
                     </div>
+                </div> 
 
-                </div> <div id="page-financas" class="page-content hidden fade-in space-y-6">
+                <div id="page-financas" class="page-content hidden fade-in space-y-6">
                     <div class="flex overflow-x-auto gap-4 pb-2 snap-x hide-scroll" id="card-carousel"></div>
                     
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -301,7 +294,7 @@
                                 </div>
                                 <div>
                                     <h2 class="text-3xl font-black veh-name-text">Fazer 250</h2>
-                                    <p class="text-xs text-muted font-bold uppercase tracking-[0.2em] mt-1">Total KM: <span id="veh-km-total">0</span></p>
+                                    <p class="text-xs text-muted font-bold uppercase tracking-[0.2em] mt-1">Total KM: <span id="veh-km-total">12.450</span></p>
                                 </div>
                             </div>
                             <div class="grid grid-cols-2 gap-4">
@@ -340,7 +333,9 @@
                     </div>
                 </div>
 
-            </div> <nav class="mobile-nav md:hidden">
+            </div> 
+            
+            <nav class="mobile-nav md:hidden">
                 <button onclick="navigate('nav-home', 'page-home', 'Overview')" id="nav-home" class="flex flex-col items-center text-accent">
                     <i data-lucide="layout-grid" class="w-6 h-6"></i>
                     <span class="text-[9px] font-bold uppercase mt-1">Home</span>
@@ -370,22 +365,31 @@
     <div id="backdrop" class="fixed inset-0 bg-black/60 backdrop-blur-md z-[190] hidden opacity-0 transition-opacity duration-300" onclick="closeAllOverlays()"></div>
 
     <script type="module">
-        /* O JS permanece 95% igual para manter a compatibilidade com o Firebase 
-           que o Weverson já tem configurado.
-        */
+        /* -------------------------------------------------------------
+            AQUI VOCÊ INSERE SUAS REGRAS DE FIREBASE DA v05.34 (AUTH/DB)
+            ------------------------------------------------------------- 
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // Firebase e Lógica de Estado (Igual ao v05.34)
-        // ... (JS logic aqui)
+        ...
+        */
     </script>
 
     <script>
-        // Funções de UI Adaptadas para o novo Layout Premium
+        // ESTADO MOCK PARA A INTERFACE FUNCIONAR
+        const state = {
+            saude: {
+                aguaMeta: 3500, // Meta base de ingestão
+                cafeinaMeta: 400,
+                historico: {}
+            }
+        };
+
+        const hoje = new Date().toISOString().split('T')[0];
+        // Popula com dados simulados pro layout atualizar os gráficos
+        state.saude.historico[hoje] = { agua: 1575, cafe: 160 };
+
+        let isValueVisible = true;
+
         function updateUI() {
-            // Atualiza os anéis de progresso com os novos cálculos de circunferência
-            const hoje = new Date().toISOString().split('T')[0];
             const s = state.saude.historico[hoje] || {agua:0, cafe:0};
             
             const aguaPerc = Math.min((s.agua / state.saude.aguaMeta) * 100, 100);
@@ -399,21 +403,105 @@
                 el.style.strokeDashoffset = 226.2 - (cafePerc / 100 * 226.2);
             });
 
-            // Arredondamento e Cores de Cards
+            // Arredondamento
             document.querySelectorAll('.card').forEach(c => c.classList.add('rounded-premium'));
 
-            // Executa a lógica original de atualização de saldos e listas
-            // [Código original v05.34 segue aqui...]
+            // Renderiza ícones
             lucide.createIcons();
         }
 
-        // Chamar updateUI no carregamento
-        setTimeout(() => {
-            const splash = document.getElementById('splash-screen');
-            splash.style.opacity = '0';
-            setTimeout(() => splash.classList.add('hidden'), 500);
-            updateUI();
-        }, 2000);
+        // SISTEMA DE NAVEGAÇÃO
+        function navigate(navId, pageId, title) {
+            // Atualiza Título
+            document.getElementById('header-title').innerText = title;
+
+            // Esconde todas as páginas
+            document.querySelectorAll('.page-content').forEach(el => el.classList.add('hidden'));
+            
+            // Mostra a página alvo
+            document.getElementById(pageId).classList.remove('hidden');
+
+            // Reset cores no menu Desktop
+            document.querySelectorAll('.sidebar .nav-link').forEach(el => {
+                el.classList.remove('active', 'bg-accent', 'text-black');
+                el.classList.add('text-muted');
+            });
+            
+            // Reset cores no menu Mobile
+            document.querySelectorAll('.mobile-nav button').forEach(el => {
+                if(!el.classList.contains('bg-accent')) { // Pula o botão FAB Central
+                    el.classList.remove('text-accent');
+                    el.classList.add('text-muted');
+                }
+            });
+
+            // Ativa Nav Desktop (se existir)
+            const deskNav = document.getElementById(navId + '-sidebar');
+            if(deskNav) {
+                deskNav.classList.add('active', 'bg-accent', 'text-black');
+                deskNav.classList.remove('text-muted');
+            }
+
+            // Ativa Nav Mobile (se existir)
+            const mobNav = document.getElementById(navId);
+            if(mobNav) {
+                mobNav.classList.add('text-accent');
+                mobNav.classList.remove('text-muted');
+            }
+        }
+
+        // TOGGLE VISIBILIDADE DE VALORES
+        function toggleVisibility() {
+            isValueVisible = !isValueVisible;
+            
+            document.querySelectorAll('.btn-eye').forEach(el => el.classList.toggle('hidden', !isValueVisible));
+            document.querySelectorAll('.btn-eye-off').forEach(el => el.classList.toggle('hidden', isValueVisible));
+
+            document.querySelectorAll('.sensitive-value').forEach(el => {
+                if (isValueVisible) {
+                    el.innerText = el.getAttribute('data-value') || "R$ 0,00";
+                } else {
+                    el.innerText = "R$ •••••";
+                }
+            });
+        }
+
+        // FUNÇÕES DE OVERLAYS (MOCK)
+        function toggleOverlay(id) {
+            console.log(`Abrindo overlay: ${id}`);
+            const backdrop = document.getElementById('backdrop');
+            backdrop.classList.remove('hidden');
+            // Timeout pro block aplicar antes da opacidade pra animar
+            setTimeout(() => backdrop.classList.remove('opacity-0'), 10);
+        }
+
+        function closeAllOverlays() {
+            console.log('Fechando todos os overlays');
+            const backdrop = document.getElementById('backdrop');
+            backdrop.classList.add('opacity-0');
+            setTimeout(() => backdrop.classList.add('hidden'), 300);
+        }
+
+        // DEMAIS FUNÇÕES DE AÇÃO DOS BOTÕES
+        function openTransactionModal(type) { console.log(`Abrindo transação: ${type}`); }
+        function toggleOutros() { console.log('Abrindo menu de outros'); }
+        function toggleFab(event) { console.log('Botão FAB central clicado', event); }
+        function openNotaFiscalModal() { console.log('Abrindo scanner de nota'); }
+        function openVehModal(acao) { console.log(`Ação veículo: ${acao}`); }
+        function openTripCalculator() { console.log('Abrindo calc de viagem'); }
+        function switchVehTab(tab) { console.log(`Trocando aba veiculo para: ${tab}`); }
+
+        // BOOT DO APP
+        window.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            
+            setTimeout(() => {
+                const splash = document.getElementById('splash-screen');
+                splash.classList.add('opacity-0');
+                setTimeout(() => splash.classList.add('hidden'), 500);
+                updateUI();
+            }, 1500);
+        });
     </script>
 </body>
 </html>
