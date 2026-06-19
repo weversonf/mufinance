@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mu Finance Pro v13</title>
+<title>Mu Finance Pro</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
@@ -49,26 +50,53 @@
   body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg-body);min-height:100vh;display:flex;align-items:flex-start;justify-content:center}
   .app{width:100%;max-width:420px;min-height:100vh;background:var(--bg-app);display:flex;flex-direction:column;overflow:hidden;position:relative}
 
+  /* ===== DESKTOP SIDEBAR (web only) ===== */
+  .desktop-sidebar{display:none}
+
   @media(min-width:768px){
-    body{background:var(--bg-body);padding:20px}
-    .app{max-width:900px;border-radius:24px;box-shadow:0 8px 32px rgba(0,0,0,0.08);min-height:90vh;flex-direction:row;overflow:hidden}
-    .app>.top-bar,.app>.page-header{width:260px;min-height:100%;border-right:1px solid var(--border);padding:32px 20px;flex-shrink:0;background:var(--bg-top);display:flex;flex-direction:column}
-    .app>.top-bar .greeting{flex-direction:column;gap:16px}
-    .app>.actions{flex-direction:column;width:260px;padding:16px 20px;background:var(--bg-top);border-right:1px solid var(--border);flex-shrink:0}
-    .app>.content,.app>.page-content{border-radius:0;margin-top:0;flex:1;overflow-y:auto;padding:24px}
-    .tab-bar{flex-direction:column;width:260px;padding:16px 20px;border-top:none;border-right:1px solid var(--border);position:static;background:var(--bg-top);flex-shrink:0;order:-1}
-    .tab-bar .tab{flex-direction:row;gap:10px;padding:12px 16px;border-radius:12px;font-size:13px;justify-content:flex-start}
-    .tab-bar .tab.active{background:var(--primary-light)}
+    body{background:var(--bg-body);padding:0}
+    .app{max-width:none;border-radius:0;box-shadow:none;min-height:100vh;overflow:visible;width:100%}
+
+    /* Hide every legacy in-page tab-bar — replaced by the single fixed sidebar */
+    .page>.tab-bar{display:none !important}
+
+    /* Real, persistent sidebar */
+    .desktop-sidebar{
+      display:flex;flex-direction:column;position:fixed;left:0;top:0;width:240px;height:100vh;
+      background:var(--bg-top);border-right:1px solid var(--border);padding:24px 14px;z-index:100;
+    }
+    .desktop-sidebar .brand{display:flex;align-items:center;gap:10px;padding:0 10px;margin-bottom:28px}
+    .desktop-sidebar .brand-mark{width:34px;height:34px;border-radius:10px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+    .desktop-sidebar .brand-name{font-size:15px;font-weight:800;color:var(--text-main);letter-spacing:-.3px}
+    .desktop-sidebar nav{display:flex;flex-direction:column;gap:2px}
+    .desktop-sidebar .d-tab{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:12px;border:none;background:none;cursor:pointer;font-family:inherit;font-size:13.5px;font-weight:600;color:var(--text-sec);text-align:left;width:100%;transition:background .15s,color .15s}
+    .desktop-sidebar .d-tab:hover{background:var(--bg-app);color:var(--text-main)}
+    .desktop-sidebar .d-tab.active{background:var(--primary-light);color:var(--primary)}
+    .desktop-sidebar .d-tab i{font-size:19px;width:22px;text-align:center;flex-shrink:0}
+    .desktop-sidebar .sidebar-footer{margin-top:auto;padding-top:14px;border-top:1px solid var(--border)}
+
+    /* Push every page to the right of the sidebar */
+    .app.page{margin-left:240px;min-height:100vh}
+
+    .app>.top-bar,.app>.actions,.app>.page-header{background:var(--bg-app);border-right:none;min-height:auto}
+    .app>.top-bar{flex-direction:row;align-items:center;gap:16px;padding:32px 32px 8px;justify-content:space-between}
+    .app>.top-bar .greeting{flex-direction:row;gap:16px;align-items:center;width:auto}
+    .app>.actions{flex-direction:row;padding:8px 32px 16px;gap:8px;justify-content:flex-start}
+    .app>.content,.app>.page-content{padding:20px 32px 48px;margin-top:0;overflow-y:visible}
+    .app>.page-header{flex-direction:row;align-items:center;gap:10px;padding:32px 32px 8px}
     .two-col{grid-template-columns:1fr 1fr}
-    .actions .action-btn.center-btn{width:auto;height:auto;border-radius:16px;flex:1;padding:11px;font-size:13px}
+    .actions .action-btn.center-btn{width:auto;height:auto;border-radius:16px;flex:0 0 auto;padding:11px 18px;font-size:13px}
     .actions .action-btn.center-btn i{margin-right:6px}
-    .actions .action-btn.center-btn::after{content:'Câmbio'}
-    .page-header{width:100%;padding:16px 18px}
-    .app>.page-content~.tab-bar{order:0;width:100%;flex-direction:row;border-top:1px solid var(--border);border-right:none}
+    .actions .action-btn.center-btn::after{content:'Transferir'}
+    .actions .action-btn.side{flex:0 0 auto;padding:11px 20px}
+    .health-btns{flex-wrap:wrap}
+    .app>.filter-row{padding:4px 32px}
   }
 
   @media(min-width:1024px){
-    .app{max-width:1100px}
+    .desktop-sidebar{width:264px}
+    .app.page{margin-left:264px}
+    .app>.content,.app>.page-content{max-width:920px}
     .two-col{grid-template-columns:1fr 1fr;gap:20px}
     .send-again{flex-wrap:wrap}
   }
@@ -266,7 +294,7 @@
   .health-ring{text-align:center;position:relative;width:60px;height:60px}
   .health-ring svg{transform:rotate(-90deg);width:60px;height:60px}
   .h-ring-bg{fill:none;stroke:var(--border);stroke-width:4}
-  .h-ring-fg{fill:none;stroke:var(--primary);stroke-width:4;stroke-linecap:round}
+  .h-ring-fg{fill:none;stroke:var(--primary);stroke-width:4}
   .h-ring-label{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
   .h-ring-label .hv{font-size:11px;font-weight:700;color:var(--text-main)}
   .h-ring-label .hu{font-size:8px;color:var(--text-muted)}
@@ -348,6 +376,26 @@
   </div>
 </div>
 
+<!-- DESKTOP SIDEBAR (web only — hidden on mobile) -->
+<nav class="desktop-sidebar" id="desktop-sidebar">
+  <div class="brand">
+    <div class="brand-mark"><i class="ti ti-wallet"></i></div>
+    <div class="brand-name">Mu Finance</div>
+  </div>
+  <nav>
+    <button class="d-tab active" data-page="home" onclick="showPage('home')"><i class="ti ti-home"></i><span>Início</span></button>
+    <button class="d-tab" data-page="transactions" onclick="showPage('transactions')"><i class="ti ti-chart-bar"></i><span>Extrato</span></button>
+    <button class="d-tab" data-page="reports" onclick="showPage('reports')"><i class="ti ti-report"></i><span>Relatórios</span></button>
+    <button class="d-tab" data-page="cards" onclick="showPage('cards')"><i class="ti ti-credit-card"></i><span>Cartões</span></button>
+    <button class="d-tab" data-page="goals" onclick="showPage('goals')"><i class="ti ti-target"></i><span>Metas</span></button>
+    <button class="d-tab" data-page="budget" onclick="showPage('budget')"><i class="ti ti-chart-pie"></i><span>Orçamento</span></button>
+    <button class="d-tab" data-page="profile" onclick="showPage('profile')"><i class="ti ti-user"></i><span>Perfil</span></button>
+  </nav>
+  <div class="sidebar-footer">
+    <button class="d-tab" data-page="settings" onclick="showPage('settings')"><i class="ti ti-settings"></i><span>Configurações</span></button>
+  </div>
+</nav>
+
 <!-- HOME PAGE -->
 <div class="app page active" id="home-page">
   <div class="top-bar">
@@ -369,7 +417,7 @@
     <button class="action-btn side" onclick="openModal('receive')">
       <i class="ti ti-plus" style="font-size:16px"></i> Receita
     </button>
-    <button class="action-btn center-btn" title="Trocar" onclick="showToast('Câmbio em breve!')">
+    <button class="action-btn center-btn" title="Transferir" onclick="openTransferModal()">
       <i class="ti ti-arrows-exchange"></i>
     </button>
     <button class="action-btn side" onclick="openModal('send')">
@@ -474,9 +522,9 @@
   </div>
   <div class="page-content">
     <div class="profile-header" id="profile-header">
-      <div class="profile-avatar" id="profile-avatar">B</div>
-      <div class="profile-name" id="profile-name">Benjamin Smith</div>
-      <div class="profile-email" id="profile-email">ben.smith@example.com</div>
+      <div class="profile-avatar" id="profile-avatar" onclick="openAvatarModal()" style="cursor:pointer">B</div>
+      <div class="profile-name" id="profile-name"></div>
+      <div class="profile-email" id="profile-email"></div>
     </div>
     <div id="profile-fields"></div>
     <div class="menu-list">
@@ -737,9 +785,16 @@
     <button class="back-btn" onclick="showPage('home')"><i class="ti ti-arrow-left"></i></button>
     <span class="page-title">Veículo</span>
     <div style="flex:1"></div>
-    <button class="icon-btn" onclick="openVehicleConfig()" title="Configurar"><i class="ti ti-settings"></i></button>
+    <button class="icon-btn" onclick="openVehicleConfig()" title="Configurar Veículo"><i class="ti ti-settings"></i></button>
   </div>
   <div class="page-content">
+    <div id="v-intro" style="display:none;flex-direction:column;align-items:center;padding:40px 20px;text-align:center">
+      <div style="font-size:48px;color:var(--text-muted);margin-bottom:16px"><i class="ti ti-car"></i></div>
+      <div style="font-size:16px;font-weight:600;color:var(--text-main);margin-bottom:8px">Nenhum veículo cadastrado</div>
+      <div style="font-size:13px;color:var(--text-muted);margin-bottom:24px">Adicione um veículo para começar a controlar abastecimentos, manutenções e rotas.</div>
+      <button class="submit-btn" onclick="openVehicleConfig()"><i class="ti ti-plus"></i> Adicionar Veículo</button>
+    </div>
+    <div id="v-content" style="display:block">
     <div class="income-card"><div class="section-label">Saúde do Veículo</div><div class="v-health" id="v-health-bars"></div></div>
     <div class="two-col" id="v-summary"></div>
     <div style="display:flex;gap:8px;margin:12px 0">
@@ -758,6 +813,7 @@
     </div>
     <div class="section-title-new"><i class="ti ti-history"></i> Histórico</div>
     <div id="v-timeline"></div>
+  </div>
   </div>
   <div class="tab-bar">
     <button class="tab" onclick="showPage('home')"><i class="ti ti-home"></i><span>Início</span></button>
@@ -926,6 +982,22 @@
   </div>
 </div>
 
+<!-- HEALTH CONFIG MODAL -->
+<div class="modal-overlay" id="health-config-modal">
+  <div class="modal">
+    <h2>Configurar Saúde <button class="modal-close" onclick="closeModal('health-config-modal')"><i class="ti ti-x"></i></button></h2>
+    <label class="field-label">Peso (kg)</label>
+    <input class="field-input" id="health-peso-input" type="number" step="0.1" min="1" placeholder="70" />
+    <label class="field-label">Idade</label>
+    <input class="field-input" id="health-idade-input" type="number" min="1" max="150" placeholder="30" />
+    <div style="font-size:12px;color:var(--text-muted);margin:12px 0;padding:12px;background:var(--card-bg);border-radius:8px">
+      <div><strong>Metas calculadas:</strong></div>
+      <div id="health-meta-preview">Água: — · Cafeína: —</div>
+    </div>
+    <button class="submit-btn" onclick="submitHealthConfig()"><i class="ti ti-check"></i> Salvar</button>
+  </div>
+</div>
+
 <!-- AVATAR MODAL -->
 <div class="modal-overlay" id="avatar-modal">
   <div class="modal">
@@ -938,6 +1010,20 @@
       <button class="submit-btn" onclick="cropAndSaveAvatar()">Recortar e Salvar</button>
     </div>
     <button class="submit-btn" style="background:var(--card-bg);color:var(--text-sec)" onclick="saveAvatarDiceBear()"><i class="ti ti-shuffle"></i> Gerar Avatar Aleatório</button>
+  </div>
+</div>
+
+<!-- TRANSFER MODAL -->
+<div class="modal-overlay" id="transfer-modal">
+  <div class="modal">
+    <h2>Transferir entre Contas <button class="modal-close" onclick="closeModal('transfer-modal')"><i class="ti ti-x"></i></button></h2>
+    <label class="field-label">De</label>
+    <select class="field-input" id="transfer-from"></select>
+    <label class="field-label">Para</label>
+    <select class="field-input" id="transfer-to"></select>
+    <label class="field-label">Valor (R$)</label>
+    <input class="field-input" id="transfer-amount" type="number" step="0.01" min="0" placeholder="0,00" />
+    <button class="submit-btn" onclick="submitTransfer()">Transferir</button>
   </div>
 </div>
 
@@ -1092,14 +1178,34 @@ async function seedIfEmpty() {
   const catSnap = await db.collection('categories').get();
   if (catSnap.empty) {
     [
-      { id:'food', name:'Alimentação', icon:'ti-tools-kitchen-2', color:'#e07a3a', isDefault:true, subcats:[], type:'saída' },
-      { id:'transport', name:'Transporte', icon:'ti-car', color:'#5b7fa6', isDefault:true, subcats:[], type:'saída' },
-      { id:'energy', name:'Energético', icon:'ti-bolt', color:'#a3c11a', isDefault:true, subcats:[{id:'monster',name:'Monster'},{id:'redbull',name:'RedBull'},{id:'bally',name:'Bally'}], type:'saída' },
-      { id:'alcohol', name:'Bebida Alcólica', icon:'ti-glass-full', color:'#7a1a3a', isDefault:true, subcats:[{id:'beer',name:'Cerveja'},{id:'wine',name:'Vinho'},{id:'vodka',name:'Vodka'},{id:'drinks',name:'Drinks'}], type:'saída' },
-      { id:'shopping', name:'Compras', icon:'ti-shopping-cart', color:'#7a5ba6', isDefault:true, subcats:[], type:'saída' },
-      { id:'salary', name:'Salário', icon:'ti-cash', color:'#1a7a4a', isDefault:true, subcats:[], type:'entrada' },
-      { id:'freelance', name:'Freelance', icon:'ti-device-laptop', color:'#5b7fa6', isDefault:true, subcats:[], type:'entrada' },
-      { id:'gift', name:'Presente', icon:'ti-gift', color:'#e07a3a', isDefault:true, subcats:[], type:'entrada' },
+      // DESPESAS (18 categorias)
+      { id:'supermarket', name:'Supermercado', icon:'ti-shopping-cart', color:'#1a7a4a', isDefault:true, subcats:[], type:'saída' },
+      { id:'food', name:'Alimentação', icon:'ti-tools-kitchen-2', color:'#e07a3a', isDefault:true, subcats:[{id:'restaurant',name:'Restaurante'},{id:'delivery',name:'Delivery'},{id:'lanche',name:'Lanche'}], type:'saída' },
+      { id:'moradia', name:'Moradia', icon:'ti-home', color:'#8e44ad', isDefault:true, subcats:[{id:'aluguel',name:'Aluguel'},{id:'condominio',name:'Condomínio'},{id:'iptu',name:'IPTU'}], type:'saída' },
+      { id:'transport', name:'Transporte', icon:'ti-car', color:'#5b7fa6', isDefault:true, subcats:[{id:'gasolina',name:'Gasolina'},{id:'uber',name:'Uber/99'},{id:'onibus',name:'Ônibus/Metrô'},{id:'estacionamento',name:'Estacionamento'}], type:'saída' },
+      { id:'contas', name:'Contas e Utilidades', icon:'ti-file-invoice', color:'#d35400', isDefault:true, subcats:[{id:'agua',name:'Água'},{id:'luz',name:'Luz'},{id:'internet',name:'Internet'},{id:'telefone',name:'Telefone'}], type:'saída' },
+      { id:'saude', name:'Saúde', icon:'ti-heartbeat', color:'#c0392b', isDefault:true, subcats:[{id:'plano-saude',name:'Plano de Saúde'},{id:'farmacia',name:'Farmácia'},{id:'consulta',name:'Consulta'},{id:'exame',name:'Exame'}], type:'saída' },
+      { id:'educacao', name:'Educação', icon:'ti-book', color:'#2980b9', isDefault:true, subcats:[{id:'escola',name:'Escola/Faculdade'},{id:'curso',name:'Curso'},{id:'material',name:'Material'}], type:'saída' },
+      { id:'lazer', name:'Lazer', icon:'ti-movie', color:'#e91e63', isDefault:true, subcats:[{id:'cinema',name:'Cinema'},{id:'streaming',name:'Streaming'},{id:'jogos',name:'Jogos'},{id:'hobby',name:'Hobby'}], type:'saída' },
+      { id:'viagem', name:'Viagem', icon:'ti-plane', color:'#3498db', isDefault:true, subcats:[{id:'hotel',name:'Hotel'},{id:'passagem',name:'Passagem'},{id:'alimentacao-viagem',name:'Alimentação'}], type:'saída' },
+      { id:'shopping', name:'Compras', icon:'ti-shopping-bag', color:'#7a5ba6', isDefault:true, subcats:[{id:'roupas',name:'Roupas'},{id:'eletronicos',name:'Eletrônicos'},{id:'casa',name:'Casa'}], type:'saída' },
+      { id:'assinaturas', name:'Assinaturas', icon:'ti-repeat', color:'#1abc9c', isDefault:true, subcats:[{id:'netflix',name:'Netflix'},{id:'spotify',name:'Spotify'},{id:'outros-servicos',name:'Outros'}], type:'saída' },
+      { id:'bebidas', name:'Bebidas', icon:'ti-glass-full', color:'#7a1a3a', isDefault:true, subcats:[{id:'cerveja',name:'Cerveja'},{id:'energetico',name:'Energético'},{id:'refrigerante',name:'Refrigerante'}], type:'saída' },
+      { id:'servicos', name:'Serviços', icon:'ti-tool', color:'#7f8c8d', isDefault:true, subcats:[{id:'cabeleireiro',name:'Cabeleireiro'},{id:'reparos',name:'Reparos'},{id:'lavanderia',name:'Lavanderia'}], type:'saída' },
+      { id:'pet', name:'Pet', icon:'ti-animal', color:'#9b59b6', isDefault:true, subcats:[{id:'racao',name:'Ração'},{id:'veterinario',name:'Veterinário'},{id:'petshop',name:'Petshop'}], type:'saída' },
+      { id:'presente', name:'Presente', icon:'ti-gift', color:'#e67e22', isDefault:true, subcats:[], type:'saída' },
+      { id:'impostos', name:'Impostos e Taxas', icon:'ti-file-text', color:'#e74c3c', isDefault:true, subcats:[{id:'irpf',name:'IRPF'},{id:'iof',name:'IOF'},{id:'multa',name:'Multa'}], type:'saída' },
+      { id:'seguros', name:'Seguros', icon:'ti-shield', color:'#2ecc71', isDefault:true, subcats:[{id:'vida',name:'Vida'},{id:'auto',name:'Auto'},{id:'residencia',name:'Residência'}], type:'saída' },
+      { id:'cartao', name:'Cartão de Crédito', icon:'ti-credit-card', color:'#34495e', isDefault:true, subcats:[{id:'fatura',name:'Fatura'},{id:'juros-cartao',name:'Juros'}], type:'saída' },
+      // RECEITAS (8 categorias)
+      { id:'salary', name:'Salário', icon:'ti-cash', color:'#1a7a4a', isDefault:true, subcats:[{id:'salario-fixo',name:'Fixo'},{id:'decimo-terceiro',name:'13º'},{id:'ferias',name:'Férias'}], type:'entrada' },
+      { id:'freelance', name:'Freelance', icon:'ti-device-laptop', color:'#5b7fa6', isDefault:true, subcats:[{id:'projeto',name:'Projeto'},{id:'consultoria',name:'Consultoria'},{id:'outros-freela',name:'Outros'}], type:'entrada' },
+      { id:'investimentos', name:'Investimentos', icon:'ti-trending-up', color:'#2ecc71', isDefault:true, subcats:[{id:'dividendos',name:'Dividendos'},{id:'renda-fixa',name:'Renda Fixa'},{id:'acoes',name:'Ações'},{id:'fii',name:'FIIs'}], type:'entrada' },
+      { id:'vendas', name:'Vendas', icon:'ti-tag', color:'#e07a3a', isDefault:true, subcats:[{id:'produto',name:'Produto'},{id:'servico-venda',name:'Serviço'}], type:'entrada' },
+      { id:'gift', name:'Presente', icon:'ti-gift', color:'#e91e63', isDefault:true, subcats:[], type:'entrada' },
+      { id:'reembolso', name:'Reembolso', icon:'ti-refresh', color:'#3498db', isDefault:true, subcats:[], type:'entrada' },
+      { id:'aluguel-recebido', name:'Aluguel Recebido', icon:'ti-keys', color:'#9b59b6', isDefault:true, subcats:[], type:'entrada' },
+      { id:'outros-recebimentos', name:'Outros', icon:'ti-coin', color:'#7f8c8d', isDefault:true, subcats:[], type:'entrada' },
     ].forEach(c => batch.set(db.collection('categories').doc(c.id), c));
   }
   if (!catSnap.empty) return;
@@ -1112,7 +1218,8 @@ function startListeners() {
     categories = { saida: [], entrada: [] };
     snap.forEach(doc => {
       const d = doc.data();
-      categories[d.type || 'saída'].push({ id: doc.id, ...d });
+      const catType = d.type === 'entrada' ? 'entrada' : 'saída';
+      if (categories[catType]) categories[catType].push({ id: doc.id, ...d });
     });
     if (document.getElementById('config-categories-page').classList.contains('active')) renderConfigCategories();
   });
@@ -1324,47 +1431,56 @@ function openModal(type, txId = null) {
   selectedSubcatId = null;
 
   const isEditing = txId !== null;
-  const tx = isEditing ? transactions.find(t => t.id === txId) : null;
+  const tx = isEditing ? (transactions || []).find(t => t.id === txId) : null;
 
-  document.getElementById('modal-title').innerHTML = (isEditing ? 'Editar Transação' : (type === 'send' ? 'Nova Despesa' : 'Nova Receita')) + ` <button class="modal-close" onclick="closeModal('tx-modal')"><i class="ti ti-x"></i></button>`;
-  document.getElementById('modal-user-label').textContent = (type === 'send' || type === 'saída') ? 'Para (opcional)' : 'De (opcional)';
-  document.getElementById('modal-subcategories-container').style.display = 'none';
-  document.getElementById('modal-delete').style.display = isEditing ? 'block' : 'none';
+  const titleEl = document.getElementById('modal-title');
+  if (titleEl) titleEl.innerHTML = (isEditing ? 'Editar Transação' : (type === 'send' ? 'Nova Despesa' : 'Nova Receita')) + ' <button class="modal-close" onclick="closeModal(\'tx-modal\')"><i class="ti ti-x"></i></button>';
+  const labelEl = document.getElementById('modal-user-label');
+  if (labelEl) labelEl.textContent = (type === 'send' || type === 'saída') ? 'Para (opcional)' : 'De (opcional)';
+  const subCatContainer = document.getElementById('modal-subcategories-container');
+  if (subCatContainer) subCatContainer.style.display = 'none';
+  const deleteBtn = document.getElementById('modal-delete');
+  if (deleteBtn) deleteBtn.style.display = isEditing ? 'block' : 'none';
 
-  document.getElementById('modal-user-input').value = isEditing ? tx.name : '';
-  document.getElementById('modal-amount').value = isEditing ? Math.abs(tx.amount) : '';
-  document.getElementById('modal-desc').value = '';
+  const userInput = document.getElementById('modal-user-input');
+  if (userInput) userInput.value = isEditing ? tx.name : '';
+  const amtInput = document.getElementById('modal-amount');
+  if (amtInput) amtInput.value = isEditing ? Math.abs(tx.amount) : '';
+  const descInput = document.getElementById('modal-desc');
+  if (descInput) descInput.value = '';
 
-  document.getElementById('modal-contacts').innerHTML = contacts.map(c =>
-    `<div class="contact-chip ${isEditing && tx.name === c.name ? 'selected' : ''}" onclick="selectContact(this, '${c.name}')">
-      <div class="av" style="background:${c.color}">${c.initials}</div>
-      <span>${c.name.split(' ')[0]}</span>
-    </div>`).join('');
+  const contactsContainer = document.getElementById('modal-contacts');
+  if (contactsContainer) {
+    contactsContainer.innerHTML = (contacts || []).map(c =>
+      '<div class="contact-chip' + (isEditing && tx && tx.name === c.name ? ' selected' : '') + '" onclick="selectContact(this, \'' + (c.name || '').replace(/'/g, "\\'") + '\')"><div class="av" style="background:' + (c.color || '#ccc') + '">' + (c.initials || '?') + '</div><span>' + ((c.name || '').split(' ')[0]) + '</span></div>'
+    ).join('');
+  }
 
   const catType = (type === 'send' || type === 'saída') ? 'saída' : 'entrada';
-  document.getElementById('modal-categories').innerHTML = categories[catType].map(cat => `
-    <div class="cat-item ${isEditing && tx && tx.cat === cat.id ? 'selected' : ''}" onclick="selectCat('${cat.id}', this)">
-      <div class="cat-icon"><i class="ti ${cat.icon}"></i></div>
-      <div class="cat-name">${cat.name}</div>
-    </div>
-  `).join('');
+  const catContainer = document.getElementById('modal-categories');
+  if (catContainer) {
+    catContainer.innerHTML = (categories[catType] || []).map(cat =>
+      '<div class="cat-item' + (isEditing && tx && tx.cat === cat.id ? ' selected' : '') + '" onclick="selectCat(\'' + (cat.id || '') + '\', this)"><div class="cat-icon"><i class="ti ' + (cat.icon || 'ti-question-mark') + '"></i></div><div class="cat-name">' + (cat.name || '') + '</div></div>'
+    ).join('');
+  }
 
-  if(isEditing && tx && tx.cat) {
+  if (isEditing && tx && tx.cat) {
     selectedCatId = tx.cat;
-    const cat = categories[catType].find(c => c.id === tx.cat);
-    if(cat && cat.subcats && cat.subcats.length > 0) {
-      document.getElementById('modal-subcategories-container').style.display = 'block';
-      document.getElementById('modal-subcategories').innerHTML = cat.subcats.map(sub => `
-        <div class="cat-item ${tx.subcat === sub.id ? 'selected' : ''}" onclick="selectSubcat('${sub.id}', this)">
-          <div class="cat-icon" style="font-size:14px;width:32px;height:32px;border-radius:8px"><i class="ti ti-corner-down-right"></i></div>
-          <div class="cat-name">${sub.name}</div>
-        </div>
-      `).join('');
-      if(tx.subcat) selectedSubcatId = tx.subcat;
+    const cat = (categories[catType] || []).find(c => c.id === tx.cat);
+    if (cat && cat.subcats && cat.subcats.length > 0) {
+      if (subCatContainer) subCatContainer.style.display = 'block';
+      const subCatEl = document.getElementById('modal-subcategories');
+      if (subCatEl) {
+        subCatEl.innerHTML = cat.subcats.map(sub =>
+          '<div class="cat-item' + (tx.subcat === sub.id ? ' selected' : '') + '" onclick="selectSubcat(\'' + (sub.id || '') + '\', this)"><div class="cat-icon" style="font-size:14px;width:32px;height:32px;border-radius:8px"><i class="ti ti-corner-down-right"></i></div><div class="cat-name">' + (sub.name || '') + '</div></div>'
+        ).join('');
+      }
+      if (tx.subcat) selectedSubcatId = tx.subcat;
     }
   }
 
-  document.getElementById('tx-modal').classList.add('open');
+  const modal = document.getElementById('tx-modal');
+  if (modal) modal.classList.add('open');
 }
 
 function selectCat(id, el) {
@@ -1805,6 +1921,47 @@ let proSettings = { vehicleActive: false, blurActive: true };
 let editingAccountId = null, editingGoalId = null, editingBudgetCat = null;
 let chartInstances = {}, cropImageData = null;
 
+// ===== TRANSFER BETWEEN ACCOUNTS =====
+function openTransferModal() {
+  const fromEl = document.getElementById('transfer-from');
+  const toEl = document.getElementById('transfer-to');
+  if (!fromEl || !toEl) return;
+  const opts = (accounts || []).map(a => '<option value="'+a.id+'">'+a.name+'</option>').join('');
+  fromEl.innerHTML = opts;
+  toEl.innerHTML = '<option value="">Selecione...</option>' + opts;
+  document.getElementById('transfer-amount').value = '';
+  document.getElementById('transfer-modal').classList.add('open');
+}
+document.querySelector('#transfer-from')?.addEventListener('change', function() {
+  const toEl = document.getElementById('transfer-to');
+  if (!toEl) return;
+  const val = this.value;
+  Array.from(toEl.options).forEach(o => { o.disabled = o.value === val; if (o.value === val && o.value !== '') o.selected = false; });
+});
+async function submitTransfer() {
+  const fromId = document.getElementById('transfer-from').value;
+  const toId = document.getElementById('transfer-to').value;
+  const amt = parseFloat(document.getElementById('transfer-amount').value);
+  if (!fromId || !toId) { showToast('Selecione as contas de origem e destino'); return; }
+  if (fromId === toId) { showToast('As contas devem ser diferentes'); return; }
+  if (!amt || amt <= 0) { showToast('Informe um valor válido'); return; }
+  const fromAcc = accounts.find(a => a.id === fromId);
+  if (!fromAcc) return;
+  if ((fromAcc.balance || 0) < amt) { showToast('Saldo insuficiente na conta de origem'); return; }
+  const ts = firebase.firestore.FieldValue.serverTimestamp();
+  const batch = db.batch();
+  const tx1Ref = db.collection('transactions').doc();
+  batch.set(tx1Ref, { name: 'Transferência para ' + (accounts.find(a => a.id === toId)?.name || 'outra conta'), cat: 'transfer', date: 'Agora', amount: -amt, type: 'saída', icon: 'ti-arrows-exchange', bg: 'var(--primary)22', color: 'var(--primary)', group: 'Hoje', createdAt: ts });
+  const tx2Ref = db.collection('transactions').doc();
+  batch.set(tx2Ref, { name: 'Transferência de ' + (fromAcc.name || 'outra conta'), cat: 'transfer', date: 'Agora', amount: amt, type: 'entrada', icon: 'ti-arrows-exchange', bg: 'var(--primary)22', color: 'var(--primary)', group: 'Hoje', createdAt: ts });
+  batch.update(db.collection('accounts').doc(fromId), { balance: (fromAcc.balance || 0) - amt });
+  const toAcc = accounts.find(a => a.id === toId);
+  if (toAcc) batch.update(db.collection('accounts').doc(toId), { balance: (toAcc.balance || 0) + amt });
+  await batch.commit();
+  closeModal('transfer-modal');
+  showToast('Transferência realizada!');
+}
+
 // ===== PRO NAVIGATION EXTENSION =====
 const origShowPage = window.showPage;
 window.showPage = function(name) {
@@ -1827,8 +1984,69 @@ window.showPage = function(name) {
   if (name === 'goals') renderGoals();
   if (name === 'vehicle') renderVehicleFull();
   if (name === 'settings') { renderSettingsAccounts(); renderSettingsCards(); renderSettingsCatsNew(); }
+  if (name === 'profile') {
+    renderProfileFields();
+    const pn = document.getElementById('profile-name');
+    const pe = document.getElementById('profile-email');
+    if (pn) pn.textContent = profile.name || '';
+    if (pe) pe.textContent = profile.email || '';
+    const av = document.getElementById('profile-avatar');
+    if (av && profile.photoURL) av.innerHTML = '<img src="'+profile.photoURL+'" style="width:100%;height:100%;border-radius:50%;object-fit:cover" />';
+  }
+  // Desktop sidebar sync (web layout only)
+  document.querySelectorAll('.desktop-sidebar .d-tab').forEach(t => t.classList.remove('active'));
+  const sidebarMatch = document.querySelector('.desktop-sidebar .d-tab[data-page="'+name+'"]');
+  if (sidebarMatch) sidebarMatch.classList.add('active');
+  if (name === 'vehicle') {
+    document.querySelectorAll('.tab-bar').forEach(bar => {
+      const vehTab = bar.querySelector('[data-vehtab]');
+      if (vehTab) vehTab.classList.add('active');
+    });
+  }
+  if (name === 'home') renderHomeReports();
   window.scrollTo(0, 0);
 };
+
+// ===== HOME DASHBOARD REPORTS =====
+function renderHomeReports() {
+  const el = document.getElementById('home-report-section');
+  if (!el) return;
+  const now = new Date();
+  const monthTx = transactions.filter(t => {
+    const d = t.createdAt ? t.createdAt.toDate() : null;
+    return d && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  });
+  const income = monthTx.filter(t => (t.amount||0) > 0).reduce((s,t) => s + t.amount, 0);
+  const expense = monthTx.filter(t => (t.amount||0) < 0).reduce((s,t) => s + Math.abs(t.amount), 0);
+  const catTotals = {};
+  monthTx.filter(t => (t.amount||0) < 0).forEach(t => {
+    const all = [...(categories.saída||[]), ...(categories.entrada||[])];
+    const cat = all.find(c => c.id === t.cat);
+    if (!cat) return;
+    if (!catTotals[cat.id]) catTotals[cat.id] = { name: cat.name, icon: cat.icon, color: cat.color, total: 0 };
+    catTotals[cat.id].total += Math.abs(t.amount);
+  });
+  const topCats = Object.values(catTotals).sort((a,b) => b.total - a.total).slice(0,3);
+  const maxCat = topCats.length ? topCats[0].total : 1;
+  const tl = budget?.totalLimit || 0;
+  const budgetPct = tl > 0 ? Math.min(expense / tl * 100, 100) : 0;
+  el.innerHTML =
+    '<div class="section-title-new" style="margin-top:12px"><i class="ti ti-report"></i> Resumo do Mês</div>' +
+    '<div class="two-col" style="margin-bottom:8px">' +
+      '<div class="income-card"><div class="income-label">Receitas</div><div class="income-amount" style="color:var(--primary);font-size:16px">R$ '+income.toLocaleString('pt-BR',{minimumFractionDigits:2})+'</div></div>' +
+      '<div class="income-card"><div class="income-label">Despesas</div><div class="income-amount" style="color:#c0392b;font-size:16px">R$ '+expense.toLocaleString('pt-BR',{minimumFractionDigits:2})+'</div></div>' +
+    '</div>' +
+    (tl > 0 ?
+    '<div class="income-card" style="margin-bottom:8px"><div class="section-row" style="margin-bottom:2px"><span class="section-label" style="font-size:12px">Orçamento</span><span style="font-size:11px;color:var(--text-muted)">'+budgetPct.toFixed(0)+'% · R$ '+expense.toLocaleString('pt-BR',{minimumFractionDigits:2})+' de R$ '+tl.toLocaleString('pt-BR',{minimumFractionDigits:2})+'</span></div><div class="progress-bar-new"><div class="progress-fill-new" style="width:'+budgetPct+'%;background:'+(budgetPct>90?'#c0392b':budgetPct>70?'#e07a3a':'var(--primary)')+'"></div></div></div>'
+    : '') +
+    (topCats.length ?
+    '<div class="income-card" style="margin-bottom:8px"><div class="section-label" style="font-size:12px;margin-bottom:6px">Top Categorias</div>' +
+    topCats.map(c =>
+      '<div class="rep-cat-new"><div class="rc-icon" style="background:'+c.color+'22;color:'+c.color+'"><i class="ti '+c.icon+'"></i></div><div class="rc-info"><div class="rc-name">'+c.name+'</div><div class="rc-bar"><div class="rc-fill" style="width:'+(c.total/maxCat*100).toFixed(0)+'%;background:'+c.color+'"></div></div></div><div class="rc-amt" style="color:'+c.color+'">R$ '+c.total.toLocaleString('pt-BR',{minimumFractionDigits:2})+'</div></div>'
+    ).join('')+'</div>'
+    : '') +
+    '<div style="font-size:11px;color:var(--text-muted);text-align:center;padding:8px 0">'+monthTx.length+' transações este mês</div>';
+}
 
 // ===== BLUR TOGGLE =====
 let blurActive = localStorage.getItem('mu_blur') !== '0';
@@ -2079,7 +2297,7 @@ function renderSettingsCatsNew() {
   const render = (type, id) => {
     const container = document.getElementById(id);
     if (!container) return;
-    container.innerHTML = categories[type].map(c =>
+    container.innerHTML = (categories[type] || []).map(c =>
       '<div class="config-item-new"><div class="ci-icon" style="background:'+(c.color||'#888')+'22;color:'+(c.color||'#888')+'"><i class="ti '+(c.icon||'ti-category')+'"></i></div><div class="ci-info"><div class="ci-name">'+c.name+'</div></div><div class="ci-actions"><button onclick="editCatName(\''+c.id+'\')"><i class="ti ti-edit"></i></button><button class="del" onclick="deleteCatById(\''+c.id+'\')"><i class="ti ti-trash"></i></button></div></div>'
     ).join('') || '<div style="color:var(--text-muted);font-size:13px;padding:8px">Nenhuma</div>';
   };
@@ -2126,13 +2344,15 @@ function updateVehicleHomeCard() {
   c.innerHTML = '<div style="display:flex;justify-content:space-between"><span>'+(vehicle.name||'Veículo')+'</span><span>'+kmTotal+' km</span><span>'+media.toFixed(1)+' km/L</span><span style="color:'+oil.color+'">Óleo: '+oil.pct+'%</span></div>';
 }
 function renderVehicleFull() {
+  const intro = document.getElementById('v-intro');
+  const vc = document.getElementById('v-content');
   if (!vehicle) {
-    ['v-health-bars','v-summary','v-report-content','v-timeline'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.innerHTML = '<div style="color:var(--text-muted);font-size:13px;padding:20px;text-align:center">Configure o veículo <button class="section-link" onclick="openVehicleConfig()">Configurar</button></div>';
-    });
+    if (intro) intro.style.display = 'flex';
+    if (vc) vc.style.display = 'none';
     return;
   }
+  if (intro) intro.style.display = 'none';
+  if (vc) vc.style.display = 'block';
   renderVHealth(); renderVSummary(); renderVReport(); renderVTimeline(); renderVChartsPro();
 }
 function renderVHealth() {
@@ -2329,19 +2549,53 @@ async function loadHealthPro() {
     if (snap.exists && snap.data().date === new Date().toISOString().slice(0,10)) health = { agua: snap.data().agua||0, cafeina: snap.data().cafeina||0 };
     else { health = { agua: 0, cafeina: 0 }; await db.collection('health').doc('today').set({ agua: 0, cafeina: 0, date: new Date().toISOString().slice(0,10) }); }
   } catch(e) { health = { agua: 0, cafeina: 0 }; }
+  renderHealthRingsPro();
 }
 function renderHealthRingsPro() {
   const rings = document.getElementById('health-rings');
   if (!rings) return;
   const peso = profile.peso || 70;
-  const metaAgua = Math.round(peso * 35) / 1000; // liters
-  const metaCaf = Math.min(Math.round(peso * 6), 400);
+  const idade = profile.idade || 30;
+  const metaAgua = Math.round(peso * 35) / 1000;
+  const cafeMax = Math.min(idade < 18 ? 100 : 400, Math.round(peso * 6));
+  const metaCafe = cafeMax;
   const ap = Math.min((health.agua||0) / metaAgua * 100, 100);
-  const cp = Math.min((health.cafeina||0) / metaCaf * 100, 100);
-  const r = 25, circ = 2 * Math.PI * r;
+  const cp = Math.min((health.cafeina||0) / metaCafe * 100, 100);
+  const r = 25, circ = Math.round(2 * Math.PI * r * 10) / 10;
+  const offsetA = ap > 0 ? circ - (ap / 100 * circ) : circ;
+  const offsetC = cp > 0 ? circ - (cp / 100 * circ) : circ;
   rings.innerHTML =
-    '<div class="health-ring"><svg viewBox="0 0 60 60"><circle class="h-ring-bg" cx="30" cy="30" r="'+r+'"/><circle class="h-ring-fg" stroke="'+(ap>=100?'var(--primary)':'#22d3ee')+'" stroke-dasharray="'+circ+'" stroke-dashoffset="'+(circ-(ap/100)*circ)+'"/></svg><div class="h-ring-label"><span class="hv">'+(health.agua||0).toFixed(1)+'L</span><span class="hu">/'+metaAgua.toFixed(1)+'L</span></div></div>' +
-    '<div class="health-ring"><svg viewBox="0 0 60 60"><circle class="h-ring-bg" cx="30" cy="30" r="'+r+'"/><circle class="h-ring-fg" stroke="'+(cp>=100?'var(--primary)':'#e07a3a')+'" stroke-dasharray="'+circ+'" stroke-dashoffset="'+(circ-(cp/100)*circ)+'"/></svg><div class="h-ring-label"><span class="hv">'+(health.cafeina||0)+'</span><span class="hu">/'+metaCaf+'mg</span></div></div>';
+    '<div class="health-ring"><svg viewBox="0 0 60 60"><circle class="h-ring-bg" cx="30" cy="30" r="'+r+'"/><circle class="h-ring-fg" stroke="'+(ap>=100?'var(--primary)':'#22d3ee')+'" stroke-dasharray="'+circ+'" stroke-dashoffset="'+offsetA+'"/></svg><div class="h-ring-label"><span class="hv">'+(health.agua||0).toFixed(1)+'L</span><span class="hu">/'+metaAgua.toFixed(1)+'L</span></div></div>' +
+    '<div class="health-ring"><svg viewBox="0 0 60 60"><circle class="h-ring-bg" cx="30" cy="30" r="'+r+'"/><circle class="h-ring-fg" stroke="'+(cp>=100?'var(--primary)':'#e07a3a')+'" stroke-dasharray="'+circ+'" stroke-dashoffset="'+offsetC+'"/></svg><div class="h-ring-label"><span class="hv">'+(health.cafeina||0)+'</span><span class="hu">/'+metaCafe+'mg</span></div></div>';
+}
+
+// ===== HEALTH CONFIG =====
+function openHealthConfig() {
+  document.getElementById('health-peso-input').value = profile.peso || '';
+  document.getElementById('health-idade-input').value = profile.idade || '';
+  updateHealthMetaPreview();
+  document.getElementById('health-config-modal').classList.add('open');
+}
+function updateHealthMetaPreview() {
+  const p = parseFloat(document.getElementById('health-peso-input').value) || 70;
+  const i = parseInt(document.getElementById('health-idade-input').value) || 30;
+  const agua = (Math.round(p * 35) / 1000).toFixed(1);
+  const caf = Math.min(i < 18 ? 100 : 400, Math.round(p * 6));
+  document.getElementById('health-meta-preview').innerHTML = 'Água: <strong>' + agua + 'L</strong> · Cafeína: <strong>' + caf + 'mg</strong>';
+}
+document.getElementById('health-peso-input')?.addEventListener('input', updateHealthMetaPreview);
+document.getElementById('health-idade-input')?.addEventListener('input', updateHealthMetaPreview);
+async function submitHealthConfig() {
+  const peso = parseFloat(document.getElementById('health-peso-input').value);
+  const idade = parseInt(document.getElementById('health-idade-input').value);
+  if (!peso || peso <= 0) { showToast('Informe um peso válido'); return; }
+  if (!idade || idade <= 0) { showToast('Informe uma idade válida'); return; }
+  await db.collection('profile').doc('me').set({ peso, idade }, { merge: true });
+  profile.peso = peso;
+  profile.idade = idade;
+  closeModal('health-config-modal');
+  renderHealthRingsPro();
+  showToast('Configurações de saúde salvas!');
 }
 
 // ===== AVATAR =====
@@ -2436,16 +2690,6 @@ function exportExcel() {
   URL.revokeObjectURL(url); showToast('Exportado!');
 }
 
-// ===== SUPERMARKET SEED CATEGORY =====
-// Ensure supermarket category exists
-async function ensureSupermarketCat() {
-  const snap = await db.collection('categories').where('id','==','supermarket').get();
-  if (snap.empty) {
-    const ref = db.collection('categories').doc('supermarket');
-    await ref.set({ id: 'supermarket', name: 'Supermercado', icon: 'ti-shopping-cart', color: '#1a7a4a', isDefault: true, subcats: [], type: 'saída' });
-  }
-}
-
 // ===== FIRESTORE LISTENERS (NEW COLLECTIONS) =====
 function startProListeners() {
   db.collection('accounts').onSnapshot(snap => {
@@ -2490,7 +2734,6 @@ window.startListeners = function() {
   if (origStartListeners) origStartListeners();
   startProListeners();
   setTimeout(() => {
-    ensureSupermarketCat();
     loadProSettings();
     // Add eye button
     if (!document.getElementById('eye-btn-pro')) {
@@ -2512,9 +2755,20 @@ window.startListeners = function() {
       healthCard.className = 'income-card';
       healthCard.id = 'health-section-pro';
       healthCard.style.marginBottom = '12px';
-      healthCard.innerHTML = '<div class="section-label"><i class="ti ti-heartbeat" style="color:var(--primary);margin-right:4px"></i> Saúde</div><div class="health-rings" id="health-rings"></div><div class="health-btns" id="health-btns-pro"><button class="health-btn" onclick="addHealth(\'agua\',0.473)"><i class="ti ti-building"></i> Escritório</button><button class="health-btn" onclick="addHealth(\'agua\',0.35)"><i class="ti ti-home"></i> Casa</button><button class="health-btn" onclick="addHealth(\'cafeina\',80)"><i class="ti ti-coffee"></i> Café</button><button class="health-btn" onclick="addHealth(\'cafeina\',150)"><i class="ti ti-bolt"></i> Energético</button></div>';
+      healthCard.innerHTML = '<div class="section-row"><span class="section-label"><i class="ti ti-heartbeat" style="color:var(--primary);margin-right:4px"></i> Saúde</span><button class="icon-btn" onclick="openHealthConfig()" title="Configurar Saúde" style="width:28px;height:28px;font-size:14px"><i class="ti ti-settings"></i></button></div><div class="health-rings" id="health-rings"></div><div class="health-btns" id="health-btns-pro"><button class="health-btn" onclick="addHealth(\'agua\',0.473)"><i class="ti ti-building"></i> Escritório</button><button class="health-btn" onclick="addHealth(\'agua\',0.35)"><i class="ti ti-home"></i> Casa</button><button class="health-btn" onclick="addHealth(\'cafeina\',80)"><i class="ti ti-coffee"></i> Café</button><button class="health-btn" onclick="addHealth(\'cafeina\',150)"><i class="ti ti-bolt"></i> Energético</button></div>';
       content.insertBefore(healthCard, content.firstChild);
       renderHealthRingsPro();
+    }
+
+    // Add dashboard reports to home
+    if (!document.getElementById('home-report-section')) {
+      const reportEl = document.createElement('div');
+      reportEl.id = 'home-report-section';
+      const recentSection = document.getElementById('recent-tx-list');
+      if (recentSection && recentSection.parentNode) {
+        recentSection.parentNode.insertBefore(reportEl, recentSection.nextSibling);
+        renderHomeReports();
+      }
     }
 
     // Add settings link to profile menu
@@ -2531,22 +2785,6 @@ window.startListeners = function() {
   }, 500);
 };
 
-// Override showPage to render new pages on navigation
-const origShowPage = window.showPage;
-window.showPage = function(name) {
-  origShowPage(name);
-  if (name === 'budget') renderBudget();
-  if (name === 'goals') renderGoals();
-  if (name === 'vehicle') { renderVehicleFull(); updateVehicleHomeCard(); }
-  if (name === 'settings') { renderSettingsAccounts(); renderSettingsCards(); renderSettingsCatsNew(); }
-  // Activate vehicle tab in all nav bars when on vehicle page
-  if (name === 'vehicle') {
-    document.querySelectorAll('.tab-bar').forEach(bar => {
-      const vehTab = bar.querySelector('[data-vehtab]');
-      if (vehTab) vehTab.classList.add('active');
-    });
-  }
-};
 </script>
 </body>
 </html>
