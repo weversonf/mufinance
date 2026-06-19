@@ -1,9 +1,12 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mu Wallet v10</title>
+<title>Mu Finance Pro</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
@@ -253,6 +256,70 @@
   .login-toggle{display:flex;gap:8px;margin-bottom:4px}
   .login-toggle button{flex:1;padding:7px;border-radius:10px;border:1px solid var(--border);background:var(--bg-app);color:var(--text-muted);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
   .login-toggle button.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+  /* ===== PRO NEW STYLES ===== */
+  .v-health{display:flex;flex-direction:column;gap:6px;padding:4px 0}
+  .v-health-item{display:flex;align-items:center;gap:8px}
+  .v-health-item .v-lbl{font-size:11px;color:var(--text-sec);width:44px;flex-shrink:0}
+  .v-health-item .v-bar{flex:1;height:6px;background:var(--border);border-radius:4px;overflow:hidden}
+  .v-health-item .v-fill{height:100%;border-radius:4px;transition:width .5s}
+  .v-health-item .v-pct{font-size:11px;font-weight:600;width:32px;text-align:right;color:var(--text-sec)}
+  .health-rings{display:flex;gap:16px;justify-content:center;padding:8px 0}
+  .health-ring{text-align:center;position:relative;width:60px;height:60px}
+  .health-ring svg{transform:rotate(-90deg);width:60px;height:60px}
+  .h-ring-bg{fill:none;stroke:var(--border);stroke-width:4}
+  .h-ring-fg{fill:none;stroke:var(--primary);stroke-width:4;stroke-linecap:round}
+  .h-ring-label{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .h-ring-label .hv{font-size:11px;font-weight:700;color:var(--text-main)}
+  .h-ring-label .hu{font-size:8px;color:var(--text-muted)}
+  .health-btns{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+  .health-btn{padding:5px 10px;border-radius:10px;border:1px solid var(--border);background:var(--card-bg);color:var(--text-sec);font-size:10px;font-weight:500;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:4px}
+  .config-group-new{margin-bottom:16px}
+  .config-item-new{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--card-bg);border-radius:10px;margin-bottom:6px;border:1px solid var(--border)}
+  .config-item-new .ci-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;background:var(--bg-app);flex-shrink:0}
+  .config-item-new .ci-info{flex:1}
+  .config-item-new .ci-info .ci-name{font-size:13px;font-weight:600;color:var(--text-main)}
+  .config-item-new .ci-info .ci-sub{font-size:10px;color:var(--text-muted)}
+  .config-item-new .ci-actions{display:flex;gap:6px}
+  .config-item-new .ci-actions button{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:16px;padding:2px}
+  .config-item-new .ci-actions button:hover{color:var(--primary)}
+  .config-item-new .ci-actions .del:hover{color:#c0392b}
+  .progress-bar-new{height:6px;background:var(--border);border-radius:4px;overflow:hidden;margin:6px 0}
+  .progress-fill-new{height:100%;border-radius:4px;transition:width .5s ease}
+  .budget-item-new{padding:10px 0;border-bottom:1px solid var(--border)}
+  .budget-header-new{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+  .budget-header-new .b-name{font-size:12px;font-weight:600;color:var(--text-main)}
+  .budget-header-new .b-amt{font-size:11px;color:var(--text-muted)}
+  .budget-header-new .b-amt .spent{color:var(--text-sec);font-weight:600}
+  .goal-item-new{background:var(--card-bg);border-radius:14px;padding:14px;margin-bottom:10px}
+  .goal-item-new .g-name{font-size:14px;font-weight:700;color:var(--text-main);margin-bottom:6px}
+  .goal-progress-new{display:flex;align-items:center;gap:8px}
+  .goal-progress-new .gp-bar{flex:1;height:8px;background:var(--border);border-radius:6px;overflow:hidden}
+  .goal-progress-new .gp-fill{height:100%;border-radius:6px;background:var(--primary)}
+  .goal-progress-new .gp-pct{font-size:12px;font-weight:700;color:var(--primary);min-width:32px;text-align:right}
+  .goal-values-new{font-size:11px;color:var(--text-muted);margin-top:4px}
+  .chart-wrap-new{background:var(--card-bg);border-radius:14px;padding:14px;margin-bottom:12px}
+  .chart-wrap-new h4{font-size:12px;font-weight:600;color:var(--text-main);margin-bottom:10px}
+  .chart-wrap-new canvas{width:100%;height:auto;display:block}
+  .v-hist-item{display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)}
+  .v-hist-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;background:var(--card-bg)}
+  .v-hist-info{flex:1}
+  .v-hist-info .vh-t{font-size:12px;font-weight:600;color:var(--text-main)}
+  .v-hist-info .vh-s{font-size:10px;color:var(--text-muted)}
+  .blurred{filter:blur(8px);user-select:none}
+  .section-title-new{font-size:12px;font-weight:700;color:var(--text-main);margin-bottom:8px;display:flex;align-items:center;gap:6px;margin-top:16px}
+  .section-title-new i{color:var(--primary);font-size:15px}
+  .prof-field-new{margin-bottom:10px}
+  .prof-field-new label{font-size:10px;color:var(--text-muted);font-weight:500;display:block;margin-bottom:3px;text-transform:uppercase;letter-spacing:.5px}
+  .prof-field-new .pval{font-size:13px;font-weight:600;color:var(--text-main);padding:8px 10px;background:var(--card-bg);border-radius:8px;display:flex;justify-content:space-between;align-items:center}
+  .prof-field-new .pval .edit{background:none;border:none;color:var(--primary);cursor:pointer;font-size:11px;font-weight:600;font-family:inherit}
+  .prof-field-new .pval .rest{font-size:9px;color:var(--text-muted);font-weight:400}
+  .rep-cat-new{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)}
+  .rep-cat-new .rc-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+  .rep-cat-new .rc-info{flex:1}
+  .rep-cat-new .rc-info .rc-name{font-size:12px;font-weight:600;color:var(--text-main)}
+  .rep-cat-new .rc-bar{height:4px;background:var(--border);border-radius:2px;margin-top:3px;overflow:hidden}
+  .rep-cat-new .rc-fill{height:100%;border-radius:2px}
+  .rep-cat-new .rc-amt{font-size:12px;font-weight:700;text-align:right}
 </style>
 </head>
 <body data-theme="light">
@@ -559,6 +626,300 @@
   <div class="modal">
     <h2>Notificações <button class="modal-close" onclick="closeModal('notif-modal')"><i class="ti ti-x"></i></button></h2>
     <div id="notif-list"></div>
+  </div>
+</div>
+
+<!-- ===== PRO NEW PAGES ===== -->
+
+<!-- SETTINGS PAGE -->
+<div class="app page" id="settings-page">
+  <div class="page-header">
+    <button class="back-btn" onclick="showPage('profile')"><i class="ti ti-arrow-left"></i></button>
+    <span class="page-title">Configurações</span>
+  </div>
+  <div class="page-content">
+    <div class="section-title-new"><i class="ti ti-toggle-left"></i> Módulos</div>
+    <div class="config-cat-item">
+      <div class="cat-main" style="justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="icon" style="background:var(--primary-light);color:var(--primary)"><i class="ti ti-car"></i></div>
+          <div><div class="name" style="font-size:13px">Veículo</div><div style="font-size:10px;color:var(--text-muted)">Controle de abastecimento e manutenção</div></div>
+        </div>
+        <div class="toggle-switch" id="toggle-vehicle" onclick="toggleModule('vehicle')" style="flex-shrink:0"></div>
+      </div>
+    </div>
+    <div class="section-title-new"><i class="ti ti-wallet"></i> Contas Bancárias</div>
+    <div id="accounts-list"></div>
+    <button class="submit-btn" style="background:var(--card-bg);color:var(--text-sec);margin-top:8px;font-size:13px" onclick="openAccountModal(null)"><i class="ti ti-plus"></i> Adicionar Conta</button>
+    <div class="section-title-new"><i class="ti ti-credit-card"></i> Cartões</div>
+    <div id="settings-cards-list"></div>
+    <div class="section-title-new"><i class="ti ti-category"></i> Categorias de Despesa</div>
+    <div id="settings-expense-cats"></div>
+    <button class="submit-btn" style="background:var(--card-bg);color:var(--text-sec);margin-top:8px;font-size:13px" onclick="addNewCat('saída')"><i class="ti ti-plus"></i> Nova Categoria</button>
+    <div class="section-title-new"><i class="ti ti-category"></i> Categorias de Receita</div>
+    <div id="settings-income-cats"></div>
+    <button class="submit-btn" style="background:var(--card-bg);color:var(--text-sec);margin-top:8px;font-size:13px" onclick="addNewCat('entrada')"><i class="ti ti-plus"></i> Nova Categoria</button>
+  </div>
+</div>
+
+<!-- BUDGET PAGE -->
+<div class="app page" id="budget-page">
+  <div class="page-header">
+    <button class="back-btn" onclick="showPage('home')"><i class="ti ti-arrow-left"></i></button>
+    <span class="page-title">Orçamento</span>
+    <div style="flex:1"></div>
+    <button class="icon-btn" onclick="openBudgetLimitModal()" title="Limite Total"><i class="ti ti-settings"></i></button>
+  </div>
+  <div class="page-content">
+    <div class="income-card">
+      <div class="section-row">
+        <span class="section-label">Limite Mensal Total</span>
+        <span style="font-size:16px;font-weight:700;color:var(--text-main)" id="budget-total-limit">R$ 0</span>
+      </div>
+      <div class="progress-bar-new"><div class="progress-fill-new" id="budget-total-bar" style="width:0%;background:var(--primary)"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin-top:4px">
+        <span>Gasto: <strong id="budget-total-spent">R$ 0</strong></span>
+        <span>Disponível: <strong id="budget-total-avail">R$ 0</strong></span>
+      </div>
+    </div>
+    <div class="section-title-new"><i class="ti ti-category"></i> Por Categoria</div>
+    <div id="budget-cat-list"></div>
+    <button class="submit-btn" style="background:var(--card-bg);color:var(--text-sec);font-size:13px" onclick="openBudgetCatModal(null)"><i class="ti ti-plus"></i> Adicionar Categoria</button>
+  </div>
+</div>
+
+<!-- GOALS PAGE -->
+<div class="app page" id="goals-page">
+  <div class="page-header">
+    <button class="back-btn" onclick="showPage('home')"><i class="ti ti-arrow-left"></i></button>
+    <span class="page-title">Metas de Economia</span>
+    <div style="flex:1"></div>
+    <button class="icon-btn" onclick="openGoalModal(null)" title="Nova Meta"><i class="ti ti-plus"></i></button>
+  </div>
+  <div class="page-content" id="goals-list"></div>
+</div>
+
+<!-- VEHICLE PAGE -->
+<div class="app page" id="vehicle-page">
+  <div class="page-header">
+    <button class="back-btn" onclick="showPage('home')"><i class="ti ti-arrow-left"></i></button>
+    <span class="page-title">Veículo</span>
+    <div style="flex:1"></div>
+    <button class="icon-btn" onclick="openVehicleConfig()" title="Configurar"><i class="ti ti-settings"></i></button>
+  </div>
+  <div class="page-content">
+    <div class="income-card"><div class="section-label">Saúde do Veículo</div><div class="v-health" id="v-health-bars"></div></div>
+    <div class="two-col" id="v-summary"></div>
+    <div style="display:flex;gap:8px;margin:12px 0">
+      <button class="action-btn side" style="flex:1" onclick="openRefuelModal()"><i class="ti ti-gas-station"></i> Abastecer</button>
+      <button class="action-btn side" style="flex:1" onclick="openMaintModal()"><i class="ti ti-tool"></i> Manutenção</button>
+      <button class="action-btn side" style="flex:1" onclick="openRouteModal()"><i class="ti ti-map-2"></i> Rota</button>
+    </div>
+    <div class="chart-wrap-new"><h4>Evolução do Consumo (km/L) · Meta: 29 km/L</h4><canvas id="consumption-chart"></canvas></div>
+    <div class="chart-wrap-new"><h4>KM por Dia · Esta Semana</h4><canvas id="weekly-km-chart"></canvas></div>
+    <div class="income-card" id="v-report-card">
+      <div class="section-label">Relatório de Inteligência</div>
+      <div id="v-report-content" style="font-size:12px;color:var(--text-sec)"></div>
+    </div>
+    <div class="income-card" style="cursor:pointer;margin-top:10px" onclick="openTripCalc()">
+      <div class="section-row"><span class="section-label"><i class="ti ti-map-pin" style="color:var(--primary)"></i> Calculadora de Viagem</span><span class="section-link">Abrir <i class="ti ti-chevron-right"></i></span></div>
+    </div>
+    <div class="section-title-new"><i class="ti ti-history"></i> Histórico</div>
+    <div id="v-timeline"></div>
+  </div>
+</div>
+
+<!-- ===== PRO NEW MODALS ===== -->
+
+<!-- ACCOUNT MODAL -->
+<div class="modal-overlay" id="account-modal">
+  <div class="modal">
+    <h2 id="account-modal-title">Adicionar Conta <button class="modal-close" onclick="closeModal('account-modal')"><i class="ti ti-x"></i></button></h2>
+    <label class="field-label">Nome</label>
+    <input class="field-input" id="acc-name-input" placeholder="Ex: Carteira, Nubank" />
+    <label class="field-label">Tipo</label>
+    <select class="field-input" id="acc-type-input"><option value="carteira">Carteira</option><option value="corrente">Conta Corrente</option><option value="poupanca">Poupança</option></select>
+    <label class="field-label">Cor</label>
+    <input class="field-input" id="acc-color-input" type="color" value="#1a7a4a" style="height:44px;padding:4px" />
+    <label class="field-label">Saldo Inicial (R$)</label>
+    <input class="field-input" id="acc-balance-input" type="number" step="0.01" placeholder="0,00" />
+    <button class="submit-btn" onclick="submitAccount()">Salvar</button>
+    <button class="submit-btn" id="acc-delete-btn" onclick="deleteAccount()" style="background:#c0392b;margin-top:10px;display:none">Excluir Conta</button>
+  </div>
+</div>
+
+<!-- GOAL MODAL -->
+<div class="modal-overlay" id="goal-modal">
+  <div class="modal">
+    <h2 id="goal-modal-title">Nova Meta <button class="modal-close" onclick="closeModal('goal-modal')"><i class="ti ti-x"></i></button></h2>
+    <label class="field-label">Nome da Meta</label>
+    <input class="field-input" id="goal-name-input" placeholder="Ex: Viagem para Europa" />
+    <label class="field-label">Valor Alvo (R$)</label>
+    <input class="field-input" id="goal-target-input" type="number" step="0.01" min="0" placeholder="10000" />
+    <label class="field-label">Já guardado (R$)</label>
+    <input class="field-input" id="goal-saved-input" type="number" step="0.01" min="0" placeholder="0" />
+    <button class="submit-btn" onclick="submitGoal()">Salvar Meta</button>
+    <button class="submit-btn" id="goal-delete-btn" onclick="deleteGoal()" style="background:#c0392b;margin-top:10px;display:none">Excluir Meta</button>
+  </div>
+</div>
+
+<!-- BUDGET LIMIT MODAL -->
+<div class="modal-overlay" id="budget-limit-modal">
+  <div class="modal">
+    <h2>Limite Mensal Total <button class="modal-close" onclick="closeModal('budget-limit-modal')"><i class="ti ti-x"></i></button></h2>
+    <label class="field-label">Limite (R$)</label>
+    <input class="field-input" id="budget-limit-input" type="number" step="0.01" min="0" placeholder="5000" />
+    <button class="submit-btn" onclick="submitBudgetLimit()">Salvar</button>
+  </div>
+</div>
+
+<!-- BUDGET CAT MODAL -->
+<div class="modal-overlay" id="budget-cat-modal">
+  <div class="modal">
+    <h2 id="budget-cat-modal-title">Nova Categoria <button class="modal-close" onclick="closeModal('budget-cat-modal')"><i class="ti ti-x"></i></button></h2>
+    <label class="field-label">Categoria (Despesa)</label>
+    <select class="field-input" id="budget-cat-select"></select>
+    <label class="field-label">Limite (R$)</label>
+    <input class="field-input" id="budget-cat-limit-input" type="number" step="0.01" min="0" placeholder="1000" />
+    <button class="submit-btn" onclick="submitBudgetCat()">Salvar</button>
+    <button class="submit-btn" id="budget-cat-delete-btn" onclick="deleteBudgetCat()" style="background:#c0392b;margin-top:10px;display:none">Excluir</button>
+  </div>
+</div>
+
+<!-- VEHICLE CONFIG MODAL -->
+<div class="modal-overlay" id="v-config-modal">
+  <div class="modal">
+    <h2>Configurar Veículo <button class="modal-close" onclick="closeModal('v-config-modal')"><i class="ti ti-x"></i></button></h2>
+    <label class="field-label">Tipo</label>
+    <select class="field-input" id="v-type-input"><option value="carro">Carro</option><option value="moto">Moto</option></select>
+    <label class="field-label">Nome / Apelido</label>
+    <input class="field-input" id="v-name-input" placeholder="Ex: Civic" />
+    <label class="field-label">KM da Última Troca de Óleo</label>
+    <input class="field-input" id="v-oil-km-input" type="number" min="0" placeholder="5000" />
+    <label class="field-label">Final da Placa (0-9)</label>
+    <input class="field-input" id="v-plate-input" type="number" min="0" max="9" placeholder="5" />
+    <label class="field-label">Consumo Manual (km/L, opcional)</label>
+    <input class="field-input" id="v-consumo-input" type="number" step="0.1" min="0" placeholder="12" />
+    <button class="submit-btn" onclick="submitVehicleConfig()">Salvar</button>
+  </div>
+</div>
+
+<!-- REFUEL MODAL -->
+<div class="modal-overlay" id="refuel-modal">
+  <div class="modal">
+    <h2>Abastecimento <button class="modal-close" onclick="closeModal('refuel-modal')"><i class="ti ti-x"></i></button></h2>
+    <label class="field-label">Combustível</label>
+    <select class="field-input" id="refuel-type"><option value="gasolina">Gasolina</option><option value="etanol">Etanol</option><option value="diesel">Diesel</option><option value="gnv">GNV</option></select>
+    <label class="field-label">Preço por Litro (R$)</label>
+    <input class="field-input" id="refuel-price" type="number" step="0.001" min="0" placeholder="5,49" />
+    <label class="field-label">Litros</label>
+    <input class="field-input" id="refuel-liters" type="number" step="0.01" min="0" placeholder="40" />
+    <label class="field-label">Valor Total (R$) <small>(calculado automático)</small></label>
+    <input class="field-input" id="refuel-total" type="number" step="0.01" min="0" placeholder="0" />
+    <label class="field-label">Hodômetro (KM)</label>
+    <input class="field-input" id="refuel-km" type="number" min="0" placeholder="15000" />
+    <label class="field-label">Tanque Cheio?</label>
+    <div class="toggle-switch" id="refuel-full-toggle" onclick="this.classList.toggle('active')" style="margin:4px 0 10px"></div>
+    <label class="field-label">Conta (opcional)</label>
+    <select class="field-input" id="refuel-account"></select>
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+      <button class="submit-btn" style="flex:0;padding:10px 16px;font-size:12px" onclick="openScanner()"><i class="ti ti-camera"></i> OCR</button>
+      <span style="font-size:11px;color:var(--text-muted)">ou digite manualmente</span>
+    </div>
+    <button class="submit-btn" onclick="submitRefuel()">Registrar Abastecimento</button>
+  </div>
+</div>
+
+<!-- MAINTENANCE MODAL -->
+<div class="modal-overlay" id="maint-modal">
+  <div class="modal">
+    <h2>Manutenção <button class="modal-close" onclick="closeModal('maint-modal')"><i class="ti ti-x"></i></button></h2>
+    <label class="field-label">Tipo</label>
+    <select class="field-input" id="maint-type">
+      <option value="oleo">Troca de Óleo</option><option value="pneus">Pneus</option><option value="corrente">Corrente</option>
+      <option value="freios">Freios</option><option value="filtros">Filtros</option><option value="suspensao">Suspensão</option><option value="outro">Outro</option>
+    </select>
+    <label class="field-label">Descrição</label>
+    <input class="field-input" id="maint-desc" placeholder="Ex: Troca de óleo 5w30" />
+    <label class="field-label">KM</label>
+    <input class="field-input" id="maint-km" type="number" min="0" placeholder="15000" />
+    <label class="field-label">Valor (R$)</label>
+    <input class="field-input" id="maint-value" type="number" step="0.01" min="0" placeholder="250" />
+    <label class="field-label">Conta (opcional)</label>
+    <select class="field-input" id="maint-account"></select>
+    <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-sec);margin:8px 0"><input type="checkbox" id="maint-oil-flag" /> Esta manutenção é troca de óleo</label>
+    <button class="submit-btn" onclick="submitMaint()">Registrar Manutenção</button>
+  </div>
+</div>
+
+<!-- ROUTE MODAL -->
+<div class="modal-overlay" id="route-modal">
+  <div class="modal">
+    <h2>Registrar Rota <button class="modal-close" onclick="closeModal('route-modal')"><i class="ti ti-x"></i></button></h2>
+    <label class="field-label">Hodômetro (KM)</label>
+    <input class="field-input" id="route-km" type="number" min="0" placeholder="15000" />
+    <label class="field-label">Origem</label>
+    <input class="field-input" id="route-origin" placeholder="Cidade de origem" />
+    <label class="field-label">Destino</label>
+    <input class="field-input" id="route-dest" placeholder="Cidade de destino" />
+    <label class="field-label">Motivo</label>
+    <input class="field-input" id="route-reason" placeholder="Trabalho, lazer..." />
+    <label class="field-label">Distância (km) <small style="color:var(--text-muted)">(calcular via OSRM)</small></label>
+    <div style="display:flex;gap:8px;align-items:center">
+      <input class="field-input" id="route-distance" type="number" step="0.1" min="0" placeholder="0" style="flex:1;margin-bottom:0" />
+      <button class="submit-btn" style="flex:0;padding:10px 16px;font-size:12px;width:auto" onclick="calcRouteDistance()"><i class="ti ti-map-pin"></i> Calcular</button>
+    </div>
+    <button class="submit-btn" onclick="submitRoute()">Salvar Rota</button>
+  </div>
+</div>
+
+<!-- TRIP CALCULATOR MODAL -->
+<div class="modal-overlay" id="trip-modal">
+  <div class="modal">
+    <h2>Calculadora de Viagem <button class="modal-close" onclick="closeModal('trip-modal')"><i class="ti ti-x"></i></button></h2>
+    <label class="field-label">Origem</label>
+    <input class="field-input" id="trip-origin" placeholder="Cidade de origem" />
+    <label class="field-label">Destino</label>
+    <input class="field-input" id="trip-dest" placeholder="Cidade de destino" />
+    <button class="submit-btn" style="background:var(--card-bg);color:var(--text-sec);margin-bottom:8px" onclick="calcTrip()"><i class="ti ti-map-pin"></i> Calcular Rota</button>
+    <div id="trip-result" style="font-size:13px;color:var(--text-sec);padding:12px 0">Preencha origem e destino e clique em "Calcular Rota"</div>
+    <button class="submit-btn" onclick="saveTripAsGoal()"><i class="ti ti-target"></i> Salvar Custo como Meta</button>
+  </div>
+</div>
+
+<!-- AVATAR MODAL -->
+<div class="modal-overlay" id="avatar-modal">
+  <div class="modal">
+    <h2>Avatar <button class="modal-close" onclick="closeModal('avatar-modal')"><i class="ti ti-x"></i></button></h2>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;padding:8px 0" id="avatar-presets"></div>
+    <label class="field-label">Upload de imagem</label>
+    <input class="field-input" type="file" id="avatar-upload" accept="image/*" onchange="handleAvatarUpload(event)" style="padding:8px" />
+    <div id="avatar-crop-area" style="display:none;text-align:center">
+      <img id="avatar-preview" style="max-width:100%;max-height:200px;border-radius:10px;margin:8px 0" />
+      <button class="submit-btn" onclick="cropAndSaveAvatar()">Recortar e Salvar</button>
+    </div>
+    <button class="submit-btn" style="background:var(--card-bg);color:var(--text-sec)" onclick="saveAvatarDiceBear()"><i class="ti ti-shuffle"></i> Gerar Avatar Aleatório</button>
+  </div>
+</div>
+
+<!-- SCANNER MODAL -->
+<div class="modal-overlay" id="scanner-modal">
+  <div class="modal" style="text-align:center">
+    <h2>Escanear QR Code <button class="modal-close" onclick="closeScanner()"><i class="ti ti-x"></i></button></h2>
+    <div id="scanner-reader" style="width:100%;max-width:280px;margin:0 auto"></div>
+    <p style="font-size:12px;color:var(--text-muted);margin-top:8px">Aponte para o QR Code da NFC-e</p>
+    <button class="submit-btn" style="background:var(--card-bg);color:var(--text-sec)" onclick="closeScanner()">Fechar</button>
+  </div>
+</div>
+
+<!-- QUICK MENU -->
+<div class="modal-overlay" id="quick-menu-modal">
+  <div class="modal">
+    <h2>Ações Rápidas <button class="modal-close" onclick="closeModal('quick-menu-modal')"><i class="ti ti-x"></i></button></h2>
+    <button class="submit-btn" style="background:var(--primary);margin-bottom:8px" onclick="openTxModal('send');closeModal('quick-menu-modal')"><i class="ti ti-minus"></i> Nova Despesa</button>
+    <button class="submit-btn" style="background:var(--primary);margin-bottom:8px" onclick="openTxModal('receive');closeModal('quick-menu-modal')"><i class="ti ti-plus"></i> Nova Receita</button>
+    <button class="submit-btn" style="background:var(--card-bg);color:var(--text-sec);margin-bottom:8px" onclick="showPage('vehicle');closeModal('quick-menu-modal')"><i class="ti ti-car"></i> Abastecer Veículo</button>
+    <button class="submit-btn" style="background:var(--card-bg);color:var(--text-sec)" onclick="openGoalModal(null);closeModal('quick-menu-modal')"><i class="ti ti-target"></i> Nova Meta</button>
   </div>
 </div>
 
@@ -1389,6 +1750,778 @@ function showToast(msg) {
 }
 
 document.getElementById('tx-modal').addEventListener('click', e => { if(e.target.id === 'tx-modal') closeModal('tx-modal'); });
+// ===== CLOSE MODALS ON OVERLAY CLICK =====
+document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', function(e) { if(e.target === this) this.classList.remove('open'); }));
+
+// ===== PRO NEW STATE =====
+let accounts = [];
+let goals = [];
+let budget = { totalLimit: 0, cats: {} };
+let vehicle = null;
+let refuels = [];
+let maintenances = [];
+let routes = [];
+let health = { agua: 0, cafeina: 0 };
+let proSettings = { vehicleActive: false, blurActive: true };
+let editingAccountId = null, editingGoalId = null, editingBudgetCat = null;
+let chartInstances = {}, cropImageData = null;
+
+// ===== PRO NAVIGATION EXTENSION =====
+const origShowPage = window.showPage;
+window.showPage = function(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const target = document.getElementById(name + '-page');
+  if (target) target.classList.add('active');
+  const tabNames = { home:0, transactions:1, reports:2, cards:3, profile:4, budget:3, goals:4, vehicle:2 };
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  if (tabNames[name] !== undefined) {
+    document.querySelectorAll('.tab-bar').forEach(bar => {
+      const tabs = bar.querySelectorAll('.tab');
+      if (tabs[tabNames[name]]) tabs[tabNames[name]].classList.add('active');
+    });
+  }
+  if (name === 'transactions') renderAll(window._txFilter || 'all');
+  if (name === 'reports') { renderReports(); renderAnnualChart(); }
+  if (name === 'cards') renderCards();
+  if (name === 'config-categories') renderConfigCategories();
+  if (name === 'budget') renderBudget();
+  if (name === 'goals') renderGoals();
+  if (name === 'vehicle') renderVehicleFull();
+  if (name === 'settings') { renderSettingsAccounts(); renderSettingsCards(); renderSettingsCatsNew(); }
+  window.scrollTo(0, 0);
+};
+
+// ===== BLUR TOGGLE =====
+let blurActive = localStorage.getItem('mu_blur') !== '0';
+function toggleBlur() {
+  blurActive = !blurActive;
+  localStorage.setItem('mu_blur', blurActive ? '1' : '0');
+  document.getElementById('main-balance').classList.toggle('blurred', blurActive);
+}
+// Add eye button to balance section
+document.addEventListener('DOMContentLoaded', function() {
+  const bs = document.querySelector('.balance-section');
+  if (bs && !document.getElementById('eye-btn-pro')) {
+    const btn = document.createElement('button');
+    btn.id = 'eye-btn-pro';
+    btn.style.cssText = 'position:absolute;right:20px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:20px';
+    btn.innerHTML = '<i class="ti ti-eye-off"></i>';
+    btn.onclick = toggleBlur;
+    bs.appendChild(btn);
+    if (!blurActive) { document.getElementById('main-balance').classList.remove('blurred'); btn.innerHTML = '<i class="ti ti-eye"></i>'; }
+  }
+  // Add eye to balance on each page init
+});
+
+// ===== SETTINGS / MODULES =====
+function toggleModule(mod) {
+  if (mod === 'vehicle') {
+    proSettings.vehicleActive = !proSettings.vehicleActive;
+    const el = document.getElementById('toggle-vehicle');
+    if (el) el.classList.toggle('active', proSettings.vehicleActive);
+    if (proSettings.vehicleActive) initVehicle();
+    db.collection('settings').doc('modules').set({ vehicleActive: proSettings.vehicleActive }, { merge: true });
+    showToast(proSettings.vehicleActive ? 'Veículo ativado!' : 'Veículo desativado');
+    injectVehicleTab();
+  }
+}
+function injectVehicleTab() {
+  const navBars = document.querySelectorAll('.tab-bar');
+  navBars.forEach(bar => {
+    if (proSettings.vehicleActive) {
+      let existing = bar.querySelector('[data-vehtab]');
+      if (!existing) {
+        const tabs = bar.querySelectorAll('.tab');
+        if (tabs.length >= 3) {
+          const veh = document.createElement('button');
+          veh.className = 'tab';
+          veh.setAttribute('data-vehtab', '1');
+          veh.innerHTML = '<i class="ti ti-car"></i><span>Veículo</span>';
+          veh.onclick = function() { showPage('vehicle'); };
+          tabs[2].parentNode.insertBefore(veh, tabs[3] || null);
+        }
+      }
+    } else {
+      const existing = bar.querySelector('[data-vehtab]');
+      if (existing) existing.remove();
+    }
+  });
+  // Add to profile menu
+  const menuList = document.querySelector('.menu-list');
+  if (menuList) {
+    let vehMenu = document.getElementById('veh-menu-item');
+    if (proSettings.vehicleActive) {
+      if (!vehMenu) {
+        vehMenu = document.createElement('div');
+        vehMenu.className = 'menu-item';
+        vehMenu.id = 'veh-menu-item';
+        vehMenu.innerHTML = '<i class="ti ti-car"></i><span>Veículo</span><i class="ti ti-chevron-right"></i>';
+        vehMenu.onclick = function() { showPage('vehicle'); };
+        const themeToggle = document.getElementById('theme-toggle');
+        if (themeToggle) themeToggle.parentNode.insertBefore(vehMenu, themeToggle);
+      }
+    } else {
+      if (vehMenu) vehMenu.remove();
+    }
+  }
+  // Add to home vehicle card
+  let homeCard = document.getElementById('vehicle-home-card');
+  if (proSettings.vehicleActive) {
+    if (!homeCard) {
+      homeCard = document.createElement('div');
+      homeCard.className = 'income-card';
+      homeCard.id = 'vehicle-home-card';
+      homeCard.style.marginBottom = '12px';
+      homeCard.innerHTML = '<div class="section-row"><span class="section-label"><i class="ti ti-car" style="color:var(--primary);margin-right:4px"></i> Veículo</span><button class="section-link" onclick="showPage(\'vehicle\')">Detalhes <i class="ti ti-chevron-right"></i></button></div><div id="vehicle-home-content" style="font-size:12px;color:var(--text-sec)">Configure em Config</div>';
+      const content = document.querySelector('.content');
+      if (content) content.insertBefore(homeCard, content.firstChild);
+    }
+    updateVehicleHomeCard();
+  } else {
+    if (homeCard) homeCard.remove();
+  }
+}
+async function loadProSettings() {
+  try {
+    const snap = await db.collection('settings').doc('modules').get();
+    if (snap.exists) {
+      proSettings.vehicleActive = snap.data().vehicleActive || false;
+      const el = document.getElementById('toggle-vehicle');
+      if (el) el.classList.toggle('active', proSettings.vehicleActive);
+      if (proSettings.vehicleActive) initVehicle();
+      injectVehicleTab();
+    }
+  } catch (e) {}
+}
+
+// ===== ACCOUNTS =====
+function renderSettingsAccounts() {
+  const c = document.getElementById('accounts-list');
+  if (!c) return;
+  c.innerHTML = accounts.map(a =>
+    '<div class="config-item-new">' +
+    '<div class="ci-icon" style="background:'+a.color+'22;color:'+a.color+'"><i class="ti ti-wallet"></i></div>' +
+    '<div class="ci-info"><div class="ci-name">'+a.name+'</div><div class="ci-sub">'+a.type+' · R$ '+(a.balance||0).toLocaleString('pt-BR',{minimumFractionDigits:2})+'</div></div>' +
+    '<div class="ci-actions"><button onclick="openAccountModal(\''+a.id+'\')"><i class="ti ti-edit"></i></button><button class="del" onclick="deleteAccountById(\''+a.id+'\')"><i class="ti ti-trash"></i></button></div></div>'
+  ).join('') || '<div style="color:var(--text-muted);font-size:13px;padding:8px">Nenhuma conta</div>';
+}
+function openAccountModal(id) {
+  editingAccountId = id || null;
+  const a = id ? accounts.find(x => x.id === id) : null;
+  document.getElementById('account-modal-title').innerHTML = (a ? 'Editar' : 'Adicionar') + ' Conta <button class="modal-close" onclick="closeModal(\'account-modal\')"><i class="ti ti-x"></i></button>';
+  document.getElementById('acc-name-input').value = a ? a.name : '';
+  document.getElementById('acc-type-input').value = a ? a.type : 'carteira';
+  document.getElementById('acc-color-input').value = a ? a.color : '#1a7a4a';
+  document.getElementById('acc-balance-input').value = a ? a.balance : '';
+  document.getElementById('acc-delete-btn').style.display = a ? '' : 'none';
+  document.getElementById('account-modal').classList.add('open');
+}
+async function submitAccount() {
+  const n = document.getElementById('acc-name-input').value.trim();
+  const t = document.getElementById('acc-type-input').value;
+  const c = document.getElementById('acc-color-input').value;
+  const b = parseFloat(document.getElementById('acc-balance-input').value) || 0;
+  if (!n) { showToast('Nome obrigatório'); return; }
+  const data = { name: n, type: t, color: c, balance: b };
+  if (editingAccountId) { await db.collection('accounts').doc(editingAccountId).update(data); showToast('Atualizada!'); }
+  else { await db.collection('accounts').add(data); showToast('Adicionada!'); }
+  closeModal('account-modal');
+}
+function deleteAccountById(id) { if (!confirm('Excluir?')) return; db.collection('accounts').doc(id).delete(); showToast('Excluída!'); }
+async function deleteAccount() {
+  if (!editingAccountId) return;
+  if (!confirm('Excluir?')) return;
+  await db.collection('accounts').doc(editingAccountId).delete();
+  closeModal('account-modal'); showToast('Excluída!');
+}
+function populateAccountSelects() {
+  const opts = '<option value="">Nenhuma</option>' + accounts.map(a => '<option value="'+a.id+'">'+a.name+'</option>').join('');
+  ['refuel-account','maint-account'].forEach(id => { const el = document.getElementById(id); if (el) { const v = el.value; el.innerHTML = opts; el.value = v; } });
+}
+
+// ===== BUDGET =====
+function renderBudget() {
+  if (!document.getElementById('budget-total-limit')) return;
+  document.getElementById('budget-total-limit').textContent = 'R$ '+(budget.totalLimit||0).toLocaleString('pt-BR',{minimumFractionDigits:2});
+  const now = new Date();
+  const monthSpent = transactions.filter(t => {
+    const d = t.createdAt ? t.createdAt.toDate() : null;
+    return d && t.amount < 0 && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  }).reduce((s,t) => s + Math.abs(t.amount), 0);
+  const tl = budget.totalLimit || 1;
+  const pct = Math.min(monthSpent / tl * 100, 100);
+  const bar = document.getElementById('budget-total-bar');
+  if (bar) { bar.style.width = pct+'%'; bar.style.background = pct > 90 ? '#c0392b' : pct > 70 ? '#e07a3a' : 'var(--primary)'; }
+  document.getElementById('budget-total-spent').textContent = 'R$ '+monthSpent.toLocaleString('pt-BR',{minimumFractionDigits:2});
+  document.getElementById('budget-total-avail').textContent = 'R$ '+((budget.totalLimit||0)-monthSpent).toLocaleString('pt-BR',{minimumFractionDigits:2});
+  // Alert
+  if (pct > 90 && !window._budgetAlerted) {
+    window._budgetAlerted = true;
+    db.collection('notifications').add({ message: 'Orçamento crítico! Você usou '+pct.toFixed(0)+'% do limite mensal.', type: 'alert', read: false, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+  }
+  if (pct < 80) window._budgetAlerted = false;
+  // By category
+  const cl = document.getElementById('budget-cat-list');
+  if (!budget.cats || !Object.keys(budget.cats).length) { cl.innerHTML = '<div style="color:var(--text-muted);font-size:13px;padding:12px 0">Nenhum orçamento por categoria</div>'; return; }
+  cl.innerHTML = Object.entries(budget.cats).map(([catId, lim]) => {
+    const allCats = [...categories.saída, ...categories.entrada];
+    const cat = allCats.find(c => c.id === catId);
+    const spent = transactions.filter(t => {
+      const d = t.createdAt ? t.createdAt.toDate() : null;
+      return d && t.cat === catId && t.amount < 0 && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    }).reduce((s,t) => s + Math.abs(t.amount), 0);
+    const p = lim > 0 ? Math.min(spent/lim*100,100) : 0;
+    const col = p > 90 ? '#c0392b' : p > 70 ? '#e07a3a' : 'var(--primary)';
+    return '<div class="budget-item-new"><div class="budget-header-new"><span class="b-name"><i class="ti '+(cat?.icon||'ti-category')+'" style="color:'+(cat?.color||'#888')+';margin-right:4px"></i> '+(cat?.name||catId)+'</span><span class="b-amt"><span class="spent">R$ '+spent.toLocaleString('pt-BR',{minimumFractionDigits:2})+'</span> / R$ '+lim.toLocaleString('pt-BR',{minimumFractionDigits:2})+'</span></div><div class="progress-bar-new"><div class="progress-fill-new" style="width:'+p+'%;background:'+col+'"></div></div><div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);margin-top:2px"><span>'+p.toFixed(0)+'%</span><button class="section-link" onclick="openBudgetCatModal(\''+catId+'\')">Editar</button></div></div>';
+  }).join('');
+}
+function openBudgetLimitModal() { document.getElementById('budget-limit-input').value = budget.totalLimit || ''; document.getElementById('budget-limit-modal').classList.add('open'); }
+async function submitBudgetLimit() { const v = parseFloat(document.getElementById('budget-limit-input').value) || 0; await db.collection('budget').doc('current').set({ totalLimit: v }, { merge: true }); budget.totalLimit = v; closeModal('budget-limit-modal'); showToast('Limite atualizado!'); }
+function openBudgetCatModal(catId) {
+  editingBudgetCat = catId || null;
+  document.getElementById('budget-cat-modal-title').innerHTML = (catId ? 'Editar' : 'Nova') + ' Categoria <button class="modal-close" onclick="closeModal(\'budget-cat-modal\')"><i class="ti ti-x"></i></button>';
+  document.getElementById('budget-cat-select').innerHTML = categories.saída.map(c => '<option value="'+c.id+'"'+(c.id===catId?' selected':'')+'>'+c.name+'</option>');
+  document.getElementById('budget-cat-limit-input').value = catId && budget.cats?.[catId] ? budget.cats[catId] : '';
+  document.getElementById('budget-cat-delete-btn').style.display = catId ? '' : 'none';
+  document.getElementById('budget-cat-modal').classList.add('open');
+}
+async function submitBudgetCat() {
+  const id = document.getElementById('budget-cat-select').value;
+  const lim = parseFloat(document.getElementById('budget-cat-limit-input').value) || 0;
+  const c = { ...(budget.cats||{}), [id]: lim };
+  await db.collection('budget').doc('current').set({ cats: c }, { merge: true });
+  budget.cats = c; closeModal('budget-cat-modal'); showToast('Salvo!');
+}
+async function deleteBudgetCat() { if (!editingBudgetCat || !confirm('Excluir?')) return; const c={...(budget.cats||{})}; delete c[editingBudgetCat]; await db.collection('budget').doc('current').set({cats:c},{merge:true}); budget.cats=c; closeModal('budget-cat-modal'); showToast('Removido!'); }
+
+// ===== GOALS =====
+function renderGoals() {
+  const c = document.getElementById('goals-list');
+  if (!c) return;
+  if (!goals.length) { c.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted)">Nenhuma meta criada</div>'; return; }
+  c.innerHTML = goals.map(g => {
+    const pct = g.target > 0 ? Math.min(g.saved/g.target*100,100) : 0;
+    const tank = vehicle && g.saved ? (g.saved / (5.49 * 12)).toFixed(1) : 0;
+    return '<div class="goal-item-new"><div class="section-row" style="margin-bottom:4px"><span class="g-name">'+g.name+'</span><button class="section-link" onclick="addToGoal(\''+g.id+'\')"><i class="ti ti-plus"></i> Adicionar</button></div><div class="goal-progress-new"><div class="gp-bar"><div class="gp-fill" style="width:'+pct+'%"></div></div><span class="gp-pct">'+pct.toFixed(0)+'%</span></div><div class="goal-values-new">R$ '+(g.saved||0).toLocaleString('pt-BR',{minimumFractionDigits:2})+' de R$ '+(g.target||0).toLocaleString('pt-BR',{minimumFractionDigits:2})+(tank>0?' <span style="color:var(--text-muted)">≈ '+tank+' tanques</span>':'')+'</div><div style="display:flex;gap:8px;margin-top:4px"><button class="section-link" onclick="openGoalModal(\''+g.id+'\')">Editar</button><button class="section-link" style="color:#c0392b" onclick="deleteGoalById(\''+g.id+'\')">Excluir</button></div></div>';
+  }).join('');
+}
+function openGoalModal(id) {
+  editingGoalId = id || null;
+  const g = id ? goals.find(x => x.id === id) : null;
+  document.getElementById('goal-modal-title').innerHTML = (g ? 'Editar' : 'Nova') + ' Meta <button class="modal-close" onclick="closeModal(\'goal-modal\')"><i class="ti ti-x"></i></button>';
+  document.getElementById('goal-name-input').value = g ? g.name : '';
+  document.getElementById('goal-target-input').value = g ? g.target : '';
+  document.getElementById('goal-saved-input').value = g ? g.saved : '';
+  document.getElementById('goal-delete-btn').style.display = g ? '' : 'none';
+  document.getElementById('goal-modal').classList.add('open');
+}
+async function submitGoal() {
+  const n = document.getElementById('goal-name-input').value.trim();
+  const t = parseFloat(document.getElementById('goal-target-input').value) || 0;
+  const s = parseFloat(document.getElementById('goal-saved-input').value) || 0;
+  if (!n || !t) { showToast('Preencha nome e alvo'); return; }
+  const data = { name: n, target: t, saved: s };
+  if (editingGoalId) { await db.collection('goals').doc(editingGoalId).update(data); showToast('Atualizada!'); }
+  else { await db.collection('goals').add(data); showToast('Meta criada!'); }
+  closeModal('goal-modal');
+}
+async function deleteGoal() { if (!editingGoalId) return; if (!confirm('Excluir?')) return; await db.collection('goals').doc(editingGoalId).delete(); closeModal('goal-modal'); showToast('Excluída!'); }
+function deleteGoalById(id) { if (!confirm('Excluir meta?')) return; db.collection('goals').doc(id).delete(); showToast('Excluída!'); }
+async function addToGoal(id) {
+  const amt = parseFloat(prompt('Quanto adicionar? (R$):') || '0');
+  if (!amt || amt <= 0) return;
+  const g = goals.find(x => x.id === id); if (!g) return;
+  await db.collection('goals').doc(id).update({ saved: (g.saved||0) + amt });
+  showToast('Adicionado R$ '+amt.toLocaleString('pt-BR',{minimumFractionDigits:2})+'!');
+}
+
+// ===== SETTINGS CATEGORIES =====
+function renderSettingsCatsNew() {
+  const render = (type, id) => {
+    const container = document.getElementById(id);
+    if (!container) return;
+    container.innerHTML = categories[type].map(c =>
+      '<div class="config-item-new"><div class="ci-icon" style="background:'+(c.color||'#888')+'22;color:'+(c.color||'#888')+'"><i class="ti '+(c.icon||'ti-category')+'"></i></div><div class="ci-info"><div class="ci-name">'+c.name+'</div></div><div class="ci-actions"><button onclick="editCatName(\''+c.id+'\')"><i class="ti ti-edit"></i></button><button class="del" onclick="deleteCatById(\''+c.id+'\')"><i class="ti ti-trash"></i></button></div></div>'
+    ).join('') || '<div style="color:var(--text-muted);font-size:13px;padding:8px">Nenhuma</div>';
+  };
+  render('saída', 'settings-expense-cats');
+  render('entrada', 'settings-income-cats');
+}
+function renderSettingsCards() {
+  const c = document.getElementById('settings-cards-list');
+  if (!c) return;
+  c.innerHTML = cards.map(card =>
+    '<div class="config-item-new"><div class="ci-icon" style="background:'+(card.color||'#1a7a4a')+'22;color:'+(card.color||'#1a7a4a')+'"><i class="ti ti-credit-card"></i></div><div class="ci-info"><div class="ci-name">'+(card.name||'Cartão')+'</div><div class="ci-sub">'+(card.type||'Visa')+' · R$ '+(card.limit||0).toLocaleString('pt-BR',{minimumFractionDigits:2})+'</div></div><div class="ci-actions"><button onclick="openCardModal(\''+card.id+'\')"><i class="ti ti-edit"></i></button><button class="del" onclick="deleteCardById(\''+card.id+'\')"><i class="ti ti-trash"></i></button></div></div>'
+  ).join('') || '<div style="color:var(--text-muted);font-size:13px;padding:8px">Nenhum cartão</div>';
+}
+function deleteCardById(id) { if (!confirm('Excluir?')) return; db.collection('cards').doc(id).delete(); showToast('Excluído!'); }
+function editCatName(id) {
+  const allCats = [...categories.saída, ...categories.entrada];
+  const cat = allCats.find(c => c.id === id);
+  const n = prompt('Novo nome:', cat?.name);
+  if (n) db.collection('categories').doc(id).update({ name: n });
+}
+function deleteCatById(id) { if (!confirm('Excluir?')) return; db.collection('categories').doc(id).delete(); showToast('Excluída!'); }
+async function addNewCat(type) {
+  const n = prompt('Nome:'); if (!n) return;
+  const ref = db.collection('categories').doc();
+  await ref.set({ id: ref.id, name: n, icon: 'ti-category', color: '#888', isDefault: false, subcats: [], type: type });
+}
+
+// ===== VEHICLE =====
+async function initVehicle() {
+  try { const s = await db.collection('vehicle').doc('config').get(); if (s.exists) vehicle = s.data(); else vehicle = null; } catch(e){vehicle=null;}
+  try { const s = await db.collection('vehicle_refuels').orderBy('createdAt','desc').get(); refuels=[]; s.forEach(d=>refuels.push({id:d.id,...d.data()})); } catch(e){refuels=[];}
+  try { const s = await db.collection('vehicle_maintenance').orderBy('createdAt','desc').get(); maintenances=[]; s.forEach(d=>maintenances.push({id:d.id,...d.data()})); } catch(e){maintenances=[];}
+  try { const s = await db.collection('vehicle_routes').orderBy('createdAt','desc').get(); routes=[]; s.forEach(d=>routes.push({id:d.id,...d.data()})); } catch(e){routes=[];}
+  updateVehicleHomeCard();
+}
+function updateVehicleHomeCard() {
+  const c = document.getElementById('vehicle-home-content');
+  if (!c) return;
+  if (!vehicle) { c.innerHTML = 'Configure o veículo'; return; }
+  const lastRefuel = refuels[0];
+  const kmTotal = lastRefuel?.km || 0;
+  const media = calcVehicleMedia();
+  const oil = calcVehicleOil();
+  c.innerHTML = '<div style="display:flex;justify-content:space-between"><span>'+(vehicle.name||'Veículo')+'</span><span>'+kmTotal+' km</span><span>'+media.toFixed(1)+' km/L</span><span style="color:'+oil.color+'">Óleo: '+oil.pct+'%</span></div>';
+}
+function renderVehicleFull() {
+  if (!vehicle) {
+    ['v-health-bars','v-summary','v-report-content','v-timeline'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = '<div style="color:var(--text-muted);font-size:13px;padding:20px;text-align:center">Configure o veículo <button class="section-link" onclick="openVehicleConfig()">Configurar</button></div>';
+    });
+    return;
+  }
+  renderVHealth(); renderVSummary(); renderVReport(); renderVTimeline(); renderVChartsPro();
+}
+function renderVHealth() {
+  const oil = calcVehicleOil();
+  const tire = { pct: 80, color: 'var(--primary)' };
+  const chain = { pct: 70, color: '#e07a3a' };
+  const el = document.getElementById('v-health-bars');
+  if (!el) return;
+  el.innerHTML =
+    '<div class="v-health-item"><span class="v-lbl">Óleo</span><div class="v-bar"><div class="v-fill" style="width:'+oil.pct+'%;background:'+oil.color+'"></div></div><span class="v-pct" style="color:'+oil.color+'">'+oil.pct+'%</span></div>' +
+    '<div class="v-health-item"><span class="v-lbl">Pneus</span><div class="v-bar"><div class="v-fill" style="width:'+tire.pct+'%;background:'+tire.color+'"></div></div><span class="v-pct" style="color:'+tire.color+'">'+tire.pct+'%</span></div>' +
+    (vehicle?.type === 'moto' ? '<div class="v-health-item"><span class="v-lbl">Corrente</span><div class="v-bar"><div class="v-fill" style="width:'+chain.pct+'%;background:'+chain.color+'"></div></div><span class="v-pct" style="color:'+chain.color+'">'+chain.pct+'%</span></div>' : '');
+}
+function calcVehicleOil() {
+  if (!vehicle || !vehicle.oilKm) return { pct: 100, color: 'var(--primary)' };
+  const lastOil = maintenances.filter(m => m.oilFlag || m.type === 'oleo').sort((a,b) => (b.createdAt?.toDate?.()?.getTime()||0) - (a.createdAt?.toDate?.()?.getTime()||0))[0];
+  const lastKm = lastOil?.km || vehicle.oilKm;
+  const currentKm = refuels[0]?.km || 0;
+  const diff = currentKm - lastKm;
+  const ideal = 10000;
+  const pct = Math.max(0, Math.min(100, 100 - (diff / ideal) * 100));
+  return { pct: Math.round(pct), color: pct > 50 ? 'var(--primary)' : pct > 25 ? '#e07a3a' : '#c0392b' };
+}
+function calcVehicleMedia() {
+  if (vehicle?.consumo) return vehicle.consumo;
+  const fulls = refuels.filter(r => r.tanqueCheio);
+  if (fulls.length < 2) return vehicle?.consumo || 0;
+  const last = fulls[0], prev = fulls[1];
+  const kmDiff = last.km - prev.km;
+  if (kmDiff <= 0) return vehicle?.consumo || 0;
+  return kmDiff / (prev.liters || 1);
+}
+function renderVSummary() {
+  const media = calcVehicleMedia();
+  const totalKm = refuels[0]?.km || 0;
+  const totalGasto = [...refuels, ...maintenances].reduce((s,i) => s + Math.abs(i.value||0), 0);
+  const custoKm = totalKm > 0 ? totalGasto / totalKm : 0;
+  const el = document.getElementById('v-summary');
+  if (!el) return;
+  el.innerHTML = '<div class="income-card"><div class="income-label">Média Real</div><div class="income-amount" style="color:var(--primary)">'+media.toFixed(1)+' <small style="font-size:12px;font-weight:400">km/L</small></div></div><div class="income-card"><div class="income-label">Custo por KM</div><div class="income-amount" style="color:#c0392b">R$ '+custoKm.toFixed(2)+'</div></div>';
+}
+function renderVReport() {
+  const el = document.getElementById('v-report-content');
+  if (!el) return;
+  const media = calcVehicleMedia();
+  const totalKm = refuels[0]?.km || 0;
+  const oil = calcVehicleOil();
+  const lastOilMaint = maintenances.filter(m => m.oilFlag || m.type === 'oleo').sort((a,b) => (b.createdAt?.toDate?.()?.getTime()||0) - (a.createdAt?.toDate?.()?.getTime()||0))[0];
+  const nextOilKm = lastOilMaint ? (lastOilMaint.km||0) + 10000 : (vehicle?.oilKm||0) + 10000;
+  const plateEnd = vehicle?.plateEnd;
+  const licMonth = plateEnd !== undefined ? [1,2,3,4,5,6,7,8,9,10][plateEnd] : 1;
+  const now = new Date();
+  const nextLic = licMonth >= now.getMonth()+1 ? new Date(now.getFullYear(), licMonth-1, 1) : new Date(now.getFullYear()+1, licMonth-1, 1);
+  const gastoMensal = refuels.length > 0 ? (refuels.reduce((s,r) => s+Math.abs(r.value||0), 0) / Math.max(1, (Date.now() - (refuels[refuels.length-1]?.createdAt?.toDate?.()?.getTime()||Date.now())) / 2592000000)) : 0;
+  el.innerHTML = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px"><span>Média real: <strong>'+media.toFixed(1)+' km/L</strong></span><span>Custo/km: <strong>R$ '+(totalKm>0?(refuels.reduce((s,r)=>s+Math.abs(r.value||0),0)/totalKm).toFixed(2):'0,00')+'</strong></span><span>Próx troca óleo: <strong>~'+nextOilKm+' km</strong></span><span>Licenciamento: <strong>'+nextLic.toLocaleString('pt-BR',{month:'long',year:'numeric'})+'</strong></span><span>Gasto mensal: <strong>R$ '+gastoMensal.toFixed(2)+'</strong></span></div>';
+}
+function renderVTimeline() {
+  const el = document.getElementById('v-timeline');
+  if (!el) return;
+  const all = [...refuels.map(r=>({...r,type:'refuel'})), ...maintenances.map(m=>({...m,type:'maint'})), ...routes.map(r=>({...r,type:'route'}))];
+  all.sort((a,b) => (b.createdAt?.toDate?.()?.getTime()||0) - (a.createdAt?.toDate?.()?.getTime()||0));
+  el.innerHTML = all.slice(0,20).map(i => {
+    const icons = { refuel:'ti-gas-station', maint:'ti-tool', route:'ti-map-2' };
+    const colors = { refuel:'#e07a3a', maint:'#c0392b', route:'var(--primary)' };
+    const titles = { refuel:'Abastecimento', maint:'Manutenção: '+(i.desc||i.type||''), route:'Rota: '+(i.origin||'')+' → '+(i.dest||'') };
+    return '<div class="v-hist-item"><div class="v-hist-icon" style="background:'+colors[i.type]+'22;color:'+colors[i.type]+'"><i class="ti '+icons[i.type]+'"></i></div><div class="v-hist-info"><div class="vh-t">'+titles[i.type]+'</div><div class="vh-s">R$ '+(Math.abs(i.value||0).toLocaleString('pt-BR',{minimumFractionDigits:2}))+' · '+(i.km||'')+' km</div></div></div>';
+  }).join('') || '<div style="color:var(--text-muted);padding:8px;font-size:13px">Nenhum registro</div>';
+}
+function renderVChartsPro() {
+  // Consumption chart
+  const canvas1 = document.getElementById('consumption-chart');
+  if (canvas1 && typeof Chart !== 'undefined') {
+    const ctx = canvas1.getContext('2d');
+    if (chartInstances.consumption) chartInstances.consumption.destroy();
+    const fulls = refuels.filter(r => r.tanqueCheio).reverse();
+    const labels = fulls.map((_,i) => '#'+(i+1));
+    const data = [];
+    for (let i=1; i<fulls.length; i++) {
+      const kmDiff = fulls[i].km - fulls[i-1].km;
+      const litros = fulls[i-1].liters || 1;
+      data.push(kmDiff > 0 ? kmDiff/litros : 0);
+    }
+    if (data.length >= 2) {
+      chartInstances.consumption = new Chart(ctx, {
+        type: 'line',
+        data: { labels: labels.slice(1), datasets: [{ label: 'km/L', data, borderColor: '#1a7a4a', backgroundColor: 'rgba(26,122,74,0.1)', fill: true, tension: 0.3 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+      });
+    } else { ctx.clearRect(0,0,canvas1.width,canvas1.height); }
+  }
+  // Weekly km chart
+  const canvas2 = document.getElementById('weekly-km-chart');
+  if (canvas2 && typeof Chart !== 'undefined') {
+    const ctx = canvas2.getContext('2d');
+    if (chartInstances.weekly) chartInstances.weekly.destroy();
+    const dias = ['Dom','Seg','Ter','Qua','Qui','Sex','Sab'];
+    const kmPorDia = Array(7).fill(0);
+    routes.forEach(r => { const d = r.createdAt?.toDate?.(); if (d) kmPorDia[d.getDay()] += r.distance || r.km || 0; });
+    chartInstances.weekly = new Chart(ctx, {
+      type: 'bar',
+      data: { labels: dias, datasets: [{ label: 'km', data: kmPorDia, backgroundColor: '#1a7a4a' }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+    });
+  }
+}
+function openVehicleConfig() {
+  document.getElementById('v-type-input').value = vehicle?.type || 'carro';
+  document.getElementById('v-name-input').value = vehicle?.name || '';
+  document.getElementById('v-oil-km-input').value = vehicle?.oilKm || '';
+  document.getElementById('v-plate-input').value = vehicle?.plateEnd ?? '';
+  document.getElementById('v-consumo-input').value = vehicle?.consumo || '';
+  document.getElementById('v-config-modal').classList.add('open');
+}
+async function submitVehicleConfig() {
+  const data = { type: document.getElementById('v-type-input').value, name: document.getElementById('v-name-input').value.trim(), oilKm: parseInt(document.getElementById('v-oil-km-input').value)||0, plateEnd: parseInt(document.getElementById('v-plate-input').value)||0, consumo: parseFloat(document.getElementById('v-consumo-input').value)||0 };
+  await db.collection('vehicle').doc('config').set(data);
+  vehicle = data; closeModal('v-config-modal'); showToast('Veículo configurado!'); updateVehicleHomeCard(); renderVehicleFull();
+}
+function openRefuelModal() {
+  document.getElementById('refuel-type').value='gasolina'; document.getElementById('refuel-price').value=''; document.getElementById('refuel-liters').value=''; document.getElementById('refuel-total').value=''; document.getElementById('refuel-km').value='';
+  document.getElementById('refuel-full-toggle')?.classList.remove('active'); populateAccountSelects();
+  document.getElementById('refuel-modal').classList.add('open');
+}
+async function submitRefuel() {
+  const type=document.getElementById('refuel-type').value; const price=parseFloat(document.getElementById('refuel-price').value)||0; const liters=parseFloat(document.getElementById('refuel-liters').value)||0; const total=parseFloat(document.getElementById('refuel-total').value)||(price*liters); const km=parseInt(document.getElementById('refuel-km').value)||0; const full=document.getElementById('refuel-full-toggle')?.classList.contains('active'); const account=document.getElementById('refuel-account').value;
+  if (!total||!km) { showToast('Preencha valor e km'); return; }
+  await db.collection('vehicle_refuels').add({type,price,liters:liters||(price>0?total/price:0),value:total,km,tanqueCheio:full,accountId:account,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+  if (account) { const a=accounts.find(x=>x.id===account); if(a) await db.collection('accounts').doc(account).update({balance:(a.balance||0)-total}); }
+  closeModal('refuel-modal'); showToast('Abastecimento registrado!');
+}
+function openMaintModal() {
+  document.getElementById('maint-type').value='oleo'; document.getElementById('maint-desc').value=''; document.getElementById('maint-km').value=''; document.getElementById('maint-value').value=''; document.getElementById('maint-oil-flag').checked=false; populateAccountSelects();
+  document.getElementById('maint-modal').classList.add('open');
+}
+async function submitMaint() {
+  const type=document.getElementById('maint-type').value; const desc=document.getElementById('maint-desc').value.trim(); const km=parseInt(document.getElementById('maint-km').value)||0; const val=parseFloat(document.getElementById('maint-value').value)||0; const oilFlag=document.getElementById('maint-oil-flag').checked; const account=document.getElementById('maint-account').value;
+  if (!desc) { showToast('Preencha a descrição'); return; }
+  await db.collection('vehicle_maintenance').add({type,desc,km,value:val,oilFlag,accountId:account,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+  if (account) { const a=accounts.find(x=>x.id===account); if(a) await db.collection('accounts').doc(account).update({balance:(a.balance||0)-val}); }
+  closeModal('maint-modal'); showToast('Manutenção registrada!');
+}
+function openRouteModal() {
+  document.getElementById('route-km').value=''; document.getElementById('route-origin').value=''; document.getElementById('route-dest').value=''; document.getElementById('route-reason').value=''; document.getElementById('route-distance').value='';
+  document.getElementById('route-modal').classList.add('open');
+}
+async function calcRouteDistance() {
+  const origin=document.getElementById('route-origin').value.trim(); const dest=document.getElementById('route-dest').value.trim();
+  if (!origin||!dest) { showToast('Preencha origem e destino'); return; }
+  try {
+    const r1=await fetch('https://nominatim.openstreetmap.org/search?format=json&q='+encodeURIComponent(origin)+'&limit=1'); const od=await r1.json(); if (!od.length) { showToast('Origem não encontrada'); return; }
+    const r2=await fetch('https://nominatim.openstreetmap.org/search?format=json&q='+encodeURIComponent(dest)+'&limit=1'); const dd=await r2.json(); if (!dd.length) { showToast('Destino não encontrado'); return; }
+    const rr=await fetch('https://router.project-osrm.org/route/v1/driving/'+od[0].lon+','+od[0].lat+';'+dd[0].lon+','+dd[0].lat+'?overview=false'); const rd=await rr.json();
+    if (rd.code==='Ok'&&rd.routes.length) { const dist=rd.routes[0].distance/1000; document.getElementById('route-distance').value=dist.toFixed(1); showToast('Distância: '+dist.toFixed(1)+' km'); }
+  } catch(e) { showToast('Erro ao calcular rota'); }
+}
+async function submitRoute() {
+  const km=parseInt(document.getElementById('route-km').value)||0; const origin=document.getElementById('route-origin').value.trim(); const dest=document.getElementById('route-dest').value.trim(); const reason=document.getElementById('route-reason').value.trim(); const dist=parseFloat(document.getElementById('route-distance').value)||0;
+  if (!origin||!dest) { showToast('Preencha origem e destino'); return; }
+  await db.collection('vehicle_routes').add({km,origin,dest,reason,distance:dist,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+  closeModal('route-modal'); showToast('Rota registrada!');
+}
+function openTripCalc() { document.getElementById('trip-origin').value=''; document.getElementById('trip-dest').value=''; document.getElementById('trip-result').innerHTML='Preencha origem e destino e clique em "Calcular Rota"'; document.getElementById('trip-modal').classList.add('open'); }
+async function calcTrip() {
+  const o=document.getElementById('trip-origin').value.trim(); const d=document.getElementById('trip-dest').value.trim();
+  if (!o||!d) { showToast('Preencha origem e destino'); return; }
+  try {
+    const r1=await fetch('https://nominatim.openstreetmap.org/search?format=json&q='+encodeURIComponent(o)+'&limit=1'); const od=await r1.json();
+    const r2=await fetch('https://nominatim.openstreetmap.org/search?format=json&q='+encodeURIComponent(d)+'&limit=1'); const dd=await r2.json();
+    if (!od.length||!dd.length) { showToast('Local não encontrado'); return; }
+    const rr=await fetch('https://router.project-osrm.org/route/v1/driving/'+od[0].lon+','+od[0].lat+';'+dd[0].lon+','+dd[0].lat+'?overview=false'); const rd=await rr.json();
+    if (rd.code!=='Ok'||!rd.routes.length) { showToast('Rota não encontrada'); return; }
+    const dist=rd.routes[0].distance/1000; const media=vehicle?.consumo||calcVehicleMedia()||12; const gasPrice=5.49; const custoIda=dist/media*gasPrice;
+    window._tripData={dist,custoIda,custoVolta:custoIda*2,media,gasPrice,origin:o,dest:d};
+    document.getElementById('trip-result').innerHTML = '<div style="background:var(--card-bg);border-radius:10px;padding:12px;margin-top:8px"><div style="display:flex;justify-content:space-between;font-size:13px"><span>Distância: <strong>'+dist.toFixed(1)+' km</strong></span><span>Consumo: <strong>'+media.toFixed(1)+' km/L</strong></span></div><div style="display:flex;justify-content:space-between;font-size:13px;margin-top:6px"><span style="color:var(--primary)">Ida: <strong>R$ '+custoIda.toFixed(2)+'</strong></span><span style="color:#c0392b">Ida+Volta: <strong>R$ '+(custoIda*2).toFixed(2)+'</strong></span></div></div>';
+  } catch(e) { showToast('Erro ao calcular'); }
+}
+async function saveTripAsGoal() {
+  if (!window._tripData) { showToast('Calcule a rota primeiro'); return; }
+  const custo=window._tripData.custoVolta;
+  await db.collection('goals').add({name:'Viagem: '+window._tripData.origin+' → '+window._tripData.dest,target:Math.ceil(custo/10)*10,saved:0});
+  showToast('Meta de viagem criada!'); closeModal('trip-modal');
+}
+
+// ===== HEALTH (ÁGUA E CAFEÍNA) =====
+async function addHealth(type, val) {
+  if (type === 'agua') health.agua = (health.agua||0) + val;
+  else health.cafeina = (health.cafeina||0) + val;
+  await db.collection('health').doc('today').set({ agua: health.agua||0, cafeina: health.cafeina||0, date: new Date().toISOString().slice(0,10) }, { merge: true });
+  renderHealthRingsPro(); showToast(val > 1 ? '+' + val + 'mg cafeína' : '+' + (val*1000).toFixed(0) + 'ml água');
+}
+async function loadHealthPro() {
+  try {
+    const snap = await db.collection('health').doc('today').get();
+    if (snap.exists && snap.data().date === new Date().toISOString().slice(0,10)) health = { agua: snap.data().agua||0, cafeina: snap.data().cafeina||0 };
+    else { health = { agua: 0, cafeina: 0 }; await db.collection('health').doc('today').set({ agua: 0, cafeina: 0, date: new Date().toISOString().slice(0,10) }); }
+  } catch(e) { health = { agua: 0, cafeina: 0 }; }
+}
+function renderHealthRingsPro() {
+  const rings = document.getElementById('health-rings');
+  if (!rings) return;
+  const peso = profile.peso || 70;
+  const metaAgua = Math.round(peso * 35) / 1000; // liters
+  const metaCaf = Math.min(Math.round(peso * 6), 400);
+  const ap = Math.min((health.agua||0) / metaAgua * 100, 100);
+  const cp = Math.min((health.cafeina||0) / metaCaf * 100, 100);
+  const r = 25, circ = 2 * Math.PI * r;
+  rings.innerHTML =
+    '<div class="health-ring"><svg viewBox="0 0 60 60"><circle class="h-ring-bg" cx="30" cy="30" r="'+r+'"/><circle class="h-ring-fg" stroke="'+(ap>=100?'var(--primary)':'#22d3ee')+'" stroke-dasharray="'+circ+'" stroke-dashoffset="'+(circ-(ap/100)*circ)+'"/></svg><div class="h-ring-label"><span class="hv">'+(health.agua||0).toFixed(1)+'L</span><span class="hu">/'+metaAgua.toFixed(1)+'L</span></div></div>' +
+    '<div class="health-ring"><svg viewBox="0 0 60 60"><circle class="h-ring-bg" cx="30" cy="30" r="'+r+'"/><circle class="h-ring-fg" stroke="'+(cp>=100?'var(--primary)':'#e07a3a')+'" stroke-dasharray="'+circ+'" stroke-dashoffset="'+(circ-(cp/100)*circ)+'"/></svg><div class="h-ring-label"><span class="hv">'+(health.cafeina||0)+'</span><span class="hu">/'+metaCaf+'mg</span></div></div>';
+}
+
+// ===== AVATAR =====
+function openAvatarModal() {
+  const colors = ['#1a7a4a','#5b7fa6','#e07a3a','#7a5ba6','#c0392b','#2980b9','#8e44ad','#d35400'];
+  const presets = document.getElementById('avatar-presets');
+  if (presets) presets.innerHTML = colors.map(c => '<div style="width:44px;height:44px;border-radius:50%;background:'+c+';display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:18px;cursor:pointer" onclick="saveAvatarColor(\''+c+'\')">'+(profile.name||'U').charAt(0).toUpperCase()+'</div>').join('');
+  document.getElementById('avatar-modal').classList.add('open');
+}
+async function saveAvatarColor(color) {
+  const initials = (profile.name||'U').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><rect width="200" height="200" rx="100" fill="'+color+'"/><text x="100" y="120" text-anchor="middle" font-size="70" font-weight="700" fill="white" font-family="sans-serif">'+initials+'</text></svg>';
+  const dataUrl = 'data:image/svg+xml;base64,'+btoa(svg);
+  await db.collection('profile').doc('me').set({ photoURL: dataUrl }, { merge: true });
+  closeModal('avatar-modal'); showToast('Avatar salvo!');
+}
+async function saveAvatarDiceBear() {
+  const style = ['adventurer','avataaars','big-smile','bottts','fun-emoji','lorelei','notionists','open-peeps','personas','thumbs'][Math.floor(Math.random()*10)];
+  const url = 'https://api.dicebear.com/9.x/'+style+'/svg?seed='+(profile.name||'user').toLowerCase().replace(/\s/g,'');
+  await db.collection('profile').doc('me').set({ photoURL: url }, { merge: true });
+  closeModal('avatar-modal'); showToast('Avatar gerado!');
+}
+function handleAvatarUpload(e) {
+  const file = e.target.files[0]; if (!file) return;
+  const r = new FileReader();
+  r.onload = function(ev) { cropImageData = ev.target.result; document.getElementById('avatar-preview').src = cropImageData; document.getElementById('avatar-crop-area').style.display='block'; };
+  r.readAsDataURL(file);
+}
+async function cropAndSaveAvatar() {
+  if (!cropImageData) return;
+  await db.collection('profile').doc('me').set({ photoURL: cropImageData }, { merge: true });
+  closeModal('avatar-modal'); document.getElementById('avatar-crop-area').style.display='none'; showToast('Avatar salvo!');
+}
+
+// ===== SUPERMERCADO ENHANCEMENT =====
+// Enhance the transaction modal to show supermercado option when category is supermarket
+const origSelectCat = window.selectCat;
+window.selectCat = function(id, el) {
+  if (origSelectCat) origSelectCat(id, el);
+  // Show/hide supermercado extra
+  let extra = document.getElementById('tx-super-extra');
+  if (!extra) {
+    const modal = document.getElementById('tx-modal');
+    const submitBtn = document.getElementById('modal-submit');
+    if (submitBtn) {
+      extra = document.createElement('div');
+      extra.id = 'tx-super-extra';
+      extra.style.display = 'none';
+      extra.style.borderTop = '1px solid var(--border)';
+      extra.style.marginTop = '8px';
+      extra.style.paddingTop = '8px';
+      extra.innerHTML = '<label class="field-label">Nota Fiscal (Supermercado)</label><div style="display:flex;gap:8px"><button class="submit-btn" style="flex:0;padding:10px 14px;font-size:11px;width:auto" onclick="openScanner()"><i class="ti ti-camera"></i> NFC-e</button><input class="field-input" id="tx-super-total" type="number" step="0.01" placeholder="Valor total R$" style="flex:1;margin:0" /></div>';
+      submitBtn.parentNode.insertBefore(extra, submitBtn);
+    }
+  }
+  if (extra) extra.style.display = id === 'supermarket' ? '' : 'none';
+};
+
+// ===== SCANNER =====
+function openScanner() {
+  document.getElementById('scanner-modal').classList.add('open');
+  setTimeout(() => {
+    const reader = document.getElementById('scanner-reader');
+    if (reader) {
+      reader.innerHTML = '<div id="qr-reader" style="width:100%"></div>';
+      if (typeof Html5Qrcode !== 'undefined') {
+        const qr = new Html5Qrcode('qr-reader');
+        qr.start({ facingMode: 'environment' }, { fps: 10, qrbox: 250 },
+          (txt) => { showToast('QR: '+txt); qr.stop(); closeScanner(); const input = document.getElementById('tx-super-total'); if (input) input.value = txt.replace(/[^0-9.,]/g,'').replace(',','.'); },
+          () => {}
+        );
+        window._qrInstance = qr;
+      }
+    }
+  }, 300);
+}
+function closeScanner() {
+  document.getElementById('scanner-modal').classList.remove('open');
+  if (window._qrInstance) { try { window._qrInstance.stop(); } catch(e) {} window._qrInstance = null; }
+}
+
+// ===== EXPORT EXCEL =====
+function exportExcel() {
+  let csv = '\uFEFFData,Tipo,Categoria,Descrição,Valor\n';
+  transactions.forEach(t => {
+    const d = t.createdAt ? t.createdAt.toDate() : new Date();
+    csv += d.toLocaleDateString('pt-BR')+','+(t.amount>0?'Receita':'Despesa')+',"'+((t.catName||t.name||'')+'"')+',"'+((t.displayName||'')+'"')+','+Math.abs(t.amount).toFixed(2)+'\n';
+  });
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = 'mu_finance_'+new Date().toISOString().slice(0,10)+'.csv'; a.click();
+  URL.revokeObjectURL(url); showToast('Exportado!');
+}
+
+// ===== SUPERMARKET SEED CATEGORY =====
+// Ensure supermarket category exists
+async function ensureSupermarketCat() {
+  const snap = await db.collection('categories').where('id','==','supermarket').get();
+  if (snap.empty) {
+    const ref = db.collection('categories').doc('supermarket');
+    await ref.set({ id: 'supermarket', name: 'Supermercado', icon: 'ti-shopping-cart', color: '#1a7a4a', isDefault: true, subcats: [], type: 'saída' });
+  }
+}
+
+// ===== FIRESTORE LISTENERS (NEW COLLECTIONS) =====
+function startProListeners() {
+  db.collection('accounts').onSnapshot(snap => {
+    accounts = []; snap.forEach(d => accounts.push({ id: d.id, ...d.data() }));
+    if (document.getElementById('settings-page')?.classList.contains('active')) renderSettingsAccounts();
+    populateAccountSelects();
+  });
+  db.collection('goals').onSnapshot(snap => {
+    goals = []; snap.forEach(d => goals.push({ id: d.id, ...d.data() }));
+    if (document.getElementById('goals-page')?.classList.contains('active')) renderGoals();
+  });
+  db.collection('budget').doc('current').onSnapshot(d => {
+    if (d.exists) budget = d.data(); else budget = { totalLimit: 0, cats: {} };
+    if (document.getElementById('budget-page')?.classList.contains('active')) renderBudget();
+  });
+  // Vehicle listeners
+  db.collection('vehicle').doc('config').onSnapshot(d => {
+    if (d.exists) vehicle = d.data();
+    updateVehicleHomeCard();
+  });
+  db.collection('vehicle_refuels').onSnapshot(snap => {
+    refuels = []; snap.forEach(d => refuels.push({ id: d.id, ...d.data() }));
+    refuels.sort((a,b) => (b.createdAt?.toDate?.()?.getTime()||0) - (a.createdAt?.toDate?.()?.getTime()||0));
+    if (proSettings.vehicleActive) updateVehicleHomeCard();
+  });
+  db.collection('vehicle_maintenance').onSnapshot(snap => {
+    maintenances = []; snap.forEach(d => maintenances.push({ id: d.id, ...d.data() }));
+    maintenances.sort((a,b) => (b.createdAt?.toDate?.()?.getTime()||0) - (a.createdAt?.toDate?.()?.getTime()||0));
+  });
+  db.collection('vehicle_routes').onSnapshot(snap => {
+    routes = []; snap.forEach(d => routes.push({ id: d.id, ...d.data() }));
+    routes.sort((a,b) => (b.createdAt?.toDate?.()?.getTime()||0) - (a.createdAt?.toDate?.()?.getTime()||0));
+  });
+  // Health
+  loadHealthPro();
+}
+
+// ===== INIT =====
+// Override original startListeners to add new collections
+const origStartListeners = window.startListeners;
+window.startListeners = function() {
+  if (origStartListeners) origStartListeners();
+  startProListeners();
+  setTimeout(() => {
+    ensureSupermarketCat();
+    loadProSettings();
+    // Add eye button
+    if (!document.getElementById('eye-btn-pro')) {
+      const bs = document.querySelector('.balance-section');
+      if (bs) {
+        const btn = document.createElement('button');
+        btn.id = 'eye-btn-pro';
+        btn.style.cssText = 'position:absolute;right:20px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:20px';
+        btn.innerHTML = '<i class="ti ti-eye-off"></i>';
+        btn.onclick = toggleBlur;
+        bs.appendChild(btn);
+        if (!blurActive) { document.getElementById('main-balance')?.classList.remove('blurred'); btn.innerHTML = '<i class="ti ti-eye"></i>'; }
+      }
+    }
+    // Add health section to home
+    const content = document.querySelector('.content');
+    if (content && !document.getElementById('health-section-pro')) {
+      const healthCard = document.createElement('div');
+      healthCard.className = 'income-card';
+      healthCard.id = 'health-section-pro';
+      healthCard.style.marginBottom = '12px';
+      healthCard.innerHTML = '<div class="section-label"><i class="ti ti-heartbeat" style="color:var(--primary);margin-right:4px"></i> Saúde</div><div class="health-rings" id="health-rings"></div><div class="health-btns" id="health-btns-pro"><button class="health-btn" onclick="addHealth(\'agua\',0.473)"><i class="ti ti-building"></i> Escritório</button><button class="health-btn" onclick="addHealth(\'agua\',0.35)"><i class="ti ti-home"></i> Casa</button><button class="health-btn" onclick="addHealth(\'cafeina\',80)"><i class="ti ti-coffee"></i> Café</button><button class="health-btn" onclick="addHealth(\'cafeina\',150)"><i class="ti ti-bolt"></i> Energético</button></div>';
+      content.insertBefore(healthCard, content.firstChild);
+      renderHealthRingsPro();
+    }
+    // Add goals tab to bottom nav
+    document.querySelectorAll('.tab-bar').forEach(bar => {
+      if (bar.children.length >= 4) {
+        const existing = bar.querySelector('[data-goaltab]');
+        if (!existing) {
+          const goalTab = document.createElement('button');
+          goalTab.className = 'tab';
+          goalTab.setAttribute('data-goaltab', '1');
+          goalTab.innerHTML = '<i class="ti ti-target"></i><span>Metas</span>';
+          goalTab.onclick = function() { showPage('goals'); };
+          // Insert after cards tab (index 3)
+          const profileTab = bar.querySelector('.tab:last-child');
+          if (profileTab) bar.insertBefore(goalTab, profileTab);
+        }
+      }
+    });
+    // Add budget tab to bottom nav
+    document.querySelectorAll('.tab-bar').forEach(bar => {
+      if (bar.children.length >= 4) {
+        const existing = bar.querySelector('[data-budtab]');
+        if (!existing) {
+          const budTab = document.createElement('button');
+          budTab.className = 'tab';
+          budTab.setAttribute('data-budtab', '1');
+          budTab.innerHTML = '<i class="ti ti-chart-pie"></i><span>Orçamento</span>';
+          budTab.onclick = function() { showPage('budget'); };
+          // Insert after reports tab
+          const reportIdx = Array.from(bar.children).findIndex(c => c.textContent.includes('Relatórios'));
+          if (reportIdx >= 0) bar.insertBefore(budTab, bar.children[reportIdx + 1]);
+        }
+      }
+    });
+    // Add settings link to profile menu
+    const menuList = document.querySelector('.menu-list');
+    if (menuList && !document.getElementById('settings-menu-item')) {
+      const settingsItem = document.createElement('div');
+      settingsItem.className = 'menu-item';
+      settingsItem.id = 'settings-menu-item';
+      settingsItem.innerHTML = '<i class="ti ti-settings"></i><span>Configurações</span><i class="ti ti-chevron-right"></i>';
+      settingsItem.onclick = function() { showPage('settings'); };
+      const themeToggle = document.getElementById('theme-toggle');
+      if (themeToggle) themeToggle.parentNode.insertBefore(settingsItem, themeToggle);
+    }
+  }, 500);
+};
 </script>
 </body>
 </html>
