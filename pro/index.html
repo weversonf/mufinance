@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -530,6 +531,11 @@
       <span class="section-label">Por categoria</span>
     </div>
     <div id="report-by-category"></div>
+    <div class="section-title-new" style="margin-top:16px"><i class="ti ti-layers"></i> Ferramentas</div>
+    <div style="display:flex;gap:8px">
+      <button class="action-btn side" style="flex:1" onclick="showPage('goals')"><i class="ti ti-target"></i> Metas</button>
+      <button class="action-btn side" style="flex:1" onclick="showPage('budget')"><i class="ti ti-chart-pie"></i> Orçamento</button>
+    </div>
   </div>
   <div class="tab-bar">
     <button class="tab" onclick="showPage('home')"><i class="ti ti-home"></i><span>Início</span></button>
@@ -558,6 +564,13 @@
     <button class="submit-btn" style="background:var(--card-bg);color:var(--text-sec);margin-top:10px" onclick="addCustomCategory()">
       <i class="ti ti-plus"></i> Nova Categoria
     </button>
+  </div>
+  <div class="tab-bar">
+    <button class="tab" onclick="showPage('home')"><i class="ti ti-home"></i><span>Início</span></button>
+    <button class="tab" onclick="showPage('transactions')"><i class="ti ti-chart-bar"></i><span>Extrato</span></button>
+    <button class="tab" onclick="showPage('reports')"><i class="ti ti-report"></i><span>Relatórios</span></button>
+    <button class="tab" onclick="showPage('cards')"><i class="ti ti-credit-card"></i><span>Cartões</span></button>
+    <button class="tab" onclick="showPage('profile')"><i class="ti ti-user"></i><span>Perfil</span></button>
   </div>
 </div>
 
@@ -659,6 +672,13 @@
     <div id="settings-income-cats"></div>
     <button class="submit-btn" style="background:var(--card-bg);color:var(--text-sec);margin-top:8px;font-size:13px" onclick="addNewCat('entrada')"><i class="ti ti-plus"></i> Nova Categoria</button>
   </div>
+  <div class="tab-bar">
+    <button class="tab" onclick="showPage('home')"><i class="ti ti-home"></i><span>Início</span></button>
+    <button class="tab" onclick="showPage('transactions')"><i class="ti ti-chart-bar"></i><span>Extrato</span></button>
+    <button class="tab" onclick="showPage('reports')"><i class="ti ti-report"></i><span>Relatórios</span></button>
+    <button class="tab" onclick="showPage('cards')"><i class="ti ti-credit-card"></i><span>Cartões</span></button>
+    <button class="tab" onclick="showPage('profile')"><i class="ti ti-user"></i><span>Perfil</span></button>
+  </div>
 </div>
 
 <!-- BUDGET PAGE -->
@@ -685,6 +705,13 @@
     <div id="budget-cat-list"></div>
     <button class="submit-btn" style="background:var(--card-bg);color:var(--text-sec);font-size:13px" onclick="openBudgetCatModal(null)"><i class="ti ti-plus"></i> Adicionar Categoria</button>
   </div>
+  <div class="tab-bar">
+    <button class="tab" onclick="showPage('home')"><i class="ti ti-home"></i><span>Início</span></button>
+    <button class="tab" onclick="showPage('transactions')"><i class="ti ti-chart-bar"></i><span>Extrato</span></button>
+    <button class="tab" onclick="showPage('reports')"><i class="ti ti-report"></i><span>Relatórios</span></button>
+    <button class="tab" onclick="showPage('cards')"><i class="ti ti-credit-card"></i><span>Cartões</span></button>
+    <button class="tab" onclick="showPage('profile')"><i class="ti ti-user"></i><span>Perfil</span></button>
+  </div>
 </div>
 
 <!-- GOALS PAGE -->
@@ -696,6 +723,13 @@
     <button class="icon-btn" onclick="openGoalModal(null)" title="Nova Meta"><i class="ti ti-plus"></i></button>
   </div>
   <div class="page-content" id="goals-list"></div>
+  <div class="tab-bar">
+    <button class="tab" onclick="showPage('home')"><i class="ti ti-home"></i><span>Início</span></button>
+    <button class="tab" onclick="showPage('transactions')"><i class="ti ti-chart-bar"></i><span>Extrato</span></button>
+    <button class="tab" onclick="showPage('reports')"><i class="ti ti-report"></i><span>Relatórios</span></button>
+    <button class="tab" onclick="showPage('cards')"><i class="ti ti-credit-card"></i><span>Cartões</span></button>
+    <button class="tab" onclick="showPage('profile')"><i class="ti ti-user"></i><span>Perfil</span></button>
+  </div>
 </div>
 
 <!-- VEHICLE PAGE -->
@@ -725,6 +759,13 @@
     </div>
     <div class="section-title-new"><i class="ti ti-history"></i> Histórico</div>
     <div id="v-timeline"></div>
+  </div>
+  <div class="tab-bar">
+    <button class="tab" onclick="showPage('home')"><i class="ti ti-home"></i><span>Início</span></button>
+    <button class="tab" onclick="showPage('transactions')"><i class="ti ti-chart-bar"></i><span>Extrato</span></button>
+    <button class="tab" onclick="showPage('reports')"><i class="ti ti-report"></i><span>Relatórios</span></button>
+    <button class="tab" onclick="showPage('cards')"><i class="ti ti-credit-card"></i><span>Cartões</span></button>
+    <button class="tab" onclick="showPage('profile')"><i class="ti ti-user"></i><span>Perfil</span></button>
   </div>
 </div>
 
@@ -2476,38 +2517,7 @@ window.startListeners = function() {
       content.insertBefore(healthCard, content.firstChild);
       renderHealthRingsPro();
     }
-    // Add goals tab to bottom nav
-    document.querySelectorAll('.tab-bar').forEach(bar => {
-      if (bar.children.length >= 4) {
-        const existing = bar.querySelector('[data-goaltab]');
-        if (!existing) {
-          const goalTab = document.createElement('button');
-          goalTab.className = 'tab';
-          goalTab.setAttribute('data-goaltab', '1');
-          goalTab.innerHTML = '<i class="ti ti-target"></i><span>Metas</span>';
-          goalTab.onclick = function() { showPage('goals'); };
-          // Insert after cards tab (index 3)
-          const profileTab = bar.querySelector('.tab:last-child');
-          if (profileTab) bar.insertBefore(goalTab, profileTab);
-        }
-      }
-    });
-    // Add budget tab to bottom nav
-    document.querySelectorAll('.tab-bar').forEach(bar => {
-      if (bar.children.length >= 4) {
-        const existing = bar.querySelector('[data-budtab]');
-        if (!existing) {
-          const budTab = document.createElement('button');
-          budTab.className = 'tab';
-          budTab.setAttribute('data-budtab', '1');
-          budTab.innerHTML = '<i class="ti ti-chart-pie"></i><span>Orçamento</span>';
-          budTab.onclick = function() { showPage('budget'); };
-          // Insert after reports tab
-          const reportIdx = Array.from(bar.children).findIndex(c => c.textContent.includes('Relatórios'));
-          if (reportIdx >= 0) bar.insertBefore(budTab, bar.children[reportIdx + 1]);
-        }
-      }
-    });
+
     // Add settings link to profile menu
     const menuList = document.querySelector('.menu-list');
     if (menuList && !document.getElementById('settings-menu-item')) {
@@ -2520,6 +2530,23 @@ window.startListeners = function() {
       if (themeToggle) themeToggle.parentNode.insertBefore(settingsItem, themeToggle);
     }
   }, 500);
+};
+
+// Override showPage to render new pages on navigation
+const origShowPage = window.showPage;
+window.showPage = function(name) {
+  origShowPage(name);
+  if (name === 'budget') renderBudget();
+  if (name === 'goals') renderGoals();
+  if (name === 'vehicle') { renderVehicleFull(); updateVehicleHomeCard(); }
+  if (name === 'settings') { renderSettingsAccounts(); renderSettingsCards(); renderSettingsCatsNew(); }
+  // Activate vehicle tab in all nav bars when on vehicle page
+  if (name === 'vehicle') {
+    document.querySelectorAll('.tab-bar').forEach(bar => {
+      const vehTab = bar.querySelector('[data-vehtab]');
+      if (vehTab) vehTab.classList.add('active');
+    });
+  }
 };
 </script>
 </body>
