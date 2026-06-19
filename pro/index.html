@@ -302,6 +302,9 @@
   .h-ring-label .hu{font-size:8px;color:var(--text-muted)}
   .health-btns{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
   .health-btn{padding:5px 10px;border-radius:10px;border:1px solid var(--border);background:var(--card-bg);color:var(--text-sec);font-size:10px;font-weight:500;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:4px}
+  .pwa-install-banner{display:none;align-items:center;gap:10px;padding:10px 14px;background:var(--primary);color:#fff;font-size:13px;font-weight:600;cursor:pointer;position:fixed;bottom:70px;left:0;right:0;z-index:999;border-radius:12px;margin:0 12px;box-shadow:0 4px 12px rgba(0,0,0,.25);max-width:400px;margin:0 auto;bottom:70px;left:12px;right:12px}
+  .pwa-install-banner i{font-size:20px}
+  .pwa-install-banner .close-banner{margin-left:auto;background:none;border:none;color:#fff;font-size:18px;cursor:pointer;padding:4px;opacity:.7}
   .config-group-new{margin-bottom:16px}
   .config-item-new{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--card-bg);border-radius:10px;margin-bottom:6px;border:1px solid var(--border)}
   .config-item-new .ci-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;background:var(--bg-app);flex-shrink:0}
@@ -397,6 +400,12 @@
     <button class="d-tab" data-page="settings" onclick="showPage('settings')"><i class="ti ti-settings"></i><span>Configurações</span></button>
   </div>
 </nav>
+
+<div class="pwa-install-banner" id="pwa-install-banner" onclick="installPWA()">
+  <i class="ti ti-download"></i>
+  <span>Instalar Mu Finance</span>
+  <button class="close-banner" onclick="event.stopPropagation();dismissPWA()">&times;</button>
+</div>
 
 <!-- HOME PAGE -->
 <div class="app page active" id="home-page">
@@ -2786,6 +2795,26 @@ window.startListeners = function() {
     }
   }, 500);
 };
+
+let installPrompt;
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  installPrompt = e;
+  document.getElementById('pwa-install-banner').style.display = 'flex';
+});
+
+function installPWA() {
+  if (!installPrompt) return;
+  installPrompt.prompt();
+  installPrompt.userChoice.then(() => { installPrompt = null; });
+}
+
+function dismissPWA() {
+  document.getElementById('pwa-install-banner').style.display = 'none';
+}
+
+window.addEventListener('appinstalled', () => { installPrompt = null; });
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js');
