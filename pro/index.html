@@ -1314,6 +1314,7 @@ function startListeners() {
       { id:'impostos', name:'Impostos e Taxas', icon:'ti-file-text', color:'#e74c3c', isDefault:true, subcats:[{id:'irpf',name:'IRPF'},{id:'iof',name:'IOF'},{id:'multa',name:'Multa'}], type:'saída' },
       { id:'seguros', name:'Seguros', icon:'ti-shield', color:'#2ecc71', isDefault:true, subcats:[{id:'vida',name:'Vida'},{id:'auto',name:'Auto'},{id:'residencia',name:'Residência'}], type:'saída' },
       { id:'cartao', name:'Cartão de Crédito', icon:'ti-credit-card', color:'#34495e', isDefault:true, subcats:[{id:'fatura',name:'Fatura'},{id:'juros-cartao',name:'Juros'}], type:'saída' },
+      { id:'vehicle', name:'Veículo', icon:'ti-car', color:'#2c3e50', isDefault:true, subcats:[{id:'gasolina',name:'Gasolina'},{id:'manutencao',name:'Manutenção'},{id:'oleo',name:'Troca de Óleo'},{id:'pneus',name:'Pneus'},{id:'revisao',name:'Revisão'}], type:'saída' },
       { id:'salary', name:'Salário', icon:'ti-cash', color:'#1a7a4a', isDefault:true, subcats:[{id:'salario-fixo',name:'Fixo'},{id:'decimo-terceiro',name:'13º'},{id:'ferias',name:'Férias'}], type:'entrada' },
       { id:'freelance', name:'Freelance', icon:'ti-device-laptop', color:'#5b7fa6', isDefault:true, subcats:[{id:'projeto',name:'Projeto'},{id:'consultoria',name:'Consultoria'},{id:'outros-freela',name:'Outros'}], type:'entrada' },
       { id:'investimentos', name:'Investimentos', icon:'ti-trending-up', color:'#2ecc71', isDefault:true, subcats:[{id:'dividendos',name:'Dividendos'},{id:'renda-fixa',name:'Renda Fixa'},{id:'acoes',name:'Ações'},{id:'fii',name:'FIIs'}], type:'entrada' },
@@ -2763,6 +2764,14 @@ async function submitRefuel() {
   if (!total||!km) { showToast('Preencha valor e km'); return; }
   await db.collection('vehicle_refuels').add({type,price,liters:liters||(price>0?total/price:0),value:total,km,tanqueCheio:full,accountId:account,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
   if (account) { const a=accounts.find(x=>x.id===account); if(a) await db.collection('accounts').doc(account).update({balance:(a.balance||0)-total}); }
+  await db.collection('transactions').add({
+    name: 'Abastecimento ('+type+')',
+    cat: 'vehicle', subcat: 'gasolina', amount: -total,
+    date: 'Agora', group: 'Hoje', type: 'saída',
+    icon: 'ti-car', bg: '#2c3e5022', color: '#2c3e50',
+    status: 'efetivada', accountId: account,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
   closeModal('refuel-modal'); showToast('Abastecimento registrado!');
 }
 function openMaintModal() {
@@ -2774,6 +2783,15 @@ async function submitMaint() {
   if (!desc) { showToast('Preencha a descrição'); return; }
   await db.collection('vehicle_maintenance').add({type,desc,km,value:val,oilFlag,accountId:account,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
   if (account) { const a=accounts.find(x=>x.id===account); if(a) await db.collection('accounts').doc(account).update({balance:(a.balance||0)-val}); }
+  const subcatMap = { oleo:'oleo', pneus:'pneus', revisao:'revisao', outros:'manutencao' };
+  await db.collection('transactions').add({
+    name: desc, cat: 'vehicle',
+    subcat: subcatMap[type] || 'manutencao', amount: -val,
+    date: 'Agora', group: 'Hoje', type: 'saída',
+    icon: 'ti-car', bg: '#2c3e5022', color: '#2c3e50',
+    status: 'efetivada', accountId: account,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
   closeModal('maint-modal'); showToast('Manutenção registrada!');
 }
 function openRouteModal() {
