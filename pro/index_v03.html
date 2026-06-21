@@ -546,18 +546,12 @@
       </div>
     </div>
 
-    <!-- Enviar novamente + Sua renda -->
+    <!-- Enviar ou Cobrar + Sua renda -->
     <div class="two-col">
       <div class="send-col">
-        <div class="section-label" style="margin-bottom:10px">Enviar novamente</div>
-        <div class="send-again">
-          <button class="avatar" style="background:#e07a3a" onclick="openSendTo('AM','Ana M.')">AM</button>
-          <button class="avatar" style="background:#5b7fa6" onclick="openSendTo('JL','João L.')">JL</button>
-          <button class="avatar avatar-add" onclick="showToast('Adicionar contato')">+</button>
-        </div>
-        <div class="send-again">
-          <button class="avatar" style="background:#7a5ba6" onclick="openSendTo('CR','Carlos R.')">CR</button>
-          <button class="avatar" style="background:#3a8a5a" onclick="openSendTo('MK','Maria K.')">MK</button>
+        <div class="section-label" style="margin-bottom:10px">Enviar ou Cobrar</div>
+        <div id="p2p-quick-contacts" class="send-again">
+          <button class="avatar avatar-add" onclick="openP2PSend()">+</button>
         </div>
       </div>
       <div class="income-card">
@@ -1450,6 +1444,7 @@ function startListeners() {
     });
     updateBalance();
     renderRecent();
+    renderP2PQuickContacts();
     if (document.getElementById('transactions-page').classList.contains('active')) renderAll('all');
     if (document.getElementById('reports-page').classList.contains('active')) renderReports();
     if (document.getElementById('home-page').classList.contains('active')) { renderHomeReports(); renderHomeVehicle(); renderHomeChartsDesktop(); }
@@ -3500,6 +3495,8 @@ async function submitP2PSend() {
     status: 'efetivada',
     uid: currentUser.uid,
     p2pTargetUid: p2pTargetUser.uid,
+    p2pTargetName: p2pTargetUser.name,
+    p2pCounterpartName: p2pTargetUser.name,
     createdAt: now,
   });
 
@@ -3518,6 +3515,7 @@ async function submitP2PSend() {
     status: 'prevista',
     uid: p2pTargetUser.uid,
     p2pSenderUid: currentUser.uid,
+    p2pCounterpartName: profile.name,
     createdAt: now,
   });
 
@@ -3593,6 +3591,7 @@ async function acceptP2PRequest(requestId, fromUid, fromName, amount, desc) {
     status: 'prevista',
     uid: currentUser.uid,
     p2pSenderUid: fromUid,
+    p2pCounterpartName: fromName,
     createdAt: now,
   });
 
@@ -3611,6 +3610,7 @@ async function acceptP2PRequest(requestId, fromUid, fromName, amount, desc) {
     status: 'prevista',
     uid: fromUid,
     p2pTargetUid: currentUser.uid,
+    p2pCounterpartName: profile.name,
     createdAt: now,
   });
 
@@ -3642,6 +3642,38 @@ async function rejectP2PRequest(requestId) {
 }
 
 // Add P2P section to home page (after recent transactions)
+function renderP2PQuickContacts() {
+  const container = document.getElementById('p2p-quick-contacts');
+  if (!container) return;
+  const seen = {};
+  const contacts = [];
+  transactions.forEach(t => {
+    const uid = t.p2pTargetUid || t.p2pSenderUid;
+    const name = t.p2pCounterpartName || (t.p2pTargetUid ? t.p2pTargetName : '');
+    if (uid && name && !seen[uid] && uid !== currentUser.uid) {
+      seen[uid] = true;
+      contacts.push({ uid, name, initials: name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase() });
+    }
+  });
+  const colors = ['#e07a3a','#5b7fa6','#7a5ba6','#3a8a5a','#c0392b','#2980b9','#8e44ad','#d35400'];
+  container.innerHTML = contacts.slice(0,6).map((c,i) => `
+    <button class="avatar" style="background:${colors[i%colors.length]}" onclick="openP2PSendTo('${c.uid}','${c.name.replace(/'/g,"\\'")}')" title="${c.name}">${c.initials}</button>
+  `).join('') + `<button class="avatar avatar-add" onclick="openP2PSend()">+</button>`;
+}
+
+function openP2PSendTo(uid, name) {
+  openP2PSend();
+  // Look up email from profile collection
+  db.collection('profile').doc(uid).get().then(doc => {
+    if (doc.exists) {
+      p2pTargetUser = { name: doc.data().name, email: doc.data().email, uid: uid };
+      document.getElementById('p2p-send-email').value = doc.data().email || '';
+      document.getElementById('p2p-send-result').innerHTML = `<div class="p2p-search-result"><div class="av">${doc.data().name.charAt(0).toUpperCase()}</div><div><div style="font-size:14px;font-weight:600">${doc.data().name}</div><div style="font-size:12px;color:var(--text-muted)">${doc.data().email||''}</div></div></div>`;
+      document.getElementById('p2p-send-detail').style.display = 'block';
+    }
+  });
+}
+
 function addP2PHomeSection() {
   if (document.getElementById('p2p-home-section')) return;
   const recentSection = document.getElementById('recent-tx-list');
