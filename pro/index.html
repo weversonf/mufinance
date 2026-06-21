@@ -65,43 +65,58 @@
 
     /* Real, persistent sidebar */
     .desktop-sidebar{
-      display:flex;flex-direction:column;position:fixed;left:0;top:0;width:240px;height:100vh;
-      background:var(--bg-top);border-right:1px solid var(--border);padding:24px 14px;z-index:100;
+      display:flex;flex-direction:column;position:fixed;left:0;top:0;width:220px;height:100vh;
+      background:var(--bg-top);border-right:1px solid var(--border);padding:20px 10px;z-index:100;
     }
-    .desktop-sidebar .brand{display:flex;align-items:center;gap:10px;padding:0 10px;margin-bottom:28px}
-    .desktop-sidebar .brand-mark{width:34px;height:34px;border-radius:10px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
-    .desktop-sidebar .brand-name{font-size:15px;font-weight:800;color:var(--text-main);letter-spacing:-.3px}
-    .desktop-sidebar nav{display:flex;flex-direction:column;gap:2px}
-    .desktop-sidebar .d-tab{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:12px;border:none;background:none;cursor:pointer;font-family:inherit;font-size:13.5px;font-weight:600;color:var(--text-sec);text-align:left;width:100%;transition:background .15s,color .15s}
+    .desktop-sidebar .brand{display:flex;align-items:center;gap:10px;padding:0 10px;margin-bottom:24px}
+    .desktop-sidebar .brand-mark{width:32px;height:32px;border-radius:8px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+    .desktop-sidebar .brand-name{font-size:14px;font-weight:800;color:var(--text-main);letter-spacing:-.3px}
+    .desktop-sidebar nav{display:flex;flex-direction:column;gap:1px}
+    .desktop-sidebar .d-tab{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;border:none;background:none;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;color:var(--text-sec);text-align:left;width:100%;transition:background .15s,color .15s}
     .desktop-sidebar .d-tab:hover{background:var(--bg-app);color:var(--text-main)}
     .desktop-sidebar .d-tab.active{background:var(--primary-light);color:var(--primary)}
-    .desktop-sidebar .d-tab i{font-size:19px;width:22px;text-align:center;flex-shrink:0}
-    .desktop-sidebar .sidebar-footer{margin-top:auto;padding-top:14px;border-top:1px solid var(--border)}
+    .desktop-sidebar .d-tab i{font-size:17px;width:20px;text-align:center;flex-shrink:0}
+    .desktop-sidebar .sidebar-footer{margin-top:auto;padding-top:10px;border-top:1px solid var(--border)}
 
     /* Push every page to the right of the sidebar */
-    .app.page{margin-left:240px;min-height:100vh}
+    .app.page{margin-left:220px;min-height:100vh}
 
     .app>.top-bar,.app>.actions,.app>.page-header{background:var(--bg-app);border-right:none;min-height:auto}
-    .app>.top-bar{flex-direction:row;align-items:center;gap:16px;padding:32px 32px 8px;justify-content:space-between}
+    .app>.top-bar{flex-direction:row;align-items:center;gap:16px;padding:28px 32px 6px;justify-content:space-between}
     .app>.top-bar .greeting{flex-direction:row;gap:16px;align-items:center;width:auto}
-    .app>.actions{flex-direction:row;padding:8px 32px 16px;gap:8px;justify-content:flex-start}
-    .app>.content,.app>.page-content{padding:20px 32px 48px;margin-top:0;overflow-y:visible}
-    .app>.page-header{flex-direction:row;align-items:center;gap:10px;padding:32px 32px 8px}
+    .app>.actions{flex-direction:row;padding:6px 32px 14px;gap:8px;justify-content:flex-start}
+    .app>.content,.app>.page-content{padding:16px 28px 48px;margin-top:0;overflow-y:visible}
+    .app>.page-header{flex-direction:row;align-items:center;gap:10px;padding:28px 32px 6px}
     .two-col{grid-template-columns:1fr 1fr}
-    .actions .action-btn.center-btn{width:auto;height:auto;border-radius:16px;flex:0 0 auto;padding:11px 18px;font-size:13px}
+    .three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:18px}
+    .actions .action-btn.center-btn{width:auto;height:auto;border-radius:16px;flex:0 0 auto;padding:9px 16px;font-size:13px}
     .actions .action-btn.center-btn i{margin-right:6px}
     .actions .action-btn.center-btn::after{content:'Transferir'}
-    .actions .action-btn.side{flex:0 0 auto;padding:11px 20px}
+    .actions .action-btn.side{flex:0 0 auto;padding:9px 18px}
     .app>.filter-row{padding:4px 32px}
+    .desktop-only{display:block}
+    .mobile-only{display:none}
   }
 
   @media(min-width:1024px){
-    .desktop-sidebar{width:264px}
-    .app.page{margin-left:264px}
-    .app>.content,.app>.page-content{max-width:920px}
-    .two-col{grid-template-columns:1fr 1fr;gap:20px}
+    .desktop-sidebar{width:240px}
+    .app.page{margin-left:240px}
+    .app>.content,.app>.page-content{max-width:none}
+    .two-col{grid-template-columns:1fr 1fr;gap:18px}
+    .three-col{grid-template-columns:1fr 1fr 1fr;gap:18px}
+    .desktop-grid-4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:16px;margin-bottom:18px}
     .send-again{flex-wrap:wrap}
+    .desktop-chart-row{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}
   }
+
+  @media(min-width:1400px){
+    .desktop-sidebar{width:260px}
+    .app.page{margin-left:260px}
+    .desktop-chart-row{grid-template-columns:2fr 1fr}
+  }
+
+  .desktop-only{display:none}
+  .three-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}
   .top-bar{background:var(--bg-top);padding:52px 20px 16px}
   .greeting{display:flex;justify-content:space-between;align-items:flex-start}
   .greeting h3{font-size:15px;font-weight:400;color:var(--text-main);line-height:1.5}
@@ -577,6 +592,12 @@
 
     <!-- Container for extra reports (budget, top cats) -->
     <div id="home-report-section"></div>
+
+    <!-- Desktop-only charts row -->
+    <div class="desktop-only desktop-chart-row" id="desktop-charts-row">
+      <div class="chart-wrap-new"><h4><i class="ti ti-pie-chart" style="font-size:13px"></i> Despesas por Categoria</h4><div class="chart-canvas-box"><canvas id="home-pie-chart"></canvas></div></div>
+      <div class="chart-wrap-new"><h4><i class="ti ti-trending-up" style="font-size:13px"></i> Receitas vs Despesas · 12 Meses</h4><div class="chart-canvas-box"><canvas id="home-bar-chart"></canvas></div></div>
+    </div>
 
   </div>
 
@@ -1375,7 +1396,7 @@ function startListeners() {
     renderRecent();
     if (document.getElementById('transactions-page').classList.contains('active')) renderAll('all');
     if (document.getElementById('reports-page').classList.contains('active')) renderReports();
-    if (document.getElementById('home-page').classList.contains('active')) { renderHomeReports(); renderHomeVehicle(); }
+    if (document.getElementById('home-page').classList.contains('active')) { renderHomeReports(); renderHomeVehicle(); renderHomeChartsDesktop(); }
   });
 
   db.collection('contacts').onSnapshot(snap => {
@@ -2159,7 +2180,7 @@ window.showPage = function(name) {
       if (vehTab) vehTab.classList.add('active');
     });
   }
-  if (name === 'home') { renderHomeReports(); renderHomeVehicle(); }
+  if (name === 'home') { renderHomeReports(); renderHomeVehicle(); renderHomeChartsDesktop(); }
   window.scrollTo(0, 0);
 };
 
@@ -2365,6 +2386,78 @@ function renderHomeVehicle() {
   }).join('');
 }
 
+// ===== DESKTOP HOME CHARTS =====
+function renderHomeChartsDesktop() {
+  const pieCanvas = document.getElementById('home-pie-chart');
+  const barCanvas = document.getElementById('home-bar-chart');
+  if (!pieCanvas || !barCanvas) return;
+  const w = pieCanvas.parentElement.offsetWidth;
+  if (w < 100) return;
+  const now = new Date();
+  const monthTx = transactions.filter(t => {
+    const d = t.createdAt ? t.createdAt.toDate() : null;
+    return d && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  });
+  const isDark = document.body.getAttribute('data-theme') === 'dark';
+  const textColor = isDark ? '#bbb' : '#555';
+  const gridColor = isDark ? '#333' : '#eee';
+  // Destroy existing charts
+  if (window._homePieChart) { window._homePieChart.destroy(); window._homePieChart = null; }
+  if (window._homeBarChart) { window._homeBarChart.destroy(); window._homeBarChart = null; }
+  // Pie chart — despesas por categoria
+  const catTotals = {};
+  const allCats = [...(categories.saída||[])];
+  monthTx.filter(t => (t.amount||0) < 0).forEach(t => {
+    const cat = allCats.find(c => c.id === t.cat);
+    if (cat) catTotals[cat.name] = (catTotals[cat.name]||0) + Math.abs(t.amount);
+  });
+  const pieLabels = Object.keys(catTotals);
+  const pieData = Object.values(catTotals);
+  if (pieLabels.length) {
+    const colors = ['#2ecc71','#e74c3c','#f39c12','#3498db','#9b59b6','#1abc9c','#e67e22','#34495e','#16a085','#c0392b','#27ae60','#8e44ad'];
+    window._homePieChart = new Chart(pieCanvas, {
+      type: 'doughnut',
+      data: { labels: pieLabels, datasets: [{ data: pieData, backgroundColor: colors.slice(0,pieLabels.length), borderWidth: 0 }] },
+      options: { responsive: true, maintainAspectRatio: true, cutout: '60%',
+        plugins: { legend: { position: 'bottom', labels: { color: textColor, font: { size: 11 }, boxWidth: 10, padding: 8 } } } }
+    });
+  }
+  // Bar chart — receitas vs despesas 12 meses
+  const labels = [];
+  const incomeData = [];
+  const expenseData = [];
+  for (let i = 11; i >= 0; i--) {
+    const m = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    labels.push(m.toLocaleString('pt-BR', { month: 'short' }));
+    const vals = transactions.filter(t => {
+      const d = t.createdAt ? t.createdAt.toDate() : null;
+      return d && d.getMonth() === m.getMonth() && d.getFullYear() === m.getFullYear();
+    });
+    incomeData.push(vals.filter(t => (t.amount||0) > 0).reduce((s,t) => s + t.amount, 0));
+    expenseData.push(vals.filter(t => (t.amount||0) < 0).reduce((s,t) => s + Math.abs(t.amount), 0));
+  }
+  window._homeBarChart = new Chart(barCanvas, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Receitas', data: incomeData, backgroundColor: '#2ecc7188', borderColor: '#2ecc71', borderWidth: 1, borderRadius: 4 },
+        { label: 'Despesas', data: expenseData, backgroundColor: '#e74c3c88', borderColor: '#e74c3c', borderWidth: 1, borderRadius: 4 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: true,
+      scales: {
+        x: { ticks: { color: textColor, font: { size: 10 } }, grid: { display: false } },
+        y: { ticks: { color: textColor, font: { size: 10 }, callback: v => 'R$'+(v/1000).toFixed(0)+'k' }, grid: { color: gridColor } }
+      },
+      plugins: {
+        legend: { position: 'top', labels: { color: textColor, font: { size: 11 }, boxWidth: 12, padding: 8 } }
+      }
+    }
+  });
+}
+
 // ===== BLUR TOGGLE =====
 let blurActive = localStorage.getItem('mu_blur') !== '0';
 function toggleBlur() {
@@ -2400,6 +2493,9 @@ function updateVehicleIcons() {
   // Vehicle page header icon
   const headerIcon = document.querySelector('#vehicle-page .page-header .icon-btn i');
   if (headerIcon) headerIcon.className = 'ti ' + icon;
+  // Desktop sidebar vehicle icon
+  const sideIcon = document.querySelector('.desktop-sidebar [data-page="vehicle"] i');
+  if (sideIcon) sideIcon.className = 'ti ' + icon;
 }
 
 // ===== SETTINGS / MODULES =====
@@ -2428,13 +2524,8 @@ function injectVehicleTab() {
           veh.innerHTML = '<i class="ti ti-car"></i><span>Veículo</span>';
           veh.onclick = function() { showPage('vehicle'); };
           tabs[2].parentNode.insertBefore(veh, tabs[3] || null);
-  }
-}
-
-function showLoginError(msg) {
-  const el = document.getElementById('login-error');
-  if (el) { el.textContent = msg; el.style.display = 'block'; }
-}
+        }
+      }
     } else {
       const existing = bar.querySelector('[data-vehtab]');
       if (existing) existing.remove();
@@ -2458,6 +2549,30 @@ function showLoginError(msg) {
       if (vehMenu) vehMenu.remove();
     }
   }
+  // Add/remove vehicle button in desktop sidebar
+  const sidebarNav = document.querySelector('.desktop-sidebar nav');
+  if (sidebarNav) {
+    let vehSide = sidebarNav.querySelector('[data-page="vehicle"]');
+    if (proSettings.vehicleActive) {
+      if (!vehSide) {
+        vehSide = document.createElement('button');
+        vehSide.className = 'd-tab';
+        vehSide.setAttribute('data-page', 'vehicle');
+        vehSide.innerHTML = '<i class="ti ti-car"></i><span>Veículo</span>';
+        vehSide.onclick = function() { showPage('vehicle'); };
+        const budgetTab = sidebarNav.querySelector('[data-page="budget"]');
+        if (budgetTab) budgetTab.parentNode.insertBefore(vehSide, budgetTab.nextSibling);
+        else sidebarNav.appendChild(vehSide);
+      }
+    } else {
+      if (vehSide) vehSide.remove();
+    }
+  }
+}
+
+function showLoginError(msg) {
+  const el = document.getElementById('login-error');
+  if (el) { el.textContent = msg; el.style.display = 'block'; }
 }
 
 async function loadProSettings() {
@@ -3136,7 +3251,7 @@ window.startListeners = function() {
       const recentSection = document.getElementById('recent-tx-list');
       if (recentSection && recentSection.parentNode) {
         recentSection.parentNode.insertBefore(reportEl, recentSection.nextSibling);
-        renderHomeReports(); renderHomeVehicle();
+        renderHomeReports(); renderHomeVehicle(); renderHomeChartsDesktop();
       }
     }
 
