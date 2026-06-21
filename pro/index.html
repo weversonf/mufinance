@@ -359,6 +359,11 @@
   .accordion-header.open .arrow{transform:rotate(180deg)}
   .accordion-content{display:none;padding:4px 0 8px 0}
   .accordion-content.open{display:block}
+  /* Icon picker */
+  .icon-picker-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(42px,1fr));gap:6px;max-height:240px;overflow-y:auto;padding:4px 0;margin-bottom:12px}
+  .icon-picker-grid .ip-item{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;border:2px solid transparent;background:var(--card-bg);color:var(--text-sec);transition:all .15s}
+  .icon-picker-grid .ip-item:hover{background:var(--border);color:var(--text-main)}
+  .icon-picker-grid .ip-item.selected{border-color:var(--primary);background:var(--primary-light);color:var(--primary)}
   .config-item-new{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--card-bg);border-radius:10px;margin-bottom:6px;border:1px solid var(--border)}
   .config-item-new .ci-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;background:var(--bg-app);flex-shrink:0}
   .config-item-new .ci-info{flex:1}
@@ -810,6 +815,23 @@
   <div class="modal">
     <h2>Notificações <button class="modal-close" onclick="closeModal('notif-modal')"><i class="ti ti-x"></i></button></h2>
     <div id="notif-list"></div>
+  </div>
+</div>
+
+<!-- SUBCATEGORY EDIT MODAL -->
+<div class="modal-overlay" id="subcat-modal">
+  <div class="modal" style="max-width:420px">
+    <h2 id="subcat-modal-title">Editar Subcategoria <button class="modal-close" onclick="closeModal('subcat-modal')"><i class="ti ti-x"></i></button></h2>
+    <label class="field-label">Nome</label>
+    <input class="field-input" id="subcat-name-input" placeholder="Nome da subcategoria" />
+    <label class="field-label">Ícone</label>
+    <div id="subcat-icon-preview" style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+      <div id="subcat-icon-display" style="width:40px;height:40px;border-radius:10px;background:var(--card-bg);display:flex;align-items:center;justify-content:center;font-size:20px"></div>
+      <span style="font-size:12px;color:var(--text-muted)" id="subcat-icon-name">ti-category</span>
+    </div>
+    <div class="icon-picker-grid" id="subcat-icon-grid"></div>
+    <button class="submit-btn" onclick="saveSubcat()">Salvar</button>
+    <button class="submit-btn" id="subcat-delete-btn" onclick="deleteSubcatFromModal()" style="background:#c0392b;margin-top:8px;display:none">Excluir Subcategoria</button>
   </div>
 </div>
 
@@ -2702,15 +2724,117 @@ function renderSettingsCatsNew() {
     const container = document.getElementById(id);
     if (!container) return;
     container.innerHTML = (categories[type] || []).map(c =>
-      '<div class="config-item-new"><div class="ci-icon" style="background:'+(c.color||'#888')+'22;color:'+(c.color||'#888')+'"><i class="ti '+(c.icon||'ti-category')+'"></i></div><div class="ci-info"><div class="ci-name">'+c.name+(c.isDefault?' <span class="badge-default" style="font-size:8px">Padrão</span>':'')+'</div></div><div class="ci-actions"><button onclick="editCatName(\''+c.id+'\')"><i class="ti ti-edit"></i></button>'+(c.isDefault?'':'<button class="del" onclick="deleteCatById(\''+c.id+'\')"><i class="ti ti-trash"></i></button>')+'</div></div>'+
+      '<div class="config-item-new"><div class="ci-icon" style="background:'+(c.color||'#888')+'22;color:'+(c.color||'#888')+'"><i class="ti '+(c.icon||'ti-category')+'"></i></div><div class="ci-info"><div class="ci-name">'+c.name+(c.isDefault?' <span class="badge-default" style="font-size:8px">Padrão</span>':'')+'</div></div><div class="ci-actions"><button onclick="editCatName(\''+c.id+'\')" title="Renomear"><i class="ti ti-edit"></i></button><button onclick="editCatIcon(\''+c.id+'\')" title="Alterar ícone"><i class="ti ti-image"></i></button>'+(c.isDefault?'':'<button class="del" onclick="deleteCatById(\''+c.id+'\')" title="Excluir"><i class="ti ti-trash"></i></button>')+'<button onclick="openAddSubcat(\''+type+'\',\''+c.id+'\')" title="Adicionar subcategoria"><i class="ti ti-plus" style="font-size:15px"></i></button></div></div>'+
       (c.subcats?.length ? c.subcats.map(sub =>
-        '<div class="config-item-new" style="margin-left:20px;padding:6px 10px"><div class="ci-icon" style="width:24px;height:24px;font-size:11px;background:'+(c.color||'#888')+'22;color:'+(c.color||'#888')+'"><i class="ti ti-corner-down-right"></i></div><div class="ci-info"><div class="ci-name" style="font-size:12px">'+sub.name+'</div></div><div class="ci-actions"><button class="del" onclick="deleteSubcat(\''+type+'\',\''+c.id+'\',\''+sub.id+'\')"><i class="ti ti-trash"></i></button></div></div>'
+        '<div class="config-item-new" style="margin-left:20px;padding:6px 10px"><div class="ci-icon" style="width:24px;height:24px;font-size:11px;background:'+(c.color||'#888')+'22;color:'+(c.color||'#888')+'"><i class="ti '+(sub.icon||c.icon||'ti-corner-down-right')+'"></i></div><div class="ci-info"><div class="ci-name" style="font-size:12px">'+sub.name+'</div></div><div class="ci-actions"><button onclick="openEditSubcat(\''+type+'\',\''+c.id+'\',\''+sub.id+'\')"><i class="ti ti-edit"></i></button><button class="del" onclick="deleteSubcat(\''+type+'\',\''+c.id+'\',\''+sub.id+'\')"><i class="ti ti-trash"></i></button></div></div>'
       ).join('') : '')
     ).join('') || '<div style="color:var(--text-muted);font-size:13px;padding:8px">Nenhuma</div>';
   };
   render('saída', 'settings-expense-cats');
   render('entrada', 'settings-income-cats');
 }
+
+// ===== ICON PICKER + SUBCAT MODAL =====
+const ICON_LIST = [
+  'ti-home','ti-building','ti-building-store','ti-briefcase','ti-wallet','ti-coin','ti-credit-card','ti-cash',
+  'ti-shopping-cart','ti-shopping-bag','ti-gift','ti-tag','ti-discount','ti-percentage',
+  'ti-car','ti-motorbike','ti-bus','ti-plane','ti-ship','ti-truck','ti-gas-station','ti-tool','ti-settings',
+  'ti-heart','ti-heartbeat','ti-medical-cross','ti-pill','ti-dental','ti-stethoscope',
+  'ti-book','ti-graduation-cap','ti-school','ti-pencil','ti-code','ti-devices',
+  'ti-phone','ti-device-mobile','ti-laptop','ti-wifi','ti-battery','ti-plug',
+  'ti-music','ti-video','ti-camera','ti-photo','ti-movie','ti-headphones',
+  'ti-tv','ti-player-play','ti-news','ti-newspaper','ti-cloud','ti-download',
+  'ti-umbrella','ti-sun','ti-moon','ti-flame','ti-snowflake','ti-droplet',
+  'ti-leaf','ti-tree','ti-flower','ti-paw','ti-bone',
+  'ti-shirt','ti-shoe','ti-ring','ti-diamond','ti-clock','ti-calendar',
+  'ti-cup','ti-glass','ti-bottle','ti-meat','ti-apple','ti-cake',
+  'ti-users','ti-user','ti-crown','ti-flag','ti-star','ti-heart',
+  'ti-plane-tilt','ti-luggage','ti-map','ti-map-pin','ti-compass','ti-road',
+  'ti-lock','ti-shield','ti-eye','ti-bell','ti-speakerphone','ti-alarm',
+  'ti-wash','ti-soap','ti-trash','ti-cleaning','ti-brush',
+  'ti-pet','ti-dog-bowl','ti-cat','ti-bird',
+  'ti-fence','ti-roof','ti-wall','ti-window','ti-lamp',
+  'ti-chart-bar','ti-chart-pie','ti-chart-line','ti-report','ti-file-invoice','ti-file-text',
+  'ti-activity','ti-trending-up','ti-trending-down','ti-arrows-exchange'
+];
+
+let _subcatModalState = { type: null, catId: null, subId: null, selectedIcon: null };
+
+function renderIconPicker(selectedIcon) {
+  const grid = document.getElementById('subcat-icon-grid');
+  if (!grid) return;
+  grid.innerHTML = ICON_LIST.map(icon =>
+    '<div class="ip-item'+(icon === selectedIcon ? ' selected' : '')+'" onclick="selectSubcatIcon(\''+icon+'\')"><i class="ti '+icon+'"></i></div>'
+  ).join('');
+}
+
+function selectSubcatIcon(icon) {
+  document.querySelectorAll('#subcat-icon-grid .ip-item').forEach(el => el.classList.remove('selected'));
+  const el = document.querySelector('#subcat-icon-grid .ip-item i.ti-'+icon.replace('ti-',''));
+  if (el) el.parentElement.classList.add('selected');
+  _subcatModalState.selectedIcon = icon;
+  const display = document.getElementById('subcat-icon-display');
+  const name = document.getElementById('subcat-icon-name');
+  if (display) display.innerHTML = '<i class="ti '+icon+'"></i>';
+  if (name) name.textContent = icon;
+}
+
+function openAddSubcat(type, catId) {
+  const cat = categories[type].find(c => c.id === catId);
+  if (!cat) return;
+  _subcatModalState = { type, catId, subId: null, selectedIcon: cat.icon || 'ti-category' };
+  document.getElementById('subcat-modal-title').textContent = 'Nova Subcategoria';
+  document.getElementById('subcat-name-input').value = '';
+  document.getElementById('subcat-delete-btn').style.display = 'none';
+  renderIconPicker(_subcatModalState.selectedIcon);
+  selectSubcatIcon(_subcatModalState.selectedIcon);
+  document.getElementById('subcat-modal').classList.add('open');
+}
+
+function openEditSubcat(type, catId, subId) {
+  const cat = categories[type].find(c => c.id === catId);
+  if (!cat) return;
+  const sub = cat.subcats.find(s => s.id === subId);
+  if (!sub) return;
+  _subcatModalState = { type, catId, subId, selectedIcon: sub.icon || cat.icon || 'ti-category' };
+  document.getElementById('subcat-modal-title').textContent = 'Editar Subcategoria';
+  document.getElementById('subcat-name-input').value = sub.name;
+  document.getElementById('subcat-delete-btn').style.display = 'block';
+  renderIconPicker(_subcatModalState.selectedIcon);
+  selectSubcatIcon(_subcatModalState.selectedIcon);
+  document.getElementById('subcat-modal').classList.add('open');
+}
+
+async function saveSubcat() {
+  const { type, catId, subId, selectedIcon } = _subcatModalState;
+  if (!type || !catId) return;
+  const name = document.getElementById('subcat-name-input').value.trim();
+  if (!name) { showToast('Digite um nome'); return; }
+  const cat = categories[type].find(c => c.id === catId);
+  if (!cat) return;
+  const icon = selectedIcon || cat.icon || 'ti-category';
+  if (subId) {
+    // Edit existing
+    const sub = cat.subcats.find(s => s.id === subId);
+    if (sub) { sub.name = name; sub.icon = icon; }
+  } else {
+    // Add new
+    const ref = db.collection('categories').doc();
+    cat.subcats.push({ id: ref.id, name, icon });
+  }
+  await db.collection('categories').doc(catId).update({ subcats: cat.subcats });
+  closeModal('subcat-modal');
+  renderSettingsCatsNew();
+  showToast(subId ? 'Subcategoria atualizada!' : 'Subcategoria adicionada!');
+}
+
+async function deleteSubcatFromModal() {
+  const { type, catId, subId } = _subcatModalState;
+  if (!subId || !confirm('Excluir esta subcategoria?')) return;
+  await deleteSubcat(type, catId, subId);
+  closeModal('subcat-modal');
+}
+
 function renderSettingsCards() {
   const c = document.getElementById('settings-cards-list');
   if (!c) return;
@@ -2724,6 +2848,13 @@ function editCatName(id) {
   const cat = allCats.find(c => c.id === id);
   const n = prompt('Novo nome:', cat?.name);
   if (n) db.collection('categories').doc(id).update({ name: n }).then(() => renderSettingsCatsNew());
+}
+function editCatIcon(id) {
+  const allCats = [...categories.saída, ...categories.entrada];
+  const cat = allCats.find(c => c.id === id);
+  if (!cat) return;
+  const icon = prompt('Nome do ícone Tabler (ex: ti-car):', cat.icon || 'ti-category');
+  if (icon) db.collection('categories').doc(id).update({ icon }).then(() => renderSettingsCatsNew());
 }
 function deleteCatById(id) { if (!confirm('Excluir?')) return; db.collection('categories').doc(id).delete().then(() => { showToast('Excluída!'); renderSettingsCatsNew(); }); }
 async function addNewCat(type) {
