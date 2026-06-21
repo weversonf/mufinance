@@ -380,6 +380,11 @@
   .v-hist-info{flex:1}
   .v-hist-info .vh-t{font-size:12px;font-weight:600;color:var(--text-main)}
   .v-hist-info .vh-s{font-size:10px;color:var(--text-muted)}
+  .v-hist-actions{display:flex;gap:4px;flex-shrink:0}
+  .v-del-btn{width:28px;height:28px;border:none;border-radius:6px;background:#c0392b22;color:#c0392b;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:background .15s}
+  .v-del-btn:hover{background:#c0392b44}
+  .v-edit-btn{width:28px;height:28px;border:none;border-radius:6px;background:var(--primary-light);color:var(--primary);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:background .15s}
+  .v-edit-btn:hover{background:var(--primary)}
   .blurred{filter:blur(8px);user-select:none}
   body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
   input,textarea,.field-input,.field-input *{-webkit-user-select:text;user-select:text}
@@ -2696,11 +2701,16 @@ function renderVTimeline() {
   if (!el) return;
   const all = [...refuels.map(r=>({...r,type:'refuel'})), ...maintenances.map(m=>({...m,type:'maint'})), ...routes.map(r=>({...r,type:'route'}))];
   all.sort((a,b) => (b.createdAt?.toDate?.()?.getTime()||0) - (a.createdAt?.toDate?.()?.getTime()||0));
-  el.innerHTML = all.slice(0,20).map(i => {
+  el.innerHTML = all.slice(0,50).map(i => {
     const icons = { refuel:'ti-gas-station', maint:'ti-tool', route:'ti-map-2' };
     const colors = { refuel:'#e07a3a', maint:'#c0392b', route:'var(--primary)' };
     const titles = { refuel:'Abastecimento', maint:'Manutenção: '+(i.desc||i.type||''), route:'Rota: '+(i.origin||'')+' → '+(i.dest||'') };
-    return '<div class="v-hist-item"><div class="v-hist-icon" style="background:'+colors[i.type]+'22;color:'+colors[i.type]+'"><i class="ti '+icons[i.type]+'"></i></div><div class="v-hist-info"><div class="vh-t">'+titles[i.type]+'</div><div class="vh-s">R$ '+(Math.abs(i.value||0).toLocaleString('pt-BR',{minimumFractionDigits:2}))+' · '+(i.km||'')+' km</div></div></div>';
+    const isFin = i.type === 'refuel' || i.type === 'maint';
+    return '<div class="v-hist-item"><div class="v-hist-icon" style="background:'+colors[i.type]+'22;color:'+colors[i.type]+'"><i class="ti '+icons[i.type]+'"></i></div><div class="v-hist-info"><div class="vh-t">'+titles[i.type]+'</div><div class="vh-s">'+ (isFin ? 'R$ '+(Math.abs(i.value||0).toLocaleString('pt-BR',{minimumFractionDigits:2}))+' · ' : '') +(i.km||'')+' km</div></div>'+
+      '<div class="v-hist-actions">'+
+        '<button class="v-edit-btn" onclick="editVehicleRecord(\''+i.type+'\',\''+i.id+'\')"><i class="ti ti-edit"></i></button>'+
+        (isFin ? '<button class="v-del-btn" onclick="deleteVehicleRecord(\''+i.type+'\',\''+i.id+'\')"><i class="ti ti-trash"></i></button>' : '')+
+      '</div></div>';
   }).join('') || '<div style="color:var(--text-muted);padding:8px;font-size:13px">Nenhum registro</div>';
 }
 function renderVChartsPro() {
@@ -2754,46 +2764,114 @@ async function submitVehicleConfig() {
   await db.collection('vehicle').doc('config').set(data);
   vehicle = data; closeModal('v-config-modal'); showToast('Veículo configurado!'); updateVehicleHomeCard(); renderVehicleFull();
 }
-function openRefuelModal() {
+let _editingVehicleId = null;
+
+function openRefuelModal(editId) {
+  _editingVehicleId = editId || null;
   document.getElementById('refuel-type').value='gasolina'; document.getElementById('refuel-price').value=''; document.getElementById('refuel-liters').value=''; document.getElementById('refuel-total').value=''; document.getElementById('refuel-km').value='';
   document.getElementById('refuel-full-toggle')?.classList.remove('active'); populateAccountSelects();
+  if (editId) {
+    const r = refuels.find(x => x.id === editId);
+    if (r) {
+      document.getElementById('refuel-type').value = r.type || 'gasolina';
+      document.getElementById('refuel-price').value = r.price || '';
+      document.getElementById('refuel-liters').value = r.liters || '';
+      document.getElementById('refuel-total').value = r.value || '';
+      document.getElementById('refuel-km').value = r.km || '';
+      if (r.tanqueCheio) document.getElementById('refuel-full-toggle')?.classList.add('active');
+      if (r.accountId) document.getElementById('refuel-account').value = r.accountId;
+    }
+  }
   document.getElementById('refuel-modal').classList.add('open');
 }
 async function submitRefuel() {
   const type=document.getElementById('refuel-type').value; const price=parseFloat(document.getElementById('refuel-price').value)||0; const liters=parseFloat(document.getElementById('refuel-liters').value)||0; const total=parseFloat(document.getElementById('refuel-total').value)||(price*liters); const km=parseInt(document.getElementById('refuel-km').value)||0; const full=document.getElementById('refuel-full-toggle')?.classList.contains('active'); const account=document.getElementById('refuel-account').value;
   if (!total||!km) { showToast('Preencha valor e km'); return; }
-  await db.collection('vehicle_refuels').add({type,price,liters:liters||(price>0?total/price:0),value:total,km,tanqueCheio:full,accountId:account,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
-  if (account) { const a=accounts.find(x=>x.id===account); if(a) await db.collection('accounts').doc(account).update({balance:(a.balance||0)-total}); }
-  await db.collection('transactions').add({
-    name: 'Abastecimento ('+type+')',
-    cat: 'vehicle', subcat: 'gasolina', amount: -total,
-    date: 'Agora', group: 'Hoje', type: 'saída',
-    icon: 'ti-car', bg: '#2c3e5022', color: '#2c3e50',
-    status: 'efetivada', accountId: account,
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-  });
-  closeModal('refuel-modal'); showToast('Abastecimento registrado!');
+  const data = {type,price,liters:liters||(price>0?total/price:0),value:total,km,tanqueCheio:full,accountId:account};
+  if (_editingVehicleId) {
+    await db.collection('vehicle_refuels').doc(_editingVehicleId).update(data);
+    // Atualizar transação espelhada
+    const txSnap = await db.collection('transactions').where('vehicleRefId','==',_editingVehicleId).where('vehicleType','==','refuel').get();
+    txSnap.forEach(txDoc => db.collection('transactions').doc(txDoc.id).update({name:'Abastecimento ('+type+')',amount:-total,accountId:account}));
+    _editingVehicleId = null;
+    closeModal('refuel-modal'); showToast('Abastecimento atualizado!');
+  } else {
+    const ref = await db.collection('vehicle_refuels').add({...data,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+    if (account) { const a=accounts.find(x=>x.id===account); if(a) await db.collection('accounts').doc(account).update({balance:(a.balance||0)-total}); }
+    await db.collection('transactions').add({
+      name: 'Abastecimento ('+type+')', cat: 'vehicle', subcat: 'gasolina', amount: -total,
+      date: 'Agora', group: 'Hoje', type: 'saída',
+      icon: 'ti-car', bg: '#2c3e5022', color: '#2c3e50',
+      status: 'efetivada', accountId: account, vehicleRefId: ref.id, vehicleType: 'refuel',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    closeModal('refuel-modal'); showToast('Abastecimento registrado!');
+  }
 }
-function openMaintModal() {
+function openMaintModal(editId) {
+  _editingVehicleId = editId || null;
   document.getElementById('maint-type').value='oleo'; document.getElementById('maint-desc').value=''; document.getElementById('maint-km').value=''; document.getElementById('maint-value').value=''; document.getElementById('maint-oil-flag').checked=false; populateAccountSelects();
+  if (editId) {
+    const m = maintenances.find(x => x.id === editId);
+    if (m) {
+      document.getElementById('maint-type').value = m.type || 'oleo';
+      document.getElementById('maint-desc').value = m.desc || '';
+      document.getElementById('maint-km').value = m.km || '';
+      document.getElementById('maint-value').value = m.value || '';
+      document.getElementById('maint-oil-flag').checked = !!m.oilFlag;
+      if (m.accountId) document.getElementById('maint-account').value = m.accountId;
+    }
+  }
   document.getElementById('maint-modal').classList.add('open');
 }
 async function submitMaint() {
   const type=document.getElementById('maint-type').value; const desc=document.getElementById('maint-desc').value.trim(); const km=parseInt(document.getElementById('maint-km').value)||0; const val=parseFloat(document.getElementById('maint-value').value)||0; const oilFlag=document.getElementById('maint-oil-flag').checked; const account=document.getElementById('maint-account').value;
   if (!desc) { showToast('Preencha a descrição'); return; }
-  await db.collection('vehicle_maintenance').add({type,desc,km,value:val,oilFlag,accountId:account,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
-  if (account) { const a=accounts.find(x=>x.id===account); if(a) await db.collection('accounts').doc(account).update({balance:(a.balance||0)-val}); }
   const subcatMap = { oleo:'oleo', pneus:'pneus', revisao:'revisao', outros:'manutencao' };
-  await db.collection('transactions').add({
-    name: desc, cat: 'vehicle',
-    subcat: subcatMap[type] || 'manutencao', amount: -val,
-    date: 'Agora', group: 'Hoje', type: 'saída',
-    icon: 'ti-car', bg: '#2c3e5022', color: '#2c3e50',
-    status: 'efetivada', accountId: account,
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-  });
-  closeModal('maint-modal'); showToast('Manutenção registrada!');
+  if (_editingVehicleId) {
+    await db.collection('vehicle_maintenance').doc(_editingVehicleId).update({type,desc,km,value:val,oilFlag,accountId:account});
+    const txSnap = await db.collection('transactions').where('vehicleRefId','==',_editingVehicleId).where('vehicleType','==','maint').get();
+    txSnap.forEach(txDoc => db.collection('transactions').doc(txDoc.id).update({name:desc,amount:-val,subcat:subcatMap[type]||'manutencao',accountId:account}));
+    _editingVehicleId = null;
+    closeModal('maint-modal'); showToast('Manutenção atualizada!');
+  } else {
+    const ref = await db.collection('vehicle_maintenance').add({type,desc,km,value:val,oilFlag,accountId:account,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+    if (account) { const a=accounts.find(x=>x.id===account); if(a) await db.collection('accounts').doc(account).update({balance:(a.balance||0)-val}); }
+    await db.collection('transactions').add({
+      name: desc, cat: 'vehicle',
+      subcat: subcatMap[type] || 'manutencao', amount: -val,
+      date: 'Agora', group: 'Hoje', type: 'saída',
+      icon: 'ti-car', bg: '#2c3e5022', color: '#2c3e50',
+      status: 'efetivada', accountId: account, vehicleRefId: ref.id, vehicleType: 'maint',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    closeModal('maint-modal'); showToast('Manutenção registrada!');
+  }
 }
+
+function editVehicleRecord(type, id) {
+  if (type === 'refuel') openRefuelModal(id);
+  else if (type === 'maint') openMaintModal(id);
+}
+
+async function deleteVehicleRecord(type, id) {
+  if (!confirm('Excluir este registro?')) return;
+  const col = type === 'refuel' ? 'vehicle_refuels' : 'vehicle_maintenance';
+  const doc = await db.collection(col).doc(id).get();
+  if (!doc.exists) return;
+  const data = doc.data();
+  // Restaurar saldo da conta
+  if (data.accountId && data.value) {
+    const a = accounts.find(x => x.id === data.accountId);
+    if (a) await db.collection('accounts').doc(data.accountId).update({ balance: (a.balance||0) + Math.abs(data.value) });
+  }
+  await db.collection(col).doc(id).delete();
+  // Deletar transação espelhada
+  const txSnap = await db.collection('transactions').where('vehicleRefId','==',id).where('vehicleType','==',type).get();
+  txSnap.forEach(txDoc => db.collection('transactions').doc(txDoc.id).delete());
+  showToast('Registro excluído!');
+}
+
 function openRouteModal() {
   document.getElementById('route-km').value=''; document.getElementById('route-origin').value=''; document.getElementById('route-dest').value=''; document.getElementById('route-reason').value=''; document.getElementById('route-distance').value='';
   document.getElementById('route-modal').classList.add('open');
