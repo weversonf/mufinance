@@ -434,6 +434,19 @@
   @keyframes modalUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
   .modal-overlay{transition:background .25s}
   .toast{transition:transform .3s cubic-bezier(.34,1.56,.64,1),opacity .3s}
+  .p2p-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+  .p2p-card{background:var(--card-bg);border-radius:14px;padding:16px;text-align:center;cursor:pointer;transition:transform .15s}
+  .p2p-card:active{transform:scale(.95)}
+  .p2p-card .icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 8px;font-size:22px}
+  .p2p-card .label{font-size:13px;font-weight:600;color:var(--text-main)}
+  .p2p-card .sub{font-size:11px;color:var(--text-muted)}
+  .notif-actions{display:flex;gap:8px;margin-top:8px}
+  .notif-actions button{flex:1;padding:6px 12px;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer}
+  .notif-actions .accept{background:var(--primary);color:#fff}
+  .notif-actions .reject{background:var(--card-bg);color:var(--text-sec)}
+  .p2p-search-result{padding:10px 12px;border-radius:10px;background:var(--card-bg);display:flex;align-items:center;gap:12px;margin-top:8px;cursor:pointer;transition:background .15s}
+  .p2p-search-result:active{background:var(--input-bg)}
+  .p2p-search-result .av{width:36px;height:36px;border-radius:50%;background:var(--primary-light);color:var(--primary);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0}
 </style>
 </head>
 <body data-theme="light">
@@ -1227,7 +1240,43 @@
     <button class="submit-btn" style="background:var(--primary);margin-bottom:8px" onclick="openTxModal('send');closeModal('quick-menu-modal')"><i class="ti ti-minus"></i> Nova Despesa</button>
     <button class="submit-btn" style="background:var(--primary);margin-bottom:8px" onclick="openTxModal('receive');closeModal('quick-menu-modal')"><i class="ti ti-plus"></i> Nova Receita</button>
     <button class="submit-btn" style="background:var(--card-bg);color:var(--text-sec);margin-bottom:8px" onclick="showPage('vehicle');closeModal('quick-menu-modal')"><i class="ti ti-car"></i> Abastecer Veículo</button>
-    <button class="submit-btn" style="background:var(--card-bg);color:var(--text-sec)" onclick="openGoalModal(null);closeModal('quick-menu-modal')"><i class="ti ti-target"></i> Nova Meta</button>
+    <button class="submit-btn" style="background:var(--card-bg);color:var(--text-sec);margin-bottom:8px" onclick="openGoalModal(null);closeModal('quick-menu-modal')"><i class="ti ti-target"></i> Nova Meta</button>
+    <button class="submit-btn" style="background:var(--card-bg);color:var(--text-sec)" onclick="closeModal('quick-menu-modal');openP2PSend()"><i class="ti ti-send"></i> Enviar Dinheiro</button>
+    <button class="submit-btn" style="background:var(--card-bg);color:var(--text-sec);margin-top:8px" onclick="closeModal('quick-menu-modal');openP2PRequest()"><i class="ti ti-hand-stop"></i> Cobrar</button>
+  </div>
+</div>
+
+<!-- P2P SEND MODAL -->
+<div class="modal-overlay" id="p2p-send-modal">
+  <div class="modal">
+    <h2>Enviar Dinheiro <button class="modal-close" onclick="closeModal('p2p-send-modal')"><i class="ti ti-x"></i></button></h2>
+    <label class="field-label">Buscar usuário por email</label>
+    <input class="field-input" id="p2p-send-email" type="email" placeholder="Email do destinatário" oninput="searchP2PUser(this.value,'send')" />
+    <div id="p2p-send-result"></div>
+    <div id="p2p-send-detail" style="display:none;margin-top:12px">
+      <label class="field-label">Valor (R$)</label>
+      <input class="field-input" id="p2p-send-amount" type="number" step="0.01" min="0" placeholder="0,00" />
+      <label class="field-label">Descrição (opcional)</label>
+      <input class="field-input" id="p2p-send-desc" placeholder="Ex: Conta do jantar" />
+      <button class="submit-btn" onclick="submitP2PSend()" style="margin-top:12px">Enviar</button>
+    </div>
+  </div>
+</div>
+
+<!-- P2P REQUEST MODAL -->
+<div class="modal-overlay" id="p2p-request-modal">
+  <div class="modal">
+    <h2>Cobrar <button class="modal-close" onclick="closeModal('p2p-request-modal')"><i class="ti ti-x"></i></button></h2>
+    <label class="field-label">Buscar usuário por email</label>
+    <input class="field-input" id="p2p-request-email" type="email" placeholder="Email do usuário" oninput="searchP2PUser(this.value,'request')" />
+    <div id="p2p-request-result"></div>
+    <div id="p2p-request-detail" style="display:none;margin-top:12px">
+      <label class="field-label">Valor (R$)</label>
+      <input class="field-input" id="p2p-request-amount" type="number" step="0.01" min="0" placeholder="0,00" />
+      <label class="field-label">Descrição (opcional)</label>
+      <input class="field-input" id="p2p-request-desc" placeholder="Ex: Rateio do aluguel" />
+      <button class="submit-btn" onclick="submitP2PRequest()" style="margin-top:12px">Cobrar</button>
+    </div>
   </div>
 </div>
 
@@ -1298,6 +1347,12 @@ auth.onAuthStateChanged(async user => {
         photoURL: user.photoURL || '',
       });
     }
+    // Save profile by uid for P2P user search
+    db.collection('profile').doc(user.uid).set({
+      name: user.displayName || 'Usuário',
+      email: user.email || '',
+      uid: user.uid,
+    }, { merge: true });
   } else {
     currentUser = null;
     loadingOverlay.classList.add('hidden');
@@ -1385,6 +1440,7 @@ function startListeners() {
     transactions = [];
     snap.forEach(doc => {
       const d = doc.data();
+      if (d.uid && d.uid !== currentUser.uid) return;
       transactions.push({ id: doc.id, ...d });
     });
     transactions.sort((a, b) => {
@@ -1429,7 +1485,7 @@ function startListeners() {
     }
   });
 
-  db.collection('notifications').onSnapshot(snap => {
+  db.collection('notifications').where('uid','==',currentUser.uid).onSnapshot(snap => {
     notifications = [];
     snap.forEach(doc => {
       const d = doc.data();
@@ -1447,6 +1503,7 @@ function startListeners() {
       badge.classList.toggle('show', unread > 0);
     }
   });
+
 }
 
 // NAVIGATION
@@ -1673,6 +1730,7 @@ async function submitTransaction() {
     color: cat.color,
     group: 'Hoje',
     status: txStatus,
+    uid: currentUser ? currentUser.uid : null,
   };
 
   if(editingTxId) {
@@ -1710,6 +1768,7 @@ async function submitTransaction() {
           type: catType === 'entrada' ? 'recebido' : 'enviado',
           from: profile.name,
           read: false,
+          uid: currentUser.uid,
           createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
       }
@@ -1947,13 +2006,18 @@ function renderNotifications() {
   container.innerHTML = notifications.length === 0
     ? '<p style="color:var(--text-muted);font-size:13px;text-align:center;padding:20px 0">Nenhuma notificação</p>'
     : notifications.map(n => `
-      <div class="tx-item" onclick="markNotifRead('${n.id}')" style="${n.read ? 'opacity:0.5' : ''}">
-        <div class="tx-logo" style="background:${n.type==='recebido'?'var(--primary-light)':'#f0e8fa'};color:${n.type==='recebido'?'var(--primary)':'#7a4ab0'}"><i class="ti ${n.type==='recebido'?'ti-arrow-down-left':'ti-arrow-up-right'}"></i></div>
+      <div class="tx-item" style="${n.read && n.type!=='p2p_request' ? 'opacity:0.5' : ''}">
+        <div class="tx-logo" style="background:${n.type==='recebido'?'var(--primary-light)':n.type==='p2p_request'?'#fff3e0':'#f0e8fa'};color:${n.type==='recebido'?'var(--primary)':n.type==='p2p_request'?'#e67e22':'#7a4ab0'}"><i class="ti ${n.type==='recebido'?'ti-arrow-down-left':n.type==='p2p_request'?'ti-hand-stop':'ti-arrow-up-right'}"></i></div>
         <div class="tx-info">
           <div class="tx-name">${n.message}</div>
           <div class="tx-date">${n.createdAt ? new Date(n.createdAt.toDate()).toLocaleString('pt-BR') : ''}</div>
+          ${n.type === 'p2p_request' ? `
+          <div class="notif-actions">
+            <button class="accept" onclick="event.stopPropagation();acceptP2PRequest('${n.p2pRequestId}','${n.fromUid}','${n.fromName}',${n.amount},'${n.desc}')">Aceitar</button>
+            <button class="reject" onclick="event.stopPropagation();rejectP2PRequest('${n.p2pRequestId}')">Recusar</button>
+          </div>` : ''}
         </div>
-        ${!n.read ? '<div style="width:8px;height:8px;border-radius:50%;background:var(--primary);flex-shrink:0"></div>' : ''}
+        ${!n.read && n.type!=='p2p_request' ? '<div style="width:8px;height:8px;border-radius:50%;background:var(--primary);flex-shrink:0"></div>' : ''}
       </div>
     `).join('');
 }
@@ -3373,6 +3437,240 @@ function dismissPWA() {
 }
 
 window.addEventListener('appinstalled', () => { installPrompt = null; });
+
+// ===== P2P FUNCTIONS =====
+let p2pTargetUser = null;
+
+function openP2PSend() {
+  p2pTargetUser = null;
+  document.getElementById('p2p-send-email').value = '';
+  document.getElementById('p2p-send-result').innerHTML = '';
+  document.getElementById('p2p-send-detail').style.display = 'none';
+  document.getElementById('p2p-send-amount').value = '';
+  document.getElementById('p2p-send-desc').value = '';
+  document.getElementById('p2p-send-modal').classList.add('open');
+}
+
+function openP2PRequest() {
+  p2pTargetUser = null;
+  document.getElementById('p2p-request-email').value = '';
+  document.getElementById('p2p-request-result').innerHTML = '';
+  document.getElementById('p2p-request-detail').style.display = 'none';
+  document.getElementById('p2p-request-amount').value = '';
+  document.getElementById('p2p-request-desc').value = '';
+  document.getElementById('p2p-request-modal').classList.add('open');
+}
+
+async function searchP2PUser(email, mode) {
+  const resultDiv = document.getElementById('p2p-'+mode+'-result');
+  const detailDiv = document.getElementById('p2p-'+mode+'-detail');
+  if (!email || email.length < 3) { resultDiv.innerHTML = ''; detailDiv.style.display = 'none'; return; }
+  const snap = await db.collection('profile').where('email', '==', email.trim()).get();
+  const other = snap.docs.find(d => d.id !== currentUser.uid && d.id !== 'me');
+  if (!other) {
+    resultDiv.innerHTML = '<div style="color:var(--text-muted);font-size:13px;margin-top:8px">Usuário não encontrado</div>';
+    detailDiv.style.display = 'none';
+    return;
+  }
+  const d = other.data();
+  p2pTargetUser = { name: d.name, email: d.email, uid: other.id };
+  resultDiv.innerHTML = `<div class="p2p-search-result"><div class="av">${d.name.charAt(0).toUpperCase()}</div><div><div style="font-size:14px;font-weight:600">${d.name}</div><div style="font-size:12px;color:var(--text-muted)">${d.email}</div></div></div>`;
+  detailDiv.style.display = 'block';
+}
+
+async function submitP2PSend() {
+  if (!p2pTargetUser || !p2pTargetUser.uid) { showToast("Selecione um usuário válido"); return; }
+  const amt = parseFloat(document.getElementById('p2p-send-amount').value);
+  if (!amt || amt <= 0) { showToast("Informe um valor"); return; }
+  const desc = document.getElementById('p2p-send-desc').value.trim();
+  const now = firebase.firestore.FieldValue.serverTimestamp();
+
+  // Transaction for current user (saída)
+  await db.collection('transactions').add({
+    name: desc || `Envio para ${p2pTargetUser.name}`,
+    cat: 'p2p',
+    subcat: null,
+    date: 'Agora',
+    amount: -amt,
+    type: 'saída',
+    icon: 'ti-send',
+    bg: '#1a7a4a22',
+    color: '#1a7a4a',
+    group: 'Hoje',
+    status: 'efetivada',
+    uid: currentUser.uid,
+    p2pTargetUid: p2pTargetUser.uid,
+    createdAt: now,
+  });
+
+  // Transaction for target user (entrada) — prevista
+  const targetTxRef = await db.collection('transactions').add({
+    name: desc || `Recebido de ${profile.name}`,
+    cat: 'p2p',
+    subcat: null,
+    date: 'Agora',
+    amount: amt,
+    type: 'entrada',
+    icon: 'ti-send',
+    bg: '#1a7a4a22',
+    color: '#1a7a4a',
+    group: 'Hoje',
+    status: 'prevista',
+    uid: p2pTargetUser.uid,
+    p2pSenderUid: currentUser.uid,
+    createdAt: now,
+  });
+
+  // Notify target user
+  await db.collection('notifications').add({
+    uid: p2pTargetUser.uid,
+    message: `${profile.name} enviou R$ ${formatBRL(amt)}${desc ? ' — '+desc : ''}`,
+    amount: amt,
+    type: 'recebido',
+    from: profile.name,
+    read: false,
+    p2pTxId: targetTxRef.id,
+    createdAt: now,
+  });
+
+  showToast(`R$ ${formatBRL(amt)} enviado para ${p2pTargetUser.name}!`);
+  closeModal('p2p-send-modal');
+}
+
+async function submitP2PRequest() {
+  if (!p2pTargetUser || !p2pTargetUser.uid) { showToast("Selecione um usuário válido"); return; }
+  const amt = parseFloat(document.getElementById('p2p-request-amount').value);
+  if (!amt || amt <= 0) { showToast("Informe um valor"); return; }
+  const desc = document.getElementById('p2p-request-desc').value.trim();
+  const now = firebase.firestore.FieldValue.serverTimestamp();
+
+  // Create p2p request
+  const reqRef = await db.collection('p2p_requests').add({
+    fromUid: currentUser.uid,
+    fromName: profile.name,
+    toUid: p2pTargetUser.uid,
+    toEmail: p2pTargetUser.email,
+    amount: amt,
+    desc: desc,
+    status: 'pending',
+    createdAt: now,
+  });
+
+  // Create notification for target user
+  await db.collection('notifications').add({
+    uid: p2pTargetUser.uid,
+    message: `${profile.name} está te cobrando R$ ${formatBRL(amt)}${desc ? ' — '+desc : ''}`,
+    amount: amt,
+    type: 'p2p_request',
+    from: profile.name,
+    fromUid: currentUser.uid,
+    fromName: profile.name,
+    read: false,
+    p2pRequestId: reqRef.id,
+    desc: desc,
+    createdAt: now,
+  });
+
+  showToast(`Cobrança de R$ ${formatBRL(amt)} enviada para ${p2pTargetUser.name}!`);
+  closeModal('p2p-request-modal');
+}
+
+async function acceptP2PRequest(requestId, fromUid, fromName, amount, desc) {
+  const now = firebase.firestore.FieldValue.serverTimestamp();
+
+  // Transaction for current user (saída) — prevista
+  const myTxRef = await db.collection('transactions').add({
+    name: desc || `Pagamento para ${fromName}`,
+    cat: 'p2p',
+    subcat: null,
+    date: 'Agora',
+    amount: -amount,
+    type: 'saída',
+    icon: 'ti-hand-stop',
+    bg: '#e67e2222',
+    color: '#e67e22',
+    group: 'Hoje',
+    status: 'prevista',
+    uid: currentUser.uid,
+    p2pSenderUid: fromUid,
+    createdAt: now,
+  });
+
+  // Transaction for the requester (entrada) — prevista
+  await db.collection('transactions').add({
+    name: desc || `Recebido de ${profile.name}`,
+    cat: 'p2p',
+    subcat: null,
+    date: 'Agora',
+    amount: amount,
+    type: 'entrada',
+    icon: 'ti-hand-stop',
+    bg: '#e67e2222',
+    color: '#e67e22',
+    group: 'Hoje',
+    status: 'prevista',
+    uid: fromUid,
+    p2pTargetUid: currentUser.uid,
+    createdAt: now,
+  });
+
+  // Notify requester
+  await db.collection('notifications').add({
+    uid: fromUid,
+    message: `${profile.name} aceitou sua cobrança de R$ ${formatBRL(amount)}`,
+    amount: amount,
+    type: 'recebido',
+    from: profile.name,
+    read: false,
+    p2pTxId: myTxRef.id,
+    createdAt: now,
+  });
+
+  // Remove the p2p request and notification
+  await db.collection('p2p_requests').doc(requestId).delete();
+  const notifSnap = await db.collection('notifications').where('p2pRequestId','==',requestId).get();
+  notifSnap.forEach(d => d.ref.delete());
+
+  showToast(`Cobrança de R$ ${formatBRL(amount)} aceita! Transação criada como prevista.`);
+}
+
+async function rejectP2PRequest(requestId) {
+  await db.collection('p2p_requests').doc(requestId).delete();
+  const notifSnap = await db.collection('notifications').where('p2pRequestId','==',requestId).get();
+  notifSnap.forEach(d => d.ref.delete());
+  showToast("Cobrança recusada");
+}
+
+// Add P2P section to home page (after recent transactions)
+function addP2PHomeSection() {
+  if (document.getElementById('p2p-home-section')) return;
+  const recentSection = document.getElementById('recent-tx-list');
+  if (!recentSection || !recentSection.parentNode) return;
+  const p2pEl = document.createElement('div');
+  p2pEl.id = 'p2p-home-section';
+  p2pEl.innerHTML = `
+    <div class="p2p-row">
+      <div class="p2p-card" onclick="openP2PSend()">
+        <div class="icon" style="background:var(--primary-light);color:var(--primary)"><i class="ti ti-send"></i></div>
+        <div class="label">Enviar</div>
+        <div class="sub">Transferir dinheiro</div>
+      </div>
+      <div class="p2p-card" onclick="openP2PRequest()">
+        <div class="icon" style="background:#fff3e0;color:#e67e22"><i class="ti ti-hand-stop"></i></div>
+        <div class="label">Cobrar</div>
+        <div class="sub">Solicitar pagamento</div>
+      </div>
+    </div>`;
+  const homeContent = document.querySelector('#home-page .page-content');
+  if (homeContent) homeContent.insertBefore(p2pEl, homeContent.firstChild.nextSibling);
+}
+
+// Patch startListeners to also add P2P home section
+const origP2PStart = window.startListeners;
+window.startListeners = function() {
+  if (origP2PStart) origP2PStart();
+  setTimeout(() => { addP2PHomeSection(); }, 600);
+};
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js');
