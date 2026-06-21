@@ -2490,7 +2490,8 @@ function injectVehicleTab() {
           const veh = document.createElement('button');
           veh.className = 'tab';
           veh.setAttribute('data-vehtab', '1');
-          veh.innerHTML = '<i class="ti ti-car"></i><span>Veículo</span>';
+          const vehIcon = vehicle?.type === 'moto' ? 'ti-motorbike' : 'ti-car';
+          veh.innerHTML = '<i class="ti '+vehIcon+'"></i><span>Veículo</span>';
           veh.onclick = function() { showPage('vehicle'); };
           tabs[2].parentNode.insertBefore(veh, tabs[3] || null);
         }
@@ -2509,7 +2510,8 @@ function injectVehicleTab() {
         vehMenu = document.createElement('div');
         vehMenu.className = 'menu-item';
         vehMenu.id = 'veh-menu-item';
-        vehMenu.innerHTML = '<i class="ti ti-car"></i><span>Veículo</span><i class="ti ti-chevron-right"></i>';
+        const vehIcon = vehicle?.type === 'moto' ? 'ti-motorbike' : 'ti-car';
+        vehMenu.innerHTML = '<i class="ti '+vehIcon+'"></i><span>Veículo</span><i class="ti ti-chevron-right"></i>';
         vehMenu.onclick = function() { showPage('vehicle'); };
         const themeToggle = document.getElementById('theme-toggle');
         if (themeToggle) themeToggle.parentNode.insertBefore(vehMenu, themeToggle);
@@ -2527,7 +2529,8 @@ function injectVehicleTab() {
         vehSide = document.createElement('button');
         vehSide.className = 'd-tab';
         vehSide.setAttribute('data-page', 'vehicle');
-        vehSide.innerHTML = '<i class="ti ti-car"></i><span>Veículo</span>';
+        const vehIcon = vehicle?.type === 'moto' ? 'ti-motorbike' : 'ti-car';
+        vehSide.innerHTML = '<i class="ti '+vehIcon+'"></i><span>Veículo</span>';
         vehSide.onclick = function() { showPage('vehicle'); };
         const budgetTab = sidebarNav.querySelector('[data-page="budget"]');
         if (budgetTab) budgetTab.parentNode.insertBefore(vehSide, budgetTab.nextSibling);
