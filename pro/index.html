@@ -2387,13 +2387,28 @@ document.addEventListener('DOMContentLoaded', function() {
   // Add eye to balance on each page init
 });
 
+function updateVehicleIcons() {
+  const icon = vehicle?.type === 'moto' ? 'ti-motorbike' : 'ti-car';
+  // FAB
+  const fabIcon = document.getElementById('fab-veh-icon');
+  if (fabIcon) fabIcon.className = 'ti ' + icon;
+  // Tab bars
+  document.querySelectorAll('[data-vehtab] i').forEach(el => el.className = 'ti ' + icon);
+  // Profile menu
+  const menuIcon = document.querySelector('#veh-menu-item i');
+  if (menuIcon) menuIcon.className = 'ti ' + icon;
+  // Vehicle page header icon
+  const headerIcon = document.querySelector('#vehicle-page .page-header .icon-btn i');
+  if (headerIcon) headerIcon.className = 'ti ' + icon;
+}
+
 // ===== SETTINGS / MODULES =====
 function toggleModule(mod) {
   if (mod === 'vehicle') {
     proSettings.vehicleActive = !proSettings.vehicleActive;
     const el = document.getElementById('toggle-vehicle');
     if (el) el.classList.toggle('active', proSettings.vehicleActive);
-    if (proSettings.vehicleActive) initVehicle();
+    if (proSettings.vehicleActive) renderHomeVehicle();
     db.collection('settings').doc('modules').set({ vehicleActive: proSettings.vehicleActive }, { merge: true });
     showToast(proSettings.vehicleActive ? 'Veículo ativado!' : 'Veículo desativado');
     injectVehicleTab();
@@ -2443,23 +2458,8 @@ function showLoginError(msg) {
       if (vehMenu) vehMenu.remove();
     }
   }
-  // Add to home vehicle card
-  let homeCard = document.getElementById('vehicle-home-card');
-  if (proSettings.vehicleActive) {
-    if (!homeCard) {
-      homeCard = document.createElement('div');
-      homeCard.className = 'income-card';
-      homeCard.id = 'vehicle-home-card';
-      homeCard.style.marginBottom = '12px';
-      homeCard.innerHTML = '<div class="section-row"><span class="section-label"><i class="ti ti-car" style="color:var(--primary);margin-right:4px"></i> Veículo</span><button class="section-link" onclick="showPage(\'vehicle\')">Detalhes <i class="ti ti-chevron-right"></i></button></div><div id="vehicle-home-content" style="font-size:12px;color:var(--text-sec)">Configure em Config</div>';
-      const content = document.querySelector('.content');
-      if (content) content.insertBefore(homeCard, content.firstChild);
-    }
-    updateVehicleHomeCard();
-  } else {
-    if (homeCard) homeCard.remove();
-  }
 }
+
 async function loadProSettings() {
   try {
     const snap = await db.collection('settings').doc('modules').get();
@@ -2469,7 +2469,7 @@ async function loadProSettings() {
     }
     const el = document.getElementById('toggle-vehicle');
     if (el) el.classList.toggle('active', proSettings.vehicleActive);
-    if (proSettings.vehicleActive) initVehicle();
+    if (proSettings.vehicleActive) renderHomeVehicle();
     injectVehicleTab();
   } catch (e) {}
 }
@@ -2668,13 +2668,6 @@ async function addNewCat(type) {
 }
 
 // ===== VEHICLE =====
-async function initVehicle() {
-  try { const s = await db.collection('vehicle').doc('config').get(); if (s.exists) vehicle = s.data(); else vehicle = null; } catch(e){vehicle=null;}
-  try { const s = await db.collection('vehicle_refuels').orderBy('createdAt','desc').get(); refuels=[]; s.forEach(d=>refuels.push({id:d.id,...d.data()})); } catch(e){refuels=[];}
-  try { const s = await db.collection('vehicle_maintenance').orderBy('createdAt','desc').get(); maintenances=[]; s.forEach(d=>maintenances.push({id:d.id,...d.data()})); } catch(e){maintenances=[];}
-  try { const s = await db.collection('vehicle_routes').orderBy('createdAt','desc').get(); routes=[]; s.forEach(d=>routes.push({id:d.id,...d.data()})); } catch(e){routes=[];}
-  updateVehicleHomeCard();
-}
 function updateVehicleHomeCard() {
   const c = document.getElementById('vehicle-home-content');
   if (!c) return;
@@ -2817,7 +2810,7 @@ function openVehicleConfig() {
 async function submitVehicleConfig() {
   const data = { type: document.getElementById('v-type-input').value, name: document.getElementById('v-name-input').value.trim(), oilKm: parseInt(document.getElementById('v-oil-km-input').value)||0, oilInterval: parseInt(document.getElementById('v-oil-interval-input').value)||0, plateEnd: parseInt(document.getElementById('v-plate-input').value)||0, consumo: parseFloat(document.getElementById('v-consumo-input').value)||0 };
   await db.collection('vehicle').doc('config').set(data);
-  vehicle = data; closeModal('v-config-modal'); showToast('Veículo configurado!'); updateVehicleHomeCard(); renderVehicleFull();
+  vehicle = data; closeModal('v-config-modal'); showToast('Veículo configurado!'); updateVehicleHomeCard(); updateVehicleIcons(); renderVehicleFull();
 }
 let _editingVehicleId = null;
 
@@ -3093,9 +3086,8 @@ function startProListeners() {
   db.collection('vehicle').doc('config').onSnapshot(d => {
     if (d.exists) vehicle = d.data();
     updateVehicleHomeCard();
+    updateVehicleIcons();
     if (document.getElementById('home-page')?.classList.contains('active')) renderHomeVehicle();
-    const vehIcon = document.getElementById('fab-veh-icon');
-    if (vehIcon) vehIcon.className = 'ti ' + (vehicle?.type === 'moto' ? 'ti-motorbike' : 'ti-car');
   });
   db.collection('vehicle_refuels').onSnapshot(snap => {
     refuels = []; snap.forEach(d => refuels.push({ id: d.id, ...d.data() }));
