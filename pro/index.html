@@ -352,6 +352,13 @@
   .pwa-install-banner i{font-size:20px}
   .pwa-install-banner .close-banner{margin-left:auto;background:none;border:none;color:#fff;font-size:18px;cursor:pointer;padding:4px;opacity:.7}
   .config-group-new{margin-bottom:16px}
+  /* Accordion */
+  .accordion-header{display:flex;align-items:center;gap:8px;padding:12px 14px;background:var(--card-bg);border-radius:10px;cursor:pointer;border:1px solid var(--border);margin-bottom:4px;transition:background .15s;font-family:inherit;width:100%;text-align:left;font-size:13px;font-weight:600;color:var(--text-main)}
+  .accordion-header:hover{background:var(--border)}
+  .accordion-header .arrow{margin-left:auto;font-size:16px;color:var(--text-muted);transition:transform .2s}
+  .accordion-header.open .arrow{transform:rotate(180deg)}
+  .accordion-content{display:none;padding:4px 0 8px 0}
+  .accordion-content.open{display:block}
   .config-item-new{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--card-bg);border-radius:10px;margin-bottom:6px;border:1px solid var(--border)}
   .config-item-new .ci-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;background:var(--bg-app);flex-shrink:0}
   .config-item-new .ci-info{flex:1}
@@ -662,11 +669,6 @@
     </div>
     <div id="profile-fields"></div>
     <div class="menu-list">
-      <div class="menu-item" onclick="showPage('config-categories')">
-        <i class="ti ti-category"></i>
-        <span>Configurar Categorias</span>
-        <i class="ti ti-chevron-right"></i>
-      </div>
       <div class="menu-item" id="theme-toggle" onclick="toggleTheme()">
         <i class="ti ti-moon"></i>
         <span>Modo Escuro</span>
@@ -717,34 +719,6 @@
       <button class="action-btn side" style="flex:1" onclick="showPage('goals')"><i class="ti ti-target"></i> Metas</button>
       <button class="action-btn side" style="flex:1" onclick="showPage('budget')"><i class="ti ti-chart-pie"></i> Orçamento</button>
     </div>
-  </div>
-  <div class="tab-bar">
-    <button class="tab" onclick="showPage('home')"><i class="ti ti-home"></i><span>Início</span></button>
-    <button class="tab" onclick="showPage('transactions')"><i class="ti ti-chart-bar"></i><span>Extrato</span></button>
-    <div class="tab-fab-wrap"><div class="tab-fab" id="quick-fab" onclick="toggleQuickMenu()"><i class="ti ti-plus"></i></div></div>
-    <button class="tab" onclick="showPage('cards')"><i class="ti ti-credit-card"></i><span>Cartões</span></button>
-    <!-- profile removed → top bar -->
-  </div>
-</div>
-
-<!-- CONFIG CATEGORIES PAGE -->
-<div class="app page" id="config-categories-page">
-  <div class="page-header">
-    <button class="back-btn" onclick="showPage('profile')"><i class="ti ti-arrow-left"></i></button>
-    <span class="page-title">Categorias</span>
-  </div>
-  <div class="page-content">
-    <div class="config-group">
-      <div class="section-label" style="margin-bottom:12px">Despesas</div>
-      <div id="config-out-list"></div>
-    </div>
-    <div class="config-group">
-      <div class="section-label" style="margin-bottom:12px">Receitas</div>
-      <div id="config-in-list"></div>
-    </div>
-    <button class="submit-btn" style="background:var(--card-bg);color:var(--text-sec);margin-top:10px" onclick="addCustomCategory()">
-      <i class="ti ti-plus"></i> Nova Categoria
-    </button>
   </div>
   <div class="tab-bar">
     <button class="tab" onclick="showPage('home')"><i class="ti ti-home"></i><span>Início</span></button>
@@ -863,12 +837,17 @@
     <button class="submit-btn" style="background:var(--card-bg);color:var(--text-sec);margin-top:8px;font-size:13px" onclick="openAccountModal(null)"><i class="ti ti-plus"></i> Adicionar Conta</button>
     <div class="section-title-new"><i class="ti ti-credit-card"></i> Cartões</div>
     <div id="settings-cards-list"></div>
-    <div class="section-title-new"><i class="ti ti-category"></i> Categorias de Despesa</div>
-    <div id="settings-expense-cats"></div>
-    <button class="submit-btn" style="background:var(--card-bg);color:var(--text-sec);margin-top:8px;font-size:13px" onclick="addNewCat('saída')"><i class="ti ti-plus"></i> Nova Categoria</button>
-    <div class="section-title-new"><i class="ti ti-category"></i> Categorias de Receita</div>
-    <div id="settings-income-cats"></div>
-    <button class="submit-btn" style="background:var(--card-bg);color:var(--text-sec);margin-top:8px;font-size:13px" onclick="addNewCat('entrada')"><i class="ti ti-plus"></i> Nova Categoria</button>
+    <div class="section-title-new"><i class="ti ti-category"></i> Categorias</div>
+    <button class="accordion-header" onclick="toggleAccordion('accordion-expense')"><i class="ti ti-minus-circle" style="color:#c0392b"></i> Despesas <span class="arrow"><i class="ti ti-chevron-down"></i></span></button>
+    <div class="accordion-content" id="accordion-expense">
+      <div id="settings-expense-cats"></div>
+      <button class="submit-btn" style="background:var(--card-bg);color:var(--text-sec);margin-top:6px;font-size:13px" onclick="addNewCat('saída')"><i class="ti ti-plus"></i> Nova Categoria</button>
+    </div>
+    <button class="accordion-header" onclick="toggleAccordion('accordion-income')"><i class="ti ti-plus-circle" style="color:var(--primary)"></i> Receitas <span class="arrow"><i class="ti ti-chevron-down"></i></span></button>
+    <div class="accordion-content" id="accordion-income">
+      <div id="settings-income-cats"></div>
+      <button class="submit-btn" style="background:var(--card-bg);color:var(--text-sec);margin-top:6px;font-size:13px" onclick="addNewCat('entrada')"><i class="ti ti-plus"></i> Nova Categoria</button>
+    </div>
   </div>
   <div class="tab-bar">
     <button class="tab" onclick="showPage('home')"><i class="ti ti-home"></i><span>Início</span></button>
@@ -1377,7 +1356,6 @@ function startListeners() {
       await batch.commit();
       console.log('Seed: '+missing.length+' categorias adicionadas');
     }
-    if (document.getElementById('config-categories-page').classList.contains('active')) renderConfigCategories();
     if (document.getElementById('settings-page').classList.contains('active')) renderSettingsCatsNew();
   });
 
@@ -1465,7 +1443,6 @@ function showPage(name) {
   if (name === 'transactions') renderAll('all');
   if (name === 'reports') { renderReports(); renderAnnualChart(); }
   if (name === 'cards') renderCards();
-  if (name === 'config-categories') renderConfigCategories();
   window.scrollTo(0,0);
 }
 
@@ -1486,36 +1463,13 @@ function toggleTheme() {
 }
 
 // CATEGORY CONFIG
-function renderConfigCategories() {
-  const renderList = (type, containerId) => {
-    const container = document.getElementById(containerId);
-    container.innerHTML = categories[type].map(cat => `
-      <div class="config-cat-item">
-        <div class="cat-main">
-          <div class="icon" style="color:${cat.color}"><i class="ti ${cat.icon}"></i></div>
-          <div class="name">${cat.name} ${cat.isDefault ? '<span class="badge-default">Padrão</span>' : ''}</div>
-          <div class="actions-btns">
-            <div class="btn edit" onclick="editCategory('${type}', '${cat.id}')"><i class="ti ti-edit"></i></div>
-            ${!cat.isDefault ? `<div class="btn delete" onclick="deleteCategory('${type}', '${cat.id}')"><i class="ti ti-trash"></i></div>` : ''}
-            <div class="btn move" onclick="moveCatInto('${type}', '${cat.id}')" title="Mover categoria para dentro"><i class="ti ti-arrow-right"></i></div>
-          </div>
-        </div>
-        ${cat.subcats.length > 0 ? `
-          <div class="subcat-list">
-            ${cat.subcats.map(sub => `
-              <div class="subcat-item">
-                <div class="name">${sub.name}</div>
-                <div class="btn move" onclick="moveSubcatOut('${type}', '${cat.id}', '${sub.id}')" title="Mover para fora"><i class="ti ti-arrow-left"></i></div>
-                <div class="btn delete" onclick="deleteSubcat('${type}', '${cat.id}', '${sub.id}')"><i class="ti ti-trash"></i></div>
-              </div>
-            `).join('')}
-          </div>
-        ` : ''}
-      </div>
-    `).join('');
-  };
-  renderList('saída', 'config-out-list');
-  renderList('entrada', 'config-in-list');
+function toggleAccordion(id) {
+  const content = document.getElementById(id);
+  const header = content?.previousElementSibling;
+  if (!content || !header) return;
+  const isOpen = content.style.display === 'block';
+  content.style.display = isOpen ? 'none' : 'block';
+  header.classList.toggle('open', !isOpen);
 }
 
 async function editCategory(type, id) {
@@ -1524,6 +1478,7 @@ async function editCategory(type, id) {
   if(newName) {
     cat.name = newName;
     await db.collection('categories').doc(id).update({ name: newName });
+    renderSettingsCatsNew();
   }
 }
 
@@ -1531,7 +1486,7 @@ async function deleteCategory(type, id) {
   if(confirm("Excluir esta categoria?")) {
     categories[type] = categories[type].filter(c => c.id !== id);
     await db.collection('categories').doc(id).delete();
-    renderConfigCategories();
+    renderSettingsCatsNew();
   }
 }
 
@@ -1545,6 +1500,7 @@ async function moveSubcatOut(type, catId, subId) {
   batch.set(newRef, { id: newRef.id, name: sub.name, icon: cat.icon, color: cat.color, isDefault: false, subcats: [], type: type });
   await batch.commit();
   showToast("Movido para fora!");
+  renderSettingsCatsNew();
 }
 
 async function moveCatInto(type, targetCatId) {
@@ -1562,6 +1518,7 @@ async function moveCatInto(type, targetCatId) {
     batch.delete(db.collection('categories').doc(catToMove.id));
     await batch.commit();
     showToast("Movido para dentro!");
+    renderSettingsCatsNew();
   }
 }
 
@@ -1570,17 +1527,8 @@ async function deleteSubcat(type, catId, subId) {
     const cat = categories[type].find(c => c.id === catId);
     cat.subcats = cat.subcats.filter(s => s.id !== subId);
     await db.collection('categories').doc(catId).update({ subcats: cat.subcats });
-    renderConfigCategories();
+    renderSettingsCatsNew();
   }
-}
-
-async function addCustomCategory() {
-  const name = prompt("Nome da nova categoria:");
-  if(!name) return;
-  const isDespesa = confirm("É uma Despesa?");
-  const type = isDespesa ? 'saída' : 'entrada';
-  const ref = db.collection('categories').doc();
-  await ref.set({ id: ref.id, name, icon: 'ti-category', color: '#999', isDefault: false, subcats: [], type });
 }
 
 // TRANSACTION MODAL
@@ -2156,7 +2104,6 @@ window.showPage = function(name) {
   if (name === 'transactions') renderAll(window._txFilter || 'all');
   if (name === 'reports') { renderReports(); renderAnnualChart(); closeQuickMenu(); }
   if (name === 'cards') renderCards();
-  if (name === 'config-categories') renderConfigCategories();
   if (name === 'budget') renderBudget();
   if (name === 'goals') renderGoals();
   if (name === 'vehicle') renderVehicleFull();
@@ -2755,7 +2702,10 @@ function renderSettingsCatsNew() {
     const container = document.getElementById(id);
     if (!container) return;
     container.innerHTML = (categories[type] || []).map(c =>
-      '<div class="config-item-new"><div class="ci-icon" style="background:'+(c.color||'#888')+'22;color:'+(c.color||'#888')+'"><i class="ti '+(c.icon||'ti-category')+'"></i></div><div class="ci-info"><div class="ci-name">'+c.name+'</div></div><div class="ci-actions"><button onclick="editCatName(\''+c.id+'\')"><i class="ti ti-edit"></i></button><button class="del" onclick="deleteCatById(\''+c.id+'\')"><i class="ti ti-trash"></i></button></div></div>'
+      '<div class="config-item-new"><div class="ci-icon" style="background:'+(c.color||'#888')+'22;color:'+(c.color||'#888')+'"><i class="ti '+(c.icon||'ti-category')+'"></i></div><div class="ci-info"><div class="ci-name">'+c.name+(c.isDefault?' <span class="badge-default" style="font-size:8px">Padrão</span>':'')+'</div></div><div class="ci-actions"><button onclick="editCatName(\''+c.id+'\')"><i class="ti ti-edit"></i></button>'+(c.isDefault?'':'<button class="del" onclick="deleteCatById(\''+c.id+'\')"><i class="ti ti-trash"></i></button>')+'</div></div>'+
+      (c.subcats?.length ? c.subcats.map(sub =>
+        '<div class="config-item-new" style="margin-left:20px;padding:6px 10px"><div class="ci-icon" style="width:24px;height:24px;font-size:11px;background:'+(c.color||'#888')+'22;color:'+(c.color||'#888')+'"><i class="ti ti-corner-down-right"></i></div><div class="ci-info"><div class="ci-name" style="font-size:12px">'+sub.name+'</div></div><div class="ci-actions"><button class="del" onclick="deleteSubcat(\''+type+'\',\''+c.id+'\',\''+sub.id+'\')"><i class="ti ti-trash"></i></button></div></div>'
+      ).join('') : '')
     ).join('') || '<div style="color:var(--text-muted);font-size:13px;padding:8px">Nenhuma</div>';
   };
   render('saída', 'settings-expense-cats');
@@ -2773,13 +2723,14 @@ function editCatName(id) {
   const allCats = [...categories.saída, ...categories.entrada];
   const cat = allCats.find(c => c.id === id);
   const n = prompt('Novo nome:', cat?.name);
-  if (n) db.collection('categories').doc(id).update({ name: n });
+  if (n) db.collection('categories').doc(id).update({ name: n }).then(() => renderSettingsCatsNew());
 }
-function deleteCatById(id) { if (!confirm('Excluir?')) return; db.collection('categories').doc(id).delete(); showToast('Excluída!'); }
+function deleteCatById(id) { if (!confirm('Excluir?')) return; db.collection('categories').doc(id).delete().then(() => { showToast('Excluída!'); renderSettingsCatsNew(); }); }
 async function addNewCat(type) {
   const n = prompt('Nome:'); if (!n) return;
   const ref = db.collection('categories').doc();
   await ref.set({ id: ref.id, name: n, icon: 'ti-category', color: '#888', isDefault: false, subcats: [], type: type });
+  renderSettingsCatsNew();
 }
 
 // ===== VEHICLE =====
