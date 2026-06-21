@@ -3693,8 +3693,15 @@ function addP2PHomeSection() {
         <div class="sub">Solicitar pagamento</div>
       </div>
     </div>`;
-  const homeContent = document.querySelector('#home-page .page-content');
-  if (homeContent) homeContent.insertBefore(p2pEl, homeContent.firstChild.nextSibling);
+  const homeContent = document.querySelector('#home-page .content');
+  if (homeContent) {
+    const quickSection = document.getElementById('p2p-quick-contacts');
+    if (quickSection) {
+      homeContent.insertBefore(p2pEl, quickSection.closest('.two-col'));
+    } else {
+      homeContent.insertBefore(p2pEl, homeContent.firstChild);
+    }
+  }
 }
 
 // Patch startListeners to also add P2P home section
