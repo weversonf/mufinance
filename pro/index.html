@@ -181,6 +181,31 @@
   .field-label{font-size:12px;color:var(--text-muted);font-weight:500;margin-bottom:6px;display:block}
   .field-input{width:100%;border:1px solid var(--input-border);background:var(--input-bg);color:var(--text-main);border-radius:12px;padding:11px 14px;font-size:14px;font-family:inherit;outline:none;transition:border .15s;margin-bottom:14px}
   .field-input:focus{border-color:var(--primary)}
+
+  /* ===== PICKER DE DATA PERSONALIZADO ===== */
+  .dp-field{display:flex;align-items:center;gap:10px;width:100%;border:1px solid var(--input-border);background:var(--input-bg);color:var(--text-main);border-radius:12px;padding:11px 14px;font-size:14px;font-family:inherit;margin-bottom:14px;cursor:pointer;transition:border .15s;box-sizing:border-box}
+  .dp-field:hover{border-color:var(--primary)}
+  .dp-field .ti{font-size:18px;color:var(--primary)}
+  .dp-field .dp-label{flex:1;font-weight:600}
+  .dp-field .dp-chev{font-size:16px;color:var(--text-muted)}
+  .dp-wrap{position:relative;margin-bottom:14px}
+  .dp-pop{position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--bg-app);border:1px solid var(--input-border);border-radius:16px;padding:12px;box-shadow:0 12px 32px rgba(0,0,0,.18);z-index:50;display:none;animation:slideUp .18s ease}
+  .dp-pop.open{display:block}
+  .dp-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .dp-nav{width:32px;height:32px;border-radius:8px;border:none;background:var(--card-bg);color:var(--text-main);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:background .15s}
+  .dp-nav:hover{background:var(--primary-light);color:var(--primary)}
+  .dp-title{font-size:13px;font-weight:700;color:var(--text-main);text-transform:capitalize}
+  .dp-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+  .dp-dow{font-size:10px;font-weight:700;color:var(--text-muted);text-align:center;padding:4px 0;text-transform:uppercase}
+  .dp-day{font-size:13px;font-weight:500;color:var(--text-main);text-align:center;padding:8px 0;border-radius:10px;cursor:pointer;transition:background .12s,color .12s;border:none;background:none;font-family:inherit}
+  .dp-day:hover{background:var(--primary-light);color:var(--primary)}
+  .dp-day.muted{color:var(--text-muted);opacity:.4}
+  .dp-day.today{font-weight:800;box-shadow:inset 0 0 0 1px var(--primary)}
+  .dp-day.sel{background:var(--primary);color:#fff;font-weight:700}
+  .dp-day.sel:hover{background:var(--primary);color:#fff}
+  .dp-quick{display:flex;gap:6px;margin-bottom:10px}
+  .dp-quick button{flex:1;border:1px solid var(--input-border);background:var(--input-bg);color:var(--text-sec);border-radius:10px;padding:7px 4px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+  .dp-quick button:hover{border-color:var(--primary);color:var(--primary)}
   .contacts-row{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;margin-bottom:16px}
   .contact-chip{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;min-width:52px}
   .contact-chip .av{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;border:2px solid transparent;transition:border .15s}
@@ -414,7 +439,9 @@
   .prof-field-new .pval{font-size:13px;font-weight:600;color:var(--text-main);padding:8px 10px;background:var(--card-bg);border-radius:8px;display:flex;justify-content:space-between;align-items:center}
   .prof-field-new .pval .edit{background:none;border:none;color:var(--primary);cursor:pointer;font-size:11px;font-weight:600;font-family:inherit}
   .prof-field-new .pval .rest{font-size:9px;color:var(--text-muted);font-weight:400}
-  .rep-cat-new{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)}
+  .rep-cat-new{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+  .rep-cat-new:last-child{border-bottom:none}
+  #home-report-section{margin-top:4px;padding-bottom:8px}
   .rep-cat-new .rc-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
   .rep-cat-new .rc-info{flex:1}
   .rep-cat-new .rc-info .rc-name{font-size:12px;font-weight:600;color:var(--text-main)}
@@ -568,34 +595,6 @@
       </div>
     </div>
 
-    <!-- Veículo -->
-    <div id="home-vehicle-section" style="display:none;margin-top:12px">
-      <div class="section-title-new"><i class="ti ti-car"></i> Veículo</div>
-      <div class="two-col" style="margin-bottom:4px">
-        <div class="income-card">
-          <div class="section-label" style="font-size:11px;margin-bottom:6px">Próxima troca de óleo</div>
-          <div class="v-bar" style="height:8px;background:var(--border);border-radius:6px;overflow:hidden">
-            <div class="v-fill" id="home-oil-bar" style="width:100%;height:100%;border-radius:6px;background:var(--primary);transition:width .5s"></div>
-          </div>
-          <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text-muted);margin-top:3px">
-            <span id="home-oil-label">—</span>
-            <span id="home-oil-pct">—</span>
-          </div>
-        </div>
-        <div class="income-card">
-          <div class="section-label" style="font-size:11px;margin-bottom:6px">KM por dia da semana</div>
-          <div id="home-km-weekly" style="display:flex;align-items:flex-end;gap:3px;height:48px;padding-top:4px"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Veículo desativado (CTA) -->
-    <div id="home-vehicle-cta" style="display:none;margin-top:12px">
-      <button class="action-btn side" style="width:100%;justify-content:center" onclick="showPage('vehicle')">
-        <i class="ti ti-car"></i> Configurar Veículo
-      </button>
-    </div>
-
     <!-- Atividade recente -->
     <div class="section-row" style="margin-top:12px">
       <span class="section-label">Atividade recente</span>
@@ -745,7 +744,31 @@
       <input class="tx-val-input" id="modal-amount" type="number" placeholder="0,00" min="0" step="0.01" />
       <span class="tx-val-currency">R$</span>
     </div>
-    
+
+    <label class="field-label">Data</label>
+    <div class="dp-wrap">
+      <div class="dp-field" id="modal-date-field" onclick="toggleDatePicker()">
+        <i class="ti ti-calendar"></i>
+        <span class="dp-label" id="modal-date-label">Hoje</span>
+        <i class="ti ti-chevron-down dp-chev"></i>
+      </div>
+      <div class="dp-pop" id="dp-pop">
+        <div class="dp-quick">
+          <button onclick="dpSetRelative(0)">Hoje</button>
+          <button onclick="dpSetRelative(-1)">Ontem</button>
+          <button onclick="dpSetRelative(1)">Amanhã</button>
+        </div>
+        <div class="dp-head">
+          <button class="dp-nav" onclick="dpChangeMonth(-1)"><i class="ti ti-chevron-left"></i></button>
+          <span class="dp-title" id="dp-title"></span>
+          <button class="dp-nav" onclick="dpChangeMonth(1)"><i class="ti ti-chevron-right"></i></button>
+        </div>
+        <div class="dp-grid" id="dp-grid"></div>
+      </div>
+    </div>
+    <!-- valor real da data em ISO (escondido), consumido pelo submitTransaction -->
+    <input type="hidden" id="modal-date" />
+
     <label class="field-label">Categoria</label>
     <div class="category-scroll" id="modal-categories"></div>
     
@@ -760,29 +783,33 @@
     
     <label class="field-label">Descrição</label>
     <input class="field-input" id="modal-desc" placeholder="Ex: Salário, Aluguel, ou nome da pessoa" />
-    
-    <div id="p2p-toggle-row" style="display:none;align-items:center;gap:8px;margin-bottom:8px">
-      <div class="toggle-switch" id="p2p-toggle" onclick="toggleP2P()"></div>
-      <span style="font-size:12px;font-weight:600;color:var(--text-main)" id="p2p-toggle-label">Enviar para amigo</span>
-    </div>
-    <div id="p2p-section" style="display:none;margin-bottom:12px">
-      <input class="field-input" id="p2p-username" placeholder="@usuario" autocomplete="off" oninput="searchP2PByUsername(this.value)" />
-      <div id="p2p-search-result"></div>
-    </div>
-    
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
-      <div style="display:flex;gap:6px;flex:1">
+
+    <!-- Linha única: P2P | Status | Recorrente -->
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+      <div id="p2p-toggle-row" style="display:none;align-items:center;gap:6px">
+        <div class="toggle-switch" id="p2p-toggle" onclick="toggleP2P()"></div>
+        <span style="font-size:11px;font-weight:600;color:var(--text-main)" id="p2p-toggle-label">Enviar para amigo</span>
+      </div>
+      <div style="width:1px;height:18px;background:var(--border)" id="p2p-divider" ></div>
+      <div style="display:flex;gap:6px">
         <button class="filter-chip active" id="status-efetivada" onclick="setTxStatus('efetivada')" style="font-size:11px;padding:5px 10px">Efetivada</button>
         <button class="filter-chip" id="status-prevista" onclick="setTxStatus('prevista')" style="font-size:11px;padding:5px 10px">Prevista</button>
       </div>
+      <div style="width:1px;height:18px;background:var(--border)"></div>
       <div style="display:flex;align-items:center;gap:6px">
         <div class="toggle-switch" id="recur-toggle" onclick="toggleRecur()"></div>
         <span style="font-size:11px;font-weight:600;color:var(--text-main)">Recorrente</span>
       </div>
-      <div id="recur-months-wrap" style="display:none;align-items:center;gap:4px">
-        <input class="field-input" id="recur-months" type="number" min="1" max="60" value="12" style="width:44px;padding:3px 4px;text-align:center;margin:0;font-size:11px" />
-        <span style="font-size:10px;color:var(--text-muted)">meses</span>
-      </div>
+    </div>
+    <!-- Sub-linha meses (aparece quando recorrente ativo) -->
+    <div id="recur-months-wrap" style="display:none;align-items:center;gap:6px;margin-bottom:12px">
+      <input class="field-input" id="recur-months" type="number" min="1" max="60" value="12" style="width:44px;padding:3px 4px;text-align:center;margin:0;font-size:11px" />
+      <span style="font-size:10px;color:var(--text-muted)">meses</span>
+    </div>
+    <!-- Campo P2P (aparece quando toggle ativo) -->
+    <div id="p2p-section" style="display:none;margin-bottom:12px">
+      <input class="field-input" id="p2p-username" placeholder="@usuario" autocomplete="off" oninput="searchP2PByUsername(this.value)" />
+      <div id="p2p-search-result"></div>
     </div>
     
     <button class="submit-btn" id="modal-submit" onclick="submitTransaction()">Confirmar</button>
@@ -1273,6 +1300,132 @@ function setTxStatus(s) {
   document.getElementById('status-efetivada').classList.toggle('active', s === 'efetivada');
   document.getElementById('status-prevista').classList.toggle('active', s === 'prevista');
 }
+// Converte um valor de data (ISO, Timestamp do Firestore ou Date) -> "dd/mm/aaaa"
+function formatDateBR(value) {
+  if (!value) return '';
+  let d;
+  if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}/.test(value)) {
+    d = new Date(value + 'T00:00:00');
+  } else if (value.toDate) {
+    d = value.toDate();
+  } else {
+    d = new Date(value);
+  }
+  if (isNaN(d.getTime())) return '';
+  return d.toLocaleDateString('pt-BR');
+}
+// Devolve a data ISO de hoje em "AAAA-MM-DD" (usado como padrão no modal)
+function todayISO() { return new Date().toISOString().slice(0, 10); }
+
+// ===== PICKER DE DATA PERSONALIZADO =====
+const DP_MONTHS = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+const DP_DOW = ['D','S','T','Q','Q','S','S']; // dom..sáb
+let dpViewYear = new Date().getFullYear();
+let dpViewMonth = new Date().getMonth();
+
+function dpIsoToDate(iso) {
+  const [y, m, d] = iso.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+function dpDateToISO(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+function dpGetCurrentISO() {
+  const el = document.getElementById('modal-date');
+  return el && el.value ? el.value : todayISO();
+}
+function dpFormatNice(iso) {
+  const d = dpIsoToDate(iso);
+  const today = dpIsoToDate(todayISO());
+  const diffDays = Math.round((today - d) / 86400000);
+  const base = d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+  if (diffDays === 0) return 'Hoje';
+  if (diffDays === 1) return 'Ontem';
+  if (diffDays === -1) return 'Amanhã';
+  // ano atual -> sem o ano; outro ano -> com ano
+  if (d.getFullYear() === today.getFullYear()) {
+    return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+  }
+  return d.toLocaleDateString('pt-BR');
+}
+function dpRenderGrid() {
+  const grid = document.getElementById('dp-grid');
+  const title = document.getElementById('dp-title');
+  if (!grid || !title) return;
+  const sel = dpGetCurrentISO();
+  const today = todayISO();
+  const first = new Date(dpViewYear, dpViewMonth, 1);
+  const startDow = first.getDay();
+  const daysInMonth = new Date(dpViewYear, dpViewMonth + 1, 0).getDate();
+  const daysInPrev = new Date(dpViewYear, dpViewMonth, 0).getDate();
+  title.textContent = DP_MONTHS[dpViewMonth] + ' ' + dpViewYear;
+
+  let html = DP_DOW.map(d => `<div class="dp-dow">${d}</div>`).join('');
+  // dias do mês anterior (esmaecidos)
+  for (let i = startDow - 1; i >= 0; i--) {
+    html += `<button type="button" class="dp-day muted" disabled>${daysInPrev - i}</button>`;
+  }
+  for (let day = 1; day <= daysInMonth; day++) {
+    const iso = dpDateToISO(new Date(dpViewYear, dpViewMonth, day));
+    const cls = 'dp-day' + (iso === sel ? ' sel' : '') + (iso === today ? ' today' : '');
+    html += `<button type="button" class="${cls}" onclick="dpSelect('${iso}')">${day}</button>`;
+  }
+  // preenche a última semana
+  const totalCells = startDow + daysInMonth;
+  const tail = (7 - (totalCells % 7)) % 7;
+  for (let i = 1; i <= tail; i++) {
+    html += `<button type="button" class="dp-day muted" disabled>${i}</button>`;
+  }
+  grid.innerHTML = html;
+}
+function dpSelect(iso) {
+  document.getElementById('modal-date').value = iso;
+  document.getElementById('modal-date-label').textContent = dpFormatNice(iso);
+  closeDatePicker();
+}
+function dpSetRelative(offset) {
+  const base = dpIsoToDate(todayISO());
+  base.setDate(base.getDate() + offset);
+  dpViewYear = base.getFullYear();
+  dpViewMonth = base.getMonth();
+  dpSelect(dpDateToISO(base));
+}
+function dpChangeMonth(delta) {
+  let m = dpViewMonth + delta;
+  let y = dpViewYear;
+  if (m < 0) { m = 11; y--; }
+  if (m > 11) { m = 0; y++; }
+  dpViewMonth = m;
+  dpViewYear = y;
+  dpRenderGrid();
+}
+function toggleDatePicker() {
+  const pop = document.getElementById('dp-pop');
+  if (!pop) return;
+  if (pop.classList.contains('open')) { closeDatePicker(); return; }
+  // Sincroniza o mês visual com a data atualmente selecionada
+  const cur = dpGetCurrentISO();
+  const cd = dpIsoToDate(cur);
+  dpViewMonth = cd.getMonth();
+  dpViewYear = cd.getFullYear();
+  dpRenderGrid();
+  pop.classList.add('open');
+}
+function closeDatePicker() {
+  const pop = document.getElementById('dp-pop');
+  if (pop) pop.classList.remove('open');
+}
+// Fecha o calendário ao clicar fora dele
+document.addEventListener('click', function(e) {
+  const pop = document.getElementById('dp-pop');
+  const field = document.getElementById('modal-date-field');
+  if (pop && pop.classList.contains('open') && !pop.contains(e.target) && e.target !== field && !field.contains(e.target)) {
+    closeDatePicker();
+  }
+});
 function toggleRecur() {
   const t = document.getElementById('recur-toggle');
   const w = document.getElementById('recur-months-wrap');
@@ -1604,6 +1757,23 @@ function openModal(type, txId = null) {
   if (descInput) descInput.value = isEditing ? (tx.name || tx.catName || '') : '';
   const amtInput = document.getElementById('modal-amount');
   if (amtInput) amtInput.value = isEditing ? Math.abs(tx.amount) : '';
+  const dateInput = document.getElementById('modal-date');
+  let initialDateISO;
+  if (isEditing && tx.date && /^\d{4}-\d{2}-\d{2}/.test(tx.date)) {
+    // data ISO já salva -> usa direto
+    initialDateISO = tx.date.slice(0, 10);
+  } else if (isEditing && tx.createdAt) {
+    // transação antiga sem campo date -> recupera da data de cadastro
+    const cd = tx.createdAt.toDate ? tx.createdAt.toDate() : new Date(tx.createdAt);
+    initialDateISO = cd.toISOString().slice(0, 10);
+  } else {
+    // novo lançamento -> hoje
+    initialDateISO = new Date().toISOString().slice(0, 10);
+  }
+  if (dateInput) dateInput.value = initialDateISO;
+  const dateLabel = document.getElementById('modal-date-label');
+  if (dateLabel) dateLabel.textContent = dpFormatNice(initialDateISO);
+  closeDatePicker();
 
   const catType = (type === 'send' || type === 'saída') ? 'saída' : 'entrada';
   const catContainer = document.getElementById('modal-categories');
@@ -1640,6 +1810,8 @@ function openModal(type, txId = null) {
   const p2pResult = document.getElementById('p2p-search-result');
   if (p2pResult) p2pResult.innerHTML = '';
   if (p2pRow) p2pRow.style.display = isEditing ? 'none' : 'flex';
+  const p2pDivider = document.getElementById('p2p-divider');
+  if (p2pDivider) p2pDivider.style.display = isEditing ? 'none' : 'block';
   const p2pLabel = document.getElementById('p2p-toggle-label');
   if (p2pLabel) p2pLabel.textContent = (type === 'send' || type === 'saída') ? 'Enviar para amigo' : 'Cobrar de amigo';
 
@@ -1695,17 +1867,21 @@ async function submitTransaction() {
   }
   const txAmt = (activeModalType === 'send' || activeModalType === 'saída') ? -amt : amt;
 
+  // Data do lançamento escolhida pelo usuário (ISO AAAA-MM-DD). Padrão: hoje.
+  const dateInput = document.getElementById('modal-date');
+  const txDateISO = (dateInput && dateInput.value) ? dateInput.value : todayISO();
+
   const txData = {
     name: displayName,
     cat: selectedCatId,
     subcat: selectedSubcatId,
-    date: 'Agora',
+    date: txDateISO,
     amount: txAmt,
     type: catType,
     icon: cat.icon,
     bg: cat.color + '22',
     color: cat.color,
-    group: 'Hoje',
+    group: txStatus === 'prevista' ? 'Previsto' : 'Hoje',
     status: txStatus,
     uid: currentUser ? currentUser.uid : null,
   };
@@ -1728,14 +1904,19 @@ async function submitTransaction() {
     const now = new Date();
     const months = isRecurring ? Math.max(1, parseInt(document.getElementById('recur-months').value)||12) : 1;
     const groupId = Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+    // data-base do lançamento para calcular as parcelas seguintes
+    const baseDate = new Date(txDateISO + 'T00:00:00');
     for (let i = 0; i < months; i++) {
       const copy = { ...txData };
+      // Avança i meses a partir da data informada pelo usuário
+      const parcela = new Date(baseDate.getFullYear(), baseDate.getMonth() + i, baseDate.getDate());
+      const parcelaISO = parcela.toISOString().slice(0, 10);
+      copy.date = parcelaISO;
       if (i === 0) {
         copy.createdAt = firebase.firestore.FieldValue.serverTimestamp();
       } else {
-        copy.createdAt = new Date(now.getFullYear(), now.getMonth() + i, now.getDate());
+        copy.createdAt = firebase.firestore.FieldValue.serverTimestamp();
         copy.status = 'prevista';
-        copy.date = 'Previsto';
         copy.group = 'Previsto';
       }
       if (isRecurring) copy.recurGroup = groupId;
@@ -1752,7 +1933,7 @@ async function submitTransaction() {
           name: displayName,
           cat: selectedCatId,
           subcat: selectedSubcatId,
-          date: 'Agora',
+          date: txDateISO,
           amount: amt,
           type: 'entrada',
           icon: cat.icon,
@@ -1819,7 +2000,7 @@ async function deleteTransaction() {
   }
 }
 
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); closeDatePicker(); }
 
 function openSendTo(initials, name) {
   openModal('send');
@@ -2078,13 +2259,25 @@ function renderRecent() {
   const list = document.getElementById('recent-tx-list');
   if(list) list.innerHTML = transactions.slice(0,4).map(txHTML).join('');
 }
+function txGroupKey(tx) {
+  // Agrupa por data real (ISO). Fallback em createdAt p/ transações antigas.
+  if (tx.date && /^\d{4}-\d{2}-\d{2}/.test(tx.date)) return tx.date.slice(0, 10);
+  if (tx.createdAt) {
+    const cd = tx.createdAt.toDate ? tx.createdAt.toDate() : new Date(tx.createdAt);
+    return cd.toISOString().slice(0, 10);
+  }
+  return 'Sem data';
+}
 function renderAll(filter) {
   const list = filter === 'all' ? transactions : transactions.filter(t => t.type === filter);
-  const groups = [...new Set(list.map(t => t.group))];
+  const groups = [...new Set(list.map(txGroupKey))];
+  // Ordena os grupos do mais recente para o mais antigo
+  groups.sort((a, b) => (a < b ? 1 : a > b ? -1 : 0));
   let html = '';
   groups.forEach(g => {
-    html += `<div class="tx-group-label">${g}</div>`;
-    html += list.filter(t => t.group === g).map(txHTML).join('');
+    const label = g === 'Sem data' ? g : formatDateBR(g);
+    html += `<div class="tx-group-label">${label}</div>`;
+    html += list.filter(t => txGroupKey(t) === g).map(txHTML).join('');
   });
   const container = document.getElementById('all-tx-list');
   if (!html) html = '<p style="color:var(--text-muted);font-size:13px;padding:20px 0;text-align:center">Nenhuma transação</p>';
@@ -2132,11 +2325,13 @@ function renderReports() {
 function txHTML(tx) {
   const pos = (tx.amount || 0) > 0;
   const prev = tx.status === 'prevista' ? ' style="opacity:.5"' : '';
+  // Preferência: campo date (ISO). Fallback: createdAt (transações antigas).
+  const dataExibicao = formatDateBR(tx.date) || (tx.createdAt ? formatDateBR(tx.createdAt) : tx.date || '');
   return `<div class="tx-item"${prev} onclick="openModal('${tx.type}', '${tx.id}')">
     <div class="tx-logo" style="background:${tx.bg};color:${tx.color}"><i class="ti ${tx.icon}"></i></div>
     <div class="tx-info">
       <div class="tx-name">${tx.name}${tx.status === 'prevista' ? ' <span style="font-size:10px;color:var(--text-muted)">(Prevista)</span>' : ''}</div>
-      <div class="tx-date">${tx.date}</div>
+      <div class="tx-date">${dataExibicao}</div>
     </div>
     <div class="tx-amount ${pos?'pos':'neg'}">${pos?'+':''}R$${formatBRL(tx.amount)}</div>
   </div>`;
@@ -2194,9 +2389,9 @@ async function submitTransfer() {
   const ts = firebase.firestore.FieldValue.serverTimestamp();
   const batch = db.batch();
   const tx1Ref = db.collection('transactions').doc();
-  batch.set(tx1Ref, { name: 'Transferência para ' + (accounts.find(a => a.id === toId)?.name || 'outra conta'), cat: 'transfer', date: 'Agora', amount: -amt, type: 'saída', icon: 'ti-arrows-exchange', bg: 'var(--primary)22', color: 'var(--primary)', group: 'Hoje', createdAt: ts });
+  batch.set(tx1Ref, { name: 'Transferência para ' + (accounts.find(a => a.id === toId)?.name || 'outra conta'), cat: 'transfer', date: todayISO(), amount: -amt, type: 'saída', icon: 'ti-arrows-exchange', bg: 'var(--primary)22', color: 'var(--primary)', group: 'Hoje', createdAt: ts });
   const tx2Ref = db.collection('transactions').doc();
-  batch.set(tx2Ref, { name: 'Transferência de ' + (fromAcc.name || 'outra conta'), cat: 'transfer', date: 'Agora', amount: amt, type: 'entrada', icon: 'ti-arrows-exchange', bg: 'var(--primary)22', color: 'var(--primary)', group: 'Hoje', createdAt: ts });
+  batch.set(tx2Ref, { name: 'Transferência de ' + (fromAcc.name || 'outra conta'), cat: 'transfer', date: todayISO(), amount: amt, type: 'entrada', icon: 'ti-arrows-exchange', bg: 'var(--primary)22', color: 'var(--primary)', group: 'Hoje', createdAt: ts });
   batch.update(db.collection('accounts').doc(fromId), { balance: (fromAcc.balance || 0) - amt });
   const toAcc = accounts.find(a => a.id === toId);
   if (toAcc) batch.update(db.collection('accounts').doc(toId), { balance: (toAcc.balance || 0) + amt });
@@ -2407,18 +2602,18 @@ function renderHomeReports() {
     '<div class="income-card" style="margin-bottom:8px"><div class="section-row" style="margin-bottom:2px"><span class="section-label" style="font-size:12px">Orçamento</span><span style="font-size:11px;color:var(--text-muted)">'+budgetPct.toFixed(0)+'% · R$ '+expense.toLocaleString('pt-BR',{minimumFractionDigits:2})+' de R$ '+tl.toLocaleString('pt-BR',{minimumFractionDigits:2})+'</span></div><div class="progress-bar-new"><div class="progress-fill-new" style="width:'+budgetPct+'%;background:'+(budgetPct>90?'#c0392b':budgetPct>70?'#e07a3a':'var(--primary)')+'"></div></div></div>'
     : '') +
     (topCats.length ?
-    '<div class="income-card" style="margin-bottom:8px"><div class="section-label" style="font-size:12px;margin-bottom:6px">Top Categorias</div>' +
-    topCats.map(c =>
-      '<div class="rep-cat-new"><div class="rc-icon" style="background:'+c.color+'22;color:'+c.color+'"><i class="ti '+c.icon+'"></i></div><div class="rc-info"><div class="rc-name">'+c.name+'</div><div class="rc-bar"><div class="rc-fill" style="width:'+(c.total/maxCat*100).toFixed(0)+'%;background:'+c.color+'"></div></div></div><div class="rc-amt" style="color:'+c.color+'">R$ '+c.total.toLocaleString('pt-BR',{minimumFractionDigits:2})+'</div></div>'
-    ).join('')+'</div>'
+    '<div class="income-card" style="margin-bottom:12px"><div class="section-label" style="font-size:13px;font-weight:700;color:var(--text-main);margin-bottom:8px">Top Categorias</div>' +
+    topCats.map(c => {
+      const pct = (c.total / expense * 100).toFixed(0);
+      return '<div class="rep-cat-new"><div class="rc-icon" style="background:'+c.color+'22;color:'+c.color+'"><i class="ti '+c.icon+'"></i></div><div class="rc-info"><div class="rc-name">'+c.name+' <span style="font-size:10px;color:var(--text-muted);font-weight:400">'+pct+'%</span></div><div class="rc-bar"><div class="rc-fill" style="width:'+Math.max(4,(c.total/maxCat*100))+'%;background:'+c.color+'"></div></div></div><div class="rc-amt" style="color:'+c.color+'">R$ '+c.total.toLocaleString('pt-BR',{minimumFractionDigits:2})+'</div></div>';
+    }).join('')+'</div>'
     : '') +
     '<div style="font-size:11px;color:var(--text-muted);text-align:center;padding:8px 0">'+monthTx.length+' transações este mês</div>';
 }
 
 function renderHomeVehicle() {
-  const section = document.getElementById('home-vehicle-section');
-  const cta = document.getElementById('home-vehicle-cta');
-  if (!section || !cta) return;
+  // Seção de veículo removida da home — conteúdo fica na página Veículo
+  return;
   if (!vehicle) {
     section.style.display = 'none';
     cta.style.display = 'block';
@@ -2524,25 +2719,17 @@ function renderHomeChartsDesktop() {
 }
 
 // ===== BLUR TOGGLE =====
-let blurActive = localStorage.getItem('mu_blur') !== '0';
+let blurActive = false; // saldo sempre visível (botão do olho removido)
 function toggleBlur() {
-  blurActive = !blurActive;
-  localStorage.setItem('mu_blur', blurActive ? '1' : '0');
-  document.getElementById('main-balance').classList.toggle('blurred', blurActive);
+  // funcionalidade desativada — saldo permanece visível
+  blurActive = false;
+  const bal = document.getElementById('main-balance');
+  if (bal) bal.classList.remove('blurred');
 }
-// Add eye button to balance section
+// Botão do olho (ocultar saldo) removido — saldo sempre visível
 document.addEventListener('DOMContentLoaded', function() {
-  const bs = document.querySelector('.balance-section');
-  if (bs && !document.getElementById('eye-btn-pro')) {
-    const btn = document.createElement('button');
-    btn.id = 'eye-btn-pro';
-    btn.style.cssText = 'position:absolute;right:20px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:20px';
-    btn.innerHTML = '<i class="ti ti-eye-off"></i>';
-    btn.onclick = toggleBlur;
-    bs.appendChild(btn);
-    if (!blurActive) { document.getElementById('main-balance').classList.remove('blurred'); btn.innerHTML = '<i class="ti ti-eye"></i>'; }
-  }
-  // Add eye to balance on each page init
+  const bal = document.getElementById('main-balance');
+  if (bal) bal.classList.remove('blurred');
 });
 
 function updateVehicleIcons() {
@@ -3144,7 +3331,7 @@ async function submitRefuel() {
     if (account) { const a=accounts.find(x=>x.id===account); if(a) await db.collection('accounts').doc(account).update({balance:(a.balance||0)-total}); }
     await db.collection('transactions').add({
       name: 'Abastecimento ('+type+')', cat: 'vehicle', subcat: 'gasolina', amount: -total,
-      date: 'Agora', group: 'Hoje', type: 'saída',
+      date: todayISO(), group: 'Hoje', type: 'saída',
       icon: 'ti-car', bg: '#2c3e5022', color: '#2c3e50',
       status: 'efetivada', accountId: account, vehicleRefId: ref.id, vehicleType: 'refuel',
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -3184,7 +3371,7 @@ async function submitMaint() {
     await db.collection('transactions').add({
       name: desc, cat: 'vehicle',
       subcat: subcatMap[type] || 'manutencao', amount: -val,
-      date: 'Agora', group: 'Hoje', type: 'saída',
+      date: todayISO(), group: 'Hoje', type: 'saída',
       icon: 'ti-car', bg: '#2c3e5022', color: '#2c3e50',
       status: 'efetivada', accountId: account, vehicleRefId: ref.id, vehicleType: 'maint',
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -3411,19 +3598,7 @@ window.startListeners = function() {
   startProListeners();
   setTimeout(() => {
     loadProSettings();
-    // Add eye button
-    if (!document.getElementById('eye-btn-pro')) {
-      const bs = document.querySelector('.balance-section');
-      if (bs) {
-        const btn = document.createElement('button');
-        btn.id = 'eye-btn-pro';
-        btn.style.cssText = 'position:absolute;right:20px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:20px';
-        btn.innerHTML = '<i class="ti ti-eye-off"></i>';
-        btn.onclick = toggleBlur;
-        bs.appendChild(btn);
-        if (!blurActive) { document.getElementById('main-balance')?.classList.remove('blurred'); btn.innerHTML = '<i class="ti ti-eye"></i>'; }
-      }
-    }
+    // Botão do olho removido — saldo sempre visível
 
     // Add dashboard reports to home
     if (!document.getElementById('home-report-section')) {
