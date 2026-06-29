@@ -2,6 +2,7 @@ const CACHE = 'mu-finance-v1';
 const ASSETS = [
   'index.html',
   'manifest.json',
+  'icons/icon.svg',
   'icons/logo.svg',
   'icons/logo.png',
   'https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/tabler-icons.min.css',
