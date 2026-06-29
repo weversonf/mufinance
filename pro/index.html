@@ -2306,7 +2306,9 @@ async function importExcel(file) {
     const subcatName = (row[cols.subcat]||'').toString().trim();
     let statusVal = (row[cols.status]||'Efetivada').toString().trim().toLowerCase();
     if (statusVal === 'efetivada') statusVal = 'realizada';
-    const typeVal = (row[cols.type]||'').toString().trim().toLowerCase();
+    let typeVal = (row[cols.type]||'').toString().trim().toLowerCase();
+    if (typeVal === 'despesa') typeVal = 'saída';
+    if (typeVal === 'receita') typeVal = 'entrada';
     if (!amt || !date || !catName) { errors.push('Linha inválida: ' + (name||catName||'?')); continue; }
     const cat = catByName[catName.toLowerCase()];
     if (!cat) { errors.push('Categoria não encontrada: ' + catName); continue; }
