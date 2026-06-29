@@ -547,10 +547,14 @@
         <button class="icon-btn" title="Menu" onclick="showPage('settings')"><i class="ti ti-grid-dots"></i></button>
       </div>
     </div>
-    <div class="balance-section">
+    <div class="balance-section" id="balance-section" style="cursor:pointer" onclick="toggleSaldoMode()">
       <div class="currency-badge"><i class="ti ti-coin" style="font-size:13px"></i> BRL</div>
       <div class="balance" id="main-balance"><sup>R$</sup>12.329<small>,20</small></div>
-      <div><span class="change-badge"><i class="ti ti-trending-up" style="font-size:13px"></i> +2,10%</span></div>
+      <div id="saldo-legend" style="font-size:11px;font-weight:600;color:var(--text-muted);display:flex;align-items:center;gap:6px;margin-top:4px">
+        <span id="saldo-label">Saldo Real</span>
+        <span id="saldo-toggle-icon" style="font-size:14px;color:var(--primary)"><i class="ti ti-arrows-shuffle"></i></span>
+        <span id="saldo-proj-label" style="font-size:10px;color:var(--text-muted);font-weight:400;display:none">Projetado</span>
+      </div>
     </div>
   </div>
 
@@ -1344,6 +1348,7 @@ let categories = { saída: [], entrada: [] };
 let contacts = [];
 let txMonthOffset = 0;
 let txTypeFilter = 'all';
+let saldoReal = true;
 let currentTheme = 'light';
 let activeModalType = 'send';
 let selectedCatId = null;
@@ -2335,13 +2340,45 @@ document.getElementById('notif-btn').addEventListener('click', () => {
 
 // UTILS
 function formatBRL(val) { return Math.abs(val).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+function getMonthTxns() {
+  const now = new Date();
+  return transactions.filter(t => {
+    const d = t.createdAt ? (t.createdAt.toDate ? t.createdAt.toDate() : new Date(t.createdAt)) : null;
+    return d && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  });
+}
 function updateBalance() {
-  const bal = transactions.reduce((sum, t) => sum + (t.status !== 'prevista' ? (t.amount || 0) : 0), 0);
+  const monthTxns = getMonthTxns();
+  const bal = monthTxns.reduce((sum, t) => sum + (saldoReal && t.status === 'prevista' ? 0 : (t.amount || 0)), 0);
   const absBal = Math.abs(bal);
   const intPart = Math.floor(absBal).toLocaleString('pt-BR');
   const dec = (absBal % 1).toFixed(2).split('.')[1];
   const sign = bal < 0 ? '-' : '';
   document.getElementById('main-balance').innerHTML = `<sup>R$</sup>${sign}${intPart}<small>,${dec}</small>`;
+
+  // Income/Expense cards (current month, same filter)
+  const income = monthTxns.filter(t => (t.amount||0) > 0 && (!saldoReal || t.status !== 'prevista')).reduce((s,t) => s + t.amount, 0);
+  const expense = monthTxns.filter(t => (t.amount||0) < 0 && (!saldoReal || t.status !== 'prevista')).reduce((s,t) => s + Math.abs(t.amount), 0);
+  const incEl = document.getElementById('home-income-amount');
+  const expEl = document.getElementById('home-expense-amount');
+  if (incEl) incEl.textContent = 'R$ '+income.toLocaleString('pt-BR',{minimumFractionDigits:2});
+  if (expEl) expEl.textContent = 'R$ '+expense.toLocaleString('pt-BR',{minimumFractionDigits:2});
+}
+function toggleSaldoMode() {
+  saldoReal = !saldoReal;
+  const label = document.getElementById('saldo-label');
+  const projLabel = document.getElementById('saldo-proj-label');
+  const icon = document.getElementById('saldo-toggle-icon');
+  if (saldoReal) {
+    label.textContent = 'Saldo Real';
+    projLabel.style.display = 'none';
+    if (icon) icon.innerHTML = '<i class="ti ti-arrows-shuffle"></i>';
+  } else {
+    label.textContent = 'Saldo Projetado';
+    projLabel.style.display = 'inline';
+    if (icon) icon.innerHTML = '<i class="ti ti-arrows-shuffle"></i>';
+  }
+  updateBalance();
 }
 function renderRecent() {
   const list = document.getElementById('recent-tx-list');
@@ -2707,17 +2744,11 @@ function renderHomeReports() {
   const el = document.getElementById('home-report-section');
   if (!el) return;
   const now = new Date();
-  const monthTx = transactions.filter(t => {
-    const d = t.createdAt ? t.createdAt.toDate() : null;
-    return d && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-  });
+  const monthTx = getMonthTxns();
   const income = monthTx.filter(t => (t.amount||0) > 0).reduce((s,t) => s + t.amount, 0);
   const expense = monthTx.filter(t => (t.amount||0) < 0).reduce((s,t) => s + Math.abs(t.amount), 0);
-  // Update Receitas/Despesas cards
-  const incEl = document.getElementById('home-income-amount');
-  const expEl = document.getElementById('home-expense-amount');
-  if (incEl) incEl.textContent = 'R$ '+income.toLocaleString('pt-BR',{minimumFractionDigits:2});
-  if (expEl) expEl.textContent = 'R$ '+expense.toLocaleString('pt-BR',{minimumFractionDigits:2});
+  // Update Receitas/Despesas cards (via updateBalance already, but keep for chart refresh)
+  updateBalance();
   // Income chart - last 12 months
   const svgW = 120, svgH = 52, padB = 8, padT = 6;
   const months = [];
