@@ -596,7 +596,7 @@
 
     <!-- Sua renda -->
     <div class="income-card" style="margin-top:12px">
-        <div class="income-label">Sua renda · Este mês</div>
+        <div class="income-label">Sua renda · Últimos 6 meses</div>
         <div class="chart-wrap">
           <svg class="mini-chart" viewBox="0 0 120 52" preserveAspectRatio="none" id="income-chart-svg">
             <defs>
@@ -2759,10 +2759,10 @@ function renderHomeReports() {
   const expense = monthTx.filter(t => (t.amount||0) < 0).reduce((s,t) => s + Math.abs(t.amount), 0);
   // Update Receitas/Despesas cards (via updateBalance already, but keep for chart refresh)
   updateBalance();
-  // Income chart - last 12 months
+  // Income chart - last 6 months (5 anteriores + atual)
   const svgW = 120, svgH = 52, padB = 8, padT = 6;
   const months = [];
-  for (let i = 11; i >= 0; i--) {
+  for (let i = 5; i >= 0; i--) {
     const m = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const vals = transactions.filter(t => {
       const d = t.createdAt ? t.createdAt.toDate() : null;
