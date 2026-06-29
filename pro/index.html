@@ -2310,7 +2310,11 @@ async function importExcel(file) {
     if (typeVal === 'despesa') typeVal = 'saída';
     if (typeVal === 'receita') typeVal = 'entrada';
     if (!amt || !date || !catName) { errors.push('Linha inválida: ' + (name||catName||'?')); continue; }
-    const cat = catByName[catName.toLowerCase()];
+    let cat = catByName[catName.toLowerCase()];
+    if (!cat) {
+      // Tenta match parcial: busca categoria cujo nome contenha ou esteja contido no digitado
+      cat = allCats.find(c => c.name.toLowerCase().includes(catName.toLowerCase()) || catName.toLowerCase().includes(c.name.toLowerCase()));
+    }
     if (!cat) { errors.push('Categoria não encontrada: ' + catName); continue; }
     const subKey = catName.toLowerCase() + '>' + subcatName.toLowerCase();
     const subMatch = subByName[subKey];
@@ -2333,7 +2337,12 @@ async function importExcel(file) {
   if (batchCount > 0) await batch.commit();
   document.getElementById('excel-input').value = '';
   const msg = success + ' transações importadas!';
-  showToast(errors.length ? msg + ' (' + errors.length + ' erros)' : msg);
+  if (errors.length) {
+    showToast(msg + ' (' + errors.length + ' erro(s))');
+    setTimeout(() => alert('Erros na importação:\n' + errors.join('\n')), 500);
+  } else {
+    showToast(msg);
+  }
   renderAll('all');
 }
 
