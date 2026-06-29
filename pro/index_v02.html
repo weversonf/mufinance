@@ -65,44 +65,58 @@
 
     /* Real, persistent sidebar */
     .desktop-sidebar{
-      display:flex;flex-direction:column;position:fixed;left:0;top:0;width:240px;height:100vh;
-      background:var(--bg-top);border-right:1px solid var(--border);padding:24px 14px;z-index:100;
+      display:flex;flex-direction:column;position:fixed;left:0;top:0;width:220px;height:100vh;
+      background:var(--bg-top);border-right:1px solid var(--border);padding:20px 10px;z-index:100;
     }
-    .desktop-sidebar .brand{display:flex;align-items:center;gap:10px;padding:0 10px;margin-bottom:28px}
-    .desktop-sidebar .brand-mark{width:34px;height:34px;border-radius:10px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
-    .desktop-sidebar .brand-name{font-size:15px;font-weight:800;color:var(--text-main);letter-spacing:-.3px}
-    .desktop-sidebar nav{display:flex;flex-direction:column;gap:2px}
-    .desktop-sidebar .d-tab{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:12px;border:none;background:none;cursor:pointer;font-family:inherit;font-size:13.5px;font-weight:600;color:var(--text-sec);text-align:left;width:100%;transition:background .15s,color .15s}
+    .desktop-sidebar .brand{display:flex;align-items:center;gap:10px;padding:0 10px;margin-bottom:24px}
+    .desktop-sidebar .brand-mark{width:32px;height:32px;border-radius:8px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+    .desktop-sidebar .brand-name{font-size:14px;font-weight:800;color:var(--text-main);letter-spacing:-.3px}
+    .desktop-sidebar nav{display:flex;flex-direction:column;gap:1px}
+    .desktop-sidebar .d-tab{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;border:none;background:none;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;color:var(--text-sec);text-align:left;width:100%;transition:background .15s,color .15s}
     .desktop-sidebar .d-tab:hover{background:var(--bg-app);color:var(--text-main)}
     .desktop-sidebar .d-tab.active{background:var(--primary-light);color:var(--primary)}
-    .desktop-sidebar .d-tab i{font-size:19px;width:22px;text-align:center;flex-shrink:0}
-    .desktop-sidebar .sidebar-footer{margin-top:auto;padding-top:14px;border-top:1px solid var(--border)}
+    .desktop-sidebar .d-tab i{font-size:17px;width:20px;text-align:center;flex-shrink:0}
+    .desktop-sidebar .sidebar-footer{margin-top:auto;padding-top:10px;border-top:1px solid var(--border)}
 
     /* Push every page to the right of the sidebar */
-    .app.page{margin-left:240px;min-height:100vh}
+    .app.page{margin-left:220px;min-height:100vh}
 
     .app>.top-bar,.app>.actions,.app>.page-header{background:var(--bg-app);border-right:none;min-height:auto}
-    .app>.top-bar{flex-direction:row;align-items:center;gap:16px;padding:32px 32px 8px;justify-content:space-between}
+    .app>.top-bar{flex-direction:row;align-items:center;gap:16px;padding:28px 32px 6px;justify-content:space-between}
     .app>.top-bar .greeting{flex-direction:row;gap:16px;align-items:center;width:auto}
-    .app>.actions{flex-direction:row;padding:8px 32px 16px;gap:8px;justify-content:flex-start}
-    .app>.content,.app>.page-content{padding:20px 32px 48px;margin-top:0;overflow-y:visible}
-    .app>.page-header{flex-direction:row;align-items:center;gap:10px;padding:32px 32px 8px}
+    .app>.actions{flex-direction:row;padding:6px 32px 14px;gap:8px;justify-content:flex-start}
+    .app>.content,.app>.page-content{padding:16px 28px 48px;margin-top:0;overflow-y:visible}
+    .app>.page-header{flex-direction:row;align-items:center;gap:10px;padding:28px 32px 6px}
     .two-col{grid-template-columns:1fr 1fr}
-    .actions .action-btn.center-btn{width:auto;height:auto;border-radius:16px;flex:0 0 auto;padding:11px 18px;font-size:13px}
+    .three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:18px}
+    .actions .action-btn.center-btn{width:auto;height:auto;border-radius:16px;flex:0 0 auto;padding:9px 16px;font-size:13px}
     .actions .action-btn.center-btn i{margin-right:6px}
     .actions .action-btn.center-btn::after{content:'Transferir'}
-    .actions .action-btn.side{flex:0 0 auto;padding:11px 20px}
-    .health-btns{flex-wrap:wrap}
+    .actions .action-btn.side{flex:0 0 auto;padding:9px 18px}
     .app>.filter-row{padding:4px 32px}
+    .desktop-only{display:block}
+    .mobile-only{display:none}
   }
 
   @media(min-width:1024px){
-    .desktop-sidebar{width:264px}
-    .app.page{margin-left:264px}
-    .app>.content,.app>.page-content{max-width:920px}
-    .two-col{grid-template-columns:1fr 1fr;gap:20px}
+    .desktop-sidebar{width:240px}
+    .app.page{margin-left:240px}
+    .app>.content,.app>.page-content{max-width:none}
+    .two-col{grid-template-columns:1fr 1fr;gap:18px}
+    .three-col{grid-template-columns:1fr 1fr 1fr;gap:18px}
+    .desktop-grid-4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:16px;margin-bottom:18px}
     .send-again{flex-wrap:wrap}
+    .desktop-chart-row{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}
   }
+
+  @media(min-width:1400px){
+    .desktop-sidebar{width:260px}
+    .app.page{margin-left:260px}
+    .desktop-chart-row{grid-template-columns:2fr 1fr}
+  }
+
+  .desktop-only{display:none}
+  .three-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}
   .top-bar{background:var(--bg-top);padding:52px 20px 16px}
   .greeting{display:flex;justify-content:space-between;align-items:flex-start}
   .greeting h3{font-size:15px;font-weight:400;color:var(--text-main);line-height:1.5}
@@ -167,6 +181,31 @@
   .field-label{font-size:12px;color:var(--text-muted);font-weight:500;margin-bottom:6px;display:block}
   .field-input{width:100%;border:1px solid var(--input-border);background:var(--input-bg);color:var(--text-main);border-radius:12px;padding:11px 14px;font-size:14px;font-family:inherit;outline:none;transition:border .15s;margin-bottom:14px}
   .field-input:focus{border-color:var(--primary)}
+
+  /* ===== PICKER DE DATA PERSONALIZADO ===== */
+  .dp-field{display:flex;align-items:center;gap:10px;width:100%;border:1px solid var(--input-border);background:var(--input-bg);color:var(--text-main);border-radius:12px;padding:11px 14px;font-size:14px;font-family:inherit;margin-bottom:14px;cursor:pointer;transition:border .15s;box-sizing:border-box}
+  .dp-field:hover{border-color:var(--primary)}
+  .dp-field .ti{font-size:18px;color:var(--primary)}
+  .dp-field .dp-label{flex:1;font-weight:600}
+  .dp-field .dp-chev{font-size:16px;color:var(--text-muted)}
+  .dp-wrap{position:relative;margin-bottom:14px}
+  .dp-pop{position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--bg-app);border:1px solid var(--input-border);border-radius:16px;padding:12px;box-shadow:0 12px 32px rgba(0,0,0,.18);z-index:50;display:none;animation:slideUp .18s ease}
+  .dp-pop.open{display:block}
+  .dp-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .dp-nav{width:32px;height:32px;border-radius:8px;border:none;background:var(--card-bg);color:var(--text-main);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:background .15s}
+  .dp-nav:hover{background:var(--primary-light);color:var(--primary)}
+  .dp-title{font-size:13px;font-weight:700;color:var(--text-main);text-transform:capitalize}
+  .dp-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+  .dp-dow{font-size:10px;font-weight:700;color:var(--text-muted);text-align:center;padding:4px 0;text-transform:uppercase}
+  .dp-day{font-size:13px;font-weight:500;color:var(--text-main);text-align:center;padding:8px 0;border-radius:10px;cursor:pointer;transition:background .12s,color .12s;border:none;background:none;font-family:inherit}
+  .dp-day:hover{background:var(--primary-light);color:var(--primary)}
+  .dp-day.muted{color:var(--text-muted);opacity:.4}
+  .dp-day.today{font-weight:800;box-shadow:inset 0 0 0 1px var(--primary)}
+  .dp-day.sel{background:var(--primary);color:#fff;font-weight:700}
+  .dp-day.sel:hover{background:var(--primary);color:#fff}
+  .dp-quick{display:flex;gap:6px;margin-bottom:10px}
+  .dp-quick button{flex:1;border:1px solid var(--input-border);background:var(--input-bg);color:var(--text-sec);border-radius:10px;padding:7px 4px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+  .dp-quick button:hover{border-color:var(--primary);color:var(--primary)}
   .contacts-row{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;margin-bottom:16px}
   .contact-chip{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;min-width:52px}
   .contact-chip .av{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;border:2px solid transparent;transition:border .15s}
@@ -275,6 +314,10 @@
   /* LOGIN */
   .login-page{position:fixed;inset:0;z-index:999;background:var(--bg-body);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:24px}
   .login-page.hidden{display:none}
+  .loading-overlay{position:fixed;inset:0;z-index:998;background:var(--bg-body);display:flex;align-items:center;justify-content:center;flex-direction:column}
+  .loading-overlay.hidden{display:none}
+  .loading-spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .7s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
   .login-logo{font-size:32px;font-weight:800;color:var(--primary);letter-spacing:-1px}
   .login-sub{font-size:14px;color:var(--text-muted)}
   .login-btn{display:flex;align-items:center;gap:10px;padding:12px 28px;border-radius:16px;border:2px solid var(--border);background:var(--bg-app);color:var(--text-main);font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s}
@@ -301,16 +344,6 @@
   .v-health-item .v-bar{flex:1;height:6px;background:var(--border);border-radius:4px;overflow:hidden}
   .v-health-item .v-fill{height:100%;border-radius:4px;transition:width .5s}
   .v-health-item .v-pct{font-size:11px;font-weight:600;width:32px;text-align:right;color:var(--text-sec)}
-  .health-rings{display:flex;gap:16px;justify-content:center;padding:8px 0}
-  .health-ring{text-align:center;position:relative;width:60px;height:60px}
-  .health-ring svg{transform:rotate(-90deg);width:60px;height:60px}
-  .h-ring-bg{fill:none;stroke:var(--border);stroke-width:4}
-  .h-ring-fg{fill:none;stroke:var(--primary);stroke-width:4}
-  .h-ring-label{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
-  .h-ring-label .hv{font-size:11px;font-weight:700;color:var(--text-main)}
-  .h-ring-label .hu{font-size:8px;color:var(--text-muted)}
-  .health-btns{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
-  .health-btn{padding:5px 10px;border-radius:10px;border:1px solid var(--border);background:var(--card-bg);color:var(--text-sec);font-size:10px;font-weight:500;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:4px}
   .tab-fab-wrap{position:relative;display:flex;justify-content:center;align-items:center;width:60px;height:0}
   .tab-fab{width:48px;height:48px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:24px;cursor:pointer;border:none;box-shadow:0 4px 12px rgba(0,0,0,.3);transition:transform .3s cubic-bezier(.4,0,.2,1),background .3s;margin-top:-36px;z-index:6;position:relative}
   .tab-fab.active{transform:rotate(45deg);background:#c0392b}
@@ -344,6 +377,18 @@
   .pwa-install-banner i{font-size:20px}
   .pwa-install-banner .close-banner{margin-left:auto;background:none;border:none;color:#fff;font-size:18px;cursor:pointer;padding:4px;opacity:.7}
   .config-group-new{margin-bottom:16px}
+  /* Accordion */
+  .accordion-header{display:flex;align-items:center;gap:8px;padding:12px 14px;background:var(--card-bg);border-radius:10px;cursor:pointer;border:1px solid var(--border);margin-bottom:4px;transition:background .15s;font-family:inherit;width:100%;text-align:left;font-size:13px;font-weight:600;color:var(--text-main)}
+  .accordion-header:hover{background:var(--border)}
+  .accordion-header .arrow{margin-left:auto;font-size:16px;color:var(--text-muted);transition:transform .2s}
+  .accordion-header.open .arrow{transform:rotate(180deg)}
+  .accordion-content{display:none;padding:4px 0 8px 0}
+  .accordion-content.open{display:block}
+  /* Icon picker */
+  .icon-picker-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(42px,1fr));gap:6px;max-height:240px;overflow-y:auto;padding:4px 0;margin-bottom:12px}
+  .icon-picker-grid .ip-item{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;border:2px solid transparent;background:var(--card-bg);color:var(--text-sec);transition:all .15s}
+  .icon-picker-grid .ip-item:hover{background:var(--border);color:var(--text-main)}
+  .icon-picker-grid .ip-item.selected{border-color:var(--primary);background:var(--primary-light);color:var(--primary)}
   .config-item-new{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--card-bg);border-radius:10px;margin-bottom:6px;border:1px solid var(--border)}
   .config-item-new .ci-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;background:var(--bg-app);flex-shrink:0}
   .config-item-new .ci-info{flex:1}
@@ -369,15 +414,24 @@
   .goal-values-new{font-size:11px;color:var(--text-muted);margin-top:4px}
   .chart-wrap-new{background:var(--card-bg);border-radius:14px;padding:14px;margin-bottom:12px}
   .chart-wrap-new h4{font-size:12px;font-weight:600;color:var(--text-main);margin-bottom:10px}
-  .chart-wrap-new canvas{width:100%;height:200px;display:block}
+  .chart-canvas-box{position:relative;width:100%;height:200px}
+  .chart-wrap-new canvas{display:block}
   .v-hist-item{display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)}
   .v-hist-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;background:var(--card-bg)}
   .v-hist-info{flex:1}
   .v-hist-info .vh-t{font-size:12px;font-weight:600;color:var(--text-main)}
   .v-hist-info .vh-s{font-size:10px;color:var(--text-muted)}
+  .v-hist-actions{display:flex;gap:4px;flex-shrink:0}
+  .v-del-btn{width:28px;height:28px;border:none;border-radius:6px;background:#c0392b22;color:#c0392b;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:background .15s}
+  .v-del-btn:hover{background:#c0392b44}
+  .v-edit-btn{width:28px;height:28px;border:none;border-radius:6px;background:var(--primary-light);color:var(--primary);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:background .15s}
+  .v-edit-btn:hover{background:var(--primary)}
   .blurred{filter:blur(8px);user-select:none}
   body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
   input,textarea,.field-input,.field-input *{-webkit-user-select:text;user-select:text}
+  .greeting-left{display:flex;align-items:center;gap:12px}
+  .profile-avatar-top{width:40px;height:40px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;border:none;cursor:pointer;flex-shrink:0;transition:transform .2s cubic-bezier(.34,1.56,.64,1),box-shadow .2s}
+  .profile-avatar-top:active{transform:scale(.9)}
   .section-title-new{font-size:12px;font-weight:700;color:var(--text-main);margin-bottom:8px;display:flex;align-items:center;gap:6px;margin-top:16px}
   .section-title-new i{color:var(--primary);font-size:15px}
   .prof-field-new{margin-bottom:10px}
@@ -385,16 +439,15 @@
   .prof-field-new .pval{font-size:13px;font-weight:600;color:var(--text-main);padding:8px 10px;background:var(--card-bg);border-radius:8px;display:flex;justify-content:space-between;align-items:center}
   .prof-field-new .pval .edit{background:none;border:none;color:var(--primary);cursor:pointer;font-size:11px;font-weight:600;font-family:inherit}
   .prof-field-new .pval .rest{font-size:9px;color:var(--text-muted);font-weight:400}
-  .rep-cat-new{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)}
+  .rep-cat-new{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+  .rep-cat-new:last-child{border-bottom:none}
+  #home-report-section{margin-top:4px;padding-bottom:8px}
   .rep-cat-new .rc-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
   .rep-cat-new .rc-info{flex:1}
   .rep-cat-new .rc-info .rc-name{font-size:12px;font-weight:600;color:var(--text-main)}
   .rep-cat-new .rc-bar{height:4px;background:var(--border);border-radius:2px;margin-top:3px;overflow:hidden}
   .rep-cat-new .rc-fill{height:100%;border-radius:2px}
   .rep-cat-new .rc-amt{font-size:12px;font-weight:700;text-align:right}
-  .greeting-left{display:flex;align-items:center;gap:12px}
-  .profile-avatar-top{width:40px;height:40px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;border:none;cursor:pointer;flex-shrink:0;transition:transform .2s cubic-bezier(.34,1.56,.64,1),box-shadow .2s}
-  .profile-avatar-top:active{transform:scale(.9)}
   .page{animation:none}.page.active{animation:pageIn .35s cubic-bezier(.2,.9,.3,1)}
   @keyframes pageIn{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
   .tab{transition:color .15s,transform .2s cubic-bezier(.34,1.56,.64,1)}
@@ -408,33 +461,41 @@
   @keyframes modalUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
   .modal-overlay{transition:background .25s}
   .toast{transition:transform .3s cubic-bezier(.34,1.56,.64,1),opacity .3s}
+  .p2p-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+  .p2p-card{background:var(--card-bg);border-radius:14px;padding:16px;text-align:center;cursor:pointer;transition:transform .15s}
+  .p2p-card:active{transform:scale(.95)}
+  .p2p-card .icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 8px;font-size:22px}
+  .p2p-card .label{font-size:13px;font-weight:600;color:var(--text-main)}
+  .p2p-card .sub{font-size:11px;color:var(--text-muted)}
+  .notif-actions{display:flex;gap:8px;margin-top:8px}
+  .notif-actions button{flex:1;padding:6px 12px;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer}
+  .notif-actions .accept{background:var(--primary);color:#fff}
+  .notif-actions .reject{background:var(--card-bg);color:var(--text-sec)}
+  .p2p-search-result{padding:10px 12px;border-radius:10px;background:var(--card-bg);display:flex;align-items:center;gap:12px;margin-top:8px;cursor:pointer;transition:background .15s}
+  .p2p-search-result:active{background:var(--input-bg)}
+  .p2p-search-result .av{width:36px;height:36px;border-radius:50%;background:var(--primary-light);color:var(--primary);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0}
+  #p2p-section .p2p-search-result{margin:6px 0 0;padding:8px 10px;border-radius:8px;background:var(--card-bg);display:flex;align-items:center;gap:10px;cursor:pointer}
+  #p2p-section .p2p-search-result.selected{background:var(--primary-light);border:2px solid var(--primary)}
 </style>
 </head>
 <body data-theme="light">
 
 <!-- LOGIN PAGE -->
-<div class="login-page" id="login-page">
+<div class="login-page hidden" id="login-page">
   <div class="login-logo">Mu Finance</div>
-  <div class="login-sub">Gerencie suas finanças com segurança</div>
-
-  <div class="login-toggle">
-    <button class="active" onclick="showLoginTab('google', this)">Google</button>
-    <button onclick="showLoginTab('email', this)">Email</button>
-  </div>
-
-  <div id="login-google">
-    <button class="login-btn" onclick="signInGoogle()"><i class="ti ti-brand-google"></i> Entrar com Google</button>
-  </div>
-
-  <div id="login-email" style="display:none">
+  <div class="login-sub">Faça login para continuar</div>
+  <div id="login-email">
     <div class="login-form">
-      <input class="login-input" id="login-email-input" type="email" placeholder="Email" autocomplete="email" />
-      <input class="login-input" id="login-pass-input" type="password" placeholder="Senha" autocomplete="current-password" />
+      <input class="login-input" id="login-email-input" type="email" placeholder="Email" autocomplete="email" onkeydown="if(event.key==='Enter')document.getElementById('login-pass-input').focus()" />
+      <input class="login-input" id="login-pass-input" type="password" placeholder="Senha" autocomplete="current-password" onkeydown="if(event.key==='Enter')signInEmail()" />
       <div class="login-error" id="login-error"></div>
       <button class="login-submit" onclick="signInEmail()">Entrar</button>
-      <button class="login-link" onclick="signUpEmail()">Criar nova conta</button>
     </div>
   </div>
+</div>
+
+<div class="loading-overlay" id="loading-overlay">
+  <div class="loading-spinner"></div>
 </div>
 
 <!-- DESKTOP SIDEBAR (web only — hidden on mobile) -->
@@ -501,20 +562,21 @@
   </div>
 
   <div class="content">
-    <div class="two-col">
-      <div class="send-col">
-        <div class="section-label" style="margin-bottom:10px">Enviar novamente</div>
-        <div class="send-again">
-          <button class="avatar" style="background:#e07a3a" onclick="openSendTo('AM','Ana M.')">AM</button>
-          <button class="avatar" style="background:#5b7fa6" onclick="openSendTo('JL','João L.')">JL</button>
-          <button class="avatar avatar-add" onclick="showToast('Adicionar contato')">+</button>
-        </div>
-        <div class="send-again">
-          <button class="avatar" style="background:#7a5ba6" onclick="openSendTo('CR','Carlos R.')">CR</button>
-          <button class="avatar" style="background:#3a8a5a" onclick="openSendTo('MK','Maria K.')">MK</button>
-        </div>
+
+    <!-- Receitas + Despesas -->
+    <div class="two-col" style="margin-bottom:8px">
+      <div class="income-card" id="home-income-card">
+        <div class="income-label">Receitas</div>
+        <div class="income-amount" style="color:var(--primary);font-size:16px" id="home-income-amount">R$ 0,00</div>
       </div>
-      <div class="income-card">
+      <div class="income-card" id="home-expense-card">
+        <div class="income-label">Despesas</div>
+        <div class="income-amount" style="color:#c0392b;font-size:16px" id="home-expense-amount">R$ 0,00</div>
+      </div>
+    </div>
+
+    <!-- Sua renda -->
+    <div class="income-card" style="margin-top:12px">
         <div class="income-label">Sua renda · Este mês</div>
         <div class="chart-wrap">
           <svg class="mini-chart" viewBox="0 0 120 52" preserveAspectRatio="none" id="income-chart-svg">
@@ -533,12 +595,22 @@
       </div>
     </div>
 
-    <div class="section-row">
+    <!-- Atividade recente -->
+    <div class="section-row" style="margin-top:12px">
       <span class="section-label">Atividade recente</span>
       <button class="section-link" onclick="showPage('transactions')">Ver tudo <i class="ti ti-chevron-right" style="font-size:13px"></i></button>
     </div>
 
     <div class="transactions" id="recent-tx-list"></div>
+
+    <!-- Container for extra reports (budget, top cats) -->
+    <div id="home-report-section"></div>
+
+    <!-- Desktop-only charts row -->
+    <div class="desktop-only desktop-chart-row" id="desktop-charts-row">
+      <div class="chart-wrap-new"><h4><i class="ti ti-pie-chart" style="font-size:13px"></i> Despesas por Categoria</h4><div class="chart-canvas-box"><canvas id="home-pie-chart"></canvas></div></div>
+      <div class="chart-wrap-new"><h4><i class="ti ti-trending-up" style="font-size:13px"></i> Receitas vs Despesas · 12 Meses</h4><div class="chart-canvas-box"><canvas id="home-bar-chart"></canvas></div></div>
+    </div>
 
   </div>
 
@@ -562,6 +634,11 @@
     <button class="filter-chip" onclick="filterTx('entrada',this)">Entradas</button>
     <button class="filter-chip" onclick="filterTx('saída',this)">Saídas</button>
     <button class="filter-chip" onclick="showPage('reports')" style="margin-left:auto;color:var(--primary);border-color:var(--primary);font-weight:600"><i class="ti ti-report" style="font-size:13px"></i> Relatórios</button>
+  </div>
+  <div style="display:flex;align-items:center;justify-content:center;gap:12px;padding:6px 18px">
+    <button class="icon-btn" onclick="prevTxMonth()"><i class="ti ti-chevron-left"></i></button>
+    <span id="tx-month-label" style="font-size:13px;font-weight:700;color:var(--text-main);min-width:120px;text-align:center"></span>
+    <button class="icon-btn" onclick="nextTxMonth()"><i class="ti ti-chevron-right"></i></button>
   </div>
   <div class="page-content" id="all-tx-list"></div>
   <div class="tab-bar">
@@ -603,11 +680,6 @@
     </div>
     <div id="profile-fields"></div>
     <div class="menu-list">
-      <div class="menu-item" onclick="showPage('config-categories')">
-        <i class="ti ti-category"></i>
-        <span>Configurar Categorias</span>
-        <i class="ti ti-chevron-right"></i>
-      </div>
       <div class="menu-item" id="theme-toggle" onclick="toggleTheme()">
         <i class="ti ti-moon"></i>
         <span>Modo Escuro</span>
@@ -630,62 +702,77 @@
 
 <!-- REPORTS PAGE -->
 <div class="app page" id="reports-page">
-  <div class="page-header">
+  <div class="page-header" style="flex-wrap:wrap;gap:8px;padding-bottom:12px">
     <button class="back-btn" onclick="showPage('home')"><i class="ti ti-arrow-left"></i></button>
     <span class="page-title">Relatórios</span>
+    <div style="margin-left:auto;display:flex;gap:6px">
+      <button class="filter-chip active" id="rep-btn-month" onclick="setReportPeriod('month',this)">Mês</button>
+      <button class="filter-chip" id="rep-btn-quarter" onclick="setReportPeriod('quarter',this)">Trim.</button>
+      <button class="filter-chip" id="rep-btn-year" onclick="setReportPeriod('year',this)">Ano</button>
+    </div>
   </div>
   <div class="page-content">
-    <div class="two-col" style="margin-bottom:16px">
-      <div class="income-card">
-        <div class="income-label">Receitas</div>
-        <div class="income-amount" style="color:var(--primary)" id="report-income">R$ 0,00</div>
+
+    <!-- Summary cards -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px">
+      <div class="income-card" style="display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding:12px">
+        <div style="width:32px;height:32px;border-radius:10px;background:var(--primary-light);color:var(--primary);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0"><i class="ti ti-arrow-down-left"></i></div>
+        <div>
+          <div class="income-label">Receitas</div>
+          <div style="font-size:13px;font-weight:800;color:var(--primary);margin-top:2px;line-height:1.2" id="report-income">R$ 0,00</div>
+        </div>
       </div>
-      <div class="income-card">
-        <div class="income-label">Despesas</div>
-        <div class="income-amount" style="color:#c0392b" id="report-expense">R$ 0,00</div>
+      <div class="income-card" style="display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding:12px">
+        <div style="width:32px;height:32px;border-radius:10px;background:#c0392b22;color:#c0392b;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0"><i class="ti ti-arrow-up-right"></i></div>
+        <div>
+          <div class="income-label">Despesas</div>
+          <div style="font-size:13px;font-weight:800;color:#c0392b;margin-top:2px;line-height:1.2" id="report-expense">R$ 0,00</div>
+        </div>
+      </div>
+      <div class="income-card" style="display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding:12px">
+        <div id="rep-balance-icon" style="width:32px;height:32px;border-radius:10px;background:#3498db22;color:#3498db;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0"><i class="ti ti-scale"></i></div>
+        <div>
+          <div class="income-label">Saldo</div>
+          <div id="report-balance" style="font-size:13px;font-weight:800;margin-top:2px;line-height:1.2;color:var(--primary)">R$ 0,00</div>
+        </div>
       </div>
     </div>
-    <div class="annual-chart-wrap">
-      <h4>Receitas vs Despesas · <span id="chart-year">2026</span></h4>
-      <canvas id="annual-chart"></canvas>
+
+    <!-- Bar chart -->
+    <div class="annual-chart-wrap" style="margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <h4 style="margin:0;font-size:13px">Receitas vs Despesas</h4>
+        <div style="display:flex;gap:10px;font-size:10px;color:var(--text-muted)">
+          <span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:var(--primary);margin-right:3px;vertical-align:middle"></span>Receitas</span>
+          <span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:#c0392b;margin-right:3px;vertical-align:middle"></span>Despesas</span>
+        </div>
+      </div>
+      <div style="position:relative;height:180px">
+        <canvas id="annual-chart"></canvas>
+      </div>
     </div>
-    <div class="section-row">
-      <span class="section-label">Por categoria</span>
+
+    <!-- Donut + category list -->
+    <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:16px">
+      <div class="annual-chart-wrap" style="flex:0 0 130px;margin-bottom:0;padding:12px;display:flex;flex-direction:column;align-items:center">
+        <div style="font-size:12px;font-weight:600;color:var(--text-main);margin-bottom:8px;align-self:flex-start">Categorias</div>
+        <div style="position:relative;width:106px;height:106px">
+          <canvas id="report-donut-chart"></canvas>
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none">
+            <span style="font-size:9px;color:var(--text-muted)">Total</span>
+            <span id="rep-donut-total" style="font-size:11px;font-weight:800;color:var(--text-main)">R$0</span>
+          </div>
+        </div>
+      </div>
+      <div id="report-by-category" style="flex:1;min-width:0"></div>
     </div>
-    <div id="report-by-category"></div>
-    <div class="section-title-new" style="margin-top:16px"><i class="ti ti-layers"></i> Ferramentas</div>
+
+    <!-- Tools -->
+    <div class="section-title-new" style="margin-top:4px"><i class="ti ti-layers"></i> Ferramentas</div>
     <div style="display:flex;gap:8px">
       <button class="action-btn side" style="flex:1" onclick="showPage('goals')"><i class="ti ti-target"></i> Metas</button>
       <button class="action-btn side" style="flex:1" onclick="showPage('budget')"><i class="ti ti-chart-pie"></i> Orçamento</button>
     </div>
-  </div>
-  <div class="tab-bar">
-    <button class="tab" onclick="showPage('home')"><i class="ti ti-home"></i><span>Início</span></button>
-    <button class="tab" onclick="showPage('transactions')"><i class="ti ti-chart-bar"></i><span>Extrato</span></button>
-    <div class="tab-fab-wrap"><div class="tab-fab" id="quick-fab" onclick="toggleQuickMenu()"><i class="ti ti-plus"></i></div></div>
-    <button class="tab" onclick="showPage('cards')"><i class="ti ti-credit-card"></i><span>Cartões</span></button>
-    <!-- profile removed → top bar -->
-  </div>
-</div>
-
-<!-- CONFIG CATEGORIES PAGE -->
-<div class="app page" id="config-categories-page">
-  <div class="page-header">
-    <button class="back-btn" onclick="showPage('profile')"><i class="ti ti-arrow-left"></i></button>
-    <span class="page-title">Categorias</span>
-  </div>
-  <div class="page-content">
-    <div class="config-group">
-      <div class="section-label" style="margin-bottom:12px">Despesas</div>
-      <div id="config-out-list"></div>
-    </div>
-    <div class="config-group">
-      <div class="section-label" style="margin-bottom:12px">Receitas</div>
-      <div id="config-in-list"></div>
-    </div>
-    <button class="submit-btn" style="background:var(--card-bg);color:var(--text-sec);margin-top:10px" onclick="addCustomCategory()">
-      <i class="ti ti-plus"></i> Nova Categoria
-    </button>
   </div>
   <div class="tab-bar">
     <button class="tab" onclick="showPage('home')"><i class="ti ti-home"></i><span>Início</span></button>
@@ -705,7 +792,31 @@
       <input class="tx-val-input" id="modal-amount" type="number" placeholder="0,00" min="0" step="0.01" />
       <span class="tx-val-currency">R$</span>
     </div>
-    
+
+    <label class="field-label">Data</label>
+    <div class="dp-wrap">
+      <div class="dp-field" id="modal-date-field" onclick="toggleDatePicker()">
+        <i class="ti ti-calendar"></i>
+        <span class="dp-label" id="modal-date-label">Hoje</span>
+        <i class="ti ti-chevron-down dp-chev"></i>
+      </div>
+      <div class="dp-pop" id="dp-pop">
+        <div class="dp-quick">
+          <button onclick="dpSetRelative(0)">Hoje</button>
+          <button onclick="dpSetRelative(-1)">Ontem</button>
+          <button onclick="dpSetRelative(1)">Amanhã</button>
+        </div>
+        <div class="dp-head">
+          <button class="dp-nav" onclick="dpChangeMonth(-1)"><i class="ti ti-chevron-left"></i></button>
+          <span class="dp-title" id="dp-title"></span>
+          <button class="dp-nav" onclick="dpChangeMonth(1)"><i class="ti ti-chevron-right"></i></button>
+        </div>
+        <div class="dp-grid" id="dp-grid"></div>
+      </div>
+    </div>
+    <!-- valor real da data em ISO (escondido), consumido pelo submitTransaction -->
+    <input type="hidden" id="modal-date" />
+
     <label class="field-label">Categoria</label>
     <div class="category-scroll" id="modal-categories"></div>
     
@@ -720,20 +831,33 @@
     
     <label class="field-label">Descrição</label>
     <input class="field-input" id="modal-desc" placeholder="Ex: Salário, Aluguel, ou nome da pessoa" />
-    
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
-      <div style="display:flex;gap:6px;flex:1">
+
+    <!-- Linha única: P2P | Status | Recorrente -->
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+      <div id="p2p-toggle-row" style="display:none;align-items:center;gap:6px">
+        <div class="toggle-switch" id="p2p-toggle" onclick="toggleP2P()"></div>
+        <span style="font-size:11px;font-weight:600;color:var(--text-main)" id="p2p-toggle-label">Enviar para amigo</span>
+      </div>
+      <div style="width:1px;height:18px;background:var(--border)" id="p2p-divider" ></div>
+      <div style="display:flex;gap:6px">
         <button class="filter-chip active" id="status-efetivada" onclick="setTxStatus('efetivada')" style="font-size:11px;padding:5px 10px">Efetivada</button>
         <button class="filter-chip" id="status-prevista" onclick="setTxStatus('prevista')" style="font-size:11px;padding:5px 10px">Prevista</button>
       </div>
+      <div style="width:1px;height:18px;background:var(--border)"></div>
       <div style="display:flex;align-items:center;gap:6px">
         <div class="toggle-switch" id="recur-toggle" onclick="toggleRecur()"></div>
         <span style="font-size:11px;font-weight:600;color:var(--text-main)">Recorrente</span>
       </div>
-      <div id="recur-months-wrap" style="display:none;align-items:center;gap:4px">
-        <input class="field-input" id="recur-months" type="number" min="1" max="60" value="12" style="width:44px;padding:3px 4px;text-align:center;margin:0;font-size:11px" />
-        <span style="font-size:10px;color:var(--text-muted)">meses</span>
-      </div>
+    </div>
+    <!-- Sub-linha meses (aparece quando recorrente ativo) -->
+    <div id="recur-months-wrap" style="display:none;align-items:center;gap:6px;margin-bottom:12px">
+      <input class="field-input" id="recur-months" type="number" min="1" max="60" value="12" style="width:44px;padding:3px 4px;text-align:center;margin:0;font-size:11px" />
+      <span style="font-size:10px;color:var(--text-muted)">meses</span>
+    </div>
+    <!-- Campo P2P (aparece quando toggle ativo) -->
+    <div id="p2p-section" style="display:none;margin-bottom:12px">
+      <input class="field-input" id="p2p-username" placeholder="@usuario" autocomplete="off" oninput="searchP2PByUsername(this.value)" />
+      <div id="p2p-search-result"></div>
     </div>
     
     <button class="submit-btn" id="modal-submit" onclick="submitTransaction()">Confirmar</button>
@@ -780,6 +904,23 @@
   </div>
 </div>
 
+<!-- SUBCATEGORY EDIT MODAL -->
+<div class="modal-overlay" id="subcat-modal">
+  <div class="modal" style="max-width:420px">
+    <h2 id="subcat-modal-title">Editar Subcategoria <button class="modal-close" onclick="closeModal('subcat-modal')"><i class="ti ti-x"></i></button></h2>
+    <label class="field-label">Nome</label>
+    <input class="field-input" id="subcat-name-input" placeholder="Nome da subcategoria" />
+    <label class="field-label">Ícone</label>
+    <div id="subcat-icon-preview" style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+      <div id="subcat-icon-display" style="width:40px;height:40px;border-radius:10px;background:var(--card-bg);display:flex;align-items:center;justify-content:center;font-size:20px"></div>
+      <span style="font-size:12px;color:var(--text-muted)" id="subcat-icon-name">ti-category</span>
+    </div>
+    <div class="icon-picker-grid" id="subcat-icon-grid"></div>
+    <button class="submit-btn" onclick="saveSubcat()">Salvar</button>
+    <button class="submit-btn" id="subcat-delete-btn" onclick="deleteSubcatFromModal()" style="background:#c0392b;margin-top:8px;display:none">Excluir Subcategoria</button>
+  </div>
+</div>
+
 <!-- ===== PRO NEW PAGES ===== -->
 
 <!-- SETTINGS PAGE -->
@@ -804,12 +945,17 @@
     <button class="submit-btn" style="background:var(--card-bg);color:var(--text-sec);margin-top:8px;font-size:13px" onclick="openAccountModal(null)"><i class="ti ti-plus"></i> Adicionar Conta</button>
     <div class="section-title-new"><i class="ti ti-credit-card"></i> Cartões</div>
     <div id="settings-cards-list"></div>
-    <div class="section-title-new"><i class="ti ti-category"></i> Categorias de Despesa</div>
-    <div id="settings-expense-cats"></div>
-    <button class="submit-btn" style="background:var(--card-bg);color:var(--text-sec);margin-top:8px;font-size:13px" onclick="addNewCat('saída')"><i class="ti ti-plus"></i> Nova Categoria</button>
-    <div class="section-title-new"><i class="ti ti-category"></i> Categorias de Receita</div>
-    <div id="settings-income-cats"></div>
-    <button class="submit-btn" style="background:var(--card-bg);color:var(--text-sec);margin-top:8px;font-size:13px" onclick="addNewCat('entrada')"><i class="ti ti-plus"></i> Nova Categoria</button>
+    <div class="section-title-new"><i class="ti ti-category"></i> Categorias</div>
+    <button class="accordion-header" onclick="toggleAccordion('accordion-expense')"><i class="ti ti-minus-circle" style="color:#c0392b"></i> Despesas <span class="arrow"><i class="ti ti-chevron-down"></i></span></button>
+    <div class="accordion-content" id="accordion-expense">
+      <div id="settings-expense-cats"></div>
+      <button class="submit-btn" style="background:var(--card-bg);color:var(--text-sec);margin-top:6px;font-size:13px" onclick="addNewCat('saída')"><i class="ti ti-plus"></i> Nova Categoria</button>
+    </div>
+    <button class="accordion-header" onclick="toggleAccordion('accordion-income')"><i class="ti ti-plus-circle" style="color:var(--primary)"></i> Receitas <span class="arrow"><i class="ti ti-chevron-down"></i></span></button>
+    <div class="accordion-content" id="accordion-income">
+      <div id="settings-income-cats"></div>
+      <button class="submit-btn" style="background:var(--card-bg);color:var(--text-sec);margin-top:6px;font-size:13px" onclick="addNewCat('entrada')"><i class="ti ti-plus"></i> Nova Categoria</button>
+    </div>
   </div>
   <div class="tab-bar">
     <button class="tab" onclick="showPage('home')"><i class="ti ti-home"></i><span>Início</span></button>
@@ -877,7 +1023,7 @@
     <button class="back-btn" onclick="showPage('home')"><i class="ti ti-arrow-left"></i></button>
     <span class="page-title">Veículo</span>
     <div style="flex:1"></div>
-    <button class="icon-btn" onclick="openVehicleConfig()" title="Configurar"><i class="ti ti-settings"></i></button>
+    <button class="icon-btn" onclick="openVehicleConfig()" title="Configurar Veículo"><i class="ti ti-settings"></i></button>
   </div>
   <div class="page-content">
     <div id="v-intro" style="display:none;flex-direction:column;align-items:center;padding:40px 20px;text-align:center">
@@ -894,8 +1040,8 @@
       <button class="action-btn side" style="flex:1" onclick="openMaintModal()"><i class="ti ti-tool"></i> Manutenção</button>
       <button class="action-btn side" style="flex:1" onclick="openRouteModal()"><i class="ti ti-map-2"></i> Rota</button>
     </div>
-    <div class="chart-wrap-new"><h4>Evolução do Consumo (km/L) · Meta: 29 km/L</h4><canvas id="consumption-chart"></canvas></div>
-    <div class="chart-wrap-new"><h4>KM por Dia · Esta Semana</h4><canvas id="weekly-km-chart"></canvas></div>
+    <div class="chart-wrap-new"><h4>Evolução do Consumo (km/L) · Meta: 29 km/L</h4><div class="chart-canvas-box"><canvas id="consumption-chart"></canvas></div></div>
+    <div class="chart-wrap-new"><h4>KM por Dia · Esta Semana</h4><div class="chart-canvas-box"><canvas id="weekly-km-chart"></canvas></div></div>
     <div class="income-card" id="v-report-card">
       <div class="section-label">Relatório de Inteligência</div>
       <div id="v-report-content" style="font-size:12px;color:var(--text-sec)"></div>
@@ -1121,21 +1267,6 @@
 </div>
 
 <!-- HEALTH CONFIG MODAL -->
-<div class="modal-overlay" id="health-config-modal">
-  <div class="modal">
-    <h2>Configurar Saúde <button class="modal-close" onclick="closeModal('health-config-modal')"><i class="ti ti-x"></i></button></h2>
-    <label class="field-label">Peso (kg)</label>
-    <input class="field-input" id="health-peso-input" type="number" step="0.1" min="1" placeholder="70" />
-    <label class="field-label">Idade</label>
-    <input class="field-input" id="health-idade-input" type="number" min="1" max="150" placeholder="30" />
-    <div style="font-size:12px;color:var(--text-muted);margin:12px 0;padding:12px;background:var(--card-bg);border-radius:8px">
-      <div><strong>Metas calculadas:</strong></div>
-      <div id="health-meta-preview">Água: — · Cafeína: —</div>
-    </div>
-    <button class="submit-btn" onclick="submitHealthConfig()"><i class="ti ti-check"></i> Salvar</button>
-  </div>
-</div>
-
 <!-- AVATAR MODAL -->
 <div class="modal-overlay" id="avatar-modal">
   <div class="modal">
@@ -1182,7 +1313,7 @@
     <button class="submit-btn" style="background:var(--primary);margin-bottom:8px" onclick="openTxModal('send');closeModal('quick-menu-modal')"><i class="ti ti-minus"></i> Nova Despesa</button>
     <button class="submit-btn" style="background:var(--primary);margin-bottom:8px" onclick="openTxModal('receive');closeModal('quick-menu-modal')"><i class="ti ti-plus"></i> Nova Receita</button>
     <button class="submit-btn" style="background:var(--card-bg);color:var(--text-sec);margin-bottom:8px" onclick="showPage('vehicle');closeModal('quick-menu-modal')"><i class="ti ti-car"></i> Abastecer Veículo</button>
-    <button class="submit-btn" style="background:var(--card-bg);color:var(--text-sec)" onclick="openGoalModal(null);closeModal('quick-menu-modal')"><i class="ti ti-target"></i> Nova Meta</button>
+    <button class="submit-btn" style="background:var(--card-bg);color:var(--text-sec);margin-bottom:8px" onclick="openGoalModal(null);closeModal('quick-menu-modal')"><i class="ti ti-target"></i> Nova Meta</button>
   </div>
 </div>
 
@@ -1204,8 +1335,10 @@ const auth = firebase.auth();
 
 // STATE
 let transactions = [];
-let categories = { saida: [], entrada: [] };
+let categories = { saída: [], entrada: [] };
 let contacts = [];
+let txMonthOffset = 0;
+let txTypeFilter = 'all';
 let currentTheme = 'light';
 let activeModalType = 'send';
 let selectedCatId = null;
@@ -1217,6 +1350,132 @@ function setTxStatus(s) {
   document.getElementById('status-efetivada').classList.toggle('active', s === 'efetivada');
   document.getElementById('status-prevista').classList.toggle('active', s === 'prevista');
 }
+// Converte um valor de data (ISO, Timestamp do Firestore ou Date) -> "dd/mm/aaaa"
+function formatDateBR(value) {
+  if (!value) return '';
+  let d;
+  if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}/.test(value)) {
+    d = new Date(value + 'T00:00:00');
+  } else if (value.toDate) {
+    d = value.toDate();
+  } else {
+    d = new Date(value);
+  }
+  if (isNaN(d.getTime())) return '';
+  return d.toLocaleDateString('pt-BR');
+}
+// Devolve a data ISO de hoje em "AAAA-MM-DD" (usado como padrão no modal)
+function todayISO() { return new Date().toISOString().slice(0, 10); }
+
+// ===== PICKER DE DATA PERSONALIZADO =====
+const DP_MONTHS = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+const DP_DOW = ['D','S','T','Q','Q','S','S']; // dom..sáb
+let dpViewYear = new Date().getFullYear();
+let dpViewMonth = new Date().getMonth();
+
+function dpIsoToDate(iso) {
+  const [y, m, d] = iso.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+function dpDateToISO(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+function dpGetCurrentISO() {
+  const el = document.getElementById('modal-date');
+  return el && el.value ? el.value : todayISO();
+}
+function dpFormatNice(iso) {
+  const d = dpIsoToDate(iso);
+  const today = dpIsoToDate(todayISO());
+  const diffDays = Math.round((today - d) / 86400000);
+  const base = d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+  if (diffDays === 0) return 'Hoje';
+  if (diffDays === 1) return 'Ontem';
+  if (diffDays === -1) return 'Amanhã';
+  // ano atual -> sem o ano; outro ano -> com ano
+  if (d.getFullYear() === today.getFullYear()) {
+    return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+  }
+  return d.toLocaleDateString('pt-BR');
+}
+function dpRenderGrid() {
+  const grid = document.getElementById('dp-grid');
+  const title = document.getElementById('dp-title');
+  if (!grid || !title) return;
+  const sel = dpGetCurrentISO();
+  const today = todayISO();
+  const first = new Date(dpViewYear, dpViewMonth, 1);
+  const startDow = first.getDay();
+  const daysInMonth = new Date(dpViewYear, dpViewMonth + 1, 0).getDate();
+  const daysInPrev = new Date(dpViewYear, dpViewMonth, 0).getDate();
+  title.textContent = DP_MONTHS[dpViewMonth] + ' ' + dpViewYear;
+
+  let html = DP_DOW.map(d => `<div class="dp-dow">${d}</div>`).join('');
+  // dias do mês anterior (esmaecidos)
+  for (let i = startDow - 1; i >= 0; i--) {
+    html += `<button type="button" class="dp-day muted" disabled>${daysInPrev - i}</button>`;
+  }
+  for (let day = 1; day <= daysInMonth; day++) {
+    const iso = dpDateToISO(new Date(dpViewYear, dpViewMonth, day));
+    const cls = 'dp-day' + (iso === sel ? ' sel' : '') + (iso === today ? ' today' : '');
+    html += `<button type="button" class="${cls}" onclick="dpSelect('${iso}')">${day}</button>`;
+  }
+  // preenche a última semana
+  const totalCells = startDow + daysInMonth;
+  const tail = (7 - (totalCells % 7)) % 7;
+  for (let i = 1; i <= tail; i++) {
+    html += `<button type="button" class="dp-day muted" disabled>${i}</button>`;
+  }
+  grid.innerHTML = html;
+}
+function dpSelect(iso) {
+  document.getElementById('modal-date').value = iso;
+  document.getElementById('modal-date-label').textContent = dpFormatNice(iso);
+  closeDatePicker();
+}
+function dpSetRelative(offset) {
+  const base = dpIsoToDate(todayISO());
+  base.setDate(base.getDate() + offset);
+  dpViewYear = base.getFullYear();
+  dpViewMonth = base.getMonth();
+  dpSelect(dpDateToISO(base));
+}
+function dpChangeMonth(delta) {
+  let m = dpViewMonth + delta;
+  let y = dpViewYear;
+  if (m < 0) { m = 11; y--; }
+  if (m > 11) { m = 0; y++; }
+  dpViewMonth = m;
+  dpViewYear = y;
+  dpRenderGrid();
+}
+function toggleDatePicker() {
+  const pop = document.getElementById('dp-pop');
+  if (!pop) return;
+  if (pop.classList.contains('open')) { closeDatePicker(); return; }
+  // Sincroniza o mês visual com a data atualmente selecionada
+  const cur = dpGetCurrentISO();
+  const cd = dpIsoToDate(cur);
+  dpViewMonth = cd.getMonth();
+  dpViewYear = cd.getFullYear();
+  dpRenderGrid();
+  pop.classList.add('open');
+}
+function closeDatePicker() {
+  const pop = document.getElementById('dp-pop');
+  if (pop) pop.classList.remove('open');
+}
+// Fecha o calendário ao clicar fora dele
+document.addEventListener('click', function(e) {
+  const pop = document.getElementById('dp-pop');
+  const field = document.getElementById('modal-date-field');
+  if (pop && pop.classList.contains('open') && !pop.contains(e.target) && e.target !== field && !field.contains(e.target)) {
+    closeDatePicker();
+  }
+});
 function toggleRecur() {
   const t = document.getElementById('recur-toggle');
   const w = document.getElementById('recur-months-wrap');
@@ -1233,15 +1492,16 @@ let editingCardId = null;
 let profileEditField = null;
 
 // AUTH
-const googleProvider = new firebase.auth.GoogleAuthProvider();
 let currentUser = null;
 
 auth.onAuthStateChanged(async user => {
+  const loginPage = document.getElementById('login-page');
+  const loadingOverlay = document.getElementById('loading-overlay');
   if (user) {
     currentUser = user;
-    document.getElementById('login-page').classList.add('hidden');
+    loginPage.classList.add('hidden');
+    loadingOverlay.classList.add('hidden');
     startListeners();
-    // Salvar dados do Google no profile se for primeiro login
     const snap = await db.collection('profile').doc('me').get();
     if (!snap.exists) {
       db.collection('profile').doc('me').set({
@@ -1251,39 +1511,22 @@ auth.onAuthStateChanged(async user => {
         usernameChangedAt: null,
         photoURL: user.photoURL || '',
       });
-    } else if (user.photoURL) {
-      db.collection('profile').doc('me').update({ photoURL: user.photoURL }).catch(() => {});
     }
+    // Save profile by uid for P2P user search
+    const meSnap = await db.collection('profile').doc('me').get();
+    const meData = meSnap.exists ? meSnap.data() : {};
+    db.collection('profile').doc(user.uid).set({
+      name: user.displayName || 'Usuário',
+      email: user.email || '',
+      username: meData.username || '@' + (user.displayName || 'usuario').toLowerCase().replace(/\s/g, ''),
+      uid: user.uid,
+    }, { merge: true });
   } else {
-    document.getElementById('login-page').classList.remove('hidden');
+    currentUser = null;
+    loadingOverlay.classList.add('hidden');
+    loginPage.classList.remove('hidden');
   }
 });
-
-function signInGoogle() {
-  showToast("Redirecionando para o Google...");
-  auth.signInWithRedirect(googleProvider);
-}
-
-auth.getRedirectResult().catch(err => {
-  if (err.code !== 'auth/popup-closed-by-user') {
-    console.error("Redirect auth error:", err);
-    showToast("Erro ao entrar: " + err.message);
-  }
-});
-
-function showLoginTab(tab, btn) {
-  document.querySelectorAll('.login-toggle button').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById('login-google').style.display = tab === 'google' ? '' : 'none';
-  document.getElementById('login-email').style.display = tab === 'email' ? '' : 'none';
-  document.getElementById('login-error').style.display = 'none';
-}
-
-function showLoginError(msg) {
-  const el = document.getElementById('login-error');
-  el.textContent = msg;
-  el.style.display = 'block';
-}
 
 async function signInEmail() {
   const email = document.getElementById('login-email-input').value.trim();
@@ -1292,31 +1535,17 @@ async function signInEmail() {
   try {
     await auth.signInWithEmailAndPassword(email, pass);
   } catch (err) {
-    if (err.code === 'auth/user-not-found') {
-      showLoginError("Conta não encontrada");
-    } else if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
-      showLoginError("Senha incorreta");
+    if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+      showLoginError("Email ou senha inválidos");
     } else {
       showLoginError(err.message);
     }
   }
 }
 
-async function signUpEmail() {
-  const email = document.getElementById('login-email-input').value.trim();
-  const pass = document.getElementById('login-pass-input').value;
-  if (!email || !pass) { showLoginError("Preencha email e senha"); return; }
-  if (pass.length < 6) { showLoginError("Senha deve ter no mínimo 6 caracteres"); return; }
-  try {
-    await auth.createUserWithEmailAndPassword(email, pass);
-    showToast("Conta criada!");
-  } catch (err) {
-    if (err.code === 'auth/email-already-in-use') {
-      showLoginError("Email já cadastrado. Faça login.");
-    } else {
-      showLoginError(err.message);
-    }
-  }
+function showLoginError(msg) {
+  const el = document.getElementById('login-error');
+  if (el) { el.textContent = msg; el.style.display = 'block'; }
 }
 
 function signOutUser() {
@@ -1328,7 +1557,7 @@ function signOutUser() {
 // FIRESTORE LISTENERS
 function startListeners() {
   db.collection('categories').onSnapshot(async snap => {
-    categories = { saida: [], entrada: [] };
+    categories = { saída: [], entrada: [] };
     snap.forEach(doc => {
       const d = doc.data();
       if (!d) return;
@@ -1342,7 +1571,6 @@ function startListeners() {
       { id:'moradia', name:'Moradia', icon:'ti-home', color:'#8e44ad', isDefault:true, subcats:[{id:'aluguel',name:'Aluguel'},{id:'condominio',name:'Condomínio'},{id:'iptu',name:'IPTU'}], type:'saída' },
       { id:'transport', name:'Transporte', icon:'ti-car', color:'#5b7fa6', isDefault:true, subcats:[{id:'gasolina',name:'Gasolina'},{id:'uber',name:'Uber/99'},{id:'onibus',name:'Ônibus/Metrô'},{id:'estacionamento',name:'Estacionamento'}], type:'saída' },
       { id:'contas', name:'Contas e Utilidades', icon:'ti-file-invoice', color:'#d35400', isDefault:true, subcats:[{id:'agua',name:'Água'},{id:'luz',name:'Luz'},{id:'internet',name:'Internet'},{id:'telefone',name:'Telefone'}], type:'saída' },
-      { id:'saude', name:'Saúde', icon:'ti-heartbeat', color:'#c0392b', isDefault:true, subcats:[{id:'plano-saude',name:'Plano de Saúde'},{id:'farmacia',name:'Farmácia'},{id:'consulta',name:'Consulta'},{id:'exame',name:'Exame'}], type:'saída' },
       { id:'educacao', name:'Educação', icon:'ti-book', color:'#2980b9', isDefault:true, subcats:[{id:'escola',name:'Escola/Faculdade'},{id:'curso',name:'Curso'},{id:'material',name:'Material'}], type:'saída' },
       { id:'lazer', name:'Lazer', icon:'ti-movie', color:'#e91e63', isDefault:true, subcats:[{id:'cinema',name:'Cinema'},{id:'streaming',name:'Streaming'},{id:'jogos',name:'Jogos'},{id:'hobby',name:'Hobby'}], type:'saída' },
       { id:'viagem', name:'Viagem', icon:'ti-plane', color:'#3498db', isDefault:true, subcats:[{id:'hotel',name:'Hotel'},{id:'passagem',name:'Passagem'},{id:'alimentacao-viagem',name:'Alimentação'}], type:'saída' },
@@ -1355,6 +1583,7 @@ function startListeners() {
       { id:'impostos', name:'Impostos e Taxas', icon:'ti-file-text', color:'#e74c3c', isDefault:true, subcats:[{id:'irpf',name:'IRPF'},{id:'iof',name:'IOF'},{id:'multa',name:'Multa'}], type:'saída' },
       { id:'seguros', name:'Seguros', icon:'ti-shield', color:'#2ecc71', isDefault:true, subcats:[{id:'vida',name:'Vida'},{id:'auto',name:'Auto'},{id:'residencia',name:'Residência'}], type:'saída' },
       { id:'cartao', name:'Cartão de Crédito', icon:'ti-credit-card', color:'#34495e', isDefault:true, subcats:[{id:'fatura',name:'Fatura'},{id:'juros-cartao',name:'Juros'}], type:'saída' },
+      { id:'vehicle', name:'Veículo', icon:'ti-car', color:'#2c3e50', isDefault:true, subcats:[{id:'gasolina',name:'Gasolina'},{id:'manutencao',name:'Manutenção'},{id:'oleo',name:'Troca de Óleo'},{id:'pneus',name:'Pneus'},{id:'revisao',name:'Revisão'}], type:'saída' },
       { id:'salary', name:'Salário', icon:'ti-cash', color:'#1a7a4a', isDefault:true, subcats:[{id:'salario-fixo',name:'Fixo'},{id:'decimo-terceiro',name:'13º'},{id:'ferias',name:'Férias'}], type:'entrada' },
       { id:'freelance', name:'Freelance', icon:'ti-device-laptop', color:'#5b7fa6', isDefault:true, subcats:[{id:'projeto',name:'Projeto'},{id:'consultoria',name:'Consultoria'},{id:'outros-freela',name:'Outros'}], type:'entrada' },
       { id:'investimentos', name:'Investimentos', icon:'ti-trending-up', color:'#2ecc71', isDefault:true, subcats:[{id:'dividendos',name:'Dividendos'},{id:'renda-fixa',name:'Renda Fixa'},{id:'acoes',name:'Ações'},{id:'fii',name:'FIIs'}], type:'entrada' },
@@ -1372,7 +1601,6 @@ function startListeners() {
       await batch.commit();
       console.log('Seed: '+missing.length+' categorias adicionadas');
     }
-    if (document.getElementById('config-categories-page').classList.contains('active')) renderConfigCategories();
     if (document.getElementById('settings-page').classList.contains('active')) renderSettingsCatsNew();
   });
 
@@ -1380,6 +1608,7 @@ function startListeners() {
     transactions = [];
     snap.forEach(doc => {
       const d = doc.data();
+      if (d.uid && d.uid !== currentUser.uid) return;
       transactions.push({ id: doc.id, ...d });
     });
     transactions.sort((a, b) => {
@@ -1391,6 +1620,7 @@ function startListeners() {
     renderRecent();
     if (document.getElementById('transactions-page').classList.contains('active')) renderAll('all');
     if (document.getElementById('reports-page').classList.contains('active')) renderReports();
+    if (document.getElementById('home-page').classList.contains('active')) { renderHomeReports(); renderHomeVehicle(); renderHomeChartsDesktop(); }
   });
 
   db.collection('contacts').onSnapshot(snap => {
@@ -1423,7 +1653,7 @@ function startListeners() {
     }
   });
 
-  db.collection('notifications').onSnapshot(snap => {
+  db.collection('notifications').where('uid','==',currentUser.uid).onSnapshot(snap => {
     notifications = [];
     snap.forEach(doc => {
       const d = doc.data();
@@ -1436,11 +1666,9 @@ function startListeners() {
     });
     const unread = notifications.filter(n => !n.read).length;
     const badge = document.getElementById('notif-badge');
-    if (badge) {
-      badge.textContent = unread > 0 ? unread : '';
-      badge.classList.toggle('show', unread > 0);
-    }
+    if (badge) badge.classList.toggle('show', unread > 0);
   });
+
 }
 
 // NAVIGATION
@@ -1456,14 +1684,9 @@ function showPage(name) {
       if(tabs[tabNames[name]]) tabs[tabNames[name]].classList.add('active');
     });
   }
-  // Desktop sidebar sync (web layout only)
-  document.querySelectorAll('.desktop-sidebar .d-tab').forEach(t => t.classList.remove('active'));
-  const sidebarMatch = document.querySelector('.desktop-sidebar .d-tab[data-page="'+name+'"]');
-  if (sidebarMatch) sidebarMatch.classList.add('active');
-  if (name === 'transactions') renderAll('all');
+  if (name === 'transactions') { txMonthOffset = 0; renderAll('all'); }
   if (name === 'reports') { renderReports(); renderAnnualChart(); }
   if (name === 'cards') renderCards();
-  if (name === 'config-categories') renderConfigCategories();
   window.scrollTo(0,0);
 }
 
@@ -1484,36 +1707,13 @@ function toggleTheme() {
 }
 
 // CATEGORY CONFIG
-function renderConfigCategories() {
-  const renderList = (type, containerId) => {
-    const container = document.getElementById(containerId);
-    container.innerHTML = categories[type].map(cat => `
-      <div class="config-cat-item">
-        <div class="cat-main">
-          <div class="icon" style="color:${cat.color}"><i class="ti ${cat.icon}"></i></div>
-          <div class="name">${cat.name} ${cat.isDefault ? '<span class="badge-default">Padrão</span>' : ''}</div>
-          <div class="actions-btns">
-            <div class="btn edit" onclick="editCategory('${type}', '${cat.id}')"><i class="ti ti-edit"></i></div>
-            ${!cat.isDefault ? `<div class="btn delete" onclick="deleteCategory('${type}', '${cat.id}')"><i class="ti ti-trash"></i></div>` : ''}
-            <div class="btn move" onclick="moveCatInto('${type}', '${cat.id}')" title="Mover categoria para dentro"><i class="ti ti-arrow-right"></i></div>
-          </div>
-        </div>
-        ${cat.subcats.length > 0 ? `
-          <div class="subcat-list">
-            ${cat.subcats.map(sub => `
-              <div class="subcat-item">
-                <div class="name">${sub.name}</div>
-                <div class="btn move" onclick="moveSubcatOut('${type}', '${cat.id}', '${sub.id}')" title="Mover para fora"><i class="ti ti-arrow-left"></i></div>
-                <div class="btn delete" onclick="deleteSubcat('${type}', '${cat.id}', '${sub.id}')"><i class="ti ti-trash"></i></div>
-              </div>
-            `).join('')}
-          </div>
-        ` : ''}
-      </div>
-    `).join('');
-  };
-  renderList('saída', 'config-out-list');
-  renderList('entrada', 'config-in-list');
+function toggleAccordion(id) {
+  const content = document.getElementById(id);
+  const header = content?.previousElementSibling;
+  if (!content || !header) return;
+  const isOpen = content.style.display === 'block';
+  content.style.display = isOpen ? 'none' : 'block';
+  header.classList.toggle('open', !isOpen);
 }
 
 async function editCategory(type, id) {
@@ -1522,6 +1722,7 @@ async function editCategory(type, id) {
   if(newName) {
     cat.name = newName;
     await db.collection('categories').doc(id).update({ name: newName });
+    renderSettingsCatsNew();
   }
 }
 
@@ -1529,7 +1730,7 @@ async function deleteCategory(type, id) {
   if(confirm("Excluir esta categoria?")) {
     categories[type] = categories[type].filter(c => c.id !== id);
     await db.collection('categories').doc(id).delete();
-    renderConfigCategories();
+    renderSettingsCatsNew();
   }
 }
 
@@ -1543,6 +1744,7 @@ async function moveSubcatOut(type, catId, subId) {
   batch.set(newRef, { id: newRef.id, name: sub.name, icon: cat.icon, color: cat.color, isDefault: false, subcats: [], type: type });
   await batch.commit();
   showToast("Movido para fora!");
+  renderSettingsCatsNew();
 }
 
 async function moveCatInto(type, targetCatId) {
@@ -1560,6 +1762,7 @@ async function moveCatInto(type, targetCatId) {
     batch.delete(db.collection('categories').doc(catToMove.id));
     await batch.commit();
     showToast("Movido para dentro!");
+    renderSettingsCatsNew();
   }
 }
 
@@ -1568,17 +1771,8 @@ async function deleteSubcat(type, catId, subId) {
     const cat = categories[type].find(c => c.id === catId);
     cat.subcats = cat.subcats.filter(s => s.id !== subId);
     await db.collection('categories').doc(catId).update({ subcats: cat.subcats });
-    renderConfigCategories();
+    renderSettingsCatsNew();
   }
-}
-
-async function addCustomCategory() {
-  const name = prompt("Nome da nova categoria:");
-  if(!name) return;
-  const isDespesa = confirm("É uma Despesa?");
-  const type = isDespesa ? 'saída' : 'entrada';
-  const ref = db.collection('categories').doc();
-  await ref.set({ id: ref.id, name, icon: 'ti-category', color: '#999', isDefault: false, subcats: [], type });
 }
 
 // TRANSACTION MODAL
@@ -1613,6 +1807,23 @@ function openModal(type, txId = null) {
   if (descInput) descInput.value = isEditing ? (tx.name || tx.catName || '') : '';
   const amtInput = document.getElementById('modal-amount');
   if (amtInput) amtInput.value = isEditing ? Math.abs(tx.amount) : '';
+  const dateInput = document.getElementById('modal-date');
+  let initialDateISO;
+  if (isEditing && tx.date && /^\d{4}-\d{2}-\d{2}/.test(tx.date)) {
+    // data ISO já salva -> usa direto
+    initialDateISO = tx.date.slice(0, 10);
+  } else if (isEditing && tx.createdAt) {
+    // transação antiga sem campo date -> recupera da data de cadastro
+    const cd = tx.createdAt.toDate ? tx.createdAt.toDate() : new Date(tx.createdAt);
+    initialDateISO = cd.toISOString().slice(0, 10);
+  } else {
+    // novo lançamento -> hoje
+    initialDateISO = new Date().toISOString().slice(0, 10);
+  }
+  if (dateInput) dateInput.value = initialDateISO;
+  const dateLabel = document.getElementById('modal-date-label');
+  if (dateLabel) dateLabel.textContent = dpFormatNice(initialDateISO);
+  closeDatePicker();
 
   const catType = (type === 'send' || type === 'saída') ? 'saída' : 'entrada';
   const catContainer = document.getElementById('modal-categories');
@@ -1636,6 +1847,23 @@ function openModal(type, txId = null) {
       if (tx.subcat) selectedSubcatId = tx.subcat;
     }
   }
+
+  // Reset P2P
+  selectedP2PUser = null;
+  const p2pToggle = document.getElementById('p2p-toggle');
+  const p2pSection = document.getElementById('p2p-section');
+  const p2pRow = document.getElementById('p2p-toggle-row');
+  if (p2pToggle) p2pToggle.classList.remove('active');
+  if (p2pSection) p2pSection.style.display = 'none';
+  const p2pUname = document.getElementById('p2p-username');
+  if (p2pUname) p2pUname.value = '';
+  const p2pResult = document.getElementById('p2p-search-result');
+  if (p2pResult) p2pResult.innerHTML = '';
+  if (p2pRow) p2pRow.style.display = isEditing ? 'none' : 'flex';
+  const p2pDivider = document.getElementById('p2p-divider');
+  if (p2pDivider) p2pDivider.style.display = isEditing ? 'none' : 'block';
+  const p2pLabel = document.getElementById('p2p-toggle-label');
+  if (p2pLabel) p2pLabel.textContent = (type === 'send' || type === 'saída') ? 'Enviar para amigo' : 'Cobrar de amigo';
 
   const modal = document.getElementById('tx-modal');
   if (modal) modal.classList.add('open');
@@ -1689,19 +1917,35 @@ async function submitTransaction() {
   }
   const txAmt = (activeModalType === 'send' || activeModalType === 'saída') ? -amt : amt;
 
+  // Data do lançamento escolhida pelo usuário (ISO AAAA-MM-DD). Padrão: hoje.
+  const dateInput = document.getElementById('modal-date');
+  const txDateISO = (dateInput && dateInput.value) ? dateInput.value : todayISO();
+
   const txData = {
     name: displayName,
     cat: selectedCatId,
     subcat: selectedSubcatId,
-    date: 'Agora',
+    date: txDateISO,
     amount: txAmt,
     type: catType,
     icon: cat.icon,
     bg: cat.color + '22',
     color: cat.color,
-    group: 'Hoje',
+    group: txStatus === 'prevista' ? 'Previsto' : 'Hoje',
     status: txStatus,
+    uid: currentUser ? currentUser.uid : null,
   };
+
+  // Add P2P counterpart info to own transaction
+  if (selectedP2PUser && selectedP2PUser.uid) {
+    const isSend = (activeModalType === 'send' || activeModalType === 'saída');
+    txData.p2pCounterpartName = selectedP2PUser.name;
+    if (isSend) {
+      txData.p2pTargetUid = selectedP2PUser.uid;
+    } else {
+      txData.p2pSenderUid = selectedP2PUser.uid;
+    }
+  }
 
   if(editingTxId) {
     await db.collection('transactions').doc(editingTxId).update(txData);
@@ -1710,40 +1954,88 @@ async function submitTransaction() {
     const now = new Date();
     const months = isRecurring ? Math.max(1, parseInt(document.getElementById('recur-months').value)||12) : 1;
     const groupId = Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+    // data-base do lançamento para calcular as parcelas seguintes
+    const baseDate = new Date(txDateISO + 'T00:00:00');
     for (let i = 0; i < months; i++) {
       const copy = { ...txData };
+      // Avança i meses a partir da data informada pelo usuário
+      const parcela = new Date(baseDate.getFullYear(), baseDate.getMonth() + i, baseDate.getDate());
+      const parcelaISO = parcela.toISOString().slice(0, 10);
+      copy.date = parcelaISO;
       if (i === 0) {
         copy.createdAt = firebase.firestore.FieldValue.serverTimestamp();
       } else {
-        copy.createdAt = new Date(now.getFullYear(), now.getMonth() + i, now.getDate());
+        copy.createdAt = firebase.firestore.FieldValue.serverTimestamp();
         copy.status = 'prevista';
-        copy.date = 'Previsto';
         copy.group = 'Previsto';
       }
       if (isRecurring) copy.recurGroup = groupId;
       await db.collection('transactions').add(copy);
     }
 
-    // Notificação se for transação para um usuário (desc pode ser nome)
-    if (desc) {
-      const profilesSnap = await db.collection('profile').where('name', '==', desc).get();
-      if (!profilesSnap.empty) {
-        const otherProfile = profilesSnap.docs[0].data();
-        const notifMsg = catType === 'entrada'
-          ? `${otherProfile.name} te enviou R$ ${formatBRL(amt)}`
-          : `Você enviou R$ ${formatBRL(amt)} para ${otherProfile.name}`;
-        await db.collection('notifications').add({
-          message: notifMsg,
+    // P2P — enviar/cobrar amigo
+    if (selectedP2PUser && selectedP2PUser.uid) {
+      const now = firebase.firestore.FieldValue.serverTimestamp();
+      const isSend = (activeModalType === 'send' || activeModalType === 'saída');
+      if (isSend) {
+        // Despesa com P2P = enviar dinheiro p/ amigo
+        await db.collection('transactions').add({
+          name: displayName,
+          cat: selectedCatId,
+          subcat: selectedSubcatId,
+          date: txDateISO,
           amount: amt,
-          type: catType === 'entrada' ? 'recebido' : 'enviado',
+          type: 'entrada',
+          icon: cat.icon,
+          bg: cat.color + '22',
+          color: cat.color,
+          group: 'Hoje',
+          status: 'prevista',
+          uid: selectedP2PUser.uid,
+          p2pCounterpartName: profile.name,
+          p2pSenderUid: currentUser.uid,
+          createdAt: now,
+        });
+        await db.collection('notifications').add({
+          uid: selectedP2PUser.uid,
+          message: `${profile.name} enviou R$ ${formatBRL(amt)}${desc ? ' — '+desc : ''}`,
+          amount: amt,
+          type: 'recebido',
           from: profile.name,
           read: false,
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          createdAt: now,
         });
+        showToast(`R$ ${formatBRL(amt)} enviado para ${selectedP2PUser.name}!`);
+      } else {
+        // Receita com P2P = cobrar amigo
+        const reqRef = await db.collection('p2p_requests').add({
+          fromUid: currentUser.uid,
+          fromName: profile.name,
+          fromEmail: currentUser.email || '',
+          toUid: selectedP2PUser.uid,
+          toEmail: '',
+          amount: amt,
+          desc: desc || `Cobrança de ${profile.name}`,
+          status: 'pending',
+          createdAt: now,
+        });
+        await db.collection('notifications').add({
+          uid: selectedP2PUser.uid,
+          type: 'p2p_request',
+          fromUid: currentUser.uid,
+          fromName: profile.name,
+          amount: amt,
+          desc: desc || `Cobrança de ${profile.name}`,
+          message: `${profile.name} está cobrando R$ ${formatBRL(amt)}${desc ? ' — '+desc : ''}`,
+          p2pRequestId: reqRef.id,
+          read: false,
+          createdAt: now,
+        });
+        showToast(`Cobrança de R$ ${formatBRL(amt)} enviada para ${selectedP2PUser.name}!`);
       }
+    } else {
+      showToast(months > 1 ? months+" transações criadas!" : "Sucesso!");
     }
-
-    showToast(months > 1 ? months+" transações criadas!" : "Sucesso!");
   }
 
   closeModal('tx-modal');
@@ -1758,7 +2050,7 @@ async function deleteTransaction() {
   }
 }
 
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); closeDatePicker(); }
 
 function openSendTo(initials, name) {
   openModal('send');
@@ -1880,93 +2172,126 @@ async function submitProfileEdit() {
     update.email = val;
   }
   await db.collection('profile').doc('me').set(update, { merge: true });
+  // Sync to uid profile for P2P search
+  if (currentUser) db.collection('profile').doc(currentUser.uid).set(update, { merge: true });
   closeModal('profile-modal');
   showToast("Perfil atualizado!");
+}
+
+// REPORT PERIOD
+let reportPeriod = 'month';
+let _annualChart = null;
+let _donutChart = null;
+
+function setReportPeriod(period, el) {
+  reportPeriod = period;
+  ['month','quarter','year'].forEach(p => {
+    const b = document.getElementById('rep-btn-' + p);
+    if (b) b.classList.toggle('active', p === period);
+  });
+  renderReports();
+}
+
+function _getRepTx() {
+  const now = new Date();
+  return transactions.filter(t => {
+    let d;
+    if (t.date && /^\d{4}-\d{2}-\d{2}/.test(t.date)) d = new Date(t.date + 'T00:00:00');
+    else if (t.createdAt && t.createdAt.toDate) d = t.createdAt.toDate();
+    else if (t.createdAt) d = new Date(t.createdAt);
+    else return false;
+    if (d.getFullYear() !== now.getFullYear()) return false;
+    if (reportPeriod === 'month') return d.getMonth() === now.getMonth();
+    if (reportPeriod === 'quarter') return Math.floor(d.getMonth()/3) === Math.floor(now.getMonth()/3);
+    return true;
+  });
 }
 
 // ANNUAL CHART
 function renderAnnualChart() {
   const canvas = document.getElementById('annual-chart');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  const year = new Date().getFullYear();
-  document.getElementById('chart-year').textContent = year;
+  if (!canvas || typeof Chart === 'undefined') return;
 
-  const monthly = {};
-  for (let m = 0; m < 12; m++) monthly[m] = { income: 0, expense: 0 };
+  const now = new Date();
+  const cs = getComputedStyle(document.body);
+  const colorIncome = cs.getPropertyValue('--primary').trim() || '#2ecc71';
+  const colorExpense = '#c0392b';
+  const colorMuted = cs.getPropertyValue('--text-muted').trim() || '#999';
+  const colorGrid = cs.getPropertyValue('--border').trim() || '#eee';
 
-  transactions.forEach(t => {
-    const d = t.createdAt ? t.createdAt.toDate() : new Date();
-    if (d.getFullYear() !== year) return;
-    const m = d.getMonth();
-    if (t.amount > 0) monthly[m].income += t.amount;
-    else monthly[m].expense += Math.abs(t.amount);
-  });
+  let labels = [], incomeData = [], expenseData = [];
 
-  const dpr = window.devicePixelRatio || 1;
-  const w = canvas.parentElement.clientWidth || 320;
-  const h = 160;
-  canvas.width = w * dpr; canvas.height = h * dpr;
-  canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
-  ctx.scale(dpr, dpr);
-
-  const pad = { top: 16, bottom: 20, left: 4, right: 4 };
-  const cw = w - pad.left - pad.right;
-  const ch = h - pad.top - pad.bottom;
-
-  const maxVal = Math.max(1, ...Object.values(monthly).map(m => Math.max(m.income, m.expense)));
-  const monthLabels = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-
-  // Grid lines
-  ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue('--border').trim() || '#eee';
-  ctx.lineWidth = 1;
-  for (let i = 0; i <= 4; i++) {
-    const y = pad.top + (ch / 4) * i;
-    ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(w - pad.right, y); ctx.stroke();
-    ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-muted').trim() || '#999';
-    ctx.font = '9px sans-serif'; ctx.textAlign = 'right';
-    ctx.fillText('R$' + Math.round(maxVal - (maxVal / 4) * i), pad.left - 2, y + 3);
+  if (reportPeriod === 'year') {
+    const mNames = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    const m = {};
+    for (let i = 0; i < 12; i++) m[i] = {i:0, e:0};
+    transactions.forEach(t => {
+      let d;
+      if (t.date && /^\d{4}-\d{2}-\d{2}/.test(t.date)) d = new Date(t.date+'T00:00:00');
+      else if (t.createdAt && t.createdAt.toDate) d = t.createdAt.toDate();
+      else return;
+      if (d.getFullYear() !== now.getFullYear()) return;
+      if (t.amount > 0) m[d.getMonth()].i += t.amount;
+      else m[d.getMonth()].e += Math.abs(t.amount);
+    });
+    labels = mNames;
+    incomeData = Object.values(m).map(x => x.i);
+    expenseData = Object.values(m).map(x => x.e);
+  } else if (reportPeriod === 'quarter') {
+    const q = Math.floor(now.getMonth()/3);
+    const sm = q*3;
+    const mNames = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    for (let mo = sm; mo < sm+3; mo++) {
+      labels.push(mNames[mo]); incomeData.push(0); expenseData.push(0);
+    }
+    _getRepTx().forEach(t => {
+      let d;
+      if (t.date && /^\d{4}-\d{2}-\d{2}/.test(t.date)) d = new Date(t.date+'T00:00:00');
+      else if (t.createdAt && t.createdAt.toDate) d = t.createdAt.toDate();
+      else return;
+      const idx = d.getMonth() - sm;
+      if (idx < 0 || idx > 2) return;
+      if (t.amount > 0) incomeData[idx] += t.amount;
+      else expenseData[idx] += Math.abs(t.amount);
+    });
+  } else {
+    const daysInMonth = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
+    const weeks = Math.ceil(daysInMonth/7);
+    for (let w = 0; w < weeks; w++) { labels.push('Sem '+(w+1)); incomeData.push(0); expenseData.push(0); }
+    _getRepTx().forEach(t => {
+      let d;
+      if (t.date && /^\d{4}-\d{2}-\d{2}/.test(t.date)) d = new Date(t.date+'T00:00:00');
+      else if (t.createdAt && t.createdAt.toDate) d = t.createdAt.toDate();
+      else return;
+      const w = Math.min(Math.floor((d.getDate()-1)/7), weeks-1);
+      if (t.amount > 0) incomeData[w] += t.amount;
+      else expenseData[w] += Math.abs(t.amount);
+    });
   }
 
-  // Month labels
-  ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-muted').trim() || '#999';
-  ctx.font = '9px sans-serif'; ctx.textAlign = 'center';
-  monthLabels.forEach((l, i) => ctx.fillText(l, pad.left + (cw / 11) * i, h - 4));
-
-  const colorIncome = getComputedStyle(document.body).getPropertyValue('--primary').trim() || '#2ecc71';
-  const colorExpense = '#c0392b';
-
-  const points = (arr, color) => {
-    ctx.beginPath();
-    arr.forEach((v, i) => {
-      const x = pad.left + (cw / 11) * i;
-      const y = pad.top + ch - (v / maxVal) * ch;
-      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-    });
-    ctx.strokeStyle = color; ctx.lineWidth = 2.5; ctx.lineJoin = 'round'; ctx.stroke();
-
-    // Dots
-    arr.forEach((v, i) => {
-      const x = pad.left + (cw / 11) * i;
-      const y = pad.top + ch - (v / maxVal) * ch;
-      ctx.beginPath(); ctx.arc(x, y, 3, 0, Math.PI * 2);
-      ctx.fillStyle = color; ctx.fill();
-      ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke();
-    });
-  };
-
-  points(Object.values(monthly).map(m => m.income), colorIncome);
-  points(Object.values(monthly).map(m => m.expense), colorExpense);
-
-  // Legend
-  ctx.font = '10px sans-serif';
-  ctx.textAlign = 'left';
-  ctx.fillStyle = colorIncome; ctx.fillRect(w - 80, 4, 8, 8);
-  ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-main').trim() || '#111';
-  ctx.fillText('Receitas', w - 68, 12);
-  ctx.fillStyle = colorExpense; ctx.fillRect(w - 80, 18, 8, 8);
-  ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-main').trim() || '#111';
-  ctx.fillText('Despesas', w - 68, 26);
+  if (_annualChart) { _annualChart.destroy(); _annualChart = null; }
+  _annualChart = new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label:'Receitas', data:incomeData, backgroundColor:colorIncome+'bb', borderRadius:5, borderSkipped:false },
+        { label:'Despesas', data:expenseData, backgroundColor:colorExpense+'bb', borderRadius:5, borderSkipped:false }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display:false },
+        tooltip: { callbacks: { label: ctx => ' R$ '+ctx.parsed.y.toLocaleString('pt-BR',{minimumFractionDigits:2}) } }
+      },
+      scales: {
+        x: { grid:{color:colorGrid,lineWidth:0.5}, ticks:{color:colorMuted,font:{size:10},maxRotation:0} },
+        y: { grid:{color:colorGrid,lineWidth:0.5}, beginAtZero:true,
+             ticks:{color:colorMuted,font:{size:10}, callback:v=>v>=1000?'R$'+(v/1000).toFixed(0)+'k':'R$'+v} }
+      }
+    }
+  });
 }
 
 // NOTIFICATIONS
@@ -1975,13 +2300,18 @@ function renderNotifications() {
   container.innerHTML = notifications.length === 0
     ? '<p style="color:var(--text-muted);font-size:13px;text-align:center;padding:20px 0">Nenhuma notificação</p>'
     : notifications.map(n => `
-      <div class="tx-item" onclick="markNotifRead('${n.id}')" style="${n.read ? 'opacity:0.5' : ''}">
-        <div class="tx-logo" style="background:${n.type==='recebido'?'var(--primary-light)':'#f0e8fa'};color:${n.type==='recebido'?'var(--primary)':'#7a4ab0'}"><i class="ti ${n.type==='recebido'?'ti-arrow-down-left':'ti-arrow-up-right'}"></i></div>
+      <div class="tx-item" style="${n.read && n.type!=='p2p_request' ? 'opacity:0.5' : ''}">
+        <div class="tx-logo" style="background:${n.type==='recebido'?'var(--primary-light)':n.type==='p2p_request'?'#fff3e0':'#f0e8fa'};color:${n.type==='recebido'?'var(--primary)':n.type==='p2p_request'?'#e67e22':'#7a4ab0'}"><i class="ti ${n.type==='recebido'?'ti-arrow-down-left':n.type==='p2p_request'?'ti-hand-stop':'ti-arrow-up-right'}"></i></div>
         <div class="tx-info">
           <div class="tx-name">${n.message}</div>
           <div class="tx-date">${n.createdAt ? new Date(n.createdAt.toDate()).toLocaleString('pt-BR') : ''}</div>
+          ${n.type === 'p2p_request' ? `
+          <div class="notif-actions">
+            <button class="accept" onclick="event.stopPropagation();acceptP2PRequest('${n.p2pRequestId}','${n.fromUid}','${n.fromName}',${n.amount},'${n.desc}')">Aceitar</button>
+            <button class="reject" onclick="event.stopPropagation();rejectP2PRequest('${n.p2pRequestId}')">Recusar</button>
+          </div>` : ''}
         </div>
-        ${!n.read ? '<div style="width:8px;height:8px;border-radius:50%;background:var(--primary);flex-shrink:0"></div>' : ''}
+        ${!n.read && n.type!=='p2p_request' ? '<div style="width:8px;height:8px;border-radius:50%;background:var(--primary);flex-shrink:0"></div>' : ''}
       </div>
     `).join('');
 }
@@ -2010,65 +2340,165 @@ function renderRecent() {
   const list = document.getElementById('recent-tx-list');
   if(list) list.innerHTML = transactions.slice(0,4).map(txHTML).join('');
 }
+function txGroupKey(tx) {
+  // Agrupa por data real (ISO). Fallback em createdAt p/ transações antigas.
+  if (tx.date && /^\d{4}-\d{2}-\d{2}/.test(tx.date)) return tx.date.slice(0, 10);
+  if (tx.createdAt) {
+    const cd = tx.createdAt.toDate ? tx.createdAt.toDate() : new Date(tx.createdAt);
+    return cd.toISOString().slice(0, 10);
+  }
+  return 'Sem data';
+}
+function getTxMonthISO(offset) {
+  const d = new Date();
+  d.setDate(1);
+  d.setMonth(d.getMonth() + offset);
+  return d.toISOString().slice(0, 7); // "AAAA-MM"
+}
+function txBelongsToMonth(tx, monthISO) {
+  const key = txGroupKey(tx);
+  if (!key) return false;
+  return key.slice(0, 7) === monthISO;
+}
 function renderAll(filter) {
-  const list = filter === 'all' ? transactions : transactions.filter(t => t.type === filter);
-  const groups = [...new Set(list.map(t => t.group))];
+  txTypeFilter = filter || 'all';
+  const monthISO = getTxMonthISO(txMonthOffset);
+  // Atualiza label do mês
+  const [y, m] = monthISO.split('-').map(Number);
+  const meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+  const label = document.getElementById('tx-month-label');
+  if (label) label.textContent = meses[m-1].charAt(0).toUpperCase() + meses[m-1].slice(1) + ' ' + y;
+
+  const list = (txTypeFilter === 'all' ? transactions : transactions.filter(t => t.type === txTypeFilter))
+    .filter(t => txBelongsToMonth(t, monthISO));
+  const groups = [...new Set(list.map(txGroupKey))];
+  groups.sort((a, b) => (a < b ? 1 : a > b ? -1 : 0));
   let html = '';
   groups.forEach(g => {
-    html += `<div class="tx-group-label">${g}</div>`;
-    html += list.filter(t => t.group === g).map(txHTML).join('');
+    const label = g === 'Sem data' ? g : formatDateBR(g);
+    html += `<div class="tx-group-label">${label}</div>`;
+    html += list.filter(t => txGroupKey(t) === g).map(txHTML).join('');
   });
   const container = document.getElementById('all-tx-list');
-  if (!html) html = '<p style="color:var(--text-muted);font-size:13px;padding:20px 0;text-align:center">Nenhuma transação</p>';
+  if (!html) html = '<p style="color:var(--text-muted);font-size:13px;padding:20px 0;text-align:center">Nenhuma transação neste mês</p>';
   if(container) container.innerHTML = html;
+
+  // Atualiza balanço do mês
+  const monthIncome = list.filter(t => t.amount > 0).reduce((s, t) => s + t.amount, 0);
+  const monthExpense = list.filter(t => t.amount < 0).reduce((s, t) => s + Math.abs(t.amount), 0);
+  const monthBalance = monthIncome - monthExpense;
+  const balHtml = list.length > 0 ? `
+    <div class="income-card" style="margin-top:20px;padding:16px">
+      <div class="section-label">Balanço do Mês</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
+        <span style="font-size:12px;color:var(--text-sec)">Receitas</span>
+        <span style="font-size:14px;font-weight:700;color:var(--primary)">R$ ${formatBRL(monthIncome)}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
+        <span style="font-size:12px;color:var(--text-sec)">Despesas</span>
+        <span style="font-size:14px;font-weight:700;color:#c0392b">R$ ${formatBRL(monthExpense)}</span>
+      </div>
+      <div style="height:1px;background:var(--border);margin:8px 0"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:12px;font-weight:600">Saldo</span>
+        <span style="font-size:16px;font-weight:800;color:${monthBalance >= 0 ? 'var(--primary)' : '#c0392b'}">R$ ${formatBRL(monthBalance)}</span>
+      </div>
+    </div>` : '';
+  if (container) container.innerHTML += balHtml;
 }
+function prevTxMonth() { txMonthOffset--; renderAll(); }
+function nextTxMonth() { txMonthOffset++; renderAll(); }
 function filterTx(type, el) {
   document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
   el.classList.add('active');
   renderAll(type);
 }
 function renderReports() {
-  const totalIncome = transactions.filter(t => t.type === 'entrada').reduce((s, t) => s + Math.abs(t.amount || 0), 0);
-  const totalExpense = transactions.filter(t => t.type === 'saída').reduce((s, t) => s + Math.abs(t.amount || 0), 0);
+  const tx = _getRepTx();
+  const totalIncome = tx.filter(t => t.type === 'entrada').reduce((s,t) => s+Math.abs(t.amount||0), 0);
+  const totalExpense = tx.filter(t => t.type === 'saída').reduce((s,t) => s+Math.abs(t.amount||0), 0);
+  const balance = totalIncome - totalExpense;
+
   document.getElementById('report-income').textContent = 'R$ ' + formatBRL(totalIncome);
   document.getElementById('report-expense').textContent = 'R$ ' + formatBRL(totalExpense);
 
+  const balEl = document.getElementById('report-balance');
+  if (balEl) {
+    balEl.textContent = (balance < 0 ? '-' : '') + 'R$ ' + formatBRL(Math.abs(balance));
+    balEl.style.color = balance < 0 ? '#c0392b' : 'var(--primary)';
+  }
+  const balIcon = document.getElementById('rep-balance-icon');
+  if (balIcon) {
+    balIcon.style.background = balance < 0 ? '#c0392b22' : '#3498db22';
+    balIcon.style.color = balance < 0 ? '#c0392b' : '#3498db';
+    balIcon.innerHTML = '<i class="ti ' + (balance < 0 ? 'ti-trending-down' : 'ti-trending-up') + '"></i>';
+  }
+
+  // Category breakdown
   const catTotals = {};
-  transactions.forEach(t => {
-    const allCats = [...categories.saída, ...categories.entrada];
+  tx.forEach(t => {
+    const allCats = [...(categories.saída||[]), ...(categories.entrada||[])];
     const cat = allCats.find(c => c.id === t.cat);
     if (!cat) return;
-    const key = cat.id;
-    if (!catTotals[key]) catTotals[key] = { name: cat.name, icon: cat.icon, color: cat.color, total: 0, count: 0 };
-    catTotals[key].total += Math.abs(t.amount || 0);
-    catTotals[key].count += 1;
+    if (!catTotals[cat.id]) catTotals[cat.id] = { name:cat.name, icon:cat.icon, color:cat.color, total:0, count:0 };
+    catTotals[cat.id].total += Math.abs(t.amount||0);
+    catTotals[cat.id].count++;
   });
-
-  const entries = Object.values(catTotals).sort((a, b) => b.total - a.total);
+  const entries = Object.values(catTotals).sort((a,b) => b.total - a.total);
   const maxTotal = entries.length > 0 ? entries[0].total : 1;
+  const grandTotal = entries.reduce((s,e) => s+e.total, 0);
+
   const container = document.getElementById('report-by-category');
-  container.innerHTML = entries.map(c => `
-    <div class="report-cat-item">
-      <div class="report-cat-icon" style="background:${c.color}22;color:${c.color}"><i class="ti ${c.icon}"></i></div>
-      <div class="report-cat-info">
-        <div class="report-cat-name">${c.name}</div>
-        <div class="report-cat-count">${c.count} transação${c.count !== 1 ? 'ões' : ''}</div>
-        <div class="report-cat-bar"><div class="report-cat-fill" style="width:${(c.total/maxTotal*100).toFixed(0)}%;background:${c.color}"></div></div>
+  if (entries.length === 0) {
+    container.innerHTML = '<p style="font-size:12px;color:var(--text-muted);padding:16px 0">Nenhuma transação no período</p>';
+  } else {
+    container.innerHTML = entries.slice(0,6).map(c => `
+      <div class="report-cat-item">
+        <div class="report-cat-icon" style="background:${c.color}22;color:${c.color}"><i class="ti ${c.icon}"></i></div>
+        <div class="report-cat-info">
+          <div class="report-cat-name">${c.name}</div>
+          <div class="report-cat-count">${c.count} transaç${c.count!==1?'ões':'ão'} · ${(c.total/grandTotal*100).toFixed(0)}%</div>
+          <div class="report-cat-bar"><div class="report-cat-fill" style="width:${(c.total/maxTotal*100).toFixed(0)}%;background:${c.color}"></div></div>
+        </div>
+        <div class="report-cat-amount" style="color:${c.color}">R$ ${formatBRL(c.total)}</div>
       </div>
-      <div class="report-cat-amount">R$ ${formatBRL(c.total)}</div>
-    </div>
-  `).join('');
+    `).join('');
+  }
+
+  // Donut
+  const donutCanvas = document.getElementById('report-donut-chart');
+  if (donutCanvas && typeof Chart !== 'undefined') {
+    if (_donutChart) { _donutChart.destroy(); _donutChart = null; }
+    const donutTotalEl = document.getElementById('rep-donut-total');
+    if (donutTotalEl) donutTotalEl.textContent = grandTotal >= 1000 ? 'R$'+(grandTotal/1000).toFixed(1)+'k' : 'R$'+Math.round(grandTotal);
+    if (entries.length > 0) {
+      _donutChart = new Chart(donutCanvas, {
+        type: 'doughnut',
+        data: {
+          labels: entries.slice(0,6).map(e => e.name),
+          datasets: [{ data: entries.slice(0,6).map(e => e.total), backgroundColor: entries.slice(0,6).map(e => e.color+'cc'), borderColor: entries.slice(0,6).map(e => e.color), borderWidth:1, hoverOffset:5 }]
+        },
+        options: {
+          responsive:true, maintainAspectRatio:false, cutout:'68%',
+          plugins: { legend:{display:false}, tooltip:{ callbacks:{ label:ctx=>' R$ '+ctx.parsed.toLocaleString('pt-BR',{minimumFractionDigits:2}) } } }
+        }
+      });
+    }
+  }
+
   renderAnnualChart();
 }
 
 function txHTML(tx) {
   const pos = (tx.amount || 0) > 0;
   const prev = tx.status === 'prevista' ? ' style="opacity:.5"' : '';
+  // Preferência: campo date (ISO). Fallback: createdAt (transações antigas).
+  const dataExibicao = formatDateBR(tx.date) || (tx.createdAt ? formatDateBR(tx.createdAt) : tx.date || '');
   return `<div class="tx-item"${prev} onclick="openModal('${tx.type}', '${tx.id}')">
     <div class="tx-logo" style="background:${tx.bg};color:${tx.color}"><i class="ti ${tx.icon}"></i></div>
     <div class="tx-info">
       <div class="tx-name">${tx.name}${tx.status === 'prevista' ? ' <span style="font-size:10px;color:var(--text-muted)">(Prevista)</span>' : ''}</div>
-      <div class="tx-date">${tx.date}</div>
+      <div class="tx-date">${dataExibicao}</div>
     </div>
     <div class="tx-amount ${pos?'pos':'neg'}">${pos?'+':''}R$${formatBRL(tx.amount)}</div>
   </div>`;
@@ -2092,7 +2522,6 @@ let vehicle = null;
 let refuels = [];
 let maintenances = [];
 let routes = [];
-let health = { agua: 0, cafeina: 0 };
 let proSettings = { vehicleActive: true, blurActive: true };
 let editingAccountId = null, editingGoalId = null, editingBudgetCat = null;
 let chartInstances = {}, cropImageData = null;
@@ -2127,9 +2556,9 @@ async function submitTransfer() {
   const ts = firebase.firestore.FieldValue.serverTimestamp();
   const batch = db.batch();
   const tx1Ref = db.collection('transactions').doc();
-  batch.set(tx1Ref, { name: 'Transferência para ' + (accounts.find(a => a.id === toId)?.name || 'outra conta'), cat: 'transfer', date: 'Agora', amount: -amt, type: 'saída', icon: 'ti-arrows-exchange', bg: 'var(--primary)22', color: 'var(--primary)', group: 'Hoje', createdAt: ts });
+  batch.set(tx1Ref, { name: 'Transferência para ' + (accounts.find(a => a.id === toId)?.name || 'outra conta'), cat: 'transfer', date: todayISO(), amount: -amt, type: 'saída', icon: 'ti-arrows-exchange', bg: 'var(--primary)22', color: 'var(--primary)', group: 'Hoje', createdAt: ts });
   const tx2Ref = db.collection('transactions').doc();
-  batch.set(tx2Ref, { name: 'Transferência de ' + (fromAcc.name || 'outra conta'), cat: 'transfer', date: 'Agora', amount: amt, type: 'entrada', icon: 'ti-arrows-exchange', bg: 'var(--primary)22', color: 'var(--primary)', group: 'Hoje', createdAt: ts });
+  batch.set(tx2Ref, { name: 'Transferência de ' + (fromAcc.name || 'outra conta'), cat: 'transfer', date: todayISO(), amount: amt, type: 'entrada', icon: 'ti-arrows-exchange', bg: 'var(--primary)22', color: 'var(--primary)', group: 'Hoje', createdAt: ts });
   batch.update(db.collection('accounts').doc(fromId), { balance: (fromAcc.balance || 0) - amt });
   const toAcc = accounts.find(a => a.id === toId);
   if (toAcc) batch.update(db.collection('accounts').doc(toId), { balance: (toAcc.balance || 0) + amt });
@@ -2155,7 +2584,6 @@ window.showPage = function(name) {
   if (name === 'transactions') renderAll(window._txFilter || 'all');
   if (name === 'reports') { renderReports(); renderAnnualChart(); closeQuickMenu(); }
   if (name === 'cards') renderCards();
-  if (name === 'config-categories') renderConfigCategories();
   if (name === 'budget') renderBudget();
   if (name === 'goals') renderGoals();
   if (name === 'vehicle') renderVehicleFull();
@@ -2169,13 +2597,17 @@ window.showPage = function(name) {
     const av = document.getElementById('profile-avatar');
     if (av && profile.photoURL) av.innerHTML = '<img src="'+profile.photoURL+'" style="width:100%;height:100%;border-radius:50%;object-fit:cover" />';
   }
+  // Desktop sidebar sync (web layout only)
+  document.querySelectorAll('.desktop-sidebar .d-tab').forEach(t => t.classList.remove('active'));
+  const sidebarMatch = document.querySelector('.desktop-sidebar .d-tab[data-page="'+name+'"]');
+  if (sidebarMatch) sidebarMatch.classList.add('active');
   if (name === 'vehicle') {
     document.querySelectorAll('.tab-bar').forEach(bar => {
       const vehTab = bar.querySelector('[data-vehtab]');
       if (vehTab) vehTab.classList.add('active');
     });
   }
-  if (name === 'home') renderHomeReports();
+  if (name === 'home') { renderHomeReports(); renderHomeVehicle(); renderHomeChartsDesktop(); }
   window.scrollTo(0, 0);
 };
 
@@ -2232,15 +2664,18 @@ async function openFuelOcr() {
       if (nums.length) {
         const vals = nums.map(v => parseFloat(v.replace(',','.'))).filter(v=>v>0);
         if (vals.length===1) {
+          // try to guess: if < 15 it's maybe price per liter, else total
           if (vals[0] < 15) document.getElementById('refuel-price').value = vals[0].toFixed(3);
           else document.getElementById('refuel-total').value = vals[0].toFixed(2);
         } else {
+          // sort by value: largest likely total, smallest likely price
           const sorted = [...vals].sort((a,b)=>a-b);
           const price = sorted.find(v=>v<15) || sorted[0];
           const total = sorted.find(v=>v>=10) || sorted[sorted.length-1];
           if (price === total) { document.getElementById('refuel-total').value = total.toFixed(2); }
           else { document.getElementById('refuel-price').value = price.toFixed(3); document.getElementById('refuel-total').value = total.toFixed(2); }
         }
+        // trigger calc
         const p = parseFloat(document.getElementById('refuel-price').value)||0;
         const t = parseFloat(document.getElementById('refuel-total').value)||0;
         if (p>0 && t>0) document.getElementById('refuel-liters').value = (t/p).toFixed(2);
@@ -2264,6 +2699,11 @@ function renderHomeReports() {
   });
   const income = monthTx.filter(t => (t.amount||0) > 0).reduce((s,t) => s + t.amount, 0);
   const expense = monthTx.filter(t => (t.amount||0) < 0).reduce((s,t) => s + Math.abs(t.amount), 0);
+  // Update Receitas/Despesas cards
+  const incEl = document.getElementById('home-income-amount');
+  const expEl = document.getElementById('home-expense-amount');
+  if (incEl) incEl.textContent = 'R$ '+income.toLocaleString('pt-BR',{minimumFractionDigits:2});
+  if (expEl) expEl.textContent = 'R$ '+expense.toLocaleString('pt-BR',{minimumFractionDigits:2});
   // Income chart - last 12 months
   const svgW = 120, svgH = 52, padB = 8, padT = 6;
   const months = [];
@@ -2325,44 +2765,157 @@ function renderHomeReports() {
   const tl = budget?.totalLimit || 0;
   const budgetPct = tl > 0 ? Math.min(expense / tl * 100, 100) : 0;
   el.innerHTML =
-    '<div class="section-title-new" style="margin-top:12px"><i class="ti ti-report"></i> Resumo do Mês</div>' +
-    '<div class="two-col" style="margin-bottom:8px">' +
-      '<div class="income-card"><div class="income-label">Receitas</div><div class="income-amount" style="color:var(--primary);font-size:16px">R$ '+income.toLocaleString('pt-BR',{minimumFractionDigits:2})+'</div></div>' +
-      '<div class="income-card"><div class="income-label">Despesas</div><div class="income-amount" style="color:#c0392b;font-size:16px">R$ '+expense.toLocaleString('pt-BR',{minimumFractionDigits:2})+'</div></div>' +
-    '</div>' +
     (tl > 0 ?
     '<div class="income-card" style="margin-bottom:8px"><div class="section-row" style="margin-bottom:2px"><span class="section-label" style="font-size:12px">Orçamento</span><span style="font-size:11px;color:var(--text-muted)">'+budgetPct.toFixed(0)+'% · R$ '+expense.toLocaleString('pt-BR',{minimumFractionDigits:2})+' de R$ '+tl.toLocaleString('pt-BR',{minimumFractionDigits:2})+'</span></div><div class="progress-bar-new"><div class="progress-fill-new" style="width:'+budgetPct+'%;background:'+(budgetPct>90?'#c0392b':budgetPct>70?'#e07a3a':'var(--primary)')+'"></div></div></div>'
     : '') +
     (topCats.length ?
-    '<div class="income-card" style="margin-bottom:8px"><div class="section-label" style="font-size:12px;margin-bottom:6px">Top Categorias</div>' +
-    topCats.map(c =>
-      '<div class="rep-cat-new"><div class="rc-icon" style="background:'+c.color+'22;color:'+c.color+'"><i class="ti '+c.icon+'"></i></div><div class="rc-info"><div class="rc-name">'+c.name+'</div><div class="rc-bar"><div class="rc-fill" style="width:'+(c.total/maxCat*100).toFixed(0)+'%;background:'+c.color+'"></div></div></div><div class="rc-amt" style="color:'+c.color+'">R$ '+c.total.toLocaleString('pt-BR',{minimumFractionDigits:2})+'</div></div>'
-    ).join('')+'</div>'
+    '<div class="income-card" style="margin-bottom:12px"><div class="section-label" style="font-size:13px;font-weight:700;color:var(--text-main);margin-bottom:8px">Top Categorias</div>' +
+    topCats.map(c => {
+      const pct = (c.total / expense * 100).toFixed(0);
+      return '<div class="rep-cat-new"><div class="rc-icon" style="background:'+c.color+'22;color:'+c.color+'"><i class="ti '+c.icon+'"></i></div><div class="rc-info"><div class="rc-name">'+c.name+' <span style="font-size:10px;color:var(--text-muted);font-weight:400">'+pct+'%</span></div><div class="rc-bar"><div class="rc-fill" style="width:'+Math.max(4,(c.total/maxCat*100))+'%;background:'+c.color+'"></div></div></div><div class="rc-amt" style="color:'+c.color+'">R$ '+c.total.toLocaleString('pt-BR',{minimumFractionDigits:2})+'</div></div>';
+    }).join('')+'</div>'
     : '') +
     '<div style="font-size:11px;color:var(--text-muted);text-align:center;padding:8px 0">'+monthTx.length+' transações este mês</div>';
 }
 
-// ===== BLUR TOGGLE =====
-let blurActive = localStorage.getItem('mu_blur') !== '0';
-function toggleBlur() {
-  blurActive = !blurActive;
-  localStorage.setItem('mu_blur', blurActive ? '1' : '0');
-  document.getElementById('main-balance').classList.toggle('blurred', blurActive);
-}
-// Add eye button to balance section
-document.addEventListener('DOMContentLoaded', function() {
-  const bs = document.querySelector('.balance-section');
-  if (bs && !document.getElementById('eye-btn-pro')) {
-    const btn = document.createElement('button');
-    btn.id = 'eye-btn-pro';
-    btn.style.cssText = 'position:absolute;right:20px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:20px';
-    btn.innerHTML = '<i class="ti ti-eye-off"></i>';
-    btn.onclick = toggleBlur;
-    bs.appendChild(btn);
-    if (!blurActive) { document.getElementById('main-balance').classList.remove('blurred'); btn.innerHTML = '<i class="ti ti-eye"></i>'; }
+function renderHomeVehicle() {
+  // Seção de veículo removida da home — conteúdo fica na página Veículo
+  return;
+  if (!vehicle) {
+    section.style.display = 'none';
+    cta.style.display = 'block';
+    return;
   }
-  // Add eye to balance on each page init
+  section.style.display = 'block';
+  cta.style.display = 'none';
+  // Oil change progress
+  const oil = calcVehicleOil();
+  const bar = document.getElementById('home-oil-bar');
+  const label = document.getElementById('home-oil-label');
+  const pct = document.getElementById('home-oil-pct');
+  if (bar) { bar.style.width = oil.pct+'%'; bar.style.background = oil.color; }
+  if (pct) pct.textContent = oil.pct+'%';
+  if (label) {
+    const lastOil = maintenances.filter(m => m.oilFlag || m.type === 'oleo').sort((a,b) => (b.createdAt?.toDate?.()?.getTime()||0) - (a.createdAt?.toDate?.()?.getTime()||0))[0];
+    const nextKm = lastOil ? (lastOil.km||0) + (vehicle?.oilInterval||10000) : (vehicle?.oilKm||0) + (vehicle?.oilInterval||10000);
+    label.textContent = nextKm > 0 ? '~'+nextKm+' km' : '—';
+  }
+  // Weekly km chart
+  const weekEl = document.getElementById('home-km-weekly');
+  if (!weekEl) return;
+  const dias = ['Dom','Seg','Ter','Qua','Qui','Sex','Sab'];
+  const kmPorDia = Array(7).fill(0);
+  routes.forEach(r => { const d = r.createdAt?.toDate?.(); if (d) kmPorDia[d.getDay()] += r.distance || r.km || 0; });
+  const maxKm = Math.max(...kmPorDia, 1);
+  weekEl.innerHTML = dias.map((d, i) => {
+    const h = Math.max(3, (kmPorDia[i] / maxKm) * 42);
+    return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px"><div style="width:100%;height:'+h+'px;border-radius:4px 4px 0 0;background:'+(kmPorDia[i]>0?'var(--primary)':'var(--border)')+';min-height:3px"></div><span style="font-size:7px;color:var(--text-muted)">'+d+'</span><span style="font-size:7px;font-weight:600;color:var(--text-sec)">'+(kmPorDia[i]|0)+'</span></div>';
+  }).join('');
+}
+
+// ===== DESKTOP HOME CHARTS =====
+function renderHomeChartsDesktop() {
+  const pieCanvas = document.getElementById('home-pie-chart');
+  const barCanvas = document.getElementById('home-bar-chart');
+  if (!pieCanvas || !barCanvas) return;
+  const w = pieCanvas.parentElement.offsetWidth;
+  if (w < 100) return;
+  const now = new Date();
+  const monthTx = transactions.filter(t => {
+    const d = t.createdAt ? t.createdAt.toDate() : null;
+    return d && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  });
+  const isDark = document.body.getAttribute('data-theme') === 'dark';
+  const textColor = isDark ? '#bbb' : '#555';
+  const gridColor = isDark ? '#333' : '#eee';
+  // Destroy existing charts
+  if (window._homePieChart) { window._homePieChart.destroy(); window._homePieChart = null; }
+  if (window._homeBarChart) { window._homeBarChart.destroy(); window._homeBarChart = null; }
+  // Pie chart — despesas por categoria
+  const catTotals = {};
+  const allCats = [...(categories.saída||[])];
+  monthTx.filter(t => (t.amount||0) < 0).forEach(t => {
+    const cat = allCats.find(c => c.id === t.cat);
+    if (cat) catTotals[cat.name] = (catTotals[cat.name]||0) + Math.abs(t.amount);
+  });
+  const pieLabels = Object.keys(catTotals);
+  const pieData = Object.values(catTotals);
+  if (pieLabels.length) {
+    const colors = ['#2ecc71','#e74c3c','#f39c12','#3498db','#9b59b6','#1abc9c','#e67e22','#34495e','#16a085','#c0392b','#27ae60','#8e44ad'];
+    window._homePieChart = new Chart(pieCanvas, {
+      type: 'doughnut',
+      data: { labels: pieLabels, datasets: [{ data: pieData, backgroundColor: colors.slice(0,pieLabels.length), borderWidth: 0 }] },
+      options: { responsive: true, maintainAspectRatio: true, cutout: '60%',
+        plugins: { legend: { position: 'bottom', labels: { color: textColor, font: { size: 11 }, boxWidth: 10, padding: 8 } } } }
+    });
+  }
+  // Bar chart — receitas vs despesas 12 meses
+  const labels = [];
+  const incomeData = [];
+  const expenseData = [];
+  for (let i = 11; i >= 0; i--) {
+    const m = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    labels.push(m.toLocaleString('pt-BR', { month: 'short' }));
+    const vals = transactions.filter(t => {
+      const d = t.createdAt ? t.createdAt.toDate() : null;
+      return d && d.getMonth() === m.getMonth() && d.getFullYear() === m.getFullYear();
+    });
+    incomeData.push(vals.filter(t => (t.amount||0) > 0).reduce((s,t) => s + t.amount, 0));
+    expenseData.push(vals.filter(t => (t.amount||0) < 0).reduce((s,t) => s + Math.abs(t.amount), 0));
+  }
+  window._homeBarChart = new Chart(barCanvas, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Receitas', data: incomeData, backgroundColor: '#2ecc7188', borderColor: '#2ecc71', borderWidth: 1, borderRadius: 4 },
+        { label: 'Despesas', data: expenseData, backgroundColor: '#e74c3c88', borderColor: '#e74c3c', borderWidth: 1, borderRadius: 4 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: true,
+      scales: {
+        x: { ticks: { color: textColor, font: { size: 10 } }, grid: { display: false } },
+        y: { ticks: { color: textColor, font: { size: 10 }, callback: v => 'R$'+(v/1000).toFixed(0)+'k' }, grid: { color: gridColor } }
+      },
+      plugins: {
+        legend: { position: 'top', labels: { color: textColor, font: { size: 11 }, boxWidth: 12, padding: 8 } }
+      }
+    }
+  });
+}
+
+// ===== BLUR TOGGLE =====
+let blurActive = false; // saldo sempre visível (botão do olho removido)
+function toggleBlur() {
+  // funcionalidade desativada — saldo permanece visível
+  blurActive = false;
+  const bal = document.getElementById('main-balance');
+  if (bal) bal.classList.remove('blurred');
+}
+// Botão do olho (ocultar saldo) removido — saldo sempre visível
+document.addEventListener('DOMContentLoaded', function() {
+  const bal = document.getElementById('main-balance');
+  if (bal) bal.classList.remove('blurred');
 });
+
+function updateVehicleIcons() {
+  const icon = vehicle?.type === 'moto' ? 'ti-motorbike' : 'ti-car';
+  // FAB
+  const fabIcon = document.getElementById('fab-veh-icon');
+  if (fabIcon) fabIcon.className = 'ti ' + icon;
+  // Tab bars
+  document.querySelectorAll('[data-vehtab] i').forEach(el => el.className = 'ti ' + icon);
+  // Profile menu
+  const menuIcon = document.querySelector('#veh-menu-item i');
+  if (menuIcon) menuIcon.className = 'ti ' + icon;
+  // Vehicle page header icon
+  const headerIcon = document.querySelector('#vehicle-page .page-header .icon-btn i');
+  if (headerIcon) headerIcon.className = 'ti ' + icon;
+  // Desktop sidebar vehicle icon
+  const sideIcon = document.querySelector('.desktop-sidebar [data-page="vehicle"] i');
+  if (sideIcon) sideIcon.className = 'ti ' + icon;
+}
 
 // ===== SETTINGS / MODULES =====
 function toggleModule(mod) {
@@ -2370,7 +2923,7 @@ function toggleModule(mod) {
     proSettings.vehicleActive = !proSettings.vehicleActive;
     const el = document.getElementById('toggle-vehicle');
     if (el) el.classList.toggle('active', proSettings.vehicleActive);
-    if (proSettings.vehicleActive) initVehicle();
+    if (proSettings.vehicleActive) renderHomeVehicle();
     db.collection('settings').doc('modules').set({ vehicleActive: proSettings.vehicleActive }, { merge: true });
     showToast(proSettings.vehicleActive ? 'Veículo ativado!' : 'Veículo desativado');
     injectVehicleTab();
@@ -2387,7 +2940,8 @@ function injectVehicleTab() {
           const veh = document.createElement('button');
           veh.className = 'tab';
           veh.setAttribute('data-vehtab', '1');
-          veh.innerHTML = '<i class="ti ti-car"></i><span>Veículo</span>';
+          const vehIcon = vehicle?.type === 'moto' ? 'ti-motorbike' : 'ti-car';
+          veh.innerHTML = '<i class="ti '+vehIcon+'"></i><span>Veículo</span>';
           veh.onclick = function() { showPage('vehicle'); };
           tabs[2].parentNode.insertBefore(veh, tabs[3] || null);
         }
@@ -2406,7 +2960,8 @@ function injectVehicleTab() {
         vehMenu = document.createElement('div');
         vehMenu.className = 'menu-item';
         vehMenu.id = 'veh-menu-item';
-        vehMenu.innerHTML = '<i class="ti ti-car"></i><span>Veículo</span><i class="ti ti-chevron-right"></i>';
+        const vehIcon = vehicle?.type === 'moto' ? 'ti-motorbike' : 'ti-car';
+        vehMenu.innerHTML = '<i class="ti '+vehIcon+'"></i><span>Veículo</span><i class="ti ti-chevron-right"></i>';
         vehMenu.onclick = function() { showPage('vehicle'); };
         const themeToggle = document.getElementById('theme-toggle');
         if (themeToggle) themeToggle.parentNode.insertBefore(vehMenu, themeToggle);
@@ -2415,23 +2970,33 @@ function injectVehicleTab() {
       if (vehMenu) vehMenu.remove();
     }
   }
-  // Add to home vehicle card
-  let homeCard = document.getElementById('vehicle-home-card');
-  if (proSettings.vehicleActive) {
-    if (!homeCard) {
-      homeCard = document.createElement('div');
-      homeCard.className = 'income-card';
-      homeCard.id = 'vehicle-home-card';
-      homeCard.style.marginBottom = '12px';
-      homeCard.innerHTML = '<div class="section-row"><span class="section-label"><i class="ti ti-car" style="color:var(--primary);margin-right:4px"></i> Veículo</span><button class="section-link" onclick="showPage(\'vehicle\')">Detalhes <i class="ti ti-chevron-right"></i></button></div><div id="vehicle-home-content" style="font-size:12px;color:var(--text-sec)">Configure em Config</div>';
-      const content = document.querySelector('.content');
-      if (content) content.insertBefore(homeCard, content.firstChild);
+  // Add/remove vehicle button in desktop sidebar
+  const sidebarNav = document.querySelector('.desktop-sidebar nav');
+  if (sidebarNav) {
+    let vehSide = sidebarNav.querySelector('[data-page="vehicle"]');
+    if (proSettings.vehicleActive) {
+      if (!vehSide) {
+        vehSide = document.createElement('button');
+        vehSide.className = 'd-tab';
+        vehSide.setAttribute('data-page', 'vehicle');
+        const vehIcon = vehicle?.type === 'moto' ? 'ti-motorbike' : 'ti-car';
+        vehSide.innerHTML = '<i class="ti '+vehIcon+'"></i><span>Veículo</span>';
+        vehSide.onclick = function() { showPage('vehicle'); };
+        const budgetTab = sidebarNav.querySelector('[data-page="budget"]');
+        if (budgetTab) budgetTab.parentNode.insertBefore(vehSide, budgetTab.nextSibling);
+        else sidebarNav.appendChild(vehSide);
+      }
+    } else {
+      if (vehSide) vehSide.remove();
     }
-    updateVehicleHomeCard();
-  } else {
-    if (homeCard) homeCard.remove();
   }
 }
+
+function showLoginError(msg) {
+  const el = document.getElementById('login-error');
+  if (el) { el.textContent = msg; el.style.display = 'block'; }
+}
+
 async function loadProSettings() {
   try {
     const snap = await db.collection('settings').doc('modules').get();
@@ -2441,7 +3006,7 @@ async function loadProSettings() {
     }
     const el = document.getElementById('toggle-vehicle');
     if (el) el.classList.toggle('active', proSettings.vehicleActive);
-    if (proSettings.vehicleActive) initVehicle();
+    if (proSettings.vehicleActive) renderHomeVehicle();
     injectVehicleTab();
   } catch (e) {}
 }
@@ -2612,12 +3177,117 @@ function renderSettingsCatsNew() {
     const container = document.getElementById(id);
     if (!container) return;
     container.innerHTML = (categories[type] || []).map(c =>
-      '<div class="config-item-new"><div class="ci-icon" style="background:'+(c.color||'#888')+'22;color:'+(c.color||'#888')+'"><i class="ti '+(c.icon||'ti-category')+'"></i></div><div class="ci-info"><div class="ci-name">'+c.name+'</div></div><div class="ci-actions"><button onclick="editCatName(\''+c.id+'\')"><i class="ti ti-edit"></i></button><button class="del" onclick="deleteCatById(\''+c.id+'\')"><i class="ti ti-trash"></i></button></div></div>'
+      '<div class="config-item-new"><div class="ci-icon" style="background:'+(c.color||'#888')+'22;color:'+(c.color||'#888')+'"><i class="ti '+(c.icon||'ti-category')+'"></i></div><div class="ci-info"><div class="ci-name">'+c.name+(c.isDefault?' <span class="badge-default" style="font-size:8px">Padrão</span>':'')+'</div></div><div class="ci-actions"><button onclick="editCatName(\''+c.id+'\')" title="Renomear"><i class="ti ti-edit"></i></button><button onclick="editCatIcon(\''+c.id+'\')" title="Alterar ícone"><i class="ti ti-image"></i></button>'+(c.isDefault?'':'<button class="del" onclick="deleteCatById(\''+c.id+'\')" title="Excluir"><i class="ti ti-trash"></i></button>')+'<button onclick="openAddSubcat(\''+type+'\',\''+c.id+'\')" title="Adicionar subcategoria"><i class="ti ti-plus" style="font-size:15px"></i></button></div></div>'+
+      (c.subcats?.length ? c.subcats.map(sub =>
+        '<div class="config-item-new" style="margin-left:20px;padding:6px 10px"><div class="ci-icon" style="width:24px;height:24px;font-size:11px;background:'+(c.color||'#888')+'22;color:'+(c.color||'#888')+'"><i class="ti '+(sub.icon||c.icon||'ti-corner-down-right')+'"></i></div><div class="ci-info"><div class="ci-name" style="font-size:12px">'+sub.name+'</div></div><div class="ci-actions"><button onclick="openEditSubcat(\''+type+'\',\''+c.id+'\',\''+sub.id+'\')"><i class="ti ti-edit"></i></button><button class="del" onclick="deleteSubcat(\''+type+'\',\''+c.id+'\',\''+sub.id+'\')"><i class="ti ti-trash"></i></button></div></div>'
+      ).join('') : '')
     ).join('') || '<div style="color:var(--text-muted);font-size:13px;padding:8px">Nenhuma</div>';
   };
   render('saída', 'settings-expense-cats');
   render('entrada', 'settings-income-cats');
 }
+
+// ===== ICON PICKER + SUBCAT MODAL =====
+const ICON_LIST = [
+  'ti-home','ti-building','ti-building-store','ti-briefcase','ti-wallet','ti-coin','ti-credit-card','ti-cash',
+  'ti-shopping-cart','ti-shopping-bag','ti-gift','ti-tag','ti-discount','ti-percentage',
+  'ti-car','ti-motorbike','ti-bus','ti-plane','ti-ship','ti-truck','ti-gas-station','ti-tool','ti-settings',
+  'ti-heart','ti-heartbeat','ti-medical-cross','ti-pill','ti-dental','ti-stethoscope',
+  'ti-book','ti-graduation-cap','ti-school','ti-pencil','ti-code','ti-devices',
+  'ti-phone','ti-device-mobile','ti-laptop','ti-wifi','ti-battery','ti-plug',
+  'ti-music','ti-video','ti-camera','ti-photo','ti-movie','ti-headphones',
+  'ti-tv','ti-player-play','ti-news','ti-newspaper','ti-cloud','ti-download',
+  'ti-umbrella','ti-sun','ti-moon','ti-flame','ti-snowflake','ti-droplet',
+  'ti-leaf','ti-tree','ti-flower','ti-paw','ti-bone',
+  'ti-shirt','ti-shoe','ti-ring','ti-diamond','ti-clock','ti-calendar',
+  'ti-cup','ti-glass','ti-bottle','ti-meat','ti-apple','ti-cake',
+  'ti-users','ti-user','ti-crown','ti-flag','ti-star','ti-heart',
+  'ti-plane-tilt','ti-luggage','ti-map','ti-map-pin','ti-compass','ti-road',
+  'ti-lock','ti-shield','ti-eye','ti-bell','ti-speakerphone','ti-alarm',
+  'ti-wash','ti-soap','ti-trash','ti-cleaning','ti-brush',
+  'ti-pet','ti-dog-bowl','ti-cat','ti-bird',
+  'ti-fence','ti-roof','ti-wall','ti-window','ti-lamp',
+  'ti-chart-bar','ti-chart-pie','ti-chart-line','ti-report','ti-file-invoice','ti-file-text',
+  'ti-activity','ti-trending-up','ti-trending-down','ti-arrows-exchange'
+];
+
+let _subcatModalState = { type: null, catId: null, subId: null, selectedIcon: null };
+
+function renderIconPicker(selectedIcon) {
+  const grid = document.getElementById('subcat-icon-grid');
+  if (!grid) return;
+  grid.innerHTML = ICON_LIST.map(icon =>
+    '<div class="ip-item'+(icon === selectedIcon ? ' selected' : '')+'" onclick="selectSubcatIcon(\''+icon+'\')"><i class="ti '+icon+'"></i></div>'
+  ).join('');
+}
+
+function selectSubcatIcon(icon) {
+  document.querySelectorAll('#subcat-icon-grid .ip-item').forEach(el => el.classList.remove('selected'));
+  const el = document.querySelector('#subcat-icon-grid .ip-item i.ti-'+icon.replace('ti-',''));
+  if (el) el.parentElement.classList.add('selected');
+  _subcatModalState.selectedIcon = icon;
+  const display = document.getElementById('subcat-icon-display');
+  const name = document.getElementById('subcat-icon-name');
+  if (display) display.innerHTML = '<i class="ti '+icon+'"></i>';
+  if (name) name.textContent = icon;
+}
+
+function openAddSubcat(type, catId) {
+  const cat = categories[type].find(c => c.id === catId);
+  if (!cat) return;
+  _subcatModalState = { type, catId, subId: null, selectedIcon: cat.icon || 'ti-category' };
+  document.getElementById('subcat-modal-title').textContent = 'Nova Subcategoria';
+  document.getElementById('subcat-name-input').value = '';
+  document.getElementById('subcat-delete-btn').style.display = 'none';
+  renderIconPicker(_subcatModalState.selectedIcon);
+  selectSubcatIcon(_subcatModalState.selectedIcon);
+  document.getElementById('subcat-modal').classList.add('open');
+}
+
+function openEditSubcat(type, catId, subId) {
+  const cat = categories[type].find(c => c.id === catId);
+  if (!cat) return;
+  const sub = cat.subcats.find(s => s.id === subId);
+  if (!sub) return;
+  _subcatModalState = { type, catId, subId, selectedIcon: sub.icon || cat.icon || 'ti-category' };
+  document.getElementById('subcat-modal-title').textContent = 'Editar Subcategoria';
+  document.getElementById('subcat-name-input').value = sub.name;
+  document.getElementById('subcat-delete-btn').style.display = 'block';
+  renderIconPicker(_subcatModalState.selectedIcon);
+  selectSubcatIcon(_subcatModalState.selectedIcon);
+  document.getElementById('subcat-modal').classList.add('open');
+}
+
+async function saveSubcat() {
+  const { type, catId, subId, selectedIcon } = _subcatModalState;
+  if (!type || !catId) return;
+  const name = document.getElementById('subcat-name-input').value.trim();
+  if (!name) { showToast('Digite um nome'); return; }
+  const cat = categories[type].find(c => c.id === catId);
+  if (!cat) return;
+  const icon = selectedIcon || cat.icon || 'ti-category';
+  if (subId) {
+    // Edit existing
+    const sub = cat.subcats.find(s => s.id === subId);
+    if (sub) { sub.name = name; sub.icon = icon; }
+  } else {
+    // Add new
+    const ref = db.collection('categories').doc();
+    cat.subcats.push({ id: ref.id, name, icon });
+  }
+  await db.collection('categories').doc(catId).update({ subcats: cat.subcats });
+  closeModal('subcat-modal');
+  renderSettingsCatsNew();
+  showToast(subId ? 'Subcategoria atualizada!' : 'Subcategoria adicionada!');
+}
+
+async function deleteSubcatFromModal() {
+  const { type, catId, subId } = _subcatModalState;
+  if (!subId || !confirm('Excluir esta subcategoria?')) return;
+  await deleteSubcat(type, catId, subId);
+  closeModal('subcat-modal');
+}
+
 function renderSettingsCards() {
   const c = document.getElementById('settings-cards-list');
   if (!c) return;
@@ -2630,23 +3300,24 @@ function editCatName(id) {
   const allCats = [...categories.saída, ...categories.entrada];
   const cat = allCats.find(c => c.id === id);
   const n = prompt('Novo nome:', cat?.name);
-  if (n) db.collection('categories').doc(id).update({ name: n });
+  if (n) db.collection('categories').doc(id).update({ name: n }).then(() => renderSettingsCatsNew());
 }
-function deleteCatById(id) { if (!confirm('Excluir?')) return; db.collection('categories').doc(id).delete(); showToast('Excluída!'); }
+function editCatIcon(id) {
+  const allCats = [...categories.saída, ...categories.entrada];
+  const cat = allCats.find(c => c.id === id);
+  if (!cat) return;
+  const icon = prompt('Nome do ícone Tabler (ex: ti-car):', cat.icon || 'ti-category');
+  if (icon) db.collection('categories').doc(id).update({ icon }).then(() => renderSettingsCatsNew());
+}
+function deleteCatById(id) { if (!confirm('Excluir?')) return; db.collection('categories').doc(id).delete().then(() => { showToast('Excluída!'); renderSettingsCatsNew(); }); }
 async function addNewCat(type) {
   const n = prompt('Nome:'); if (!n) return;
   const ref = db.collection('categories').doc();
   await ref.set({ id: ref.id, name: n, icon: 'ti-category', color: '#888', isDefault: false, subcats: [], type: type });
+  renderSettingsCatsNew();
 }
 
 // ===== VEHICLE =====
-async function initVehicle() {
-  try { const s = await db.collection('vehicle').doc('config').get(); if (s.exists) vehicle = s.data(); else vehicle = null; } catch(e){vehicle=null;}
-  try { const s = await db.collection('vehicle_refuels').orderBy('createdAt','desc').get(); refuels=[]; s.forEach(d=>refuels.push({id:d.id,...d.data()})); } catch(e){refuels=[];}
-  try { const s = await db.collection('vehicle_maintenance').orderBy('createdAt','desc').get(); maintenances=[]; s.forEach(d=>maintenances.push({id:d.id,...d.data()})); } catch(e){maintenances=[];}
-  try { const s = await db.collection('vehicle_routes').orderBy('createdAt','desc').get(); routes=[]; s.forEach(d=>routes.push({id:d.id,...d.data()})); } catch(e){routes=[];}
-  updateVehicleHomeCard();
-}
 function updateVehicleHomeCard() {
   const c = document.getElementById('vehicle-home-content');
   if (!c) return;
@@ -2728,11 +3399,16 @@ function renderVTimeline() {
   if (!el) return;
   const all = [...refuels.map(r=>({...r,type:'refuel'})), ...maintenances.map(m=>({...m,type:'maint'})), ...routes.map(r=>({...r,type:'route'}))];
   all.sort((a,b) => (b.createdAt?.toDate?.()?.getTime()||0) - (a.createdAt?.toDate?.()?.getTime()||0));
-  el.innerHTML = all.slice(0,20).map(i => {
+  el.innerHTML = all.slice(0,50).map(i => {
     const icons = { refuel:'ti-gas-station', maint:'ti-tool', route:'ti-map-2' };
     const colors = { refuel:'#e07a3a', maint:'#c0392b', route:'var(--primary)' };
     const titles = { refuel:'Abastecimento', maint:'Manutenção: '+(i.desc||i.type||''), route:'Rota: '+(i.origin||'')+' → '+(i.dest||'') };
-    return '<div class="v-hist-item"><div class="v-hist-icon" style="background:'+colors[i.type]+'22;color:'+colors[i.type]+'"><i class="ti '+icons[i.type]+'"></i></div><div class="v-hist-info"><div class="vh-t">'+titles[i.type]+'</div><div class="vh-s">R$ '+(Math.abs(i.value||0).toLocaleString('pt-BR',{minimumFractionDigits:2}))+' · '+(i.km||'')+' km</div></div></div>';
+    const isFin = i.type === 'refuel' || i.type === 'maint';
+    return '<div class="v-hist-item"><div class="v-hist-icon" style="background:'+colors[i.type]+'22;color:'+colors[i.type]+'"><i class="ti '+icons[i.type]+'"></i></div><div class="v-hist-info"><div class="vh-t">'+titles[i.type]+'</div><div class="vh-s">'+ (isFin ? 'R$ '+(Math.abs(i.value||0).toLocaleString('pt-BR',{minimumFractionDigits:2}))+' · ' : '') +(i.km||'')+' km</div></div>'+
+      '<div class="v-hist-actions">'+
+        '<button class="v-edit-btn" onclick="editVehicleRecord(\''+i.type+'\',\''+i.id+'\')"><i class="ti ti-edit"></i></button>'+
+        (isFin ? '<button class="v-del-btn" onclick="deleteVehicleRecord(\''+i.type+'\',\''+i.id+'\')"><i class="ti ti-trash"></i></button>' : '')+
+      '</div></div>';
   }).join('') || '<div style="color:var(--text-muted);padding:8px;font-size:13px">Nenhum registro</div>';
 }
 function renderVChartsPro() {
@@ -2784,31 +3460,116 @@ function openVehicleConfig() {
 async function submitVehicleConfig() {
   const data = { type: document.getElementById('v-type-input').value, name: document.getElementById('v-name-input').value.trim(), oilKm: parseInt(document.getElementById('v-oil-km-input').value)||0, oilInterval: parseInt(document.getElementById('v-oil-interval-input').value)||0, plateEnd: parseInt(document.getElementById('v-plate-input').value)||0, consumo: parseFloat(document.getElementById('v-consumo-input').value)||0 };
   await db.collection('vehicle').doc('config').set(data);
-  vehicle = data; closeModal('v-config-modal'); showToast('Veículo configurado!'); updateVehicleHomeCard(); renderVehicleFull();
+  vehicle = data; closeModal('v-config-modal'); showToast('Veículo configurado!'); updateVehicleHomeCard(); updateVehicleIcons(); renderVehicleFull();
 }
-function openRefuelModal() {
+let _editingVehicleId = null;
+
+function openRefuelModal(editId) {
+  _editingVehicleId = editId || null;
   document.getElementById('refuel-type').value='gasolina'; document.getElementById('refuel-price').value=''; document.getElementById('refuel-liters').value=''; document.getElementById('refuel-total').value=''; document.getElementById('refuel-km').value='';
   document.getElementById('refuel-full-toggle')?.classList.remove('active'); populateAccountSelects();
+  if (editId) {
+    const r = refuels.find(x => x.id === editId);
+    if (r) {
+      document.getElementById('refuel-type').value = r.type || 'gasolina';
+      document.getElementById('refuel-price').value = r.price || '';
+      document.getElementById('refuel-liters').value = r.liters || '';
+      document.getElementById('refuel-total').value = r.value || '';
+      document.getElementById('refuel-km').value = r.km || '';
+      if (r.tanqueCheio) document.getElementById('refuel-full-toggle')?.classList.add('active');
+      if (r.accountId) document.getElementById('refuel-account').value = r.accountId;
+    }
+  }
   document.getElementById('refuel-modal').classList.add('open');
 }
 async function submitRefuel() {
   const type=document.getElementById('refuel-type').value; const price=parseFloat(document.getElementById('refuel-price').value)||0; const liters=parseFloat(document.getElementById('refuel-liters').value)||0; const total=parseFloat(document.getElementById('refuel-total').value)||(price*liters); const km=parseInt(document.getElementById('refuel-km').value)||0; const full=document.getElementById('refuel-full-toggle')?.classList.contains('active'); const account=document.getElementById('refuel-account').value;
   if (!total||!km) { showToast('Preencha valor e km'); return; }
-  await db.collection('vehicle_refuels').add({type,price,liters:liters||(price>0?total/price:0),value:total,km,tanqueCheio:full,accountId:account,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
-  if (account) { const a=accounts.find(x=>x.id===account); if(a) await db.collection('accounts').doc(account).update({balance:(a.balance||0)-total}); }
-  closeModal('refuel-modal'); showToast('Abastecimento registrado!');
+  const data = {type,price,liters:liters||(price>0?total/price:0),value:total,km,tanqueCheio:full,accountId:account};
+  if (_editingVehicleId) {
+    await db.collection('vehicle_refuels').doc(_editingVehicleId).update(data);
+    // Atualizar transação espelhada
+    const txSnap = await db.collection('transactions').where('vehicleRefId','==',_editingVehicleId).where('vehicleType','==','refuel').get();
+    txSnap.forEach(txDoc => db.collection('transactions').doc(txDoc.id).update({name:'Abastecimento ('+type+')',amount:-total,accountId:account}));
+    _editingVehicleId = null;
+    closeModal('refuel-modal'); showToast('Abastecimento atualizado!');
+  } else {
+    const ref = await db.collection('vehicle_refuels').add({...data,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+    if (account) { const a=accounts.find(x=>x.id===account); if(a) await db.collection('accounts').doc(account).update({balance:(a.balance||0)-total}); }
+    await db.collection('transactions').add({
+      name: 'Abastecimento ('+type+')', cat: 'vehicle', subcat: 'gasolina', amount: -total,
+      date: todayISO(), group: 'Hoje', type: 'saída',
+      icon: 'ti-car', bg: '#2c3e5022', color: '#2c3e50',
+      status: 'efetivada', accountId: account, vehicleRefId: ref.id, vehicleType: 'refuel',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    closeModal('refuel-modal'); showToast('Abastecimento registrado!');
+  }
 }
-function openMaintModal() {
+function openMaintModal(editId) {
+  _editingVehicleId = editId || null;
   document.getElementById('maint-type').value='oleo'; document.getElementById('maint-desc').value=''; document.getElementById('maint-km').value=''; document.getElementById('maint-value').value=''; document.getElementById('maint-oil-flag').checked=false; populateAccountSelects();
+  if (editId) {
+    const m = maintenances.find(x => x.id === editId);
+    if (m) {
+      document.getElementById('maint-type').value = m.type || 'oleo';
+      document.getElementById('maint-desc').value = m.desc || '';
+      document.getElementById('maint-km').value = m.km || '';
+      document.getElementById('maint-value').value = m.value || '';
+      document.getElementById('maint-oil-flag').checked = !!m.oilFlag;
+      if (m.accountId) document.getElementById('maint-account').value = m.accountId;
+    }
+  }
   document.getElementById('maint-modal').classList.add('open');
 }
 async function submitMaint() {
   const type=document.getElementById('maint-type').value; const desc=document.getElementById('maint-desc').value.trim(); const km=parseInt(document.getElementById('maint-km').value)||0; const val=parseFloat(document.getElementById('maint-value').value)||0; const oilFlag=document.getElementById('maint-oil-flag').checked; const account=document.getElementById('maint-account').value;
   if (!desc) { showToast('Preencha a descrição'); return; }
-  await db.collection('vehicle_maintenance').add({type,desc,km,value:val,oilFlag,accountId:account,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
-  if (account) { const a=accounts.find(x=>x.id===account); if(a) await db.collection('accounts').doc(account).update({balance:(a.balance||0)-val}); }
-  closeModal('maint-modal'); showToast('Manutenção registrada!');
+  const subcatMap = { oleo:'oleo', pneus:'pneus', revisao:'revisao', outros:'manutencao' };
+  if (_editingVehicleId) {
+    await db.collection('vehicle_maintenance').doc(_editingVehicleId).update({type,desc,km,value:val,oilFlag,accountId:account});
+    const txSnap = await db.collection('transactions').where('vehicleRefId','==',_editingVehicleId).where('vehicleType','==','maint').get();
+    txSnap.forEach(txDoc => db.collection('transactions').doc(txDoc.id).update({name:desc,amount:-val,subcat:subcatMap[type]||'manutencao',accountId:account}));
+    _editingVehicleId = null;
+    closeModal('maint-modal'); showToast('Manutenção atualizada!');
+  } else {
+    const ref = await db.collection('vehicle_maintenance').add({type,desc,km,value:val,oilFlag,accountId:account,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+    if (account) { const a=accounts.find(x=>x.id===account); if(a) await db.collection('accounts').doc(account).update({balance:(a.balance||0)-val}); }
+    await db.collection('transactions').add({
+      name: desc, cat: 'vehicle',
+      subcat: subcatMap[type] || 'manutencao', amount: -val,
+      date: todayISO(), group: 'Hoje', type: 'saída',
+      icon: 'ti-car', bg: '#2c3e5022', color: '#2c3e50',
+      status: 'efetivada', accountId: account, vehicleRefId: ref.id, vehicleType: 'maint',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    closeModal('maint-modal'); showToast('Manutenção registrada!');
+  }
 }
+
+function editVehicleRecord(type, id) {
+  if (type === 'refuel') openRefuelModal(id);
+  else if (type === 'maint') openMaintModal(id);
+}
+
+async function deleteVehicleRecord(type, id) {
+  if (!confirm('Excluir este registro?')) return;
+  const col = type === 'refuel' ? 'vehicle_refuels' : 'vehicle_maintenance';
+  const doc = await db.collection(col).doc(id).get();
+  if (!doc.exists) return;
+  const data = doc.data();
+  // Restaurar saldo da conta
+  if (data.accountId && data.value) {
+    const a = accounts.find(x => x.id === data.accountId);
+    if (a) await db.collection('accounts').doc(data.accountId).update({ balance: (a.balance||0) + Math.abs(data.value) });
+  }
+  await db.collection(col).doc(id).delete();
+  // Deletar transação espelhada
+  const txSnap = await db.collection('transactions').where('vehicleRefId','==',id).where('vehicleType','==',type).get();
+  txSnap.forEach(txDoc => db.collection('transactions').doc(txDoc.id).delete());
+  showToast('Registro excluído!');
+}
+
 function openRouteModal() {
   document.getElementById('route-km').value=''; document.getElementById('route-origin').value=''; document.getElementById('route-dest').value=''; document.getElementById('route-reason').value=''; document.getElementById('route-distance').value='';
   document.getElementById('route-modal').classList.add('open');
@@ -2859,68 +3620,6 @@ async function saveTripAsGoal() {
   const custo=window._tripData.custoVolta;
   await db.collection('goals').add({name:'Viagem: '+window._tripData.origin+' → '+window._tripData.dest,target:Math.ceil(custo/10)*10,saved:0});
   showToast('Meta de viagem criada!'); closeModal('trip-modal');
-}
-
-// ===== HEALTH (ÁGUA E CAFEÍNA) =====
-async function addHealth(type, val) {
-  if (type === 'agua') health.agua = (health.agua||0) + val;
-  else health.cafeina = (health.cafeina||0) + val;
-  await db.collection('health').doc('today').set({ agua: health.agua||0, cafeina: health.cafeina||0, date: new Date().toISOString().slice(0,10) }, { merge: true });
-  renderHealthRingsPro(); showToast(val > 1 ? '+' + val + 'mg cafeína' : '+' + (val*1000).toFixed(0) + 'ml água');
-}
-async function loadHealthPro() {
-  try {
-    const snap = await db.collection('health').doc('today').get();
-    if (snap.exists && snap.data().date === new Date().toISOString().slice(0,10)) health = { agua: snap.data().agua||0, cafeina: snap.data().cafeina||0 };
-    else { health = { agua: 0, cafeina: 0 }; await db.collection('health').doc('today').set({ agua: 0, cafeina: 0, date: new Date().toISOString().slice(0,10) }); }
-  } catch(e) { health = { agua: 0, cafeina: 0 }; }
-  renderHealthRingsPro();
-}
-function renderHealthRingsPro() {
-  const rings = document.getElementById('health-rings');
-  if (!rings) return;
-  const peso = profile.peso || 70;
-  const idade = profile.idade || 30;
-  const metaAgua = Math.round(peso * 35) / 1000;
-  const cafeMax = Math.min(idade < 18 ? 100 : 400, Math.round(peso * 6));
-  const metaCafe = cafeMax;
-  const ap = Math.min((health.agua||0) / metaAgua * 100, 100);
-  const cp = Math.min((health.cafeina||0) / metaCafe * 100, 100);
-  const r = 25, circ = Math.round(2 * Math.PI * r * 10) / 10;
-  const offsetA = ap > 0 ? circ - (ap / 100 * circ) : circ;
-  const offsetC = cp > 0 ? circ - (cp / 100 * circ) : circ;
-  rings.innerHTML =
-    '<div class="health-ring"><svg viewBox="0 0 60 60"><circle class="h-ring-bg" cx="30" cy="30" r="'+r+'"/><circle class="h-ring-fg" stroke="'+(ap>=100?'var(--primary)':'#22d3ee')+'" stroke-dasharray="'+circ+'" stroke-dashoffset="'+offsetA+'"/></svg><div class="h-ring-label"><span class="hv">'+(health.agua||0).toFixed(1)+'L</span><span class="hu">/'+metaAgua.toFixed(1)+'L</span></div></div>' +
-    '<div class="health-ring"><svg viewBox="0 0 60 60"><circle class="h-ring-bg" cx="30" cy="30" r="'+r+'"/><circle class="h-ring-fg" stroke="'+(cp>=100?'var(--primary)':'#e07a3a')+'" stroke-dasharray="'+circ+'" stroke-dashoffset="'+offsetC+'"/></svg><div class="h-ring-label"><span class="hv">'+(health.cafeina||0)+'</span><span class="hu">/'+metaCafe+'mg</span></div></div>';
-}
-
-// ===== HEALTH CONFIG =====
-function openHealthConfig() {
-  document.getElementById('health-peso-input').value = profile.peso || '';
-  document.getElementById('health-idade-input').value = profile.idade || '';
-  updateHealthMetaPreview();
-  document.getElementById('health-config-modal').classList.add('open');
-}
-function updateHealthMetaPreview() {
-  const p = parseFloat(document.getElementById('health-peso-input').value) || 70;
-  const i = parseInt(document.getElementById('health-idade-input').value) || 30;
-  const agua = (Math.round(p * 35) / 1000).toFixed(1);
-  const caf = Math.min(i < 18 ? 100 : 400, Math.round(p * 6));
-  document.getElementById('health-meta-preview').innerHTML = 'Água: <strong>' + agua + 'L</strong> · Cafeína: <strong>' + caf + 'mg</strong>';
-}
-document.getElementById('health-peso-input')?.addEventListener('input', updateHealthMetaPreview);
-document.getElementById('health-idade-input')?.addEventListener('input', updateHealthMetaPreview);
-async function submitHealthConfig() {
-  const peso = parseFloat(document.getElementById('health-peso-input').value);
-  const idade = parseInt(document.getElementById('health-idade-input').value);
-  if (!peso || peso <= 0) { showToast('Informe um peso válido'); return; }
-  if (!idade || idade <= 0) { showToast('Informe uma idade válida'); return; }
-  await db.collection('profile').doc('me').set({ peso, idade }, { merge: true });
-  profile.peso = peso;
-  profile.idade = idade;
-  closeModal('health-config-modal');
-  renderHealthRingsPro();
-  showToast('Configurações de saúde salvas!');
 }
 
 // ===== AVATAR =====
@@ -3015,8 +3714,6 @@ function exportExcel() {
   URL.revokeObjectURL(url); showToast('Exportado!');
 }
 
-// ===== SUPERMARKET SEED CATEGORY =====
-// Ensure supermarket category exists
 // ===== FIRESTORE LISTENERS (NEW COLLECTIONS) =====
 function startProListeners() {
   db.collection('accounts').onSnapshot(snap => {
@@ -3039,24 +3736,25 @@ function startProListeners() {
   db.collection('vehicle').doc('config').onSnapshot(d => {
     if (d.exists) vehicle = d.data();
     updateVehicleHomeCard();
-    const vehIcon = document.getElementById('fab-veh-icon');
-    if (vehIcon) vehIcon.className = 'ti ' + (vehicle?.type === 'moto' ? 'ti-motorbike' : 'ti-car');
+    updateVehicleIcons();
+    if (document.getElementById('home-page')?.classList.contains('active')) renderHomeVehicle();
   });
   db.collection('vehicle_refuels').onSnapshot(snap => {
     refuels = []; snap.forEach(d => refuels.push({ id: d.id, ...d.data() }));
     refuels.sort((a,b) => (b.createdAt?.toDate?.()?.getTime()||0) - (a.createdAt?.toDate?.()?.getTime()||0));
     if (proSettings.vehicleActive) updateVehicleHomeCard();
+    if (document.getElementById('home-page')?.classList.contains('active')) renderHomeVehicle();
   });
   db.collection('vehicle_maintenance').onSnapshot(snap => {
     maintenances = []; snap.forEach(d => maintenances.push({ id: d.id, ...d.data() }));
     maintenances.sort((a,b) => (b.createdAt?.toDate?.()?.getTime()||0) - (a.createdAt?.toDate?.()?.getTime()||0));
+    if (document.getElementById('home-page')?.classList.contains('active')) renderHomeVehicle();
   });
   db.collection('vehicle_routes').onSnapshot(snap => {
     routes = []; snap.forEach(d => routes.push({ id: d.id, ...d.data() }));
     routes.sort((a,b) => (b.createdAt?.toDate?.()?.getTime()||0) - (a.createdAt?.toDate?.()?.getTime()||0));
+    if (document.getElementById('home-page')?.classList.contains('active')) renderHomeVehicle();
   });
-  // Health
-  loadHealthPro();
 }
 
 // ===== INIT =====
@@ -3067,30 +3765,7 @@ window.startListeners = function() {
   startProListeners();
   setTimeout(() => {
     loadProSettings();
-    // Add eye button
-    if (!document.getElementById('eye-btn-pro')) {
-      const bs = document.querySelector('.balance-section');
-      if (bs) {
-        const btn = document.createElement('button');
-        btn.id = 'eye-btn-pro';
-        btn.style.cssText = 'position:absolute;right:20px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:20px';
-        btn.innerHTML = '<i class="ti ti-eye-off"></i>';
-        btn.onclick = toggleBlur;
-        bs.appendChild(btn);
-        if (!blurActive) { document.getElementById('main-balance')?.classList.remove('blurred'); btn.innerHTML = '<i class="ti ti-eye"></i>'; }
-      }
-    }
-    // Add health section to home
-    const content = document.querySelector('.content');
-    if (content && !document.getElementById('health-section-pro')) {
-      const healthCard = document.createElement('div');
-      healthCard.className = 'income-card';
-      healthCard.id = 'health-section-pro';
-      healthCard.style.marginBottom = '12px';
-      healthCard.innerHTML = '<div class="section-row"><span class="section-label"><i class="ti ti-heartbeat" style="color:var(--primary);margin-right:4px"></i> Saúde</span><button class="icon-btn" onclick="openHealthConfig()" title="Configurar Saúde" style="width:28px;height:28px;font-size:14px"><i class="ti ti-settings"></i></button></div><div class="health-rings" id="health-rings"></div><div class="health-btns" id="health-btns-pro"><button class="health-btn" onclick="addHealth(\'agua\',0.473)"><i class="ti ti-building"></i> Escritório</button><button class="health-btn" onclick="addHealth(\'agua\',0.35)"><i class="ti ti-home"></i> Casa</button><button class="health-btn" onclick="addHealth(\'cafeina\',80)"><i class="ti ti-coffee"></i> Café</button><button class="health-btn" onclick="addHealth(\'cafeina\',150)"><i class="ti ti-bolt"></i> Energético</button></div>';
-      content.insertBefore(healthCard, content.firstChild);
-      renderHealthRingsPro();
-    }
+    // Botão do olho removido — saldo sempre visível
 
     // Add dashboard reports to home
     if (!document.getElementById('home-report-section')) {
@@ -3099,7 +3774,7 @@ window.startListeners = function() {
       const recentSection = document.getElementById('recent-tx-list');
       if (recentSection && recentSection.parentNode) {
         recentSection.parentNode.insertBefore(reportEl, recentSection.nextSibling);
-        renderHomeReports();
+        renderHomeReports(); renderHomeVehicle(); renderHomeChartsDesktop();
       }
     }
 
@@ -3136,6 +3811,127 @@ function dismissPWA() {
 }
 
 window.addEventListener('appinstalled', () => { installPrompt = null; });
+
+// ===== P2P FUNCTIONS =====
+let selectedP2PUser = null;
+
+function toggleP2P() {
+  const toggle = document.getElementById('p2p-toggle');
+  const section = document.getElementById('p2p-section');
+  if (!toggle || !section) return;
+  const active = toggle.classList.toggle('active');
+  section.style.display = active ? 'block' : 'none';
+  if (!active) {
+    document.getElementById('p2p-username').value = '';
+    document.getElementById('p2p-search-result').innerHTML = '';
+    selectedP2PUser = null;
+  }
+}
+
+async function searchP2PByUsername(query) {
+  const resultDiv = document.getElementById('p2p-search-result');
+  selectedP2PUser = null;
+  if (!query || query.length < 1) { resultDiv.innerHTML = ''; return; }
+  const q = query.startsWith('@') ? query : '@' + query;
+  try {
+    const snap = await db.collection('profile')
+      .where('username', '>=', q.toLowerCase())
+      .where('username', '<=', q.toLowerCase() + '\uf8ff')
+      .limit(5)
+      .get();
+    if (snap.empty) { resultDiv.innerHTML = '<div style="font-size:12px;color:var(--text-muted);padding:8px">Ninguém encontrado</div>'; return; }
+    let users = [];
+    snap.forEach(doc => { if (doc.id !== currentUser.uid) users.push({ uid: doc.id, ...doc.data() }); });
+    if (!users.length) { resultDiv.innerHTML = '<div style="font-size:12px;color:var(--text-muted);padding:8px">Ninguém encontrado</div>'; return; }
+    resultDiv.innerHTML = users.map(u =>
+      `<div class="p2p-search-result" onclick="selectP2PUser('${u.uid}','${(u.name||'').replace(/'/g,"\\'")}','${(u.username||'').replace(/'/g,"\\'")}')">
+        <div class="av">${(u.name||'?').charAt(0).toUpperCase()}</div>
+        <div><div style="font-size:14px;font-weight:600">${u.name||'?'}</div><div style="font-size:12px;color:var(--text-muted)">${u.username||''}</div></div>
+      </div>`
+    ).join('');
+  } catch (e) { console.error(e); }
+}
+
+function selectP2PUser(uid, name, username) {
+  selectedP2PUser = { uid, name, username };
+  document.getElementById('p2p-search-result').innerHTML =
+    `<div class="p2p-search-result selected">
+      <div class="av" style="background:var(--primary);color:#fff">${name.charAt(0).toUpperCase()}</div>
+      <div><div style="font-size:14px;font-weight:600">${name}</div><div style="font-size:12px;color:var(--text-muted)">${username}</div></div>
+    </div>`;
+}
+
+
+
+async function acceptP2PRequest(requestId, fromUid, fromName, amount, desc) {
+  const now = firebase.firestore.FieldValue.serverTimestamp();
+
+  // Transaction for current user (saída) — prevista
+  const myTxRef = await db.collection('transactions').add({
+    name: desc || `Pagamento para ${fromName}`,
+    cat: 'p2p',
+    subcat: null,
+    date: 'Agora',
+    amount: -amount,
+    type: 'saída',
+    icon: 'ti-hand-stop',
+    bg: '#e67e2222',
+    color: '#e67e22',
+    group: 'Hoje',
+    status: 'prevista',
+    uid: currentUser.uid,
+    p2pSenderUid: fromUid,
+    p2pCounterpartName: fromName,
+    createdAt: now,
+  });
+
+  // Transaction for the requester (entrada) — prevista
+  await db.collection('transactions').add({
+    name: desc || `Recebido de ${profile.name}`,
+    cat: 'p2p',
+    subcat: null,
+    date: 'Agora',
+    amount: amount,
+    type: 'entrada',
+    icon: 'ti-hand-stop',
+    bg: '#e67e2222',
+    color: '#e67e22',
+    group: 'Hoje',
+    status: 'prevista',
+    uid: fromUid,
+    p2pTargetUid: currentUser.uid,
+    p2pCounterpartName: profile.name,
+    createdAt: now,
+  });
+
+  // Notify requester
+  await db.collection('notifications').add({
+    uid: fromUid,
+    message: `${profile.name} aceitou sua cobrança de R$ ${formatBRL(amount)}`,
+    amount: amount,
+    type: 'recebido',
+    from: profile.name,
+    read: false,
+    p2pTxId: myTxRef.id,
+    createdAt: now,
+  });
+
+  // Remove the p2p request and notification
+  await db.collection('p2p_requests').doc(requestId).delete();
+  const notifSnap = await db.collection('notifications').where('p2pRequestId','==',requestId).get();
+  notifSnap.forEach(d => d.ref.delete());
+
+  showToast(`Cobrança de R$ ${formatBRL(amount)} aceita! Transação criada como prevista.`);
+}
+
+async function rejectP2PRequest(requestId) {
+  await db.collection('p2p_requests').doc(requestId).delete();
+  const notifSnap = await db.collection('notifications').where('p2pRequestId','==',requestId).get();
+  notifSnap.forEach(d => d.ref.delete());
+  showToast("Cobrança recusada");
+}
+
+
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js');
