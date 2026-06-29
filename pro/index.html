@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mu Finance Pro v03</title>
+<title>Mu Finance Pro v04</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/svg+xml" href="icons/logo.svg">
 <link rel="apple-touch-icon" href="icons/logo.png">
@@ -66,6 +66,12 @@
   /* ===== DESKTOP SIDEBAR (web only) ===== */
   .desktop-sidebar{display:none}
 
+  /* ===== SIDEBAR COLLAPSIBLE VARS ===== */
+  :root{
+    --sb-width: 220px;
+    --sb-collapsed: 60px;
+  }
+
   @media(min-width:768px){
     body{background:var(--bg-body);padding:0}
     .app{max-width:none;border-radius:0;box-shadow:none;min-height:100vh;overflow:visible;width:100%}
@@ -73,23 +79,80 @@
     /* Hide every legacy in-page tab-bar — replaced by the single fixed sidebar */
     .page>.tab-bar{display:none !important}
 
-    /* Real, persistent sidebar */
+    /* ===== SIDEBAR ===== */
     .desktop-sidebar{
-      display:flex;flex-direction:column;position:fixed;left:0;top:0;width:220px;height:100vh;
-      background:var(--bg-top);border-right:1px solid var(--border);padding:20px 10px;z-index:100;
+      display:flex;flex-direction:column;position:fixed;left:0;top:0;
+      width:var(--sb-width);height:100vh;
+      background:var(--bg-top);border-right:1px solid var(--border);
+      padding:16px 8px;z-index:100;
+      transition:width .25s cubic-bezier(.4,0,.2,1);
+      overflow:hidden;
     }
-    .desktop-sidebar .brand{display:flex;align-items:center;gap:10px;padding:0 10px;margin-bottom:24px}
-    .desktop-sidebar .brand-mark{width:32px;height:32px;border-radius:8px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
-    .desktop-sidebar .brand-name{font-size:14px;font-weight:800;color:var(--text-main);letter-spacing:-.3px}
+    /* Collapsed state */
+    .desktop-sidebar.collapsed{ width:var(--sb-collapsed); }
+
+    /* Brand row */
+    .desktop-sidebar .brand{
+      display:flex;align-items:center;gap:10px;
+      padding:0 6px;margin-bottom:20px;min-height:36px;
+    }
+    .desktop-sidebar .brand-mark{
+      width:32px;height:32px;border-radius:8px;background:var(--primary);
+      color:#fff;display:flex;align-items:center;justify-content:center;
+      font-size:16px;flex-shrink:0;
+    }
+    .desktop-sidebar .brand-name{
+      font-size:14px;font-weight:800;color:var(--text-main);
+      letter-spacing:-.3px;white-space:nowrap;
+      transition:opacity .15s .05s, width .25s;
+    }
+    .desktop-sidebar.collapsed .brand-name{opacity:0;width:0;overflow:hidden}
+
+    /* Toggle button inside brand */
+    .sidebar-toggle{
+      margin-left:auto;width:26px;height:26px;border-radius:6px;
+      border:none;background:var(--border);color:var(--text-sec);
+      display:flex;align-items:center;justify-content:center;
+      cursor:pointer;font-size:14px;flex-shrink:0;transition:background .15s,transform .25s;
+    }
+    .sidebar-toggle:hover{background:var(--primary-light);color:var(--primary)}
+    .desktop-sidebar.collapsed .sidebar-toggle{transform:rotate(180deg)}
+
+    /* Nav items */
     .desktop-sidebar nav{display:flex;flex-direction:column;gap:1px}
-    .desktop-sidebar .d-tab{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;border:none;background:none;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;color:var(--text-sec);text-align:left;width:100%;transition:background .15s,color .15s}
+    .desktop-sidebar .d-tab{
+      display:flex;align-items:center;gap:10px;
+      padding:9px 10px;border-radius:8px;border:none;background:none;
+      cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;
+      color:var(--text-sec);text-align:left;width:100%;
+      transition:background .15s,color .15s;white-space:nowrap;
+      position:relative;
+    }
     .desktop-sidebar .d-tab:hover{background:var(--bg-app);color:var(--text-main)}
     .desktop-sidebar .d-tab.active{background:var(--primary-light);color:var(--primary)}
     .desktop-sidebar .d-tab i{font-size:17px;width:20px;text-align:center;flex-shrink:0}
+    .desktop-sidebar .d-tab span{
+      transition:opacity .12s .05s;white-space:nowrap;
+    }
+    .desktop-sidebar.collapsed .d-tab span{opacity:0;pointer-events:none}
+    /* Tooltip on collapsed */
+    .desktop-sidebar.collapsed .d-tab::after{
+      content:attr(data-label);
+      position:absolute;left:calc(var(--sb-collapsed) - 4px);
+      background:var(--text-main);color:var(--bg-app);
+      font-size:11px;font-weight:700;padding:4px 10px;
+      border-radius:6px;white-space:nowrap;
+      pointer-events:none;opacity:0;
+      transition:opacity .15s;
+      z-index:200;
+    }
+    .desktop-sidebar.collapsed .d-tab:hover::after{opacity:1}
+
     .desktop-sidebar .sidebar-footer{margin-top:auto;padding-top:10px;border-top:1px solid var(--border)}
 
     /* Push every page to the right of the sidebar */
-    .app.page{margin-left:220px;min-height:100vh}
+    .app.page{margin-left:var(--sb-width);min-height:100vh;transition:margin-left .25s cubic-bezier(.4,0,.2,1)}
+    body.sidebar-collapsed .app.page{margin-left:var(--sb-collapsed)}
 
     .app>.top-bar,.app>.actions,.app>.page-header{background:var(--bg-app);border-right:none;min-height:auto}
     .app>.top-bar{flex-direction:row;align-items:center;gap:16px;padding:28px 32px 6px;justify-content:space-between}
@@ -109,20 +172,22 @@
   }
 
   @media(min-width:1024px){
-    .desktop-sidebar{width:240px}
-    .app.page{margin-left:240px}
+    :root{--sb-width:240px}
     .app>.content,.app>.page-content{max-width:none}
     .two-col{grid-template-columns:1fr 1fr;gap:18px}
     .three-col{grid-template-columns:1fr 1fr 1fr;gap:18px}
     .desktop-grid-4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:16px;margin-bottom:18px}
     .send-again{flex-wrap:wrap}
     .desktop-chart-row{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}
+    .desktop-chart-row .chart-wrap-new:first-child{grid-column:1 / -1}
+    .chart-canvas-box{height:220px}
   }
 
   @media(min-width:1400px){
-    .desktop-sidebar{width:260px}
-    .app.page{margin-left:260px}
-    .desktop-chart-row{grid-template-columns:2fr 1fr}
+    :root{--sb-width:260px}
+    .desktop-chart-row{grid-template-columns:1fr 1fr}
+    .desktop-chart-row .chart-wrap-new:first-child{grid-column:1 / -1}
+    .chart-canvas-box{height:240px}
   }
 
   .desktop-only{display:none}
@@ -518,18 +583,19 @@
   <div class="brand">
     <div class="brand-mark"><i class="ti ti-wallet"></i></div>
     <div class="brand-name">Mu Finance</div>
+    <button class="sidebar-toggle" onclick="toggleSidebar()" title="Recolher menu"><i class="ti ti-layout-sidebar-left-collapse" id="sidebar-toggle-icon"></i></button>
   </div>
   <nav>
-    <button class="d-tab active" data-page="home" onclick="showPage('home')"><i class="ti ti-home"></i><span>Início</span></button>
-    <button class="d-tab" data-page="transactions" onclick="showPage('transactions')"><i class="ti ti-chart-bar"></i><span>Extrato</span></button>
-    <button class="d-tab" data-page="reports" onclick="showPage('reports')"><i class="ti ti-report"></i><span>Relatórios</span></button>
-    <button class="d-tab" data-page="cards" onclick="showPage('cards')"><i class="ti ti-credit-card"></i><span>Cartões</span></button>
-    <button class="d-tab" data-page="goals" onclick="showPage('goals')"><i class="ti ti-target"></i><span>Metas</span></button>
-    <button class="d-tab" data-page="budget" onclick="showPage('budget')"><i class="ti ti-chart-pie"></i><span>Orçamento</span></button>
-    <button class="d-tab" data-page="profile" onclick="showPage('profile')"><i class="ti ti-user"></i><span>Perfil</span></button>
+    <button class="d-tab active" data-page="home" data-label="Início" onclick="showPage('home')"><i class="ti ti-home"></i><span>Início</span></button>
+    <button class="d-tab" data-page="transactions" data-label="Extrato" onclick="showPage('transactions')"><i class="ti ti-chart-bar"></i><span>Extrato</span></button>
+    <button class="d-tab" data-page="reports" data-label="Relatórios" onclick="showPage('reports')"><i class="ti ti-report"></i><span>Relatórios</span></button>
+    <button class="d-tab" data-page="cards" data-label="Cartões" onclick="showPage('cards')"><i class="ti ti-credit-card"></i><span>Cartões</span></button>
+    <button class="d-tab" data-page="goals" data-label="Metas" onclick="showPage('goals')"><i class="ti ti-target"></i><span>Metas</span></button>
+    <button class="d-tab" data-page="budget" data-label="Orçamento" onclick="showPage('budget')"><i class="ti ti-chart-pie"></i><span>Orçamento</span></button>
+    <button class="d-tab" data-page="profile" data-label="Perfil" onclick="showPage('profile')"><i class="ti ti-user"></i><span>Perfil</span></button>
   </nav>
   <div class="sidebar-footer">
-    <button class="d-tab" data-page="settings" onclick="showPage('settings')"><i class="ti ti-settings"></i><span>Configurações</span></button>
+    <button class="d-tab" data-page="settings" data-label="Configurações" onclick="showPage('settings')"><i class="ti ti-settings"></i><span>Configurações</span></button>
   </div>
 </nav>
 
@@ -585,17 +651,47 @@
     <!-- Receitas + Despesas -->
     <div class="two-col" style="margin-bottom:8px">
       <div class="income-card" id="home-income-card">
-        <div class="income-label">Receitas</div>
+        <div class="income-label">Receitas do mês</div>
         <div class="income-amount" style="color:var(--primary);font-size:16px" id="home-income-amount">R$ 0,00</div>
       </div>
       <div class="income-card" id="home-expense-card">
-        <div class="income-label">Despesas</div>
+        <div class="income-label">Despesas do mês</div>
         <div class="income-amount" style="color:#c0392b;font-size:16px" id="home-expense-amount">R$ 0,00</div>
       </div>
     </div>
 
+    <!-- Gráfico de barras mensal (mobile) -->
+    <div class="income-card" style="margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div class="income-label" style="margin:0">Receitas vs Despesas · 6 meses</div>
+        <div style="display:flex;gap:8px;font-size:10px;color:var(--text-muted)">
+          <span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--primary);margin-right:3px;vertical-align:middle"></span>Rec.</span>
+          <span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#c0392b;margin-right:3px;vertical-align:middle"></span>Desp.</span>
+        </div>
+      </div>
+      <div style="position:relative;height:110px"><canvas id="home-mobile-bar-chart"></canvas></div>
+    </div>
+
+    <!-- Donut categorias + saldo linha (mobile row) -->
+    <div class="two-col" style="margin-bottom:8px">
+      <div class="income-card" style="display:flex;flex-direction:column;align-items:center;padding:12px">
+        <div class="income-label" style="align-self:flex-start;margin-bottom:8px">Categorias</div>
+        <div style="position:relative;width:90px;height:90px">
+          <canvas id="home-mobile-donut"></canvas>
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none">
+            <span style="font-size:8px;color:var(--text-muted)">Desp.</span>
+            <span id="home-mobile-donut-total" style="font-size:10px;font-weight:800;color:var(--text-main)">R$0</span>
+          </div>
+        </div>
+      </div>
+      <div class="income-card" style="display:flex;flex-direction:column;padding:12px">
+        <div class="income-label" style="margin-bottom:8px">Saldo acumulado</div>
+        <div style="flex:1;position:relative;min-height:74px"><canvas id="home-mobile-net"></canvas></div>
+      </div>
+    </div>
+
     <!-- Sua renda -->
-    <div class="income-card" style="margin-top:12px">
+    <div class="income-card" style="margin-bottom:8px">
         <div class="income-label">Sua renda · Últimos 6 meses</div>
         <div class="chart-wrap">
           <svg class="mini-chart" viewBox="0 0 120 52" preserveAspectRatio="none" id="income-chart-svg">
@@ -612,10 +708,9 @@
         <div class="income-amount" id="income-amount">R$ 0,00</div>
         <div class="income-change"><i class="ti ti-minus" style="font-size:11px"></i> 0,00%</div>
       </div>
-    </div>
 
     <!-- Atividade recente -->
-    <div class="section-row" style="margin-top:12px">
+    <div class="section-row" style="margin-top:4px">
       <span class="section-label">Atividade recente</span>
       <button class="section-link" onclick="showPage('transactions')">Ver tudo <i class="ti ti-chevron-right" style="font-size:13px"></i></button>
     </div>
@@ -627,8 +722,18 @@
 
     <!-- Desktop-only charts row -->
     <div class="desktop-only desktop-chart-row" id="desktop-charts-row">
-      <div class="chart-wrap-new"><h4><i class="ti ti-pie-chart" style="font-size:13px"></i> Despesas por Categoria</h4><div class="chart-canvas-box"><canvas id="home-pie-chart"></canvas></div></div>
-      <div class="chart-wrap-new"><h4><i class="ti ti-trending-up" style="font-size:13px"></i> Receitas vs Despesas · 12 Meses</h4><div class="chart-canvas-box"><canvas id="home-bar-chart"></canvas></div></div>
+      <div class="chart-wrap-new" style="grid-column:1 / -1">
+        <h4><i class="ti ti-trending-up" style="font-size:13px"></i> Receitas vs Despesas · 12 Meses</h4>
+        <div class="chart-canvas-box"><canvas id="home-bar-chart"></canvas></div>
+      </div>
+      <div class="chart-wrap-new">
+        <h4><i class="ti ti-pie-chart" style="font-size:13px"></i> Despesas por Categoria</h4>
+        <div class="chart-canvas-box"><canvas id="home-pie-chart"></canvas></div>
+      </div>
+      <div class="chart-wrap-new">
+        <h4><i class="ti ti-chart-line" style="font-size:13px"></i> Saldo Acumulado · 6 Meses</h4>
+        <div class="chart-canvas-box"><canvas id="home-net-chart"></canvas></div>
+      </div>
     </div>
 
   </div>
@@ -1640,7 +1745,7 @@ function startListeners() {
     renderRecent();
     if (document.getElementById('transactions-page').classList.contains('active')) renderAll('all');
     if (document.getElementById('reports-page').classList.contains('active')) renderReports();
-    if (document.getElementById('home-page').classList.contains('active')) { renderHomeReports(); renderHomeVehicle(); renderHomeChartsDesktop(); }
+    if (document.getElementById('home-page').classList.contains('active')) { renderHomeReports(); renderHomeMobileCharts(); renderHomeVehicle(); renderHomeChartsDesktop(); }
   });
 
   db.collection('contacts').onSnapshot(snap => {
@@ -1930,6 +2035,10 @@ async function submitTransaction() {
   if (selectedP2PUser && selectedP2PUser.uid) {
     if (amt > 100000) { showToast('Valor máximo por transação: R$ 100.000'); return; }
   }
+  // Disable button to prevent double-submission
+  const submitBtn = document.getElementById('modal-submit');
+  if (submitBtn) { submitBtn.disabled = true; submitBtn.style.opacity = '0.6'; }
+  try {
 
   const catType = (activeModalType === 'send' || activeModalType === 'saída') ? 'saída' : 'entrada';
   const cat = categories[catType].find(c => c.id === selectedCatId);
@@ -2063,7 +2172,13 @@ async function submitTransaction() {
     }
   }
 
-  closeModal('tx-modal');
+  } catch(e) {
+    console.error('Erro ao salvar transação:', e);
+    showToast('Erro ao salvar. Tente novamente.');
+  } finally {
+    if (submitBtn) { submitBtn.disabled = false; submitBtn.style.opacity = ''; }
+    closeModal('tx-modal');
+  }
 }
 
 async function deleteTransaction() {
@@ -2671,7 +2786,7 @@ window.showPage = function(name) {
       if (vehTab) vehTab.classList.add('active');
     });
   }
-  if (name === 'home') { renderHomeReports(); renderHomeVehicle(); renderHomeChartsDesktop(); }
+  if (name === 'home') { renderHomeReports(); renderHomeMobileCharts(); renderHomeVehicle(); renderHomeChartsDesktop(); }
   window.scrollTo(0, 0);
 };
 
@@ -2875,6 +2990,7 @@ function renderHomeVehicle() {
 function renderHomeChartsDesktop() {
   const pieCanvas = document.getElementById('home-pie-chart');
   const barCanvas = document.getElementById('home-bar-chart');
+  const netCanvas = document.getElementById('home-net-chart');
   if (!pieCanvas || !barCanvas) return;
   const w = pieCanvas.parentElement.offsetWidth;
   if (w < 100) return;
@@ -2889,6 +3005,7 @@ function renderHomeChartsDesktop() {
   // Destroy existing charts
   if (window._homePieChart) { window._homePieChart.destroy(); window._homePieChart = null; }
   if (window._homeBarChart) { window._homeBarChart.destroy(); window._homeBarChart = null; }
+  if (window._homeNetChart) { window._homeNetChart.destroy(); window._homeNetChart = null; }
   // Pie chart — despesas por categoria
   const catTotals = {};
   const allCats = [...(categories.saída||[])];
@@ -2899,11 +3016,11 @@ function renderHomeChartsDesktop() {
   const pieLabels = Object.keys(catTotals);
   const pieData = Object.values(catTotals);
   if (pieLabels.length) {
-    const colors = ['#2ecc71','#e74c3c','#f39c12','#3498db','#9b59b6','#1abc9c','#e67e22','#34495e','#16a085','#c0392b','#27ae60','#8e44ad'];
+    const colors = ['#356FD8','#e74c3c','#f39c12','#2ecc71','#9b59b6','#1abc9c','#e67e22','#34495e','#16a085','#c0392b','#27ae60','#8e44ad'];
     window._homePieChart = new Chart(pieCanvas, {
       type: 'doughnut',
       data: { labels: pieLabels, datasets: [{ data: pieData, backgroundColor: colors.slice(0,pieLabels.length), borderWidth: 0 }] },
-      options: { responsive: true, maintainAspectRatio: true, cutout: '60%',
+      options: { responsive: true, maintainAspectRatio: false, cutout: '60%',
         plugins: { legend: { position: 'bottom', labels: { color: textColor, font: { size: 11 }, boxWidth: 10, padding: 8 } } } }
     });
   }
@@ -2926,12 +3043,12 @@ function renderHomeChartsDesktop() {
     data: {
       labels,
       datasets: [
-        { label: 'Receitas', data: incomeData, backgroundColor: '#2ecc7188', borderColor: '#2ecc71', borderWidth: 1, borderRadius: 4 },
-        { label: 'Despesas', data: expenseData, backgroundColor: '#e74c3c88', borderColor: '#e74c3c', borderWidth: 1, borderRadius: 4 }
+        { label: 'Receitas', data: incomeData, backgroundColor: '#356FD844', borderColor: '#356FD8', borderWidth: 1, borderRadius: 6 },
+        { label: 'Despesas', data: expenseData, backgroundColor: '#e74c3c44', borderColor: '#e74c3c', borderWidth: 1, borderRadius: 6 }
       ]
     },
     options: {
-      responsive: true, maintainAspectRatio: true,
+      responsive: true, maintainAspectRatio: false,
       scales: {
         x: { ticks: { color: textColor, font: { size: 10 } }, grid: { display: false } },
         y: { ticks: { color: textColor, font: { size: 10 }, callback: v => 'R$'+(v/1000).toFixed(0)+'k' }, grid: { color: gridColor } }
@@ -2941,6 +3058,182 @@ function renderHomeChartsDesktop() {
       }
     }
   });
+  // Net worth / Saldo acumulado — 6 meses
+  if (netCanvas) {
+    const netLabels = [];
+    const netData = [];
+    let runningBalance = 0;
+    // first, sum all transactions older than 6 months as a base
+    const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 6, 1);
+    runningBalance = transactions
+      .filter(t => { const d = t.createdAt ? t.createdAt.toDate() : null; return d && d < sixMonthsAgo; })
+      .reduce((s, t) => s + (t.amount || 0), 0);
+    for (let i = 5; i >= 0; i--) {
+      const m = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      netLabels.push(m.toLocaleString('pt-BR', { month: 'short', year: '2-digit' }));
+      const monthSum = transactions
+        .filter(t => { const d = t.createdAt ? t.createdAt.toDate() : null; return d && d.getMonth() === m.getMonth() && d.getFullYear() === m.getFullYear(); })
+        .reduce((s, t) => s + (t.amount || 0), 0);
+      runningBalance += monthSum;
+      netData.push(runningBalance);
+    }
+    window._homeNetChart = new Chart(netCanvas, {
+      type: 'line',
+      data: {
+        labels: netLabels,
+        datasets: [{
+          label: 'Saldo',
+          data: netData,
+          borderColor: '#356FD8',
+          backgroundColor: 'rgba(53,111,216,0.1)',
+          borderWidth: 2.5,
+          pointBackgroundColor: '#356FD8',
+          pointRadius: 4,
+          fill: true,
+          tension: 0.4
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        scales: {
+          x: { ticks: { color: textColor, font: { size: 10 } }, grid: { display: false } },
+          y: { ticks: { color: textColor, font: { size: 10 }, callback: v => 'R$'+(v/1000).toFixed(1)+'k' }, grid: { color: gridColor } }
+        },
+        plugins: { legend: { display: false } }
+      }
+    });
+  }
+}
+
+// ===== SIDEBAR TOGGLE =====
+function toggleSidebar() {
+  const sb = document.getElementById('desktop-sidebar');
+  if (!sb) return;
+  const collapsed = sb.classList.toggle('collapsed');
+  document.body.classList.toggle('sidebar-collapsed', collapsed);
+  try { localStorage.setItem('sb_collapsed', collapsed ? '1' : '0'); } catch(e){}
+}
+(function initSidebar() {
+  try {
+    if (localStorage.getItem('sb_collapsed') === '1') {
+      document.addEventListener('DOMContentLoaded', () => {
+        const sb = document.getElementById('desktop-sidebar');
+        if (sb) { sb.classList.add('collapsed'); document.body.classList.add('sidebar-collapsed'); }
+      });
+    }
+  } catch(e){}
+})();
+
+// ===== HOME MOBILE CHARTS =====
+function renderHomeMobileCharts() {
+  if (typeof Chart === 'undefined') return;
+  const now = new Date();
+  const isDark = document.body.getAttribute('data-theme') === 'dark';
+  const textColor = isDark ? '#aaa' : '#666';
+  const gridColor = isDark ? '#1e3a6a' : '#eef1f6';
+
+  // — Bar chart: 6 meses receitas vs despesas —
+  const barCanvas = document.getElementById('home-mobile-bar-chart');
+  if (barCanvas) {
+    if (window._hmBar) { window._hmBar.destroy(); window._hmBar = null; }
+    const bLabels = [], bInc = [], bExp = [];
+    for (let i = 5; i >= 0; i--) {
+      const m = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      bLabels.push(m.toLocaleString('pt-BR', { month: 'short' }));
+      const vals = transactions.filter(t => {
+        const d = t.createdAt ? t.createdAt.toDate() : null;
+        return d && d.getMonth() === m.getMonth() && d.getFullYear() === m.getFullYear();
+      });
+      bInc.push(vals.filter(t => (t.amount||0) > 0).reduce((s,t) => s + t.amount, 0));
+      bExp.push(vals.filter(t => (t.amount||0) < 0).reduce((s,t) => s + Math.abs(t.amount), 0));
+    }
+    window._hmBar = new Chart(barCanvas, {
+      type: 'bar',
+      data: {
+        labels: bLabels,
+        datasets: [
+          { label: 'Rec.', data: bInc, backgroundColor: 'rgba(53,111,216,0.55)', borderColor: '#356FD8', borderWidth: 1, borderRadius: 4 },
+          { label: 'Desp.', data: bExp, backgroundColor: 'rgba(192,57,43,0.5)', borderColor: '#c0392b', borderWidth: 1, borderRadius: 4 }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        scales: {
+          x: { ticks: { color: textColor, font: { size: 9 } }, grid: { display: false } },
+          y: { display: false }
+        },
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => 'R$ ' + ctx.raw.toLocaleString('pt-BR', { minimumFractionDigits: 0 }) } } }
+      }
+    });
+  }
+
+  // — Donut: categorias do mês —
+  const donutCanvas = document.getElementById('home-mobile-donut');
+  if (donutCanvas) {
+    if (window._hmDonut) { window._hmDonut.destroy(); window._hmDonut = null; }
+    const monthTx = transactions.filter(t => {
+      const d = t.createdAt ? t.createdAt.toDate() : null;
+      return d && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    });
+    const catTotals = {};
+    const allCats = [...(categories.saída||[])];
+    monthTx.filter(t => (t.amount||0) < 0).forEach(t => {
+      const cat = allCats.find(c => c.id === t.cat);
+      if (cat) catTotals[cat.name] = (catTotals[cat.name]||0) + Math.abs(t.amount);
+    });
+    const pieLabels = Object.keys(catTotals);
+    const pieData = Object.values(catTotals);
+    const total = pieData.reduce((s,v)=>s+v,0);
+    const totEl = document.getElementById('home-mobile-donut-total');
+    if (totEl) totEl.textContent = total >= 1000 ? 'R$'+(total/1000).toFixed(1)+'k' : 'R$'+Math.round(total);
+    const colors = ['#356FD8','#e74c3c','#f39c12','#2ecc71','#9b59b6','#1abc9c','#e67e22','#e91e63','#00bcd4'];
+    if (pieLabels.length) {
+      window._hmDonut = new Chart(donutCanvas, {
+        type: 'doughnut',
+        data: { labels: pieLabels, datasets: [{ data: pieData, backgroundColor: colors.slice(0,pieLabels.length), borderWidth: 0 }] },
+        options: {
+          responsive: true, maintainAspectRatio: false, cutout: '68%',
+          plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ctx.label + ': R$ ' + ctx.raw.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) } } }
+        }
+      });
+    }
+  }
+
+  // — Line chart: saldo acumulado 6 meses —
+  const netCanvas = document.getElementById('home-mobile-net');
+  if (netCanvas) {
+    if (window._hmNet) { window._hmNet.destroy(); window._hmNet = null; }
+    const netLabels = [], netData = [];
+    const sixAgo = new Date(now.getFullYear(), now.getMonth() - 6, 1);
+    let running = transactions
+      .filter(t => { const d = t.createdAt ? t.createdAt.toDate() : null; return d && d < sixAgo; })
+      .reduce((s,t) => s + (t.amount||0), 0);
+    for (let i = 5; i >= 0; i--) {
+      const m = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      netLabels.push(m.toLocaleString('pt-BR', { month: 'short' }));
+      running += transactions
+        .filter(t => { const d = t.createdAt ? t.createdAt.toDate() : null; return d && d.getMonth() === m.getMonth() && d.getFullYear() === m.getFullYear(); })
+        .reduce((s,t) => s + (t.amount||0), 0);
+      netData.push(running);
+    }
+    const isPos = netData[netData.length-1] >= netData[0];
+    const lineColor = isPos ? '#356FD8' : '#c0392b';
+    window._hmNet = new Chart(netCanvas, {
+      type: 'line',
+      data: {
+        labels: netLabels,
+        datasets: [{ data: netData, borderColor: lineColor, backgroundColor: lineColor+'22', borderWidth: 2, pointRadius: 2, fill: true, tension: 0.4 }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        scales: {
+          x: { ticks: { color: textColor, font: { size: 9 } }, grid: { display: false } },
+          y: { display: false }
+        },
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => 'R$ ' + ctx.raw.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) } } }
+      }
+    });
+  }
 }
 
 // ===== BLUR TOGGLE =====
@@ -3832,7 +4125,7 @@ window.startListeners = function() {
       const recentSection = document.getElementById('recent-tx-list');
       if (recentSection && recentSection.parentNode) {
         recentSection.parentNode.insertBefore(reportEl, recentSection.nextSibling);
-        renderHomeReports(); renderHomeVehicle(); renderHomeChartsDesktop();
+        renderHomeReports(); renderHomeMobileCharts(); renderHomeVehicle(); renderHomeChartsDesktop();
       }
     }
 
