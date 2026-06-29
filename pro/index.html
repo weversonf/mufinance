@@ -635,6 +635,11 @@
     <button class="filter-chip" onclick="filterTx('saída',this)">Saídas</button>
     <button class="filter-chip" onclick="showPage('reports')" style="margin-left:auto;color:var(--primary);border-color:var(--primary);font-weight:600"><i class="ti ti-report" style="font-size:13px"></i> Relatórios</button>
   </div>
+  <div style="display:flex;align-items:center;justify-content:center;gap:12px;padding:6px 18px">
+    <button class="icon-btn" onclick="prevTxMonth()"><i class="ti ti-chevron-left"></i></button>
+    <span id="tx-month-label" style="font-size:13px;font-weight:700;color:var(--text-main);min-width:120px;text-align:center"></span>
+    <button class="icon-btn" onclick="nextTxMonth()"><i class="ti ti-chevron-right"></i></button>
+  </div>
   <div class="page-content" id="all-tx-list"></div>
   <div class="tab-bar">
     <button class="tab" onclick="showPage('home')"><i class="ti ti-home"></i><span>Início</span></button>
@@ -1289,6 +1294,8 @@ const auth = firebase.auth();
 let transactions = [];
 let categories = { saída: [], entrada: [] };
 let contacts = [];
+let txMonthOffset = 0;
+let txTypeFilter = 'all';
 let currentTheme = 'light';
 let activeModalType = 'send';
 let selectedCatId = null;
@@ -1634,7 +1641,7 @@ function showPage(name) {
       if(tabs[tabNames[name]]) tabs[tabNames[name]].classList.add('active');
     });
   }
-  if (name === 'transactions') renderAll('all');
+  if (name === 'transactions') { txMonthOffset = 0; renderAll('all'); }
   if (name === 'reports') { renderReports(); renderAnnualChart(); }
   if (name === 'cards') renderCards();
   window.scrollTo(0,0);
@@ -2268,10 +2275,29 @@ function txGroupKey(tx) {
   }
   return 'Sem data';
 }
+function getTxMonthISO(offset) {
+  const d = new Date();
+  d.setDate(1);
+  d.setMonth(d.getMonth() + offset);
+  return d.toISOString().slice(0, 7); // "AAAA-MM"
+}
+function txBelongsToMonth(tx, monthISO) {
+  const key = txGroupKey(tx);
+  if (!key) return false;
+  return key.slice(0, 7) === monthISO;
+}
 function renderAll(filter) {
-  const list = filter === 'all' ? transactions : transactions.filter(t => t.type === filter);
+  txTypeFilter = filter || 'all';
+  const monthISO = getTxMonthISO(txMonthOffset);
+  // Atualiza label do mês
+  const [y, m] = monthISO.split('-').map(Number);
+  const meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+  const label = document.getElementById('tx-month-label');
+  if (label) label.textContent = meses[m-1].charAt(0).toUpperCase() + meses[m-1].slice(1) + ' ' + y;
+
+  const list = (txTypeFilter === 'all' ? transactions : transactions.filter(t => t.type === txTypeFilter))
+    .filter(t => txBelongsToMonth(t, monthISO));
   const groups = [...new Set(list.map(txGroupKey))];
-  // Ordena os grupos do mais recente para o mais antigo
   groups.sort((a, b) => (a < b ? 1 : a > b ? -1 : 0));
   let html = '';
   groups.forEach(g => {
@@ -2280,9 +2306,34 @@ function renderAll(filter) {
     html += list.filter(t => txGroupKey(t) === g).map(txHTML).join('');
   });
   const container = document.getElementById('all-tx-list');
-  if (!html) html = '<p style="color:var(--text-muted);font-size:13px;padding:20px 0;text-align:center">Nenhuma transação</p>';
+  if (!html) html = '<p style="color:var(--text-muted);font-size:13px;padding:20px 0;text-align:center">Nenhuma transação neste mês</p>';
   if(container) container.innerHTML = html;
+
+  // Atualiza balanço do mês
+  const monthIncome = list.filter(t => t.amount > 0).reduce((s, t) => s + t.amount, 0);
+  const monthExpense = list.filter(t => t.amount < 0).reduce((s, t) => s + Math.abs(t.amount), 0);
+  const monthBalance = monthIncome - monthExpense;
+  const balHtml = list.length > 0 ? `
+    <div class="income-card" style="margin-top:20px;padding:16px">
+      <div class="section-label">Balanço do Mês</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
+        <span style="font-size:12px;color:var(--text-sec)">Receitas</span>
+        <span style="font-size:14px;font-weight:700;color:var(--primary)">R$ ${formatBRL(monthIncome)}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
+        <span style="font-size:12px;color:var(--text-sec)">Despesas</span>
+        <span style="font-size:14px;font-weight:700;color:#c0392b">R$ ${formatBRL(monthExpense)}</span>
+      </div>
+      <div style="height:1px;background:var(--border);margin:8px 0"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:12px;font-weight:600">Saldo</span>
+        <span style="font-size:16px;font-weight:800;color:${monthBalance >= 0 ? 'var(--primary)' : '#c0392b'}">R$ ${formatBRL(monthBalance)}</span>
+      </div>
+    </div>` : '';
+  if (container) container.innerHTML += balHtml;
 }
+function prevTxMonth() { txMonthOffset--; renderAll(); }
+function nextTxMonth() { txMonthOffset++; renderAll(); }
 function filterTx(type, el) {
   document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
   el.classList.add('active');
