@@ -1927,6 +1927,9 @@ async function submitTransaction() {
   const desc = document.getElementById('modal-desc').value.trim();
   const amt = parseFloat(document.getElementById('modal-amount').value);
   if(!selectedCatId || !amt || amt <= 0) { showToast("Preencha os campos obrigatórios"); return; }
+  if (selectedP2PUser && selectedP2PUser.uid) {
+    if (amt > 100000) { showToast('Valor máximo por transação: R$ 100.000'); return; }
+  }
 
   const catType = (activeModalType === 'send' || activeModalType === 'saída') ? 'saída' : 'entrada';
   const cat = categories[catType].find(c => c.id === selectedCatId);
@@ -4005,17 +4008,6 @@ if (window.visualViewport) {
     const shrunk = window.visualViewport.height < _baseHeight * 0.85;
     document.body.classList.toggle('keyboard-open', shrunk);
   });
-}
-
-// ===== P2P AMOUNT VALIDATION =====
-const _origSubmitTransaction = submitTransaction;
-async function submitTransaction() {
-  if (selectedP2PUser && selectedP2PUser.uid) {
-    const amt = parseFloat(document.getElementById('modal-amount').value);
-    if (!amt || amt <= 0) { showToast('Informe um valor válido'); return; }
-    if (amt > 100000) { showToast('Valor máximo por transação: R$ 100.000'); return; }
-  }
-  await _origSubmitTransaction();
 }
 
 </script>
