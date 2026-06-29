@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Mu Finance — Visual Prototype</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css">
+<style>
+:root{--bg-body:#f5f3ff;--bg-app:#ffffff;--bg-top:#ede9fe;--text-main:#1e1b4b;--text-sec:#6d6a8a;--text-muted:#9d9ab0;--border:#e8e5f0;--card-bg:#f8f7ff;--primary:#7C3AED;--primary-light:#EDE9FE;--modal-bg:#ffffff;--input-bg:#ffffff;--input-border:#e8e5f0;--tab-inactive:#c4c0d8}
+[data-theme="dark"]{--bg-body:#0f0a1a;--bg-app:#1a1528;--bg-top:#221d35;--text-main:#f0edff;--text-sec:#a8a2c0;--text-muted:#6b6680;--border:#2d2840;--card-bg:#231e35;--primary:#8B5CF6;--primary-light:#1E1B4B;--modal-bg:#231e35;--input-bg:#2d2840;--input-border:#3d3860;--tab-inactive:#5a5580}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg-body);min-height:100vh;display:flex;align-items:flex-start;justify-content:center;-webkit-user-select:none;user-select:none}
+.app{width:100%;max-width:420px;min-height:100vh;background:var(--bg-app);display:flex;flex-direction:column;overflow:hidden;position:relative;margin:0 auto}
+.top-bar{background:linear-gradient(135deg,#7C3AED,#6D28D9);padding:52px 20px 16px;border-radius:0 0 24px 24px;color:#fff}
+.greeting{display:flex;justify-content:space-between;align-items:flex-start}
+.greeting h3{font-size:15px;font-weight:400;line-height:1.5;color:#fff}
+.greeting h3 span{font-weight:700}
+.icons{display:flex;gap:8px}
+.icon-btn{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.2);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;color:#fff;backdrop-filter:blur(4px)}
+.balance-section{text-align:center;padding:14px 20px 4px}
+.currency-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,0.2);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:500;color:#fff;margin-bottom:6px;backdrop-filter:blur(4px)}
+.balance{font-size:44px;font-weight:800;color:#fff;letter-spacing:-2px}
+.balance sup{font-size:22px;vertical-align:super;font-weight:600}
+.balance small{font-size:24px;font-weight:400;opacity:.7}
+.actions{display:flex;gap:8px;padding:14px 16px;background:var(--bg-top);align-items:center;justify-content:center}
+.action-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:12px;border-radius:14px;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;box-shadow:0 2px 8px rgba(124,58,237,0.08)}
+.action-btn.side{background:var(--bg-app);color:var(--primary);border:1.5px solid var(--primary-light)}
+.action-btn.center-btn{background:linear-gradient(135deg,#7C3AED,#6D28D9);color:#fff;border-radius:50%;width:52px;height:52px;flex:0 0 52px;font-size:22px;padding:0;box-shadow:0 4px 16px rgba(124,58,237,0.35)}
+.content{background:var(--bg-app);border-radius:24px 24px 0 0;padding:20px 18px 100px;flex:1;margin-top:-16px;overflow-y:auto;box-shadow:0 -4px 20px rgba(124,58,237,0.06)}
+.section-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.section-label{font-size:14px;font-weight:700;color:var(--text-main)}
+.section-title-new{font-size:12px;font-weight:700;color:var(--text-main);margin-bottom:8px;display:flex;align-items:center;gap:6px;margin-top:16px}
+.section-title-new i{color:var(--primary);font-size:15px}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}
+.income-card{background:var(--card-bg);border-radius:18px;padding:16px;box-shadow:0 2px 12px rgba(124,58,237,0.06);border:1px solid var(--border)}
+.income-label{font-size:11px;color:var(--text-muted);margin-bottom:4px;font-weight:500}
+.income-amount{font-size:18px;font-weight:800;color:var(--text-main);margin-top:2px}
+.tx-item{display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);cursor:pointer;border-radius:12px;padding:12px 8px}
+.tx-logo{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.tx-info{flex:1}
+.tx-name{font-size:13px;font-weight:600;color:var(--text-main)}
+.tx-date{font-size:11px;color:var(--text-muted);margin-top:2px}
+.tx-amount{font-size:14px;font-weight:700}
+.page{display:none;flex-direction:column;flex:1;background:var(--bg-app);min-height:100vh}
+.page.active{display:flex}
+.page-header{display:flex;align-items:center;gap:10px;padding:52px 18px 16px;background:var(--bg-app);border-bottom:1px solid var(--border)}
+.back-btn{background:none;border:none;font-size:22px;color:var(--text-sec);cursor:pointer;padding:4px}
+.page-title{font-size:17px;font-weight:700;color:var(--text-main)}
+.filter-row{display:flex;gap:8px;padding:12px 18px;overflow-x:auto}
+.filter-chip{background:var(--card-bg);border:none;border-radius:20px;padding:6px 14px;font-size:12px;font-weight:600;color:var(--text-sec);cursor:pointer;font-family:inherit;white-space:nowrap}
+.filter-chip.active{background:var(--primary);color:#fff}
+.page-content{padding:18px 18px 90px;flex:1;overflow-y:auto}
+.submit-btn{width:100%;background:linear-gradient(135deg,#7C3AED,#6D28D9);color:#fff;border:none;border-radius:14px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 4px 16px rgba(124,58,237,0.25)}
+.tab-bar{display:flex;justify-content:space-between;align-items:center;padding:8px 24px 16px;background:var(--bg-app);position:fixed;bottom:0;left:50%;transform:translateX(-50%);z-index:50;width:100%;max-width:420px;border-radius:24px 24px 0 0;box-shadow:0 -4px 24px rgba(0,0,0,0.06);border:none}
+.tab-bar::before{content:'';position:absolute;top:-14px;left:50%;transform:translateX(-50%);width:60px;height:16px;background:var(--bg-app);border-radius:0 0 30px 30px;z-index:3}
+.tab{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:var(--tab-inactive);cursor:pointer;font-weight:600;background:none;border:none;font-family:inherit;padding:4px 12px}
+.tab.active{color:var(--primary)}
+.tab i{font-size:22px}
+.tab-fab-wrap{position:relative;display:flex;justify-content:center;align-items:center;width:60px;height:0;z-index:5}
+.tab-fab{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#7C3AED,#6D28D9);color:#fff;display:flex;align-items:center;justify-content:center;font-size:26px;cursor:pointer;border:none;box-shadow:0 6px 20px rgba(124,58,237,0.4);margin-top:-32px;z-index:6;position:relative}
+.profile-header{text-align:center;padding:20px 0}
+.profile-avatar{width:80px;height:80px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:700;margin:0 auto 12px}
+.profile-name{font-size:18px;font-weight:700;color:var(--text-main)}
+.profile-email{font-size:13px;color:var(--text-muted);margin-top:4px}
+.menu-list{margin-top:24px}
+.menu-item{display:flex;align-items:center;gap:12px;padding:16px;border-bottom:1px solid var(--border);cursor:pointer;border-radius:12px}
+.menu-item i{font-size:20px;color:var(--text-sec)}
+.menu-item span{font-size:14px;font-weight:500;color:var(--text-main);flex:1}
+.profile-field{margin-bottom:14px}
+.profile-field label{font-size:11px;color:var(--text-muted);font-weight:500;display:block;margin-bottom:4px}
+.profile-field .value{font-size:14px;font-weight:600;color:var(--text-main);padding:8px 12px;background:var(--card-bg);border-radius:10px;display:flex;justify-content:space-between;align-items:center}
+.profile-field .value .edit-btn{background:none;border:none;color:var(--primary);cursor:pointer;font-size:13px;font-weight:600;font-family:inherit}
+.toggle-switch{width:44px;height:24px;background:var(--border);border-radius:12px;position:relative;cursor:pointer;flex-shrink:0}
+.toggle-switch::after{content:'';width:20px;height:20px;background:#fff;border-radius:50%;position:absolute;top:2px;left:2px;box-shadow:0 2px 4px rgba(0,0,0,.2)}
+.toggle-switch.active{background:var(--primary)}
+.toggle-switch.active::after{left:22px}
+.card-item{background:linear-gradient(135deg,var(--primary),#2d5a43);border-radius:20px;padding:20px;color:#fff;margin-bottom:16px;position:relative;overflow:hidden;box-shadow:0 8px 16px rgba(0,0,0,0.1)}
+.card-item::after{content:'';position:absolute;top:-20%;right:-10%;width:150px;height:150px;background:rgba(255,255,255,0.1);border-radius:50%}
+.card-type{font-size:12px;opacity:0.8;margin-bottom:20px;text-transform:uppercase;letter-spacing:1px}
+.card-number{font-size:18px;letter-spacing:2px;margin-bottom:20px;font-family:monospace}
+.card-footer{display:flex;justify-content:space-between;align-items:flex-end}
+.card-holder{font-size:14px;font-weight:600}
+.card-expiry{font-size:12px;opacity:0.8}
+.card-add-btn{background:var(--card-bg);border:2px dashed var(--border);border-radius:20px;padding:16px;text-align:center;cursor:pointer;color:var(--text-muted);font-size:14px;font-weight:600;font-family:inherit;width:100%}
+.tx-group-label{font-size:11px;font-weight:700;color:var(--text-muted);margin:12px 0 8px;text-transform:uppercase;letter-spacing:1px}
+.goal-item-new{background:var(--card-bg);border-radius:14px;padding:14px;margin-bottom:10px}
+.goal-item-new .g-name{font-size:14px;font-weight:700;color:var(--text-main);margin-bottom:6px}
+.goal-progress-new{display:flex;align-items:center;gap:8px}
+.goal-progress-new .gp-bar{flex:1;height:8px;background:var(--border);border-radius:6px;overflow:hidden}
+.goal-progress-new .gp-fill{height:100%;border-radius:6px;background:var(--primary)}
+.goal-progress-new .gp-pct{font-size:12px;font-weight:700;color:var(--primary);min-width:32px;text-align:right}
+.goal-values-new{font-size:11px;color:var(--text-muted);margin-top:4px}
+.budget-item-new{padding:10px 0;border-bottom:1px solid var(--border)}
+.budget-header-new{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.budget-header-new .b-name{font-size:12px;font-weight:600;color:var(--text-main)}
+.budget-header-new .b-amt{font-size:11px;color:var(--text-muted)}
+.progress-bar-new{height:6px;background:var(--border);border-radius:4px;overflow:hidden;margin:6px 0}
+.progress-fill-new{height:100%;border-radius:4px;background:var(--primary)}
+.v-health{display:flex;flex-direction:column;gap:6px;padding:4px 0}
+.v-health-item{display:flex;align-items:center;gap:8px}
+.v-health-item .v-lbl{font-size:11px;color:var(--text-sec);width:44px;flex-shrink:0}
+.v-health-item .v-bar{flex:1;height:6px;background:var(--border);border-radius:4px;overflow:hidden}
+.v-health-item .v-fill{height:100%;border-radius:4px;background:var(--primary)}
+.v-health-item .v-pct{font-size:11px;font-weight:600;width:32px;text-align:right;color:var(--text-sec)}
+.chart-wrap-new{background:var(--card-bg);border-radius:14px;padding:14px;margin-bottom:12px}
+.chart-wrap-new h4{font-size:12px;font-weight:600;color:var(--text-main);margin-bottom:10px}
+.chart-canvas-box{position:relative;width:100%;height:200px;background:var(--bg-app);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:11px;border:1px dashed var(--border)}
+.report-cat-item{display:flex;align-items:center;gap:10px;padding:10px 8px;border-radius:10px;border-bottom:1px solid var(--border)}
+.report-cat-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.report-cat-info{flex:1}
+.report-cat-name{font-size:13px;font-weight:600;color:var(--text-main)}
+.report-cat-count{font-size:11px;color:var(--text-muted)}
+.report-cat-amount{font-size:14px;font-weight:700;text-align:right}
+.report-cat-bar{height:4px;border-radius:2px;background:var(--border);margin-top:4px;overflow:hidden}
+.report-cat-fill{height:100%;border-radius:2px;background:var(--primary)}
+.annual-chart-wrap{background:var(--card-bg);border-radius:16px;padding:16px;margin-bottom:16px}
+.annual-chart-wrap h4{font-size:13px;font-weight:600;color:var(--text-main);margin-bottom:12px}
+.config-group{margin-bottom:24px}
+.config-group h3{font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}
+.config-item-new{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--card-bg);border-radius:14px;margin-bottom:6px;border:1px solid var(--border)}
+.config-item-new .ci-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;background:var(--bg-app);flex-shrink:0}
+.config-item-new .ci-info{flex:1}
+.config-item-new .ci-info .ci-name{font-size:13px;font-weight:600;color:var(--text-main)}
+.config-item-new .ci-info .ci-sub{font-size:10px;color:var(--text-muted)}
+.config-add-input{display:flex;gap:8px;margin-top:8px}
+.config-add-input input{flex:1;background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:13px;color:var(--text-main);font-family:inherit;outline:none}
+.config-add-input button{width:40px;height:40px;border-radius:10px;border:none;background:var(--primary);color:#fff;font-size:18px;cursor:pointer}
+.v-hist-item{display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)}
+.v-hist-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;background:var(--card-bg)}
+.v-hist-info{flex:1}
+.v-hist-info .vh-t{font-size:12px;font-weight:600;color:var(--text-main)}
+.v-hist-info .vh-s{font-size:10px;color:var(--text-muted)}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:100;align-items:flex-end;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--modal-bg);border-radius:28px 28px 0 0;padding:24px 20px 40px;width:100%;max-width:420px;animation:modalUp .3s cubic-bezier(.2,.9,.3,1);max-height:85vh;overflow-y:auto;box-shadow:0 -8px 40px rgba(0,0,0,0.12)}
+@keyframes modalUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal h2{font-size:16px;font-weight:700;color:var(--text-main);margin-bottom:20px}
+.modal-close{float:right;background:none;border:none;font-size:22px;color:var(--text-muted);cursor:pointer;line-height:1}
+.field-label{font-size:12px;color:var(--text-muted);font-weight:500;margin-bottom:6px;display:block}
+.field-input{width:100%;border:1px solid var(--input-border);background:var(--input-bg);color:var(--text-main);border-radius:12px;padding:11px 14px;font-size:14px;font-family:inherit;outline:none;margin-bottom:14px}
+.modal-handle{width:40px;height:4px;background:var(--border);border-radius:4px;margin:0 auto 16px}
+.fab-overlay{display:none;position:fixed;inset:0;z-index:49;background:rgba(0,0,0,.3);backdrop-filter:blur(4px)}
+.fab-overlay.active{display:block}
+.fab-speed-dial{position:fixed;bottom:130px;left:50%;z-index:50;pointer-events:none;margin-left:-65px;width:130px;height:130px}
+.fab-speed-dial .fab-opt{position:absolute;bottom:0;left:50%;margin-left:-24px;width:48px;height:48px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:20px;background:#1a1a2e;color:#fff;box-shadow:0 4px 16px rgba(0,0,0,.3);font-family:inherit;opacity:0;transform:scale(0);transition:all .35s cubic-bezier(.34,1.56,.64,1);pointer-events:none}
+.fab-speed-dial.active .fab-opt{opacity:1;pointer-events:auto}
+.fab-speed-dial.active .fab-opt-left{transform:scale(1) translate(-70px,-80px);transition-delay:.05s}
+.fab-speed-dial.active .fab-opt-center{transform:scale(1) translate(0,-130px);transition-delay:.1s}
+.fab-speed-dial.active .fab-opt-right{transform:scale(1) translate(70px,-80px);transition-delay:.15s}
+.scroll-hint{font-size:10px;color:var(--text-muted);text-align:center;padding:4px 0 8px}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ===== HOME PAGE ===== -->
+  <div id="page-home" class="page active">
+    <div class="top-bar">
+      <div class="greeting">
+        <div class="greeting-left" style="display:flex;align-items:center;gap:12px">
+          <div style="width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;backdrop-filter:blur(4px)">M</div>
+          <div>
+            <h3>Olá, <span>Murilo</span></h3>
+            <span style="font-size:12px;opacity:.7">Bem-vindo à sua carteira</span>
+          </div>
+        </div>
+        <div class="icons">
+          <button class="icon-btn" onclick="openModal('notif')"><i class="ti ti-bell"></i></button>
+        </div>
+      </div>
+      <div class="balance-section">
+        <div class="currency-badge"><i class="ti ti-coin" style="font-size:13px"></i> BRL</div>
+        <div class="balance"><sup>R$</sup>4.750<small>,00</small></div>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="action-btn side" onclick="openModal('tx')"><i class="ti ti-plus"></i> Receita</button>
+      <button class="action-btn center-btn" onclick="openModal('tx')"><i class="ti ti-arrows-exchange"></i></button>
+      <button class="action-btn side" onclick="openModal('tx')"><i class="ti ti-minus"></i> Despesa</button>
+    </div>
+    <div class="content">
+      <div class="two-col">
+        <div class="income-card"><div class="income-label">Receitas</div><div class="income-amount" style="color:var(--primary)">R$ 6.200,00</div></div>
+        <div class="income-card"><div class="income-label">Despesas</div><div class="income-amount" style="color:#c0392b">R$ 1.450,00</div></div>
+      </div>
+      <div class="income-card"><div class="income-label">Sua renda · Este mês</div><div class="income-amount">R$ 6.200,00</div></div>
+      <div class="section-title-new"><i class="ti ti-history"></i> Recentes</div>
+      <div class="tx-item"><div class="tx-logo" style="background:#7C3AED22;color:#7C3AED"><i class="ti ti-wallet"></i></div><div class="tx-info"><div class="tx-name">Salário</div><div class="tx-date">01/06/2026</div></div><div class="tx-amount" style="color:var(--primary)">+R$ 5.000,00</div></div>
+      <div class="tx-item"><div class="tx-logo" style="background:#c0392b22;color:#c0392b"><i class="ti ti-shopping-cart"></i></div><div class="tx-info"><div class="tx-name">Supermercado</div><div class="tx-date">02/06/2026</div></div><div class="tx-amount" style="color:#c0392b">-R$ 350,00</div></div>
+      <div class="tx-item"><div class="tx-logo" style="background:#e07a3a22;color:#e07a3a"><i class="ti ti-gas-station"></i></div><div class="tx-info"><div class="tx-name">Gasolina</div><div class="tx-date">03/06/2026</div></div><div class="tx-amount" style="color:#c0392b">-R$ 120,00</div></div>
+    </div>
+  </div>
+
+  <!-- ===== EXTRATO PAGE ===== -->
+  <div id="page-extrato" class="page">
+    <div class="page-header">
+      <button class="back-btn" onclick="navigate('home')"><i class="ti ti-arrow-left"></i></button>
+      <span class="page-title">Extrato</span>
+    </div>
+    <div class="filter-row">
+      <div style="display:flex;align-items:center;gap:4px;background:var(--card-bg);border-radius:10px;padding:2px 6px">
+        <button class="icon-btn" style="background:none;color:var(--text-sec);width:28px;height:28px"><i class="ti ti-chevron-left" style="font-size:14px"></i></button>
+        <span style="font-size:11px;font-weight:700;min-width:100px;text-align:center;color:var(--text-main)">Junho 2026</span>
+        <button class="icon-btn" style="background:none;color:var(--text-sec);width:28px;height:28px"><i class="ti ti-chevron-right" style="font-size:14px"></i></button>
+      </div>
+      <button class="filter-chip active">Todas</button>
+      <button class="filter-chip">Entradas</button>
+      <button class="filter-chip">Saídas</button>
+      <button class="filter-chip" onclick="navigate('reports')" style="margin-left:auto"><i class="ti ti-report" style="font-size:13px"></i> Relatórios</button>
+    </div>
+    <div class="page-content">
+      <div class="tx-group-label">Hoje</div>
+      <div class="tx-item"><div class="tx-logo" style="background:#7C3AED22;color:#7C3AED"><i class="ti ti-wallet"></i></div><div class="tx-info"><div class="tx-name">Salário</div><div class="tx-date">01/06</div></div><div class="tx-amount" style="color:var(--primary)">+R$ 5.000,00</div></div>
+      <div class="tx-item"><div class="tx-logo" style="background:#c0392b22;color:#c0392b"><i class="ti ti-shopping-cart"></i></div><div class="tx-info"><div class="tx-name">Supermercado</div><div class="tx-date">02/06</div></div><div class="tx-amount" style="color:#c0392b">-R$ 350,00</div></div>
+      <div class="income-card" style="margin-top:20px;padding:16px">
+        <div class="section-label">Balanço do Mês</div>
+        <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:12px"><span style="color:var(--text-sec)">Receitas</span><span style="font-weight:700;color:var(--primary)">R$ 6.200,00</span></div>
+        <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:12px"><span style="color:var(--text-sec)">Despesas</span><span style="font-weight:700;color:#c0392b">R$ 1.450,00</span></div>
+        <div style="height:1px;background:var(--border);margin:8px 0"></div>
+        <div style="display:flex;justify-content:space-between;font-size:14px"><span style="font-weight:600">Saldo</span><span style="font-weight:800;color:var(--primary)">R$ 4.750,00</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== CARTÕES PAGE ===== -->
+  <div id="page-cartoes" class="page">
+    <div class="page-header">
+      <button class="back-btn" onclick="navigate('home')"><i class="ti ti-arrow-left"></i></button>
+      <span class="page-title">Cartões de Crédito</span>
+      <div style="flex:1"></div>
+      <button class="icon-btn" style="background:var(--card-bg);color:var(--primary)" onclick="openModal('card')"><i class="ti ti-plus"></i></button>
+    </div>
+    <div class="page-content">
+      <div style="overflow-x:auto;display:flex;gap:12px;padding:4px 0 12px">
+        <div class="card-item" style="min-width:240px;background:linear-gradient(135deg,#7C3AED,#5B21B6)">
+          <div class="card-type">Mastercard</div>
+          <div class="card-number">**** **** **** 4832</div>
+          <div class="card-footer"><div class="card-holder">MURILO SANTOS</div><div class="card-expiry">12/28</div></div>
+        </div>
+        <div class="card-item" style="min-width:240px;background:linear-gradient(135deg,#e07a3a,#c2410c)">
+          <div class="card-type">Visa</div>
+          <div class="card-number">**** **** **** 1579</div>
+          <div class="card-footer"><div class="card-holder">MURILO SANTOS</div><div class="card-expiry">08/27</div></div>
+        </div>
+      </div>
+      <div class="income-card" style="padding:16px">
+        <div class="section-label">Resumo de Gastos</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:10px">
+          <div style="width:8px;height:8px;border-radius:50%;background:#7C3AED;flex-shrink:0"></div>
+          <div style="flex:1"><div style="display:flex;justify-content:space-between;font-size:12px"><span style="font-weight:600">Nubank</span><span style="font-weight:700">R$ 890,00</span></div><div style="height:4px;background:var(--border);border-radius:4px;margin-top:4px;overflow:hidden"><div style="width:60%;height:100%;background:#7C3AED;border-radius:4px"></div></div></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:10px">
+          <div style="width:8px;height:8px;border-radius:50%;background:#e07a3a;flex-shrink:0"></div>
+          <div style="flex:1"><div style="display:flex;justify-content:space-between;font-size:12px"><span style="font-weight:600">Inter</span><span style="font-weight:700">R$ 320,00</span></div><div style="height:4px;background:var(--border);border-radius:4px;margin-top:4px;overflow:hidden"><div style="width:40%;height:100%;background:#e07a3a;border-radius:4px"></div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== PERFIL PAGE ===== -->
+  <div id="page-perfil" class="page">
+    <div class="page-header">
+      <button class="back-btn" onclick="navigate('home')"><i class="ti ti-arrow-left"></i></button>
+      <span class="page-title">Perfil</span>
+    </div>
+    <div class="page-content">
+      <div class="profile-header">
+        <div class="profile-avatar">M</div>
+        <div class="profile-name">Murilo Santos</div>
+        <div class="profile-email">murilo@email.com</div>
+      </div>
+      <div class="profile-field"><label>Nome</label><div class="value"><span>Murilo</span><button class="edit-btn">Editar</button></div></div>
+      <div class="profile-field"><label>Sobrenome</label><div class="value"><span>Santos</span><button class="edit-btn">Editar</button></div></div>
+      <div class="profile-field"><label>Email</label><div class="value"><span>murilo@email.com</span><button class="edit-btn">Editar</button></div></div>
+      <div class="profile-field"><label>Usuário</label><div class="value"><span>@murilo</span><button class="edit-btn">Editar</button></div></div>
+      <div class="profile-field"><label>Cidade</label><div class="value"><span>Fortaleza</span><button class="edit-btn">Editar</button></div></div>
+      <div class="profile-field"><label>Estado</label><div class="value"><span>CE</span><button class="edit-btn">Editar</button></div></div>
+      <div class="profile-field"><label>Meta Água (ml)</label><div class="value"><span>3.500</span><button class="edit-btn">Editar</button></div></div>
+      <div class="profile-field"><label>Limite Cafeína (mg)</label><div class="value"><span>400</span><button class="edit-btn">Editar</button></div></div>
+      <div class="menu-list">
+        <div class="menu-item"><i class="ti ti-moon"></i><span>Modo Escuro</span><div class="toggle-switch" onclick="toggleTheme()"></div></div>
+        <div class="menu-item" style="border:none"><i class="ti ti-logout" style="color:#c0392b"></i><span style="color:#c0392b">Sair da Conta</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== RELATÓRIOS PAGE ===== -->
+  <div id="page-reports" class="page">
+    <div class="page-header">
+      <button class="back-btn" onclick="navigate('home')"><i class="ti ti-arrow-left"></i></button>
+      <span class="page-title">Relatórios</span>
+    </div>
+    <div class="page-content">
+      <div class="two-col" style="margin-bottom:16px">
+        <div class="income-card"><div class="income-label">Receitas</div><div class="income-amount" style="color:var(--primary)">R$ 6.200,00</div></div>
+        <div class="income-card"><div class="income-label">Despesas</div><div class="income-amount" style="color:#c0392b">R$ 1.450,00</div></div>
+      </div>
+      <div class="annual-chart-wrap"><h4>Receitas vs Despesas · 2026</h4><div class="chart-canvas-box" style="height:120px"><span>Gráfico anual aqui</span></div></div>
+      <div class="section-row" style="margin-top:16px"><span class="section-label">Por categoria</span></div>
+      <div class="report-cat-item"><div class="report-cat-icon" style="background:#7C3AED22;color:#7C3AED"><i class="ti ti-wallet"></i></div><div class="report-cat-info"><div class="report-cat-name">Salário</div><div class="report-cat-count">1 transação</div><div class="report-cat-bar"><div class="report-cat-fill" style="width:80%;background:#7C3AED"></div></div></div><div class="report-cat-amount">R$ 5.000,00</div></div>
+      <div class="report-cat-item"><div class="report-cat-icon" style="background:#c0392b22;color:#c0392b"><i class="ti ti-shopping-cart"></i></div><div class="report-cat-info"><div class="report-cat-name">Supermercado</div><div class="report-cat-count">2 transações</div><div class="report-cat-bar"><div class="report-cat-fill" style="width:50%;background:#c0392b"></div></div></div><div class="report-cat-amount">R$ 520,00</div></div>
+      <div class="section-title-new" style="margin-top:16px"><i class="ti ti-layers"></i> Ferramentas</div>
+      <div style="display:flex;gap:8px"><button class="action-btn side" style="flex:1" onclick="navigate('goals')"><i class="ti ti-target"></i> Metas</button><button class="action-btn side" style="flex:1" onclick="navigate('budget')"><i class="ti ti-chart-pie"></i> Orçamento</button></div>
+    </div>
+  </div>
+
+  <!-- ===== METAS PAGE ===== -->
+  <div id="page-goals" class="page">
+    <div class="page-header">
+      <button class="back-btn" onclick="navigate('home')"><i class="ti ti-arrow-left"></i></button>
+      <span class="page-title">Metas de Economia</span>
+      <div style="flex:1"></div>
+      <button class="icon-btn" style="background:var(--card-bg);color:var(--primary)" onclick="openModal('goal')"><i class="ti ti-plus"></i></button>
+    </div>
+    <div class="page-content">
+      <div class="goal-item-new">
+        <div class="g-name">Capacete Novo</div>
+        <div class="goal-progress-new"><div class="gp-bar"><div class="gp-fill" style="width:65%"></div></div><span class="gp-pct">65%</span></div>
+        <div class="goal-values-new">R$ 650,00 de R$ 1.000,00</div>
+      </div>
+      <div class="goal-item-new">
+        <div class="g-name">Viagem para Canoa</div>
+        <div class="goal-progress-new"><div class="gp-bar"><div class="gp-fill" style="width:30%"></div></div><span class="gp-pct">30%</span></div>
+        <div class="goal-values-new">R$ 300,00 de R$ 1.000,00</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== ORÇAMENTO PAGE ===== -->
+  <div id="page-budget" class="page">
+    <div class="page-header">
+      <button class="back-btn" onclick="navigate('home')"><i class="ti ti-arrow-left"></i></button>
+      <span class="page-title">Orçamento</span>
+      <div style="flex:1"></div>
+      <button class="icon-btn" style="background:var(--card-bg);color:var(--text-sec)" onclick="openModal('budget-limit')"><i class="ti ti-settings"></i></button>
+    </div>
+    <div class="page-content">
+      <div class="income-card">
+        <div class="section-row"><span class="section-label">Limite Mensal Total</span><span style="font-size:16px;font-weight:700;color:var(--text-main)">R$ 5.000,00</span></div>
+        <div class="progress-bar-new"><div class="progress-fill-new" style="width:29%"></div></div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin-top:4px"><span>Gasto: R$ 1.450,00</span><span>Disponível: R$ 3.550,00</span></div>
+      </div>
+      <div class="section-title-new" style="margin-top:20px"><i class="ti ti-category"></i> Por Categoria</div>
+      <div class="budget-item-new"><div class="budget-header-new"><span class="b-name"><i class="ti ti-shopping-cart" style="color:#c0392b;margin-right:4px"></i> Alimentação</span><span class="b-amt"><span class="spent" style="color:var(--text-sec);font-weight:600">R$ 520,00</span> / R$ 800,00</span></div><div class="progress-bar-new"><div class="progress-fill-new" style="width:65%"></div></div><div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);margin-top:2px"><span>65%</span><button class="edit-btn" style="background:none;border:none;color:var(--primary);cursor:pointer;font-size:10px;font-family:inherit">Editar</button></div></div>
+      <div class="budget-item-new"><div class="budget-header-new"><span class="b-name"><i class="ti ti-gas-station" style="color:#e07a3a;margin-right:4px"></i> Combustível</span><span class="b-amt"><span class="spent" style="color:var(--text-sec);font-weight:600">R$ 200,00</span> / R$ 400,00</span></div><div class="progress-bar-new"><div class="progress-fill-new" style="width:50%"></div></div><div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);margin-top:2px"><span>50%</span><button class="edit-btn" style="background:none;border:none;color:var(--primary);cursor:pointer;font-size:10px;font-family:inherit">Editar</button></div></div>
+      <div class="income-card" style="margin-top:16px;padding:16px">
+        <div class="section-label">Resumo Total</div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;margin-top:8px"><span style="color:var(--text-sec)">Orçado</span><span style="font-weight:700">R$ 1.200,00</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;margin-top:4px"><span style="color:var(--text-sec)">Gasto</span><span style="font-weight:700;color:#e07a3a">R$ 720,00</span></div>
+        <div style="height:1px;background:var(--border);margin:8px 0"></div>
+        <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--text-sec)">Disponível</span><span style="font-weight:700;color:var(--primary)">R$ 480,00</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== VEÍCULO PAGE ===== -->
+  <div id="page-vehicle" class="page">
+    <div class="page-header">
+      <button class="back-btn" onclick="navigate('home')"><i class="ti ti-arrow-left"></i></button>
+      <div><div class="page-title">Fazer 250</div><div style="font-size:11px;color:var(--text-muted);font-weight:600">Total: 12.450 km</div></div>
+      <div style="flex:1"></div>
+      <button class="icon-btn" style="background:var(--card-bg);color:var(--text-sec)" onclick="openModal('vehicle')"><i class="ti ti-settings"></i></button>
+    </div>
+    <div class="page-content">
+      <div class="income-card">
+        <div class="section-label">Saúde do Veículo</div>
+        <div class="v-health">
+          <div class="v-health-item"><span class="v-lbl">Óleo</span><div class="v-bar"><div class="v-fill" style="width:75%;background:var(--primary)"></div></div><span class="v-pct" style="color:var(--primary)">75%</span></div>
+          <div class="v-health-item"><span class="v-lbl">Corrente</span><div class="v-bar"><div class="v-fill" style="width:60%;background:#e07a3a"></div></div><span class="v-pct" style="color:#e07a3a">60%</span></div>
+          <div class="v-health-item"><span class="v-lbl">Pneus</span><div class="v-bar"><div class="v-fill" style="width:85%;background:var(--primary)"></div></div><span class="v-pct" style="color:var(--primary)">85%</span></div>
+        </div>
+      </div>
+      <div class="two-col">
+        <div class="income-card"><span class="income-label">Média km/L</span><div class="income-amount" style="color:#e07a3a;font-size:16px">28,5</div></div>
+        <div class="income-card"><span class="income-label">Próx. Manutenção</span><div class="income-amount" style="color:#3b82f6;font-size:16px">2.550 km</div></div>
+      </div>
+      <div style="display:flex;gap:8px;margin:12px 0">
+        <button class="action-btn side" style="flex:1"><i class="ti ti-gas-station"></i><span style="font-size:10px">Abastecer</span></button>
+        <button class="action-btn side" style="flex:1"><i class="ti ti-tool"></i><span style="font-size:10px">Manutenção</span></button>
+        <button class="action-btn side" style="flex:1"><i class="ti ti-map-2"></i><span style="font-size:10px">Rota</span></button>
+        <button class="action-btn side" style="flex:1"><i class="ti ti-map-pin"></i><span style="font-size:10px">Viajar</span></button>
+      </div>
+      <div class="chart-wrap-new"><h4>Evolução do Consumo (km/L)</h4><div class="chart-canvas-box" style="height:120px"><span>Gráfico de consumo</span></div></div>
+      <div class="scroll-hint">Deslize para mais detalhes ↓</div>
+    </div>
+  </div>
+
+  <!-- ===== CONFIG PAGE ===== -->
+  <div id="page-settings" class="page">
+    <div class="page-header">
+      <button class="back-btn" onclick="navigate('home')"><i class="ti ti-arrow-left"></i></button>
+      <span class="page-title">Configurações</span>
+    </div>
+    <div class="page-content">
+      <div class="config-group"><h3>Suas Contas</h3>
+        <div class="config-item-new"><div class="ci-icon" style="color:#38bdf8"><i class="ti ti-wallet"></i></div><div class="ci-info"><div class="ci-name">Carteira</div><div class="ci-sub">R$ 1.200,00</div></div></div>
+        <div class="config-item-new"><div class="ci-icon" style="color:#ff6b35"><i class="ti ti-building-bank"></i></div><div class="ci-info"><div class="ci-name">Inter</div><div class="ci-sub">R$ 3.200,00</div></div></div>
+      </div>
+      <div class="config-group"><h3>Categorias de Despesa</h3>
+        <div class="config-item-new"><div class="ci-icon" style="color:#7C3AED"><i class="ti ti-shopping-cart"></i></div><div class="ci-info"><div class="ci-name">Alimentação</div></div></div>
+        <div class="config-item-new"><div class="ci-icon" style="color:#e07a3a"><i class="ti ti-gas-station"></i></div><div class="ci-info"><div class="ci-name">Combustível</div></div></div>
+      </div>
+      <div class="menu-list">
+        <div class="menu-item" style="border:none"><i class="ti ti-logout" style="color:#c0392b"></i><span style="color:#c0392b">Sair da Conta</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== TAB BAR ===== -->
+  <div class="tab-bar">
+    <button class="tab active" onclick="navigate('home')"><i class="ti ti-home"></i><span>Home</span></button>
+    <div class="tab-fab-wrap">
+      <button class="tab-fab" onclick="toggleFab()"><i class="ti ti-plus"></i></button>
+    </div>
+    <button class="tab" onclick="navigate('perfil')"><i class="ti ti-user"></i><span>Profile</span></button>
+  </div>
+
+  <!-- ===== FAB SPEED DIAL ===== -->
+  <div class="fab-overlay" id="fabOverlay" onclick="toggleFab()"></div>
+  <div class="fab-speed-dial" id="fabSpeedDial">
+    <button class="fab-opt fab-opt-left"><i class="ti ti-microphone"></i></button>
+    <button class="fab-opt fab-opt-center"><i class="ti ti-bolt"></i></button>
+    <button class="fab-opt fab-opt-right"><i class="ti ti-grid"></i></button>
+  </div>
+
+</div>
+
+<!-- ===== MODAIS ===== -->
+
+<!-- Modal Transação -->
+<div class="modal-overlay" id="modal-tx">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <h2>Nova Despesa <button class="modal-close" onclick="closeModal('tx')"><i class="ti ti-x"></i></button></h2>
+    <div style="display:flex;gap:8px;margin-bottom:16px">
+      <button style="flex:1;padding:10px;border-radius:10px;border:2px solid var(--primary);background:var(--primary-light);color:var(--primary);font-weight:700;font-size:12px;cursor:pointer;font-family:inherit">Despesa</button>
+      <button style="flex:1;padding:10px;border-radius:10px;border:2px solid var(--border);background:var(--bg-app);color:var(--text-muted);font-weight:600;font-size:12px;cursor:pointer;font-family:inherit">Receita</button>
+      <button style="flex:1;padding:10px;border-radius:10px;border:2px solid var(--border);background:var(--bg-app);color:var(--text-muted);font-weight:600;font-size:12px;cursor:pointer;font-family:inherit">Transf.</button>
+    </div>
+    <div class="tx-val-wrap" style="position:relative;display:flex;align-items:center;margin-bottom:16px">
+      <span style="position:absolute;left:0;font-size:20px;font-weight:700;color:var(--text-muted);pointer-events:none">R$</span>
+      <input type="number" placeholder="0,00" style="width:100%;font-size:36px;font-weight:800;color:var(--text-main);background:none;border:none;outline:none;padding:8px 0 8px 50px;font-family:inherit">
+    </div>
+    <label class="field-label">Categoria</label>
+    <div style="display:flex;gap:12px;overflow-x:auto;padding:4px 0 12px;margin-bottom:8px">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;min-width:64px"><div style="width:48px;height:48px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:22px;background:var(--primary-light);color:var(--primary);border:2px solid var(--primary)"><i class="ti ti-shopping-cart"></i></div><span style="font-size:10px;color:var(--text-sec);font-weight:600">Mercado</span></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;min-width:64px"><div style="width:48px;height:48px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:22px;background:var(--card-bg);color:var(--text-sec);border:2px solid transparent"><i class="ti ti-gas-station"></i></div><span style="font-size:10px;color:var(--text-sec);font-weight:600">Combustível</span></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;min-width:64px"><div style="width:48px;height:48px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:22px;background:var(--card-bg);color:var(--text-sec);border:2px solid transparent"><i class="ti ti-wallet"></i></div><span style="font-size:10px;color:var(--text-sec);font-weight:600">Salário</span></div>
+    </div>
+    <label class="field-label">Descrição</label>
+    <input class="field-input" placeholder="Ex: Aluguel, Supermercado...">
+    <button class="submit-btn">Confirmar</button>
+  </div>
+</div>
+
+<!-- Modal Cartão -->
+<div class="modal-overlay" id="modal-card">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <h2>Adicionar Cartão <button class="modal-close" onclick="closeModal('card')"><i class="ti ti-x"></i></button></h2>
+    <label class="field-label">Bandeira</label>
+    <select class="field-input"><option>Visa</option><option>Mastercard</option><option>Elo</option><option>Amex</option></select>
+    <label class="field-label">Número do Cartão</label>
+    <input class="field-input" placeholder="**** **** **** 0000">
+    <label class="field-label">Titular</label>
+    <input class="field-input" placeholder="Nome do titular">
+    <label class="field-label">Validade (MM/AA)</label>
+    <input class="field-input" placeholder="12/28">
+    <button class="submit-btn">Salvar Cartão</button>
+  </div>
+</div>
+
+<!-- Modal Meta -->
+<div class="modal-overlay" id="modal-goal">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <h2>Nova Meta <button class="modal-close" onclick="closeModal('goal')"><i class="ti ti-x"></i></button></h2>
+    <label class="field-label">Nome da Meta</label>
+    <input class="field-input" placeholder="Ex: Comprar Capacete">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div><label class="field-label">Alvo (R$)</label><input class="field-input" placeholder="0,00"></div>
+      <div><label class="field-label">Já Guardado (R$)</label><input class="field-input" placeholder="0,00"></div>
+    </div>
+    <button class="submit-btn">Salvar Meta</button>
+  </div>
+</div>
+
+<!-- Modal Limite Orçamento -->
+<div class="modal-overlay" id="modal-budget-limit">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <h2>Limite Total Mensal <button class="modal-close" onclick="closeModal('budget-limit')"><i class="ti ti-x"></i></button></h2>
+    <label class="field-label">Valor do Limite (R$)</label>
+    <input class="field-input" placeholder="5000" type="number">
+    <button class="submit-btn">Salvar</button>
+  </div>
+</div>
+
+<!-- Modal Config Veículo -->
+<div class="modal-overlay" id="modal-vehicle">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <h2>Configurar Veículo <button class="modal-close" onclick="closeModal('vehicle')"><i class="ti ti-x"></i></button></h2>
+    <label class="field-label">Nome</label>
+    <input class="field-input" placeholder="Fazer 250">
+    <label class="field-label">Km Intervalo Óleo</label>
+    <input class="field-input" placeholder="3000" type="number">
+    <label class="field-label">Final da Placa</label>
+    <input class="field-input" placeholder="7" type="number" max="9">
+    <button class="submit-btn">Salvar</button>
+  </div>
+</div>
+
+<!-- Modal Notificação -->
+<div class="modal-overlay" id="modal-notif">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <h2>Avisos <button class="modal-close" onclick="closeModal('notif')"><i class="ti ti-x"></i></button></h2>
+    <div style="background:var(--card-bg);border-radius:14px;padding:14px;margin-bottom:10px">
+      <div style="font-size:13px;font-weight:600;color:var(--text-main)">Fatura Nubank vence em 5 dias</div>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:4px">Valor: R$ 890,00</div>
+    </div>
+    <div style="background:var(--card-bg);border-radius:14px;padding:14px;margin-bottom:10px">
+      <div style="font-size:13px;font-weight:600;color:var(--text-main)">Troca de óleo recomendada</div>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:4px">Fazer 250 — km restantes: 2.550</div>
+    </div>
+  </div>
+</div>
+
+<script>
+function navigate(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'))
+  const target = document.getElementById('page-' + page)
+  if (target) target.classList.add('active')
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'))
+  const tabs = { home: 0, perfil: 2 }
+  const idx = tabs[page]
+  if (idx !== undefined) document.querySelectorAll('.tab')[idx]?.classList.add('active')
+  closeAllModals()
+  if (document.getElementById('fabSpeedDial')?.classList.contains('active')) toggleFab()
+}
+
+function toggleFab() {
+  document.getElementById('fabSpeedDial').classList.toggle('active')
+  document.getElementById('fabOverlay').classList.toggle('active')
+  document.querySelector('.tab-fab').classList.toggle('active')
+}
+
+function openModal(id) {
+  document.getElementById('modal-' + id).classList.add('open')
+}
+
+function closeModal(id) {
+  document.getElementById('modal-' + id).classList.remove('open')
+}
+
+function closeAllModals() {
+  document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('open'))
+}
+
+document.querySelectorAll('.modal-overlay').forEach(el => {
+  el.addEventListener('click', () => el.classList.remove('open'))
+})
+
+function toggleTheme() {
+  const theme = document.body.getAttribute('data-theme')
+  if (theme === 'dark') document.body.removeAttribute('data-theme')
+  else document.body.setAttribute('data-theme', 'dark')
+  document.querySelector('.toggle-switch').classList.toggle('active')
+}
+</script>
+
+</body>
+</html>
