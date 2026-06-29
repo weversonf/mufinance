@@ -165,7 +165,7 @@
   .tx-amount{font-size:14px;font-weight:700}
   .tx-amount.neg{color:#c0392b}
   .tx-amount.pos{color:var(--primary)}
-  .tab-bar{display:flex;justify-content:space-around;padding:12px 0 28px;border-top:1px solid var(--border);margin-top:6px;background:var(--bg-app);position:fixed;bottom:0;left:50%;transform:translateX(-50%);z-index:50;width:100%;max-width:420px}
+  .tab-bar{display:flex;justify-content:space-around;padding:12px 0 28px;border-top:1px solid var(--border);margin-top:6px;background:var(--bg-app);position:fixed;bottom:0;left:50%;transform:translateX(-50%);z-index:50;width:100%;max-width:420px;transition:transform .2s}
   .tab{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;color:var(--tab-inactive);cursor:pointer;transition:color .15s;font-weight:500;background:none;border:none;font-family:inherit;padding:4px 16px}
   .tab:hover{color:var(--text-sec)}
   .tab.active{color:var(--primary)}
@@ -174,7 +174,12 @@
   /* Modal overlay */
   .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:100;align-items:flex-end;justify-content:center}
   .modal-overlay.open{display:flex}
-  .modal{background:var(--modal-bg);border-radius:28px 28px 0 0;padding:24px 20px 40px;width:100%;max-width:420px;animation:slideUp .25s ease;max-height:90vh;overflow-y:auto}
+  .modal{background:var(--modal-bg);border-radius:28px 28px 0 0;padding:24px 20px 40px;width:100%;max-width:420px;animation:slideUp .25s ease;max-height:90vh;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+  /* Tab-bar: hide when virtual keyboard is open on mobile */
+  @media(max-width:767px){
+    .modal-overlay.open ~ .app .tab-bar,
+    body.keyboard-open .tab-bar{display:none}
+  }
   @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
   .modal h2{font-size:16px;font-weight:700;color:var(--text-main);margin-bottom:20px}
   .modal-close{float:right;background:none;border:none;font-size:22px;color:var(--text-muted);cursor:pointer;line-height:1}
@@ -486,8 +491,8 @@
   <div class="login-sub">Faça login para continuar</div>
   <div id="login-email">
     <div class="login-form">
-      <input class="login-input" id="login-email-input" type="email" placeholder="Email" autocomplete="email" />
-      <input class="login-input" id="login-pass-input" type="password" placeholder="Senha" autocomplete="current-password" />
+      <input class="login-input" id="login-email-input" type="email" placeholder="Email" autocomplete="email" onkeydown="if(event.key==='Enter')document.getElementById('login-pass-input').focus()" />
+      <input class="login-input" id="login-pass-input" type="password" placeholder="Senha" autocomplete="current-password" onkeydown="if(event.key==='Enter')signInEmail()" />
       <div class="login-error" id="login-error"></div>
       <button class="login-submit" onclick="signInEmail()">Entrar</button>
     </div>
@@ -617,7 +622,7 @@
   <div class="tab-bar">
     <button class="tab active" onclick="showPage('home')"><i class="ti ti-home"></i><span>Início</span></button>
     <button class="tab" onclick="showPage('transactions')"><i class="ti ti-chart-bar"></i><span>Extrato</span></button>
-    <div class="tab-fab-wrap"><div class="tab-fab" id="quick-fab" onclick="toggleQuickMenu()"><i class="ti ti-plus"></i></div></div>
+    <div class="tab-fab-wrap"><div class="tab-fab" class="quick-fab" onclick="toggleQuickMenu()"><i class="ti ti-plus"></i></div></div>
     <button class="tab" onclick="showPage('cards')"><i class="ti ti-credit-card"></i><span>Cartões</span></button>
     <!-- profile removed → top bar -->
   </div>
@@ -644,7 +649,7 @@
   <div class="tab-bar">
     <button class="tab" onclick="showPage('home')"><i class="ti ti-home"></i><span>Início</span></button>
     <button class="tab active" onclick="showPage('transactions')"><i class="ti ti-chart-bar"></i><span>Extrato</span></button>
-    <div class="tab-fab-wrap"><div class="tab-fab" id="quick-fab" onclick="toggleQuickMenu()"><i class="ti ti-plus"></i></div></div>
+    <div class="tab-fab-wrap"><div class="tab-fab" class="quick-fab" onclick="toggleQuickMenu()"><i class="ti ti-plus"></i></div></div>
     <button class="tab" onclick="showPage('cards')"><i class="ti ti-credit-card"></i><span>Cartões</span></button>
     <!-- profile removed → top bar -->
   </div>
@@ -660,7 +665,7 @@
   <div class="tab-bar">
     <button class="tab" onclick="showPage('home')"><i class="ti ti-home"></i><span>Início</span></button>
     <button class="tab" onclick="showPage('transactions')"><i class="ti ti-chart-bar"></i><span>Extrato</span></button>
-    <div class="tab-fab-wrap"><div class="tab-fab" id="quick-fab" onclick="toggleQuickMenu()"><i class="ti ti-plus"></i></div></div>
+    <div class="tab-fab-wrap"><div class="tab-fab" class="quick-fab" onclick="toggleQuickMenu()"><i class="ti ti-plus"></i></div></div>
     <button class="tab active" onclick="showPage('cards')"><i class="ti ti-credit-card"></i><span>Cartões</span></button>
     <!-- profile removed → top bar -->
   </div>
@@ -694,7 +699,7 @@
   <div class="tab-bar">
     <button class="tab" onclick="showPage('home')"><i class="ti ti-home"></i><span>Início</span></button>
     <button class="tab" onclick="showPage('transactions')"><i class="ti ti-chart-bar"></i><span>Extrato</span></button>
-    <div class="tab-fab-wrap"><div class="tab-fab" id="quick-fab" onclick="toggleQuickMenu()"><i class="ti ti-plus"></i></div></div>
+    <div class="tab-fab-wrap"><div class="tab-fab" class="quick-fab" onclick="toggleQuickMenu()"><i class="ti ti-plus"></i></div></div>
     <button class="tab" onclick="showPage('cards')"><i class="ti ti-credit-card"></i><span>Cartões</span></button>
     <!-- profile removed → top bar -->
   </div>
@@ -702,30 +707,73 @@
 
 <!-- REPORTS PAGE -->
 <div class="app page" id="reports-page">
-  <div class="page-header">
+  <div class="page-header" style="flex-wrap:wrap;gap:8px;padding-bottom:12px">
     <button class="back-btn" onclick="showPage('home')"><i class="ti ti-arrow-left"></i></button>
     <span class="page-title">Relatórios</span>
+    <div style="margin-left:auto;display:flex;gap:6px">
+      <button class="filter-chip active" id="rep-btn-month" onclick="setReportPeriod('month',this)">Mês</button>
+      <button class="filter-chip" id="rep-btn-quarter" onclick="setReportPeriod('quarter',this)">Trim.</button>
+      <button class="filter-chip" id="rep-btn-year" onclick="setReportPeriod('year',this)">Ano</button>
+    </div>
   </div>
   <div class="page-content">
-    <div class="two-col" style="margin-bottom:16px">
-      <div class="income-card">
-        <div class="income-label">Receitas</div>
-        <div class="income-amount" style="color:var(--primary)" id="report-income">R$ 0,00</div>
+
+    <!-- Summary cards -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px">
+      <div class="income-card" style="display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding:12px">
+        <div style="width:32px;height:32px;border-radius:10px;background:var(--primary-light);color:var(--primary);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0"><i class="ti ti-arrow-down-left"></i></div>
+        <div>
+          <div class="income-label">Receitas</div>
+          <div style="font-size:13px;font-weight:800;color:var(--primary);margin-top:2px;line-height:1.2" id="report-income">R$ 0,00</div>
+        </div>
       </div>
-      <div class="income-card">
-        <div class="income-label">Despesas</div>
-        <div class="income-amount" style="color:#c0392b" id="report-expense">R$ 0,00</div>
+      <div class="income-card" style="display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding:12px">
+        <div style="width:32px;height:32px;border-radius:10px;background:#c0392b22;color:#c0392b;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0"><i class="ti ti-arrow-up-right"></i></div>
+        <div>
+          <div class="income-label">Despesas</div>
+          <div style="font-size:13px;font-weight:800;color:#c0392b;margin-top:2px;line-height:1.2" id="report-expense">R$ 0,00</div>
+        </div>
+      </div>
+      <div class="income-card" style="display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding:12px">
+        <div id="rep-balance-icon" style="width:32px;height:32px;border-radius:10px;background:#3498db22;color:#3498db;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0"><i class="ti ti-scale"></i></div>
+        <div>
+          <div class="income-label">Saldo</div>
+          <div id="report-balance" style="font-size:13px;font-weight:800;margin-top:2px;line-height:1.2;color:var(--primary)">R$ 0,00</div>
+        </div>
       </div>
     </div>
-    <div class="annual-chart-wrap">
-      <h4>Receitas vs Despesas · <span id="chart-year">2026</span></h4>
-      <canvas id="annual-chart"></canvas>
+
+    <!-- Bar chart -->
+    <div class="annual-chart-wrap" style="margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <h4 style="margin:0;font-size:13px">Receitas vs Despesas</h4>
+        <div style="display:flex;gap:10px;font-size:10px;color:var(--text-muted)">
+          <span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:var(--primary);margin-right:3px;vertical-align:middle"></span>Receitas</span>
+          <span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:#c0392b;margin-right:3px;vertical-align:middle"></span>Despesas</span>
+        </div>
+      </div>
+      <div style="position:relative;height:180px">
+        <canvas id="annual-chart"></canvas>
+      </div>
     </div>
-    <div class="section-row">
-      <span class="section-label">Por categoria</span>
+
+    <!-- Donut + category list -->
+    <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:16px">
+      <div class="annual-chart-wrap" style="flex:0 0 130px;margin-bottom:0;padding:12px;display:flex;flex-direction:column;align-items:center">
+        <div style="font-size:12px;font-weight:600;color:var(--text-main);margin-bottom:8px;align-self:flex-start">Categorias</div>
+        <div style="position:relative;width:106px;height:106px">
+          <canvas id="report-donut-chart"></canvas>
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none">
+            <span style="font-size:9px;color:var(--text-muted)">Total</span>
+            <span id="rep-donut-total" style="font-size:11px;font-weight:800;color:var(--text-main)">R$0</span>
+          </div>
+        </div>
+      </div>
+      <div id="report-by-category" style="flex:1;min-width:0"></div>
     </div>
-    <div id="report-by-category"></div>
-    <div class="section-title-new" style="margin-top:16px"><i class="ti ti-layers"></i> Ferramentas</div>
+
+    <!-- Tools -->
+    <div class="section-title-new" style="margin-top:4px"><i class="ti ti-layers"></i> Ferramentas</div>
     <div style="display:flex;gap:8px">
       <button class="action-btn side" style="flex:1" onclick="showPage('goals')"><i class="ti ti-target"></i> Metas</button>
       <button class="action-btn side" style="flex:1" onclick="showPage('budget')"><i class="ti ti-chart-pie"></i> Orçamento</button>
@@ -734,7 +782,7 @@
   <div class="tab-bar">
     <button class="tab" onclick="showPage('home')"><i class="ti ti-home"></i><span>Início</span></button>
     <button class="tab" onclick="showPage('transactions')"><i class="ti ti-chart-bar"></i><span>Extrato</span></button>
-    <div class="tab-fab-wrap"><div class="tab-fab" id="quick-fab" onclick="toggleQuickMenu()"><i class="ti ti-plus"></i></div></div>
+    <div class="tab-fab-wrap"><div class="tab-fab" class="quick-fab" onclick="toggleQuickMenu()"><i class="ti ti-plus"></i></div></div>
     <button class="tab" onclick="showPage('cards')"><i class="ti ti-credit-card"></i><span>Cartões</span></button>
     <!-- profile removed → top bar -->
   </div>
@@ -808,12 +856,12 @@
     </div>
     <!-- Sub-linha meses (aparece quando recorrente ativo) -->
     <div id="recur-months-wrap" style="display:none;align-items:center;gap:6px;margin-bottom:12px">
-      <input class="field-input" id="recur-months" type="number" min="1" max="60" value="12" style="width:44px;padding:3px 4px;text-align:center;margin:0;font-size:11px" />
-      <span style="font-size:10px;color:var(--text-muted)">meses</span>
+      <input class="field-input" id="recur-months" type="number" min="1" max="24" value="12" style="width:44px;padding:3px 4px;text-align:center;margin:0;font-size:11px" />
+      <span style="font-size:10px;color:var(--text-muted)">meses (máx. 24)</span>
     </div>
     <!-- Campo P2P (aparece quando toggle ativo) -->
     <div id="p2p-section" style="display:none;margin-bottom:12px">
-      <input class="field-input" id="p2p-username" placeholder="@usuario" autocomplete="off" oninput="searchP2PByUsername(this.value)" />
+      <input class="field-input" id="p2p-username" placeholder="@usuario" autocomplete="off" oninput="debouncedP2PSearch(this.value)" />
       <div id="p2p-search-result"></div>
     </div>
     
@@ -917,7 +965,7 @@
   <div class="tab-bar">
     <button class="tab" onclick="showPage('home')"><i class="ti ti-home"></i><span>Início</span></button>
     <button class="tab" onclick="showPage('transactions')"><i class="ti ti-chart-bar"></i><span>Extrato</span></button>
-    <div class="tab-fab-wrap"><div class="tab-fab" id="quick-fab" onclick="toggleQuickMenu()"><i class="ti ti-plus"></i></div></div>
+    <div class="tab-fab-wrap"><div class="tab-fab" class="quick-fab" onclick="toggleQuickMenu()"><i class="ti ti-plus"></i></div></div>
     <button class="tab" onclick="showPage('cards')"><i class="ti ti-credit-card"></i><span>Cartões</span></button>
     <!-- profile removed → top bar -->
   </div>
@@ -950,7 +998,7 @@
   <div class="tab-bar">
     <button class="tab" onclick="showPage('home')"><i class="ti ti-home"></i><span>Início</span></button>
     <button class="tab" onclick="showPage('transactions')"><i class="ti ti-chart-bar"></i><span>Extrato</span></button>
-    <div class="tab-fab-wrap"><div class="tab-fab" id="quick-fab" onclick="toggleQuickMenu()"><i class="ti ti-plus"></i></div></div>
+    <div class="tab-fab-wrap"><div class="tab-fab" class="quick-fab" onclick="toggleQuickMenu()"><i class="ti ti-plus"></i></div></div>
     <button class="tab" onclick="showPage('cards')"><i class="ti ti-credit-card"></i><span>Cartões</span></button>
     <!-- profile removed → top bar -->
   </div>
@@ -968,7 +1016,7 @@
   <div class="tab-bar">
     <button class="tab" onclick="showPage('home')"><i class="ti ti-home"></i><span>Início</span></button>
     <button class="tab" onclick="showPage('transactions')"><i class="ti ti-chart-bar"></i><span>Extrato</span></button>
-    <div class="tab-fab-wrap"><div class="tab-fab" id="quick-fab" onclick="toggleQuickMenu()"><i class="ti ti-plus"></i></div></div>
+    <div class="tab-fab-wrap"><div class="tab-fab" class="quick-fab" onclick="toggleQuickMenu()"><i class="ti ti-plus"></i></div></div>
     <button class="tab" onclick="showPage('cards')"><i class="ti ti-credit-card"></i><span>Cartões</span></button>
     <!-- profile removed → top bar -->
   </div>
@@ -1013,7 +1061,7 @@
   <div class="tab-bar">
     <button class="tab" onclick="showPage('home')"><i class="ti ti-home"></i><span>Início</span></button>
     <button class="tab" onclick="showPage('transactions')"><i class="ti ti-chart-bar"></i><span>Extrato</span></button>
-    <div class="tab-fab-wrap"><div class="tab-fab" id="quick-fab" onclick="toggleQuickMenu()"><i class="ti ti-plus"></i></div></div>
+    <div class="tab-fab-wrap"><div class="tab-fab" class="quick-fab" onclick="toggleQuickMenu()"><i class="ti ti-plus"></i></div></div>
     <button class="tab" onclick="showPage('cards')"><i class="ti ti-credit-card"></i><span>Cartões</span></button>
     <!-- profile removed → top bar -->
   </div>
@@ -1909,26 +1957,28 @@ async function submitTransaction() {
     showToast("Atualizado!");
   } else {
     const now = new Date();
-    const months = isRecurring ? Math.max(1, parseInt(document.getElementById('recur-months').value)||12) : 1;
+    const rawMonths = isRecurring ? parseInt(document.getElementById('recur-months').value) || 12 : 1;
+    const months = Math.min(Math.max(1, rawMonths), 24); // cap at 24
     const groupId = Date.now().toString(36) + Math.random().toString(36).slice(2,6);
-    // data-base do lançamento para calcular as parcelas seguintes
     const baseDate = new Date(txDateISO + 'T00:00:00');
+
+    // Use batched writes to avoid sequential await loop
+    const MAX_BATCH = 20;
+    let batch = db.batch();
+    let batchCount = 0;
+
     for (let i = 0; i < months; i++) {
       const copy = { ...txData };
-      // Avança i meses a partir da data informada pelo usuário
       const parcela = new Date(baseDate.getFullYear(), baseDate.getMonth() + i, baseDate.getDate());
-      const parcelaISO = parcela.toISOString().slice(0, 10);
-      copy.date = parcelaISO;
-      if (i === 0) {
-        copy.createdAt = firebase.firestore.FieldValue.serverTimestamp();
-      } else {
-        copy.createdAt = firebase.firestore.FieldValue.serverTimestamp();
-        copy.status = 'prevista';
-        copy.group = 'Previsto';
-      }
+      copy.date = parcela.toISOString().slice(0, 10);
+      copy.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+      if (i > 0) { copy.status = 'prevista'; copy.group = 'Previsto'; }
       if (isRecurring) copy.recurGroup = groupId;
-      await db.collection('transactions').add(copy);
+      batch.set(db.collection('transactions').doc(), copy);
+      batchCount++;
+      if (batchCount === MAX_BATCH) { await batch.commit(); batch = db.batch(); batchCount = 0; }
     }
+    if (batchCount > 0) await batch.commit();
 
     // P2P — enviar/cobrar amigo
     if (selectedP2PUser && selectedP2PUser.uid) {
@@ -2135,89 +2185,120 @@ async function submitProfileEdit() {
   showToast("Perfil atualizado!");
 }
 
+// REPORT PERIOD
+let reportPeriod = 'month';
+let _annualChart = null;
+let _donutChart = null;
+
+function setReportPeriod(period, el) {
+  reportPeriod = period;
+  ['month','quarter','year'].forEach(p => {
+    const b = document.getElementById('rep-btn-' + p);
+    if (b) b.classList.toggle('active', p === period);
+  });
+  renderReports();
+}
+
+function _getRepTx() {
+  const now = new Date();
+  return transactions.filter(t => {
+    let d;
+    if (t.date && /^\d{4}-\d{2}-\d{2}/.test(t.date)) d = new Date(t.date + 'T00:00:00');
+    else if (t.createdAt && t.createdAt.toDate) d = t.createdAt.toDate();
+    else if (t.createdAt) d = new Date(t.createdAt);
+    else return false;
+    if (d.getFullYear() !== now.getFullYear()) return false;
+    if (reportPeriod === 'month') return d.getMonth() === now.getMonth();
+    if (reportPeriod === 'quarter') return Math.floor(d.getMonth()/3) === Math.floor(now.getMonth()/3);
+    return true;
+  });
+}
+
 // ANNUAL CHART
 function renderAnnualChart() {
   const canvas = document.getElementById('annual-chart');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  const year = new Date().getFullYear();
-  document.getElementById('chart-year').textContent = year;
+  if (!canvas || typeof Chart === 'undefined') return;
 
-  const monthly = {};
-  for (let m = 0; m < 12; m++) monthly[m] = { income: 0, expense: 0 };
+  const now = new Date();
+  const cs = getComputedStyle(document.body);
+  const colorIncome = cs.getPropertyValue('--primary').trim() || '#2ecc71';
+  const colorExpense = '#c0392b';
+  const colorMuted = cs.getPropertyValue('--text-muted').trim() || '#999';
+  const colorGrid = cs.getPropertyValue('--border').trim() || '#eee';
 
-  transactions.forEach(t => {
-    const d = t.createdAt ? t.createdAt.toDate() : new Date();
-    if (d.getFullYear() !== year) return;
-    const m = d.getMonth();
-    if (t.amount > 0) monthly[m].income += t.amount;
-    else monthly[m].expense += Math.abs(t.amount);
-  });
+  let labels = [], incomeData = [], expenseData = [];
 
-  const dpr = window.devicePixelRatio || 1;
-  const w = canvas.parentElement.clientWidth || 320;
-  const h = 160;
-  canvas.width = w * dpr; canvas.height = h * dpr;
-  canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
-  ctx.scale(dpr, dpr);
-
-  const pad = { top: 16, bottom: 20, left: 4, right: 4 };
-  const cw = w - pad.left - pad.right;
-  const ch = h - pad.top - pad.bottom;
-
-  const maxVal = Math.max(1, ...Object.values(monthly).map(m => Math.max(m.income, m.expense)));
-  const monthLabels = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-
-  // Grid lines
-  ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue('--border').trim() || '#eee';
-  ctx.lineWidth = 1;
-  for (let i = 0; i <= 4; i++) {
-    const y = pad.top + (ch / 4) * i;
-    ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(w - pad.right, y); ctx.stroke();
-    ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-muted').trim() || '#999';
-    ctx.font = '9px sans-serif'; ctx.textAlign = 'right';
-    ctx.fillText('R$' + Math.round(maxVal - (maxVal / 4) * i), pad.left - 2, y + 3);
+  if (reportPeriod === 'year') {
+    const mNames = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    const m = {};
+    for (let i = 0; i < 12; i++) m[i] = {i:0, e:0};
+    transactions.forEach(t => {
+      let d;
+      if (t.date && /^\d{4}-\d{2}-\d{2}/.test(t.date)) d = new Date(t.date+'T00:00:00');
+      else if (t.createdAt && t.createdAt.toDate) d = t.createdAt.toDate();
+      else return;
+      if (d.getFullYear() !== now.getFullYear()) return;
+      if (t.amount > 0) m[d.getMonth()].i += t.amount;
+      else m[d.getMonth()].e += Math.abs(t.amount);
+    });
+    labels = mNames;
+    incomeData = Object.values(m).map(x => x.i);
+    expenseData = Object.values(m).map(x => x.e);
+  } else if (reportPeriod === 'quarter') {
+    const q = Math.floor(now.getMonth()/3);
+    const sm = q*3;
+    const mNames = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    for (let mo = sm; mo < sm+3; mo++) {
+      labels.push(mNames[mo]); incomeData.push(0); expenseData.push(0);
+    }
+    _getRepTx().forEach(t => {
+      let d;
+      if (t.date && /^\d{4}-\d{2}-\d{2}/.test(t.date)) d = new Date(t.date+'T00:00:00');
+      else if (t.createdAt && t.createdAt.toDate) d = t.createdAt.toDate();
+      else return;
+      const idx = d.getMonth() - sm;
+      if (idx < 0 || idx > 2) return;
+      if (t.amount > 0) incomeData[idx] += t.amount;
+      else expenseData[idx] += Math.abs(t.amount);
+    });
+  } else {
+    const daysInMonth = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
+    const weeks = Math.ceil(daysInMonth/7);
+    for (let w = 0; w < weeks; w++) { labels.push('Sem '+(w+1)); incomeData.push(0); expenseData.push(0); }
+    _getRepTx().forEach(t => {
+      let d;
+      if (t.date && /^\d{4}-\d{2}-\d{2}/.test(t.date)) d = new Date(t.date+'T00:00:00');
+      else if (t.createdAt && t.createdAt.toDate) d = t.createdAt.toDate();
+      else return;
+      const w = Math.min(Math.floor((d.getDate()-1)/7), weeks-1);
+      if (t.amount > 0) incomeData[w] += t.amount;
+      else expenseData[w] += Math.abs(t.amount);
+    });
   }
 
-  // Month labels
-  ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-muted').trim() || '#999';
-  ctx.font = '9px sans-serif'; ctx.textAlign = 'center';
-  monthLabels.forEach((l, i) => ctx.fillText(l, pad.left + (cw / 11) * i, h - 4));
-
-  const colorIncome = getComputedStyle(document.body).getPropertyValue('--primary').trim() || '#2ecc71';
-  const colorExpense = '#c0392b';
-
-  const points = (arr, color) => {
-    ctx.beginPath();
-    arr.forEach((v, i) => {
-      const x = pad.left + (cw / 11) * i;
-      const y = pad.top + ch - (v / maxVal) * ch;
-      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-    });
-    ctx.strokeStyle = color; ctx.lineWidth = 2.5; ctx.lineJoin = 'round'; ctx.stroke();
-
-    // Dots
-    arr.forEach((v, i) => {
-      const x = pad.left + (cw / 11) * i;
-      const y = pad.top + ch - (v / maxVal) * ch;
-      ctx.beginPath(); ctx.arc(x, y, 3, 0, Math.PI * 2);
-      ctx.fillStyle = color; ctx.fill();
-      ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke();
-    });
-  };
-
-  points(Object.values(monthly).map(m => m.income), colorIncome);
-  points(Object.values(monthly).map(m => m.expense), colorExpense);
-
-  // Legend
-  ctx.font = '10px sans-serif';
-  ctx.textAlign = 'left';
-  ctx.fillStyle = colorIncome; ctx.fillRect(w - 80, 4, 8, 8);
-  ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-main').trim() || '#111';
-  ctx.fillText('Receitas', w - 68, 12);
-  ctx.fillStyle = colorExpense; ctx.fillRect(w - 80, 18, 8, 8);
-  ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-main').trim() || '#111';
-  ctx.fillText('Despesas', w - 68, 26);
+  if (_annualChart) { _annualChart.destroy(); _annualChart = null; }
+  _annualChart = new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label:'Receitas', data:incomeData, backgroundColor:colorIncome+'bb', borderRadius:5, borderSkipped:false },
+        { label:'Despesas', data:expenseData, backgroundColor:colorExpense+'bb', borderRadius:5, borderSkipped:false }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display:false },
+        tooltip: { callbacks: { label: ctx => ' R$ '+ctx.parsed.y.toLocaleString('pt-BR',{minimumFractionDigits:2}) } }
+      },
+      scales: {
+        x: { grid:{color:colorGrid,lineWidth:0.5}, ticks:{color:colorMuted,font:{size:10},maxRotation:0} },
+        y: { grid:{color:colorGrid,lineWidth:0.5}, beginAtZero:true,
+             ticks:{color:colorMuted,font:{size:10}, callback:v=>v>=1000?'R$'+(v/1000).toFixed(0)+'k':'R$'+v} }
+      }
+    }
+  });
 }
 
 // NOTIFICATIONS
@@ -2264,14 +2345,21 @@ function updateBalance() {
 }
 function renderRecent() {
   const list = document.getElementById('recent-tx-list');
-  if(list) list.innerHTML = transactions.slice(0,4).map(txHTML).join('');
+  if (!list) return;
+  const sorted = [...transactions].sort((a, b) => {
+    const aDate = a.date || (a.createdAt && (a.createdAt.toDate ? a.createdAt.toDate().toISOString() : new Date(a.createdAt).toISOString())) || '';
+    const bDate = b.date || (b.createdAt && (b.createdAt.toDate ? b.createdAt.toDate().toISOString() : new Date(b.createdAt).toISOString())) || '';
+    return bDate.localeCompare(aDate);
+  });
+  list.innerHTML = sorted.slice(0, 4).map(txHTML).join('');
 }
 function txGroupKey(tx) {
-  // Agrupa por data real (ISO). Fallback em createdAt p/ transações antigas.
   if (tx.date && /^\d{4}-\d{2}-\d{2}/.test(tx.date)) return tx.date.slice(0, 10);
   if (tx.createdAt) {
-    const cd = tx.createdAt.toDate ? tx.createdAt.toDate() : new Date(tx.createdAt);
-    return cd.toISOString().slice(0, 10);
+    try {
+      const cd = tx.createdAt.toDate ? tx.createdAt.toDate() : new Date(tx.createdAt);
+      if (!isNaN(cd)) return cd.toISOString().slice(0, 10);
+    } catch(e) {}
   }
   return 'Sem data';
 }
@@ -2340,36 +2428,78 @@ function filterTx(type, el) {
   renderAll(type);
 }
 function renderReports() {
-  const totalIncome = transactions.filter(t => t.type === 'entrada').reduce((s, t) => s + Math.abs(t.amount || 0), 0);
-  const totalExpense = transactions.filter(t => t.type === 'saída').reduce((s, t) => s + Math.abs(t.amount || 0), 0);
+  const tx = _getRepTx();
+  const totalIncome = tx.filter(t => t.type === 'entrada').reduce((s,t) => s+Math.abs(t.amount||0), 0);
+  const totalExpense = tx.filter(t => t.type === 'saída').reduce((s,t) => s+Math.abs(t.amount||0), 0);
+  const balance = totalIncome - totalExpense;
+
   document.getElementById('report-income').textContent = 'R$ ' + formatBRL(totalIncome);
   document.getElementById('report-expense').textContent = 'R$ ' + formatBRL(totalExpense);
 
+  const balEl = document.getElementById('report-balance');
+  if (balEl) {
+    balEl.textContent = (balance < 0 ? '-' : '') + 'R$ ' + formatBRL(Math.abs(balance));
+    balEl.style.color = balance < 0 ? '#c0392b' : 'var(--primary)';
+  }
+  const balIcon = document.getElementById('rep-balance-icon');
+  if (balIcon) {
+    balIcon.style.background = balance < 0 ? '#c0392b22' : '#3498db22';
+    balIcon.style.color = balance < 0 ? '#c0392b' : '#3498db';
+    balIcon.innerHTML = '<i class="ti ' + (balance < 0 ? 'ti-trending-down' : 'ti-trending-up') + '"></i>';
+  }
+
+  // Category breakdown
   const catTotals = {};
-  transactions.forEach(t => {
-    const allCats = [...categories.saída, ...categories.entrada];
+  tx.forEach(t => {
+    const allCats = [...(categories.saída||[]), ...(categories.entrada||[])];
     const cat = allCats.find(c => c.id === t.cat);
     if (!cat) return;
-    const key = cat.id;
-    if (!catTotals[key]) catTotals[key] = { name: cat.name, icon: cat.icon, color: cat.color, total: 0, count: 0 };
-    catTotals[key].total += Math.abs(t.amount || 0);
-    catTotals[key].count += 1;
+    if (!catTotals[cat.id]) catTotals[cat.id] = { name:cat.name, icon:cat.icon, color:cat.color, total:0, count:0 };
+    catTotals[cat.id].total += Math.abs(t.amount||0);
+    catTotals[cat.id].count++;
   });
-
-  const entries = Object.values(catTotals).sort((a, b) => b.total - a.total);
+  const entries = Object.values(catTotals).sort((a,b) => b.total - a.total);
   const maxTotal = entries.length > 0 ? entries[0].total : 1;
+  const grandTotal = entries.reduce((s,e) => s+e.total, 0);
+
   const container = document.getElementById('report-by-category');
-  container.innerHTML = entries.map(c => `
-    <div class="report-cat-item">
-      <div class="report-cat-icon" style="background:${c.color}22;color:${c.color}"><i class="ti ${c.icon}"></i></div>
-      <div class="report-cat-info">
-        <div class="report-cat-name">${c.name}</div>
-        <div class="report-cat-count">${c.count} transação${c.count !== 1 ? 'ões' : ''}</div>
-        <div class="report-cat-bar"><div class="report-cat-fill" style="width:${(c.total/maxTotal*100).toFixed(0)}%;background:${c.color}"></div></div>
+  if (entries.length === 0) {
+    container.innerHTML = '<p style="font-size:12px;color:var(--text-muted);padding:16px 0">Nenhuma transação no período</p>';
+  } else {
+    container.innerHTML = entries.slice(0,6).map(c => `
+      <div class="report-cat-item">
+        <div class="report-cat-icon" style="background:${c.color}22;color:${c.color}"><i class="ti ${c.icon}"></i></div>
+        <div class="report-cat-info">
+          <div class="report-cat-name">${c.name}</div>
+          <div class="report-cat-count">${c.count} transaç${c.count!==1?'ões':'ão'} · ${(c.total/grandTotal*100).toFixed(0)}%</div>
+          <div class="report-cat-bar"><div class="report-cat-fill" style="width:${(c.total/maxTotal*100).toFixed(0)}%;background:${c.color}"></div></div>
+        </div>
+        <div class="report-cat-amount" style="color:${c.color}">R$ ${formatBRL(c.total)}</div>
       </div>
-      <div class="report-cat-amount">R$ ${formatBRL(c.total)}</div>
-    </div>
-  `).join('');
+    `).join('');
+  }
+
+  // Donut
+  const donutCanvas = document.getElementById('report-donut-chart');
+  if (donutCanvas && typeof Chart !== 'undefined') {
+    if (_donutChart) { _donutChart.destroy(); _donutChart = null; }
+    const donutTotalEl = document.getElementById('rep-donut-total');
+    if (donutTotalEl) donutTotalEl.textContent = grandTotal >= 1000 ? 'R$'+(grandTotal/1000).toFixed(1)+'k' : 'R$'+Math.round(grandTotal);
+    if (entries.length > 0) {
+      _donutChart = new Chart(donutCanvas, {
+        type: 'doughnut',
+        data: {
+          labels: entries.slice(0,6).map(e => e.name),
+          datasets: [{ data: entries.slice(0,6).map(e => e.total), backgroundColor: entries.slice(0,6).map(e => e.color+'cc'), borderColor: entries.slice(0,6).map(e => e.color), borderWidth:1, hoverOffset:5 }]
+        },
+        options: {
+          responsive:true, maintainAspectRatio:false, cutout:'68%',
+          plugins: { legend:{display:false}, tooltip:{ callbacks:{ label:ctx=>' R$ '+ctx.parsed.toLocaleString('pt-BR',{minimumFractionDigits:2}) } } }
+        }
+      });
+    }
+  }
+
   renderAnnualChart();
 }
 
@@ -2497,12 +2627,12 @@ window.showPage = function(name) {
 
 // ===== QUICK FAB MENU =====
 function toggleQuickMenu() {
-  document.getElementById('quick-fab').classList.toggle('active');
+  document.querySelectorAll('.quick-fab').forEach(el => el.classList.toggle('active'));
   document.getElementById('fab-sub').classList.toggle('active');
   document.getElementById('fab-overlay').classList.toggle('active');
 }
 function closeQuickMenu() {
-  document.getElementById('quick-fab').classList.remove('active');
+  document.querySelectorAll('.quick-fab').forEach(el => el.classList.remove('active'));
   document.getElementById('fab-sub').classList.remove('active');
   document.getElementById('fab-overlay').classList.remove('active');
 }
@@ -3712,6 +3842,12 @@ function toggleP2P() {
   }
 }
 
+let _p2pDebounceTimer = null;
+function debouncedP2PSearch(val) {
+  clearTimeout(_p2pDebounceTimer);
+  _p2pDebounceTimer = setTimeout(() => searchP2PByUsername(val), 400);
+}
+
 async function searchP2PByUsername(query) {
   const resultDiv = document.getElementById('p2p-search-result');
   selectedP2PUser = null;
@@ -3819,6 +3955,26 @@ async function rejectP2PRequest(requestId) {
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js');
+}
+
+// ===== KEYBOARD DETECTION (hide tab-bar when keyboard opens on Android) =====
+if (window.visualViewport) {
+  let _baseHeight = window.visualViewport.height;
+  window.visualViewport.addEventListener('resize', () => {
+    const shrunk = window.visualViewport.height < _baseHeight * 0.85;
+    document.body.classList.toggle('keyboard-open', shrunk);
+  });
+}
+
+// ===== P2P AMOUNT VALIDATION =====
+const _origSubmitTransaction = submitTransaction;
+async function submitTransaction() {
+  if (selectedP2PUser && selectedP2PUser.uid) {
+    const amt = parseFloat(document.getElementById('modal-amount').value);
+    if (!amt || amt <= 0) { showToast('Informe um valor válido'); return; }
+    if (amt > 100000) { showToast('Valor máximo por transação: R$ 100.000'); return; }
+  }
+  await _origSubmitTransaction();
 }
 
 </script>
