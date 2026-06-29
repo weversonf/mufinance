@@ -2304,7 +2304,8 @@ async function importExcel(file) {
     }
     const catName = (row[cols.cat]||'').toString().trim();
     const subcatName = (row[cols.subcat]||'').toString().trim();
-    const statusVal = (row[cols.status]||'Efetivada').toString().trim();
+    let statusVal = (row[cols.status]||'Efetivada').toString().trim().toLowerCase();
+    if (statusVal === 'efetivada') statusVal = 'realizada';
     const typeVal = (row[cols.type]||'').toString().trim().toLowerCase();
     if (!amt || !date || !catName) { errors.push('Linha inválida: ' + (name||catName||'?')); continue; }
     const cat = catByName[catName.toLowerCase()];
@@ -2814,13 +2815,14 @@ function renderReports() {
 
 function txHTML(tx) {
   const pos = (tx.amount || 0) > 0;
-  const prev = tx.status === 'prevista' ? ' style="opacity:.5"' : '';
+  const isPrev = (tx.status||'').toLowerCase() === 'prevista';
+  const prev = isPrev ? ' style="opacity:.5"' : '';
   // Preferência: campo date (ISO). Fallback: createdAt (transações antigas).
   const dataExibicao = formatDateBR(tx.date) || (tx.createdAt ? formatDateBR(tx.createdAt) : tx.date || '');
   return `<div class="tx-item"${prev}>
     <div class="tx-logo" style="background:${tx.bg};color:${tx.color}"><i class="ti ${tx.icon}"></i></div>
     <div class="tx-info" onclick="openModal('${tx.type}', '${tx.id}')">
-      <div class="tx-name">${tx.name}${tx.status === 'prevista' ? ' <span style="font-size:10px;color:var(--text-muted)">(Prevista)</span>' : ''}</div>
+      <div class="tx-name">${tx.name}${isPrev ? ' <span style="font-size:10px;color:var(--text-muted)">(Prevista)</span>' : ''}</div>
       <div class="tx-date">${dataExibicao}</div>
     </div>
     <div class="tx-amount ${pos?'pos':'neg'}" onclick="openModal('${tx.type}', '${tx.id}')">${pos?'+':''}R$${formatBRL(tx.amount)}</div>
