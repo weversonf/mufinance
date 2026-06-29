@@ -5,7 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mu Finance Pro</title>
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#1a7a4a">
+<link rel="icon" type="image/svg+xml" href="icons/logo.svg">
+<link rel="apple-touch-icon" href="icons/logo.png">
+<meta name="theme-color" content="#356FD8">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
@@ -16,37 +18,45 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <style>
   :root {
-    --bg-body: #f0f0f0;
-    --bg-app: #ffffff;
-    --bg-top: #e8e8e8;
-    --text-main: #111111;
-    --text-sec: #555555;
-    --text-muted: #999999;
-    --border: #f0f0f0;
-    --card-bg: #f7f7f5;
-    --primary: #1a7a4a;
-    --primary-light: #e6f5ec;
-    --modal-bg: #ffffff;
-    --input-bg: #ffffff;
-    --input-border: #e8e8e8;
-    --tab-inactive: #cccccc;
+    --bg-body: #F9F8F6;
+    --bg-app: #FFFFFF;
+    --bg-top: #EEF3FA;
+    --text-main: #071839;
+    --text-sec: #4F6488;
+    --text-muted: #8A9BB5;
+    --border: #D7E1F1;
+    --card-bg: #FFFFFF;
+    --primary: #356FD8;
+    --primary-light: #E8EFFB;
+    --primary-dark: #2764C5;
+    --accent: #F4C96B;
+    --accent-light: #FDF3D6;
+    --modal-bg: #FFFFFF;
+    --input-bg: #FFFFFF;
+    --input-border: #D7E1F1;
+    --tab-inactive: #B0C1DA;
+    --success: #F4C96B;
   }
 
   [data-theme="dark"] {
-    --bg-body: #000000;
-    --bg-app: #121212;
-    --bg-top: #1a1a1a;
-    --text-main: #ffffff;
-    --text-sec: #bbbbbb;
-    --text-muted: #777777;
-    --border: #222222;
-    --card-bg: #1e1e1e;
-    --primary: #2ecc71;
-    --primary-light: #1a3a2a;
-    --modal-bg: #1e1e1e;
-    --input-bg: #2a2a2a;
-    --input-border: #333333;
-    --tab-inactive: #555555;
+    --bg-body: #071839;
+    --bg-app: #071839;
+    --bg-top: #0E234B;
+    --text-main: #F9F8F6;
+    --text-sec: #C7D5ED;
+    --text-muted: #8AA3C9;
+    --border: #23477A;
+    --card-bg: #0E234B;
+    --primary: #356FD8;
+    --primary-light: #1A3466;
+    --primary-dark: #4B86F0;
+    --accent: #F4C96B;
+    --accent-light: #3A2E1A;
+    --modal-bg: #0E234B;
+    --input-bg: #14305F;
+    --input-border: #23477A;
+    --tab-inactive: #4B6A94;
+    --success: #F4C96B;
   }
 
   *{box-sizing:border-box;margin:0;padding:0;transition: background 0.3s, color 0.3s}
@@ -1120,7 +1130,7 @@
       </select>
     </div>
     <label class="field-label">Cor</label>
-    <input class="field-input" id="acc-color-input" type="color" value="#1a7a4a" style="height:44px;padding:4px" />
+    <input class="field-input" id="acc-color-input" type="color" value="#356FD8" style="height:44px;padding:4px" />
     <label class="field-label">Saldo Inicial (R$)</label>
     <input class="field-input" id="acc-balance-input" type="number" step="0.01" placeholder="0,00" />
     <button class="submit-btn" onclick="submitAccount()">Salvar</button>
@@ -1576,7 +1586,7 @@ function startListeners() {
     });
     // Auto-seed categorias padrão faltantes
     const defaults = [
-      { id:'supermarket', name:'Supermercado', icon:'ti-shopping-cart', color:'#1a7a4a', isDefault:true, subcats:[], type:'saída' },
+      { id:'supermarket', name:'Supermercado', icon:'ti-shopping-cart', color:'#356FD8', isDefault:true, subcats:[], type:'saída' },
       { id:'food', name:'Alimentação', icon:'ti-tools-kitchen-2', color:'#e07a3a', isDefault:true, subcats:[{id:'restaurant',name:'Restaurante'},{id:'delivery',name:'Delivery'},{id:'lanche',name:'Lanche'}], type:'saída' },
       { id:'moradia', name:'Moradia', icon:'ti-home', color:'#8e44ad', isDefault:true, subcats:[{id:'aluguel',name:'Aluguel'},{id:'condominio',name:'Condomínio'},{id:'iptu',name:'IPTU'}], type:'saída' },
       { id:'transport', name:'Transporte', icon:'ti-car', color:'#5b7fa6', isDefault:true, subcats:[{id:'gasolina',name:'Gasolina'},{id:'uber',name:'Uber/99'},{id:'onibus',name:'Ônibus/Metrô'},{id:'estacionamento',name:'Estacionamento'}], type:'saída' },
@@ -1591,12 +1601,12 @@ function startListeners() {
       { id:'pet', name:'Pet', icon:'ti-animal', color:'#9b59b6', isDefault:true, subcats:[{id:'racao',name:'Ração'},{id:'veterinario',name:'Veterinário'},{id:'petshop',name:'Petshop'}], type:'saída' },
       { id:'presente', name:'Presente', icon:'ti-gift', color:'#e67e22', isDefault:true, subcats:[], type:'saída' },
       { id:'impostos', name:'Impostos e Taxas', icon:'ti-file-text', color:'#e74c3c', isDefault:true, subcats:[{id:'irpf',name:'IRPF'},{id:'iof',name:'IOF'},{id:'multa',name:'Multa'}], type:'saída' },
-      { id:'seguros', name:'Seguros', icon:'ti-shield', color:'#2ecc71', isDefault:true, subcats:[{id:'vida',name:'Vida'},{id:'auto',name:'Auto'},{id:'residencia',name:'Residência'}], type:'saída' },
+      { id:'seguros', name:'Seguros', icon:'ti-shield', color:'#356FD8', isDefault:true, subcats:[{id:'vida',name:'Vida'},{id:'auto',name:'Auto'},{id:'residencia',name:'Residência'}], type:'saída' },
       { id:'cartao', name:'Cartão de Crédito', icon:'ti-credit-card', color:'#34495e', isDefault:true, subcats:[{id:'fatura',name:'Fatura'},{id:'juros-cartao',name:'Juros'}], type:'saída' },
       { id:'vehicle', name:'Veículo', icon:'ti-car', color:'#2c3e50', isDefault:true, subcats:[{id:'gasolina',name:'Gasolina'},{id:'manutencao',name:'Manutenção'},{id:'oleo',name:'Troca de Óleo'},{id:'pneus',name:'Pneus'},{id:'revisao',name:'Revisão'}], type:'saída' },
-      { id:'salary', name:'Salário', icon:'ti-cash', color:'#1a7a4a', isDefault:true, subcats:[{id:'salario-fixo',name:'Fixo'},{id:'decimo-terceiro',name:'13º'},{id:'ferias',name:'Férias'}], type:'entrada' },
+      { id:'salary', name:'Salário', icon:'ti-cash', color:'#356FD8', isDefault:true, subcats:[{id:'salario-fixo',name:'Fixo'},{id:'decimo-terceiro',name:'13º'},{id:'ferias',name:'Férias'}], type:'entrada' },
       { id:'freelance', name:'Freelance', icon:'ti-device-laptop', color:'#5b7fa6', isDefault:true, subcats:[{id:'projeto',name:'Projeto'},{id:'consultoria',name:'Consultoria'},{id:'outros-freela',name:'Outros'}], type:'entrada' },
-      { id:'investimentos', name:'Investimentos', icon:'ti-trending-up', color:'#2ecc71', isDefault:true, subcats:[{id:'dividendos',name:'Dividendos'},{id:'renda-fixa',name:'Renda Fixa'},{id:'acoes',name:'Ações'},{id:'fii',name:'FIIs'}], type:'entrada' },
+      { id:'investimentos', name:'Investimentos', icon:'ti-trending-up', color:'#356FD8', isDefault:true, subcats:[{id:'dividendos',name:'Dividendos'},{id:'renda-fixa',name:'Renda Fixa'},{id:'acoes',name:'Ações'},{id:'fii',name:'FIIs'}], type:'entrada' },
       { id:'vendas', name:'Vendas', icon:'ti-tag', color:'#e07a3a', isDefault:true, subcats:[{id:'produto',name:'Produto'},{id:'servico-venda',name:'Serviço'}], type:'entrada' },
       { id:'gift', name:'Presente', icon:'ti-gift', color:'#e91e63', isDefault:true, subcats:[], type:'entrada' },
       { id:'reembolso', name:'Reembolso', icon:'ti-refresh', color:'#3498db', isDefault:true, subcats:[], type:'entrada' },
@@ -2077,7 +2087,7 @@ function openSendTo(initials, name) {
 function renderCards() {
   const container = document.getElementById('cards-list');
   container.innerHTML = cards.map(c => `
-    <div class="card-item" style="background:linear-gradient(135deg, ${c.color||'#1a7a4a'}, ${c.colorDark||'#2d5a43'});cursor:pointer" onclick="openCardModal('${c.id}')">
+    <div class="card-item" style="background:linear-gradient(135deg, ${c.color||'#356FD8'}, ${c.colorDark||'#2764C5'});cursor:pointer" onclick="openCardModal('${c.id}')">
       <div class="card-type">${c.type || 'Visa'} • ${c.bank || ''}</div>
       <div class="card-number">${c.number || '**** **** **** 0000'}</div>
       <div class="card-footer">
@@ -2108,8 +2118,8 @@ async function submitCard() {
   const holder = document.getElementById('card-holder').value.trim();
   const expiry = document.getElementById('card-expiry').value.trim();
   if (!number || !holder || !expiry) { showToast("Preencha todos os campos"); return; }
-  const colors = { Visa: ['#1a7a4a','#2d5a43'], Mastercard: ['#333','#111'], Elo: ['#c0392b','#7a1a1a'], Amex: ['#2c3e50','#1a252f'] };
-  const [color, colorDark] = colors[type] || ['#1a7a4a','#2d5a43'];
+  const colors = { Visa: ['#356FD8','#2764C5'], Mastercard: ['#333','#111'], Elo: ['#c0392b','#7a1a1a'], Amex: ['#2c3e50','#1a252f'] };
+  const [color, colorDark] = colors[type] || ['#356FD8','#2764C5'];
   const data = { type, number, holder, expiry, color, colorDark };
   if (editingCardId) {
     await db.collection('cards').doc(editingCardId).update(data);
@@ -3764,7 +3774,7 @@ function startProListeners() {
   db.collection('accounts').onSnapshot(snap => {
     accounts = []; snap.forEach(d => accounts.push({ id: d.id, ...d.data() }));
     if (accounts.length === 0) {
-      db.collection('accounts').add({ name: 'Carteira', type: 'carteira', color: '#1a7a4a', balance: 0 });
+      db.collection('accounts').add({ name: 'Carteira', type: 'carteira', color: '#356FD8', balance: 0 });
     }
     if (document.getElementById('settings-page')?.classList.contains('active')) renderSettingsAccounts();
     populateAccountSelects();
