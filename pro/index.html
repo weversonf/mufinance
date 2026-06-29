@@ -2258,22 +2258,10 @@ async function resetAllTransactions() {
 
 // ===== EXCEL IMPORT/EXPORT =====
 function downloadExcelTemplate() {
-  if (typeof XLSX === 'undefined') { showToast('Erro: SheetJS não carregado'); return; }
-  const allCats = [...(categories.saída||[]), ...(categories.entrada||[])];
-  const sample = allCats.slice(0,4).map(c => {
-    const t = categories.saída.includes(c) ? 'saída' : 'entrada';
-    const sub = c.subcats?.[0]?.name || '';
-    const amt = t === 'saída' ? (Math.floor(Math.random()*200)+20) : (Math.floor(Math.random()*3000)+1000);
-    return { name: c.name+' (exemplo)', amount: amt, date: '2026-06-15', cat: c.name, type: t, subcat: sub, status: 'realizada' };
-  });
-  const ws = XLSX.utils.json_to_sheet(sample);
-  const colWidths = [
-    { wch: 25 }, { wch: 12 }, { wch: 14 }, { wch: 20 }, { wch: 10 }, { wch: 18 }, { wch: 12 }
-  ];
-  ws['!cols'] = colWidths;
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Transacoes');
-  XLSX.writeFile(wb, 'mu_finance_modelo.xlsx');
+  const a = document.createElement('a');
+  a.href = 'mu_finance_modelo.xlsx';
+  a.download = 'mu_finance_modelo.xlsx';
+  a.click();
   showToast('Modelo baixado! Preencha e importe.');
 }
 
@@ -2293,17 +2281,31 @@ async function importExcel(file) {
       subByName[c.name.toLowerCase().trim() + '>' + s.name.toLowerCase().trim()] = { cat: c, sub: s };
     });
   });
+  // Mapeia cabeçalhos (português ou inglês)
+  const col = h => {
+    const map = { nome:'name', valor:'amount', data:'date', categoria:'cat', tipo:'type', subcategoria:'subcat', status:'status' };
+    return Object.keys(map).reduce((acc, pt) => { acc[pt] = acc[map[pt]] = map[pt]; return acc; }, {})[h.toLowerCase().trim()] || h;
+  };
+  const cols = Object.keys(rows[0]).reduce((acc, k) => { acc[col(k)] = k; return acc; }, {});
   let success = 0, errors = [];
   const batch = db.batch();
   let batchCount = 0;
   for (const row of rows) {
-    const name = (row.name||'').toString().trim();
-    const amt = parseFloat(String(row.amount||'').replace(',','.'));
-    const date = (row.date||'').toString().trim();
-    const catName = (row.cat||'').toString().trim();
-    const subcatName = (row.subcat||'').toString().trim();
-    const statusVal = (row.status||'realizada').toString().trim();
-    const typeVal = (row.type||'').toString().trim().toLowerCase();
+    const name = (row[cols.name]||'').toString().trim();
+    const amt = parseFloat(String(row[cols.amount]||'').replace(',','.'));
+    const dateRaw = row[cols.date];
+    let date = '';
+    if (typeof dateRaw === 'number') {
+      // Converte serial Excel para ISO
+      const d = new Date((dateRaw - 25569) * 86400000);
+      date = d.toISOString().slice(0, 10);
+    } else {
+      date = String(dateRaw||'').trim();
+    }
+    const catName = (row[cols.cat]||'').toString().trim();
+    const subcatName = (row[cols.subcat]||'').toString().trim();
+    const statusVal = (row[cols.status]||'Efetivada').toString().trim();
+    const typeVal = (row[cols.type]||'').toString().trim().toLowerCase();
     if (!amt || !date || !catName) { errors.push('Linha inválida: ' + (name||catName||'?')); continue; }
     const cat = catByName[catName.toLowerCase()];
     if (!cat) { errors.push('Categoria não encontrada: ' + catName); continue; }
@@ -2317,7 +2319,7 @@ async function importExcel(file) {
       subcat: subMatch ? subMatch.sub.id : '',
       date, amount: txAmt, type: finalType,
       icon: cat.icon, bg: cat.color + '22', color: cat.color,
-      group: statusVal === 'prevista' ? 'Previsto' : 'Hoje', status: statusVal,
+      group: (statusVal||'').toLowerCase() === 'prevista' ? 'Previsto' : 'Hoje', status: statusVal,
       uid: currentUser ? currentUser.uid : null,
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
     });
