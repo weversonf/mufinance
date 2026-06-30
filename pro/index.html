@@ -690,7 +690,7 @@
         </div>
       </div>
       <div class="income-card" style="display:flex;flex-direction:column;padding:12px">
-        <div class="income-label" style="margin-bottom:8px">Saldo acumulado</div>
+        <div class="income-label" style="margin-bottom:8px">Saldo mensal</div>
         <div style="flex:1;position:relative;min-height:74px"><canvas id="home-mobile-net"></canvas></div>
       </div>
     </div>
@@ -3216,24 +3216,17 @@ function renderHomeChartsDesktop() {
       }
     }
   });
-  // Net worth / Saldo acumulado — 6 meses
+  // Saldo mensal — 6 meses (não acumulado)
   if (netCanvas) {
     const netLabels = [];
     const netData = [];
-    let runningBalance = 0;
-    // first, sum all transactions older than 6 months as a base
-    const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 6, 1);
-    runningBalance = transactions
-      .filter(t => { const d = t.createdAt ? t.createdAt.toDate() : null; return d && d < sixMonthsAgo; })
-      .reduce((s, t) => s + (t.amount || 0), 0);
     for (let i = 5; i >= 0; i--) {
       const m = new Date(now.getFullYear(), now.getMonth() - i, 1);
       netLabels.push(m.toLocaleString('pt-BR', { month: 'short', year: '2-digit' }));
       const monthSum = transactions
         .filter(t => { const d = t.createdAt ? t.createdAt.toDate() : null; return d && d.getMonth() === m.getMonth() && d.getFullYear() === m.getFullYear(); })
         .reduce((s, t) => s + (t.amount || 0), 0);
-      runningBalance += monthSum;
-      netData.push(runningBalance);
+      netData.push(monthSum);
     }
     window._homeNetChart = new Chart(netCanvas, {
       type: 'line',
@@ -3357,22 +3350,17 @@ function renderHomeMobileCharts() {
     }
   }
 
-  // — Line chart: saldo acumulado 6 meses —
+  // — Line chart: saldo mensal 6 meses —
   const netCanvas = document.getElementById('home-mobile-net');
   if (netCanvas) {
     if (window._hmNet) { window._hmNet.destroy(); window._hmNet = null; }
     const netLabels = [], netData = [];
-    const sixAgo = new Date(now.getFullYear(), now.getMonth() - 6, 1);
-    let running = transactions
-      .filter(t => { const d = t.createdAt ? t.createdAt.toDate() : null; return d && d < sixAgo; })
-      .reduce((s,t) => s + (t.amount||0), 0);
     for (let i = 5; i >= 0; i--) {
       const m = new Date(now.getFullYear(), now.getMonth() - i, 1);
       netLabels.push(m.toLocaleString('pt-BR', { month: 'short' }));
-      running += transactions
+      netData.push(transactions
         .filter(t => { const d = t.createdAt ? t.createdAt.toDate() : null; return d && d.getMonth() === m.getMonth() && d.getFullYear() === m.getFullYear(); })
-        .reduce((s,t) => s + (t.amount||0), 0);
-      netData.push(running);
+        .reduce((s,t) => s + (t.amount||0), 0));
     }
     const isPos = netData[netData.length-1] >= netData[0];
     const lineColor = isPos ? '#356FD8' : '#c0392b';
