@@ -1828,8 +1828,10 @@ auth.onAuthStateChanged(async user => {
     startListeners();
     try {
       const snap = await db.collection('profile').doc(currentUser.uid).get();
+      let isNewProfile = false;
       if (!snap.exists) {
-        db.collection('profile').doc(currentUser.uid).set({
+        isNewProfile = true;
+        await db.collection('profile').doc(currentUser.uid).set({
           name: user.displayName || 'Usuário',
           email: user.email || '',
           username: '@' + (user.displayName || 'usuario').toLowerCase().replace(/\s/g, ''),
@@ -1855,11 +1857,15 @@ auth.onAuthStateChanged(async user => {
         active: true,
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
       }, { merge: true });
-      // Show welcome modal if username not set yet
-      if (!meData.usernameChangedAt) {
+      // Show welcome modal for new users; for legacy users without usernameChangedAt, auto-set it
+      if (isNewProfile || !meData.username) {
         const wInput = document.getElementById('welcome-username');
         if (wInput) wInput.value = meData.username || '@' + (user.displayName || 'usuario').toLowerCase().replace(/\s/g, '');
         document.getElementById('welcome-modal').classList.add('open');
+      } else if (!meData.usernameChangedAt) {
+        db.collection('profile').doc(currentUser.uid).set({
+          usernameChangedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
       }
     } catch (e) {
       console.error('Erro ao inicializar perfil:', e);
