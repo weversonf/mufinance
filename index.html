@@ -2742,7 +2742,13 @@ async function saveWelcomeUsername() {
   try {
     const snap = await db.collection('profile').where('username','==',val.toLowerCase()).get();
     if (!snap.empty) {
-      const takenByOther = snap.docs.some(d => d.id !== currentUser.uid);
+      const takenByOther = snap.docs.some(d => {
+        const data = d.data() || {};
+        const docOwner = data.uid || d.id;
+        if (docOwner === currentUser.uid) return false;
+        if (data.email && currentUser.email && data.email === currentUser.email) return false;
+        return true;
+      });
       if (takenByOther) {
         errEl.textContent = 'Este @usuario ja esta em uso. Escolha outro.';
         errEl.style.display = 'block';
@@ -2755,7 +2761,6 @@ async function saveWelcomeUsername() {
     usernameChangedAt: firebase.firestore.FieldValue.serverTimestamp(),
   };
   await db.collection('profile').doc(currentUser.uid).set(update, { merge: true });
-  if (currentUser) db.collection('profile').doc(currentUser.uid).set(update, { merge: true });
   document.getElementById('welcome-modal').classList.remove('open');
   showToast('@usuario salvo! Voce podera troca-lo em 90 dias.');
 }
