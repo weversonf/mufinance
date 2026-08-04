@@ -2493,7 +2493,7 @@ async function resetAllTransactions() {
     batch.delete(doc.ref);
     batchCount++;
     deleted++;
-    if (batchCount >= 450) { batch.commit(); batch = db.batch(); batchCount = 0; }
+    if (batchCount >= 450) { await batch.commit(); batch = db.batch(); batchCount = 0; }
   });
   if (batchCount > 0) await batch.commit();
   showToast(total + ' transações excluídas!');
@@ -2716,8 +2716,6 @@ async function submitProfileEdit() {
     update.email = val;
   }
   await db.collection('profile').doc(currentUser.uid).set(update, { merge: true });
-  // Sync to uid profile for P2P search
-  if (currentUser) db.collection('profile').doc(currentUser.uid).set(update, { merge: true });
   closeModal('profile-modal');
   showToast("Perfil atualizado!");
 }
@@ -3293,7 +3291,7 @@ window.showPage = function(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   const target = document.getElementById(name + '-page');
   if (target) target.classList.add('active');
-  const tabNames = { home:0, transactions:1, cards:2 };
+  const tabNames = { home:0, transactions:1, reports:2, cards:3 };
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   if (tabNames[name] !== undefined) {
     document.querySelectorAll('.tab-bar').forEach(bar => {
@@ -3440,7 +3438,7 @@ function renderHomeReports() {
     (topCats.length ?
     '<div class="income-card" style="margin-bottom:12px"><div class="section-label" style="font-size:13px;font-weight:700;color:var(--text-main);margin-bottom:8px">Top Categorias</div>' +
     topCats.map(c => {
-      const pct = (c.total / expense * 100).toFixed(0);
+      const pct = expense > 0 ? (c.total / expense * 100).toFixed(0) : '0';
       return '<div class="rep-cat-new"><div class="rc-icon" style="background:'+c.color+'22;color:'+c.color+'"><i class="ti '+c.icon+'"></i></div><div class="rc-info"><div class="rc-name">'+c.name+' <span style="font-size:10px;color:var(--text-muted);font-weight:400">'+pct+'%</span></div><div class="rc-bar"><div class="rc-fill" style="width:'+Math.max(4,(c.total/maxCat*100))+'%;background:'+c.color+'"></div></div></div><div class="rc-amt" style="color:'+c.color+'">R$ '+c.total.toLocaleString('pt-BR',{minimumFractionDigits:2})+'</div></div>';
     }).join('')+'</div>'
     : '') +
@@ -3906,7 +3904,7 @@ function renderBudget() {
   // Alert
   if (pct > 90 && !window._budgetAlerted) {
     window._budgetAlerted = true;
-    db.collection('notifications').add({ message: 'Orçamento crítico! Você usou '+pct.toFixed(0)+'% do limite mensal.', type: 'alert', read: false, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+    db.collection('notifications').add({ uid: currentUser.uid, message: 'Orçamento crítico! Você usou '+pct.toFixed(0)+'% do limite mensal.', type: 'alert', read: false, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
   }
   if (pct < 80) window._budgetAlerted = false;
   // By category
@@ -4667,7 +4665,7 @@ async function importExtrato(file) {
   const header = String(rows[0][0]||'').toLowerCase();
   const hasHeader = header.includes('data');
   const startIdx = hasHeader ? 1 : 0;
-  const allCats = [...(categories.saida||[]), ...(categories.entrada||[])];
+  const allCats = [...(categories.saída||[]), ...(categories.entrada||[])];
   let success = 0, errors = [];
   let batch = db.batch();
   let batchCount = 0;
@@ -4707,7 +4705,7 @@ async function importExtrato(file) {
       }
     }
     const type = categories.saída.find(c => c.id === cat.id) ? 'saída' : 'entrada';
-    const txAmt = type === 'saida' ? -Math.abs(amt) : Math.abs(amt);
+    const txAmt = type === 'saída' ? -Math.abs(amt) : Math.abs(amt);
     batch.set(db.collection('transactions').doc(), {
       name: desc || cat.name,
       cat: cat.id,
