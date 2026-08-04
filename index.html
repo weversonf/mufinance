@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mu Finance Pro v09.04</title>
+<title>Mu Finance Pro v09.05</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/webp" href="logo.webp">
 <link rel="icon" type="image/svg+xml" href="icons/logo.svg">
@@ -65,6 +65,15 @@
   }
 
   *{box-sizing:border-box;margin:0;padding:0;transition: background 0.3s, color 0.3s}
+  html{scrollbar-width:thin;scrollbar-color:var(--primary) transparent}
+
+  /* ===== SCROLLBAR STYLE ===== */
+  ::-webkit-scrollbar{width:6px;height:6px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--text-muted);border-radius:8px}
+  ::-webkit-scrollbar-thumb:hover{background:var(--primary)}
+  *{scrollbar-width:thin;scrollbar-color:var(--text-muted) transparent}
+
   body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg-body);min-height:100vh;display:flex;align-items:flex-start;justify-content:center}
   .app{width:100%;max-width:420px;min-height:100vh;background:var(--bg-app);display:flex;flex-direction:column;overflow:hidden;position:relative}
 
@@ -267,6 +276,12 @@
   .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:100;align-items:flex-end;justify-content:center}
   .modal-overlay.open{display:flex}
   .modal{background:var(--modal-bg);border-radius:28px 28px 0 0;padding:24px 20px 40px;width:100%;max-width:420px;animation:slideUp .25s ease;max-height:90vh;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+  .modal::-webkit-scrollbar{width:4px}
+  .modal::-webkit-scrollbar-thumb{background:var(--primary);border-radius:4px}
+  .tp-map-wrap{display:flex;flex-direction:column;gap:10px;margin-top:4px}
+  .tp-map-box{position:relative;height:220px;border-radius:12px;overflow:hidden;background:var(--card-bg);width:100%}
+  .tp-chart-box{display:flex;justify-content:center;align-items:center;height:150px;width:100%}
+  .tp-chart-box canvas{max-width:150px;max-height:150px}
   /* Tab-bar: hide when virtual keyboard is open on mobile */
   @media(max-width:767px){
     .modal-overlay.open ~ .app .tab-bar,
@@ -536,7 +551,6 @@
   .v-edit-btn{width:28px;height:28px;border:none;border-radius:6px;background:var(--primary-light);color:var(--primary);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:background .15s}
   .v-edit-btn:hover{background:var(--primary)}
   .blurred{filter:blur(8px);user-select:none}
-  .tp-map-mini{height:120px;border-radius:10px;z-index:1}
   body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
   input,textarea,.field-input,.field-input *{-webkit-user-select:text;user-select:text}
   .greeting-left{display:flex;align-items:center;gap:12px}
@@ -1614,9 +1628,9 @@
     <div id="tp-stops"></div>
     <button class="submit-btn" style="background:var(--card-bg);color:var(--text-sec);font-size:12px;margin-bottom:12px" onclick="tpAddStop()"><i class="ti ti-plus"></i> Adicionar Parada</button>
     <div id="tp-preview" style="font-size:12px;color:var(--text-muted);padding:8px 0;border-top:1px solid var(--border);margin-bottom:8px"></div>
-    <div style="display:flex;gap:8px">
-      <div style="flex:1;position:relative;height:120px;border-radius:10px;overflow:hidden;background:var(--card-bg)"><div id="tp-map" style="width:100%;height:100%"></div></div>
-      <div style="flex:0 0 100px;height:120px;position:relative"><canvas id="tp-chart"></canvas></div>
+    <div class="tp-map-wrap">
+      <div class="tp-map-box"><div id="tp-map" style="width:100%;height:100%"></div></div>
+      <div class="tp-chart-box"><canvas id="tp-chart"></canvas></div>
     </div>
     <button class="submit-btn" id="tp-submit" onclick="submitTripPlanner()" style="margin-top:12px">Salvar Viagem</button>
     <button class="submit-btn" id="tp-delete-btn" onclick="deleteTripPlanner()" style="background:#c0392b;margin-top:8px;display:none">Excluir Viagem</button>
@@ -4642,6 +4656,7 @@ function tpRenderMap(origin, dest) {
   if (_tpMap) { _tpMap.remove(); _tpMap = null; }
   _tpMap = L.map(container, { zoomControl: false, attributionControl: false }).setView([-15, -50], 4);
   L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(_tpMap);
+  setTimeout(() => { if (_tpMap) _tpMap.invalidateSize(); }, 350);
   if (!origin || !dest) return;
   Promise.all([
     fetch('https://nominatim.openstreetmap.org/search?format=json&q='+encodeURIComponent(origin)+'&limit=1').then(r=>r.json()).then(d=>d.length?[parseFloat(d[0].lat),parseFloat(d[0].lon)]:null),
