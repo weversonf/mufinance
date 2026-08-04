@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mu Finance Pro v09</title>
+<title>Mu Finance Pro v09.01</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/webp" href="logo.webp">
 <link rel="icon" type="image/svg+xml" href="icons/logo.svg">
@@ -19,6 +19,8 @@
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
   :root {
     --bg-body: #F9F8F6;
@@ -534,6 +536,7 @@
   .v-edit-btn{width:28px;height:28px;border:none;border-radius:6px;background:var(--primary-light);color:var(--primary);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:background .15s}
   .v-edit-btn:hover{background:var(--primary)}
   .blurred{filter:blur(8px);user-select:none}
+  .tp-map-mini{height:120px;border-radius:10px;z-index:1}
   body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
   input,textarea,.field-input,.field-input *{-webkit-user-select:text;user-select:text}
   .greeting-left{display:flex;align-items:center;gap:12px}
@@ -1327,10 +1330,11 @@
     <div id="v-content" style="display:block">
     <div class="income-card"><div class="section-label">Saúde do Veículo</div><div class="v-health" id="v-health-bars"></div></div>
     <div class="two-col" id="v-summary"></div>
-    <div style="display:flex;gap:8px;margin:12px 0">
-      <button class="action-btn side" style="flex:1" onclick="openRefuelModal()"><i class="ti ti-gas-station"></i> Abastecer</button>
-      <button class="action-btn side" style="flex:1" onclick="openMaintModal()"><i class="ti ti-tool"></i> Manutenção</button>
-      <button class="action-btn side" style="flex:1" onclick="openRouteModal()"><i class="ti ti-map-2"></i> Rota</button>
+    <div style="display:flex;gap:8px;margin:12px 0;flex-wrap:wrap">
+      <button class="action-btn side" style="flex:1;min-width:80px" onclick="openRefuelModal()"><i class="ti ti-gas-station"></i> Abastecer</button>
+      <button class="action-btn side" style="flex:1;min-width:80px" onclick="openMaintModal()"><i class="ti ti-tool"></i> Manutenção</button>
+      <button class="action-btn side" style="flex:1;min-width:80px" onclick="openRouteModal()"><i class="ti ti-map-2"></i> Rota</button>
+      <button class="action-btn side" style="flex:1;min-width:80px" onclick="openTripPlannerModal()"><i class="ti ti-plane"></i> Viagem</button>
     </div>
     <div class="chart-wrap-new"><h4>Evolução do Consumo (km/L) · Meta: 29 km/L</h4><div class="chart-canvas-box"><canvas id="consumption-chart"></canvas></div></div>
     <div class="chart-wrap-new"><h4>KM por Dia · Esta Semana</h4><div class="chart-canvas-box"><canvas id="weekly-km-chart"></canvas></div></div>
@@ -1343,6 +1347,8 @@
     </div>
     <div class="section-title-new"><i class="ti ti-history"></i> Histórico</div>
     <div id="v-timeline"></div>
+    <div class="section-title-new" style="margin-top:16px"><i class="ti ti-plane"></i> Viagens Planejadas</div>
+    <div id="v-trips-list"></div>
   </div>
   </div>
   <div class="tab-bar">
@@ -1577,6 +1583,43 @@
     <button class="submit-btn" style="background:var(--card-bg);color:var(--text-sec);margin-bottom:8px" onclick="calcTrip()"><i class="ti ti-map-pin"></i> Calcular Rota</button>
     <div id="trip-result" style="font-size:13px;color:var(--text-sec);padding:12px 0">Preencha origem e destino e clique em "Calcular Rota"</div>
     <button class="submit-btn" onclick="saveTripAsGoal()"><i class="ti ti-target"></i> Salvar Custo como Meta</button>
+  </div>
+</div>
+
+<!-- TRIP PLANNER MODAL -->
+<div class="modal-overlay" id="trip-planner-modal">
+  <div class="modal" style="max-height:90vh;overflow-y:auto">
+    <h2 id="trip-planner-title">Nova Viagem <button class="modal-close" onclick="closeModal('trip-planner-modal')"><i class="ti ti-x"></i></button></h2>
+    <input type="hidden" id="tp-id" />
+    <label class="field-label">Nome da Viagem</label>
+    <input class="field-input" id="tp-name" placeholder="Ex: Rota do Sol" />
+    <div style="display:flex;gap:8px">
+      <div style="flex:1"><label class="field-label">Origem</label><input class="field-input" id="tp-origin" placeholder="Ex: Fortaleza, CE" /></div>
+      <div style="flex:1"><label class="field-label">Destino</label><input class="field-input" id="tp-dest" placeholder="Ex: Natal, RN" /></div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:flex-end">
+      <div style="flex:1"><label class="field-label">Distância (km ida+volta)</label><input class="field-input" id="tp-dist" type="number" min="0" step="0.1" /></div>
+      <button class="submit-btn" style="flex:0;padding:10px 12px;font-size:11px;width:auto;margin-bottom:14px" onclick="tpAutoDistance()"><i class="ti ti-map-pin"></i> Auto</button>
+    </div>
+    <div style="display:flex;gap:8px">
+      <div style="flex:1"><label class="field-label">Consumo (km/L)</label><input class="field-input" id="tp-cons" type="number" min="0.1" step="0.1" value="12" /></div>
+      <div style="flex:1"><label class="field-label">Combustível (R$/L)</label><input class="field-input" id="tp-fuel" type="number" min="0.01" step="0.01" value="5.49" /></div>
+      <div style="flex:1"><label class="field-label">Viajantes</label><input class="field-input" id="tp-travelers" type="number" min="1" value="1" /></div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <div style="flex:1"><label class="field-label">Hospedagem (R$)</label><input class="field-input" id="tp-hosting" type="number" min="0" step="0.01" value="0" /></div>
+      <div style="flex:1"><label class="field-label">Alimentação (R$)</label><input class="field-input" id="tp-food" type="number" min="0" step="0.01" value="0" /></div>
+    </div>
+    <div class="section-title-new" style="margin-top:8px"><i class="ti ti-map-pin"></i> Paradas / Cronograma</div>
+    <div id="tp-stops"></div>
+    <button class="submit-btn" style="background:var(--card-bg);color:var(--text-sec);font-size:12px;margin-bottom:12px" onclick="tpAddStop()"><i class="ti ti-plus"></i> Adicionar Parada</button>
+    <div id="tp-preview" style="font-size:12px;color:var(--text-muted);padding:8px 0;border-top:1px solid var(--border);margin-bottom:8px"></div>
+    <div style="display:flex;gap:8px">
+      <div style="flex:1;position:relative;height:120px;border-radius:10px;overflow:hidden;background:var(--card-bg)"><div id="tp-map" style="width:100%;height:100%"></div></div>
+      <div style="flex:0 0 100px;height:120px;position:relative"><canvas id="tp-chart"></canvas></div>
+    </div>
+    <button class="submit-btn" id="tp-submit" onclick="submitTripPlanner()" style="margin-top:12px">Salvar Viagem</button>
+    <button class="submit-btn" id="tp-delete-btn" onclick="deleteTripPlanner()" style="background:#c0392b;margin-top:8px;display:none">Excluir Viagem</button>
   </div>
 </div>
 
@@ -1964,6 +2007,7 @@ function stopListeners() {
   refuels = [];
   maintenances = [];
   routes = [];
+  vehicleTrips = [];
 }
 
 function startListeners() {
@@ -4214,7 +4258,7 @@ function renderVehicleFull() {
   }
   if (intro) intro.style.display = 'none';
   if (vc) vc.style.display = 'block';
-  renderVHealth(); renderVSummary(); renderVReport(); renderVTimeline(); renderVChartsPro();
+  renderVHealth(); renderVSummary(); renderVReport(); renderVTimeline(); renderVChartsPro(); renderVehicleTrips();
 }
 function renderVHealth() {
   const oil = calcVehicleOil();
@@ -4514,6 +4558,200 @@ async function saveTripAsGoal() {
   showToast('Meta de viagem criada!'); closeModal('trip-modal');
 }
 
+// ===== TRIP PLANNER =====
+let vehicleTrips = [];
+let _tpMap = null;
+let _tpChart = null;
+
+function tpCalcTrip(data) {
+  const dist = data.distance || 0;
+  const cons = data.consumption || 1;
+  const fuel = data.fuelPrice || 0;
+  const liters = dist / cons;
+  const fuelCost = liters * fuel;
+  const stopsCost = (data.stops || []).reduce((s, st) => s + (st.cost || 0), 0);
+  const total = fuelCost + (data.hosting || 0) + (data.food || 0) + stopsCost;
+  const travelers = parseInt(data.travelers) || 1;
+  return { liters, fuelCost, stopsCost, total, perPerson: total / travelers, breakdown: { 'Combustível': fuelCost, 'Hospedagem': data.hosting || 0, 'Alimentação': data.food || 0, 'Paradas': stopsCost } };
+}
+
+function tpAddStop(name, cost) {
+  const el = document.getElementById('tp-stops');
+  const div = document.createElement('div');
+  div.style.cssText = 'display:flex;gap:6px;align-items:center;margin-bottom:6px';
+  div.innerHTML = '<input class="field-input tp-stop-name" placeholder="Local/Gasto" value="'+(name||'')+'" style="flex:1;margin:0;font-size:12px;padding:8px 10px" /><input class="field-input tp-stop-cost" type="number" min="0" step="0.01" placeholder="R$" value="'+(cost||0)+'" style="width:80px;margin:0;font-size:12px;padding:8px 10px" /><button class="submit-btn" style="flex:0;padding:6px 8px;background:#c0392b;width:auto;margin:0;font-size:11px" onclick="this.parentElement.remove();tpUpdatePreview()"><i class="ti ti-x"></i></button>';
+  div.querySelectorAll('input').forEach(i => i.oninput = tpUpdatePreview);
+  el.appendChild(div);
+}
+
+function tpGetStops() {
+  return Array.from(document.querySelectorAll('#tp-stops > div')).map(row => ({ name: row.querySelector('.tp-stop-name').value || 'Parada', cost: parseFloat(row.querySelector('.tp-stop-cost').value) || 0 }));
+}
+
+function tpUpdatePreview() {
+  const dist = parseFloat(document.getElementById('tp-dist').value) || 0;
+  const cons = parseFloat(document.getElementById('tp-cons').value) || 12;
+  const fuel = parseFloat(document.getElementById('tp-fuel').value) || 5.49;
+  const host = parseFloat(document.getElementById('tp-hosting').value) || 0;
+  const food = parseFloat(document.getElementById('tp-food').value) || 0;
+  const travelers = parseInt(document.getElementById('tp-travelers').value) || 1;
+  const stops = tpGetStops();
+  const res = tpCalcTrip({ distance: dist, consumption: cons, fuelPrice: fuel, hosting: host, food, travelers, stops });
+  const el = document.getElementById('tp-preview');
+  if (dist > 0) el.innerHTML = '<span style="color:var(--primary);font-weight:700">R$ '+res.total.toLocaleString('pt-BR',{minimumFractionDigits:2})+'</span> total · <span style="font-weight:600">R$ '+res.perPerson.toLocaleString('pt-BR',{minimumFractionDigits:2})+'</span>/pessoa · '+res.liters.toFixed(1)+'L';
+  else el.textContent = '';
+  tpRenderChart(res.breakdown);
+}
+
+function tpRenderChart(data) {
+  const canvas = document.getElementById('tp-chart');
+  if (!canvas || typeof Chart === 'undefined') return;
+  if (_tpChart) { _tpChart.destroy(); _tpChart = null; }
+  const labels = Object.keys(data);
+  const values = Object.values(data);
+  if (values.every(v => v === 0)) return;
+  _tpChart = new Chart(canvas, { type: 'doughnut', data: { labels, datasets: [{ data: values, backgroundColor: ['#356FD8','#2ecc71','#f39c12','#8A96A3'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, cutout: '65%' } });
+}
+
+function tpRenderMap(origin, dest) {
+  if (typeof L === 'undefined') return;
+  const container = document.getElementById('tp-map');
+  if (!container) return;
+  if (_tpMap) { _tpMap.remove(); _tpMap = null; }
+  _tpMap = L.map(container, { zoomControl: false, attributionControl: false }).setView([-15, -50], 4);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(_tpMap);
+  if (!origin || !dest) return;
+  Promise.all([
+    fetch('https://nominatim.openstreetmap.org/search?format=json&q='+encodeURIComponent(origin)+'&limit=1').then(r=>r.json()).then(d=>d.length?[parseFloat(d[0].lat),parseFloat(d[0].lon)]:null),
+    fetch('https://nominatim.openstreetmap.org/search?format=json&q='+encodeURIComponent(dest)+'&limit=1').then(r=>r.json()).then(d=>d.length?[parseFloat(d[0].lat),parseFloat(d[0].lon)]:null)
+  ]).then(([pA, pB]) => {
+    if (pA && pB) {
+      L.marker(pA).addTo(_tpMap); L.marker(pB).addTo(_tpMap);
+      const line = L.polyline([pA, pB], { color: '#356FD8', weight: 3, dashArray: '6,8' }).addTo(_tpMap);
+      _tpMap.fitBounds(line.getBounds(), { padding: [15, 15] });
+    } else if (pA || pB) { _tpMap.setView(pA || pB, 8); L.marker(pA || pB).addTo(_tpMap); }
+  });
+}
+
+async function tpAutoDistance() {
+  const origin = document.getElementById('tp-origin').value.trim();
+  const dest = document.getElementById('tp-dest').value.trim();
+  if (!origin || !dest) { showToast('Preencha origem e destino'); return; }
+  showToast('Calculando distância...');
+  try {
+    const [r1, r2] = await Promise.all([
+      fetch('https://nominatim.openstreetmap.org/search?format=json&q='+encodeURIComponent(origin)+'&limit=1').then(r=>r.json()),
+      fetch('https://nominatim.openstreetmap.org/search?format=json&q='+encodeURIComponent(dest)+'&limit=1').then(r=>r.json())
+    ]);
+    if (!r1.length || !r2.length) { showToast('Local não encontrado'); return; }
+    const rr = await fetch('https://router.project-osrm.org/route/v1/driving/'+r1[0].lon+','+r1[0].lat+';'+r2[0].lon+','+r2[0].lat+'?overview=false');
+    const rd = await rr.json();
+    if (rd.code === 'Ok' && rd.routes.length) {
+      const km = rd.routes[0].distance / 1000;
+      document.getElementById('tp-dist').value = (km * 2).toFixed(1);
+      tpUpdatePreview();
+      showToast('Distância: '+km.toFixed(1)+' km (ida+volta: '+(km*2).toFixed(1)+' km)');
+    } else showToast('Rota não encontrada');
+  } catch(e) { showToast('Erro ao calcular'); }
+}
+
+function openTripPlannerModal(editId) {
+  document.getElementById('tp-id').value = '';
+  document.getElementById('tp-name').value = '';
+  document.getElementById('tp-origin').value = '';
+  document.getElementById('tp-dest').value = '';
+  document.getElementById('tp-dist').value = '';
+  document.getElementById('tp-cons').value = vehicle?.consumo || 12;
+  document.getElementById('tp-fuel').value = '5.49';
+  document.getElementById('tp-travelers').value = '1';
+  document.getElementById('tp-hosting').value = '0';
+  document.getElementById('tp-food').value = '0';
+  document.getElementById('tp-stops').innerHTML = '';
+  document.getElementById('tp-delete-btn').style.display = 'none';
+  document.getElementById('trip-planner-title').innerHTML = 'Nova Viagem <button class="modal-close" onclick="closeModal(\'trip-planner-modal\')"><i class="ti ti-x"></i></button>';
+  if (editId) {
+    const t = vehicleTrips.find(x => x.id === editId);
+    if (t) {
+      document.getElementById('tp-id').value = t.id;
+      document.getElementById('tp-name').value = t.name || '';
+      document.getElementById('tp-origin').value = t.origin || '';
+      document.getElementById('tp-dest').value = t.destination || '';
+      document.getElementById('tp-dist').value = t.distance || '';
+      document.getElementById('tp-cons').value = t.consumption || 12;
+      document.getElementById('tp-fuel').value = t.fuelPrice || 5.49;
+      document.getElementById('tp-travelers').value = t.travelers || 1;
+      document.getElementById('tp-hosting').value = t.hosting || 0;
+      document.getElementById('tp-food').value = t.food || 0;
+      document.getElementById('tp-stops').innerHTML = '';
+      (t.stops || []).forEach(s => tpAddStop(s.name, s.cost));
+      document.getElementById('trip-planner-title').innerHTML = 'Editar Viagem <button class="modal-close" onclick="closeModal(\'trip-planner-modal\')"><i class="ti ti-x"></i></button>';
+      document.getElementById('tp-delete-btn').style.display = 'block';
+    }
+  }
+  document.getElementById('trip-planner-modal').classList.add('open');
+  setTimeout(() => { tpUpdatePreview(); tpRenderMap(document.getElementById('tp-origin').value, document.getElementById('tp-dest').value); }, 100);
+}
+
+async function submitTripPlanner() {
+  const name = document.getElementById('tp-name').value.trim();
+  const origin = document.getElementById('tp-origin').value.trim();
+  const dest = document.getElementById('tp-dest').value.trim();
+  const dist = parseFloat(document.getElementById('tp-dist').value) || 0;
+  if (!name || !origin || !dest || !dist) { showToast('Preencha nome, origem, destino e distância'); return; }
+  const data = {
+    name, origin, destination: dest, distance: dist,
+    consumption: parseFloat(document.getElementById('tp-cons').value) || 12,
+    fuelPrice: parseFloat(document.getElementById('tp-fuel').value) || 5.49,
+    travelers: parseInt(document.getElementById('tp-travelers').value) || 1,
+    hosting: parseFloat(document.getElementById('tp-hosting').value) || 0,
+    food: parseFloat(document.getElementById('tp-food').value) || 0,
+    stops: tpGetStops(),
+    uid: currentUser ? currentUser.uid : null,
+  };
+  const id = document.getElementById('tp-id').value;
+  if (id) {
+    await db.collection('vehicle_trips').doc(id).update(data);
+    showToast('Viagem atualizada!');
+  } else {
+    data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+    await db.collection('vehicle_trips').add(data);
+    showToast('Viagem salva!');
+  }
+  closeModal('trip-planner-modal');
+}
+
+async function deleteTripPlanner() {
+  const id = document.getElementById('tp-id').value;
+  if (!id || !confirm('Excluir esta viagem?')) return;
+  await db.collection('vehicle_trips').doc(id).delete();
+  closeModal('trip-planner-modal');
+  showToast('Viagem excluída!');
+}
+
+function renderVehicleTrips() {
+  const el = document.getElementById('v-trips-list');
+  if (!el) return;
+  if (!vehicleTrips.length) { el.innerHTML = '<div style="color:var(--text-muted);font-size:13px;padding:8px 0">Nenhuma viagem planejada</div>'; return; }
+  el.innerHTML = vehicleTrips.map(t => {
+    const res = tpCalcTrip(t);
+    const stopsHtml = (t.stops && t.stops.length) ? t.stops.map(s => '<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted)"><span>• '+s.name+'</span><span>R$ '+s.cost.toLocaleString('pt-BR',{minimumFractionDigits:2})+'</span></div>').join('') : '';
+    return '<div class="income-card" style="margin-bottom:10px;cursor:pointer" onclick="openTripPlannerModal(\''+t.id+'\')">'+
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">'+
+        '<div><div style="font-size:14px;font-weight:700;color:var(--text-main)">'+t.name+'</div>'+
+        '<div style="font-size:11px;color:var(--text-muted)">'+t.origin+' → '+t.destination+'</div></div>'+
+        '<div style="text-align:right"><div style="font-size:16px;font-weight:800;color:var(--primary)">R$ '+res.total.toLocaleString('pt-BR',{minimumFractionDigits:2})+'</div>'+
+        '<div style="font-size:10px;color:var(--text-muted)">'+(((t.travelers||1)>1)?('R$ '+res.perPerson.toLocaleString('pt-BR',{minimumFractionDigits:2})+'/pessoa · '):'')+t.distance+' km · '+res.liters.toFixed(1)+'L</div></div>'+
+      '</div>'+
+      '<div style="display:flex;gap:12px;font-size:10px;color:var(--text-muted);margin-top:4px">'+
+        '<span>Combustível: R$ '+res.fuelCost.toLocaleString('pt-BR',{minimumFractionDigits:2})+'</span>'+
+        (t.hosting>0?'<span>Hospedagem: R$ '+t.hosting.toLocaleString('pt-BR',{minimumFractionDigits:2})+'</span>':'')+
+        (t.food>0?'<span>Alimentação: R$ '+t.food.toLocaleString('pt-BR',{minimumFractionDigits:2})+'</span>':'')+
+      '</div>'+
+      (stopsHtml?'<div style="border-top:1px solid var(--border);margin-top:6px;padding-top:6px">'+stopsHtml+'</div>':'')+
+    '</div>';
+  }).join('');
+}
+
 // ===== AVATAR =====
 function openAvatarModal() {
   const colors = ['#1a7a4a','#5b7fa6','#e07a3a','#7a5ba6','#c0392b','#2980b9','#8e44ad','#d35400'];
@@ -4773,6 +5011,12 @@ function startProListeners() {
     routes = []; snap.forEach(d => routes.push({ id: d.id, ...d.data() }));
     routes.sort((a,b) => (b.createdAt?.toDate?.()?.getTime()||0) - (a.createdAt?.toDate?.()?.getTime()||0));
     if (document.getElementById('home-page')?.classList.contains('active')) renderHomeVehicle();
+  }));
+  // Vehicle trips
+  _unsubs.push(db.collection('vehicle_trips').where('uid','==',currentUser.uid).onSnapshot(snap => {
+    vehicleTrips = []; snap.forEach(d => vehicleTrips.push({ id: d.id, ...d.data() }));
+    vehicleTrips.sort((a,b) => (b.createdAt?.toDate?.()?.getTime()||0) - (a.createdAt?.toDate?.()?.getTime()||0));
+    if (document.getElementById('vehicle-page')?.classList.contains('active')) renderVehicleTrips();
   }));
   // Licenses listener (admin)
   _unsubs.push(db.collection('licenses').onSnapshot(snap => {
