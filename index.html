@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mu Finance Pro v09.02</title>
+<title>Mu Finance Pro v09.03</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/webp" href="logo.webp">
 <link rel="icon" type="image/svg+xml" href="icons/logo.svg">
@@ -2540,12 +2540,12 @@ async function resetAllTransactions() {
   let deleted = 0;
   let batch = db.batch();
   let batchCount = 0;
-  snap.forEach(doc => {
+  for (const doc of snap.docs) {
     batch.delete(doc.ref);
     batchCount++;
     deleted++;
     if (batchCount >= 450) { await batch.commit(); batch = db.batch(); batchCount = 0; }
-  });
+  }
   if (batchCount > 0) await batch.commit();
   showToast(total + ' transações excluídas!');
   transactions = [];
