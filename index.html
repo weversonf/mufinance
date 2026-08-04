@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mu Finance Pro v09.01</title>
+<title>Mu Finance Pro v09.02</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/webp" href="logo.webp">
 <link rel="icon" type="image/svg+xml" href="icons/logo.svg">
@@ -1885,12 +1885,19 @@ auth.onAuthStateChanged(async user => {
       // Save profile by uid for P2P user search
       const meSnap = await db.collection('profile').doc(currentUser.uid).get();
       const meData = meSnap.exists ? meSnap.data() : {};
-      db.collection('profile').doc(user.uid).set({
-        name: user.displayName || 'Usuário',
-        email: user.email || '',
-        username: meData.username || '@' + (user.displayName || 'usuario').toLowerCase().replace(/\s/g, ''),
-        uid: user.uid,
-      }, { merge: true });
+      if (!meSnap.exists) {
+        db.collection('profile').doc(user.uid).set({
+          name: user.displayName || 'Usuário',
+          email: user.email || '',
+          username: '@' + (user.displayName || 'usuario').toLowerCase().replace(/\s/g, ''),
+          uid: user.uid,
+        }, { merge: true });
+      } else {
+        db.collection('profile').doc(user.uid).set({
+          email: user.email || '',
+          uid: user.uid,
+        }, { merge: true });
+      }
       // Auto-create license (free by default) if not exists
       db.collection('licenses').doc(user.uid).set({
         uid: user.uid,
@@ -1999,7 +2006,7 @@ function stopListeners() {
   notifications = [];
   cards = [];
   contacts = [];
-  profile = { name: 'Usuário', email: '', username: '@usuario', usernameChangedAt: null };
+  profile = { name: profile.name || '', email: profile.email || '', username: profile.username || '', usernameChangedAt: profile.usernameChangedAt || null };
   accounts = [];
   goals = [];
   budget = { totalLimit: 0, cats: {} };
