@@ -1,4 +1,4 @@
-const CACHE = 'mu-finance-v4';
+﻿const CACHE = 'mu-finance-v5';
 const ASSETS = [
   'index.html',
   'manifest.json',
@@ -36,7 +36,7 @@ self.addEventListener('fetch', e => {
   if (request.method !== 'GET') return;
   const url = new URL(request.url);
 
-  // HTML: network-first para sempre pegar versão nova
+  // HTML: network-first para sempre pegar versÃ£o nova
   if (request.mode === 'navigate' || (url.origin === location.origin && (url.pathname === '/' || url.pathname.endsWith('.html')))) {
     e.respondWith(
       fetch(request).then(res => {
