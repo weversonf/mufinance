@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Mu Finance v10</title>
+<title>Mu Finance v10.01</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/webp" href="logo.webp">
 <link rel="icon" type="image/svg+xml" href="icons/logo.svg">
@@ -758,6 +758,15 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
   transition: background .15s, color .15s;
 }
 .back-btn:hover { background: var(--primary-light); color: var(--primary); }
+.extrato-add-btn {
+  margin-left: auto; width: 42px; height: 42px; border-radius: 50%; border: none;
+  background: var(--primary); color: #fff; display: inline-flex; align-items: center;
+  justify-content: center; font-size: 22px; box-shadow: 0 6px 16px rgba(37,99,235,.28);
+  transition: transform .15s var(--ease), background .15s;
+}
+.extrato-add-btn:hover { background: var(--primary-hover); transform: scale(1.05); }
+.extrato-add-btn:active { transform: scale(.94); }
+
 .page-title { font-size: 17px; font-weight: 700; color: var(--text-main); letter-spacing: -0.3px; }
 .filter-row { display: flex; gap: 8px; padding: 12px 18px; overflow-x: auto; }
 .filter-chip {
@@ -1070,7 +1079,7 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
   width: 60px; height: 0;
 }
 .tab-fab {
-  width: 52px; height: 52px; border-radius: 16px;
+  width: 52px; height: 52px; border-radius: 50%;
   background: var(--primary); color: #fff;
   display: flex; align-items: center; justify-content: center;
   font-size: 24px; cursor: pointer; border: none;
@@ -1085,7 +1094,7 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
 }
 .tab-fab-sub .fab-opt {
   position: absolute; bottom: 0; left: 50%; margin-left: -26px;
-  width: 52px; height: 52px; border-radius: 14px; border: none; cursor: pointer;
+  width: 52px; height: 52px; border-radius: 50%; border: none; cursor: pointer;
   display: flex; align-items: center; justify-content: center; font-size: 22px;
   box-shadow: var(--shadow-md); font-family: inherit;
   opacity: 0; transform: scale(0); transition: all .35s cubic-bezier(.34, 1.56, .64, 1);
@@ -1522,7 +1531,7 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
     </div>
     <div class="balance-section" id="balance-section" style="cursor:pointer" onclick="toggleSaldoMode()">
       <div class="currency-badge"><i class="ti ti-coin" style="font-size:13px"></i> BRL</div>
-      <div class="balance" id="main-balance"><sup>R$</sup>12.329<small>,20</small></div>
+      <div class="balance" id="main-balance"><sup>R$</sup>0<small>,00</small></div>
       <div id="saldo-legend" style="font-size:11px;font-weight:600;color:var(--text-muted);display:flex;align-items:center;gap:6px;margin-top:4px">
         <span id="saldo-label">Saldo Acumulado</span>
         <span id="saldo-toggle-icon" style="font-size:14px;color:var(--primary)"><i class="ti ti-arrows-shuffle"></i></span>
@@ -1643,6 +1652,7 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
   <div class="page-header">
     <button class="back-btn" onclick="showPage('home')"><i class="ti ti-arrow-left"></i></button>
     <span class="page-title">Extrato</span>
+    <button class="extrato-add-btn" onclick="toggleQuickMenu()" title="Adicionar transação" aria-label="Adicionar transação"><i class="ti ti-plus"></i></button>
   </div>
   <div class="filter-row" id="filter-row">
     <button class="filter-chip active" onclick="filterTx('all',this)">Todas</button>
@@ -5928,89 +5938,80 @@ function exportExtrato() {
 }
 
 async function importExtrato(file) {
-  if (!file || typeof XLSX === 'undefined') return;
-  const buf = await file.arrayBuffer();
-  const wb = XLSX.read(buf, { type: 'array' });
-  const ws = wb.Sheets[wb.SheetNames[0]];
-  const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
-  if (!rows.length) { showToast('Planilha vazia'); return; }
-  const header = String(rows[0][0]||'').toLowerCase();
-  const hasHeader = header.includes('data');
-  const startIdx = hasHeader ? 1 : 0;
-  const allCats = [...(categories.saída||[]), ...(categories.entrada||[])];
-  let success = 0, errors = [];
-  let batch = db.batch();
-  let batchCount = 0;
-  const meses = { jan:0, fev:1, mar:2, abr:3, mai:4, jun:5, jul:6, ago:7, set:8, out:9, nov:10, dez:11 };
-  for (let i = startIdx; i < rows.length; i++) {
-    const r = rows[i];
-    if (!r || r.length < 5) continue;
-    let dataStr = String(r[0]||'').trim();
-    const mesStr = String(r[1]||'').trim();
-    const desc = String(r[2]||'').trim();
-    const catName = String(r[3]||'').trim();
-    let amt;
-    if (typeof r[4] === 'number') { amt = r[4]; }
-    else { amt = parseFloat(String(r[4]).replace('R$','').replace(/\s/g,'').replace('.','').replace(',','.')); }
-    if (!amt || !catName) { errors.push('Linha '+(i+1)+': dados invalidos'); continue; }
-    let cat = allCats.find(c => c.name.toLowerCase() === catName.toLowerCase());
-    if (!cat) {
-      cat = allCats.find(c => c.name.toLowerCase().includes(catName.toLowerCase()) || catName.toLowerCase().includes(c.name.toLowerCase()));
+  if (!file) return;
+  if (typeof XLSX === 'undefined') { showToast('Biblioteca de planilhas ainda carregando'); return; }
+  try {
+    const buf = await file.arrayBuffer();
+    const wb = XLSX.read(buf, { type: 'array', cellDates: true });
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+    if (!rows.length) { showToast('Planilha vazia'); return; }
+
+    const normalize = value => String(value ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+    const headers = rows[0].map(normalize);
+    const headerIndex = (...names) => headers.findIndex(h => names.some(n => h === n || h.includes(n)));
+    const looksLikeHeader = headers.some(h => ['data','descricao','descrição','valor','categoria','mes','mês'].some(n => h.includes(normalize(n))));
+    const startIdx = looksLikeHeader ? 1 : 0;
+    const dateIdx = looksLikeHeader ? headerIndex('data') : 0;
+    const monthIdx = looksLikeHeader ? headerIndex('mes') : 1;
+    const descIdx = looksLikeHeader ? headerIndex('descricao', 'historico', 'histórico', 'nome') : 2;
+    const catIdx = looksLikeHeader ? headerIndex('categoria', 'cat') : 3;
+    const amountIdx = looksLikeHeader ? headerIndex('valor', 'amount', 'quantia', 'total') : 4;
+    if (dateIdx < 0 || descIdx < 0 || amountIdx < 0) { showToast('Colunas obrigatórias não encontradas'); return; }
+
+    const allCats = [...(categories.saída||[]), ...(categories.entrada||[])];
+    const meses = { jan:0, janeiro:0, fev:1, fevereiro:1, mar:2, marco:2, março:2, abr:3, abril:3, mai:4, maio:4, jun:5, junho:5, jul:6, julho:6, ago:7, agosto:7, set:8, setembro:8, out:9, outubro:9, nov:10, novembro:10, dez:11, dezembro:11 };
+    const parseAmount = value => {
+      if (typeof value === 'number') return value;
+      let text = String(value ?? '').trim().replace(/R\$|BRL/gi, '').replace(/\s/g, '');
+      const negative = /^-/.test(text) || /\(.*\)/.test(text);
+      text = text.replace(/[()]/g, '').replace(/[^0-9,.-]/g, '');
+      if (text.includes(',') && text.includes('.')) text = text.lastIndexOf(',') > text.lastIndexOf('.') ? text.replace(/\./g, '').replace(',', '.') : text.replace(/,/g, '');
+      else if (text.includes(',')) text = text.replace(',', '.');
+      const number = Number(text);
+      return Number.isFinite(number) ? (negative ? -Math.abs(number) : number) : NaN;
+    };
+    const parseDate = (value, monthValue) => {
+      if (value instanceof Date && !isNaN(value)) return value.toISOString().slice(0,10);
+      if (typeof value === 'number') return new Date(Date.UTC(1899, 11, 30) + value * 86400000).toISOString().slice(0,10);
+      const text = String(value ?? '').trim();
+      let match = text.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{2,4})$/);
+      if (match) return `${match[3].length === 2 ? '20' + match[3] : match[3]}-${match[2].padStart(2,'0')}-${match[1].padStart(2,'0')}`;
+      match = text.match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if (match) return match[0];
+      const month = meses[normalize(monthValue || text)];
+      if (month !== undefined) return `${new Date().getFullYear()}-${String(month+1).padStart(2,'0')}-01`;
+      return todayISO();
+    };
+
+    let success = 0, errors = [], batch = db.batch(), batchCount = 0;
+    for (let i = startIdx; i < rows.length; i++) {
+      const row = rows[i] || [];
+      const amount = parseAmount(row[amountIdx]);
+      const description = String(row[descIdx] ?? '').trim();
+      const categoryName = catIdx >= 0 ? String(row[catIdx] ?? '').trim() : '';
+      if (!description && !categoryName && !Number.isFinite(amount)) continue;
+      if (!Number.isFinite(amount) || amount === 0) { errors.push('Linha '+(i+1)+': valor inválido'); continue; }
+      let cat = allCats.find(c => normalize(c.name) === normalize(categoryName));
+      if (!cat && categoryName) cat = allCats.find(c => normalize(c.name).includes(normalize(categoryName)) || normalize(categoryName).includes(normalize(c.name)));
+      if (!cat) cat = allCats.find(c => c.type === (amount < 0 ? 'saída' : 'entrada')) || allCats[0];
+      if (!cat) { errors.push('Linha '+(i+1)+': nenhuma categoria disponível'); continue; }
+      const type = amount < 0 ? 'saída' : (cat.type === 'entrada' ? 'entrada' : 'saída');
+      const txAmt = type === 'saída' ? -Math.abs(amount) : Math.abs(amount);
+      batch.set(db.collection('transactions').doc(), { name: description || cat.name, cat: cat.id, subcat: '', date: parseDate(row[dateIdx], monthIdx >= 0 ? row[monthIdx] : ''), amount: txAmt, type, icon: cat.icon, bg: cat.color+'22', color: cat.color, group: 'Hoje', status: 'efetivada', uid: currentUser ? currentUser.uid : null, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+      batchCount++; success++;
+      if (batchCount >= 450) { await batch.commit(); batch = db.batch(); batchCount = 0; }
     }
-    if (!cat) { errors.push('Categoria nao encontrada: '+catName); continue; }
-    let date = '';
-    if (typeof r[0] === 'number') {
-      const d = new Date(Date.UTC(1899, 11, 30) + r[0] * 86400000);
-      date = d.toISOString().slice(0,10);
-    } else {
-      const dp = dataStr.split('/');
-      if (dp.length === 3) {
-        const yy = dp[2].length === 2 ? '20' + dp[2] : dp[2];
-        date = yy+'-'+dp[1].padStart(2,'0')+'-'+dp[0].padStart(2,'0');
-      } else {
-        const mIdx = meses[mesStr.toLowerCase()];
-        if (mIdx !== undefined) {
-          const now = new Date();
-          date = now.getFullYear()+'-'+String(mIdx+1).padStart(2,'0')+'-01';
-        } else {
-          date = todayISO();
-        }
-      }
-    }
-    // Se o valor já veio com sinal no Excel, respeita; senão infere pela categoria
-    let type, txAmt;
-    if (typeof r[4] === 'number' && r[4] < 0) {
-      type = 'saída'; txAmt = r[4];
-    } else if (typeof r[4] === 'number' && r[4] > 0 && cat.type === 'entrada') {
-      type = 'entrada'; txAmt = Math.abs(amt);
-    } else {
-      type = (categories.saída || []).find(c => c.id === cat.id) ? 'saída' : 'entrada';
-      txAmt = type === 'saída' ? -Math.abs(amt) : Math.abs(amt);
-    }
-    batch.set(db.collection('transactions').doc(), {
-      name: desc || cat.name,
-      cat: cat.id,
-      subcat: '',
-      date, amount: txAmt, type,
-      icon: cat.icon, bg: cat.color+'22', color: cat.color,
-      group: 'Hoje', status: 'efetivada',
-      uid: currentUser ? currentUser.uid : null,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
-    batchCount++;
-    if (batchCount >= 450) { await batch.commit(); batch = db.batch(); batchCount = 0; }
-    success++;
+    if (batchCount) await batch.commit();
+    document.getElementById('extrato-input').value = '';
+    updateBalance();
+    renderAll('all');
+    showToast(success + ' transação(ões) importada(s)' + (errors.length ? ' com ' + errors.length + ' erro(s)' : ''));
+    if (errors.length) setTimeout(() => alert('Erros na importação:\n' + errors.join('\n')), 500);
+  } catch (error) {
+    console.error('Falha ao importar extrato:', error);
+    showToast('Não foi possível ler a planilha');
   }
-  if (batchCount > 0) await batch.commit();
-  document.getElementById('extrato-input').value = '';
-  const msg = success+' transacoes importadas!';
-  if (errors.length) {
-    showToast(msg+' ('+errors.length+' erro(s))');
-    setTimeout(() => alert('Erros na importacao:\n'+errors.join('\n')), 500);
-  } else {
-    showToast(msg);
-  }
-  renderAll('all');
 }
 
 // ===== FIRESTORE LISTENERS (NEW COLLECTIONS) =====
