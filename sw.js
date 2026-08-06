@@ -4,7 +4,6 @@ const ASSETS = [
   'manifest.json',
   'logo.webp',
   'icons/icon.svg',
-  'icons/logo.svg',
   'icons/logo.png',
   'https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css',
   'https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js',
