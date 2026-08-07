@@ -6210,14 +6210,6 @@ async function confirmImportExtrato(){
   }
   if (count === 0) { showToast('Nenhum dado válido para importar'); return; }
 
-  // Inclui o registro de importação no mesmo batch
-  batch.set(batchRef, {
-    fileName: importPreview.fileName || 'Arquivo',
-    count,
-    uid: currentUser.uid,
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-  });
-
   try {
     await batch.commit();
   } catch(e) {
@@ -6225,6 +6217,15 @@ async function confirmImportExtrato(){
     showToast('Erro ao salvar: ' + (e.message || e.code || 'desconhecido'));
     return;
   }
+
+  // Histórico de importação (separado, não bloqueia se falhar)
+  try {
+    await batchRef.set({
+      fileName: importPreview.fileName || 'Arquivo',
+      count, uid: currentUser.uid,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  } catch(ex) { console.warn('import_batches skip', ex); }
 
   lastImportBatchId = batchId;
   closeImportPreview();
