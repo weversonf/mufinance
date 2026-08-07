@@ -4336,7 +4336,7 @@ function txHTML(tx) {
   // Preferência: campo date (ISO). Fallback: createdAt (transações antigas).
   const dataExibicao = formatDateBR(tx.date) || (tx.createdAt ? formatDateBR(tx.createdAt) : tx.date || '');
   return `<div class="tx-item"${prev}>
-    <div class="tx-logo" style="background:${tx.bg};color:${tx.color}"><i class="ti ${tx.icon}"></i></div>
+    <div class="tx-logo" style="background:${tx.bg};color:${tx.color}"><i class="ti ${tx.icon || 'ti-category'}"></i></div>
     <div class="tx-info" onclick="openModal('${tx.type}', '${tx.id}')">
       <div class="tx-name">${tx.name}${isPrev ? ' <span style="font-size:10px;color:var(--text-muted)">(Prevista)</span>' : ''}</div>
       <div class="tx-date">${dataExibicao}</div>
