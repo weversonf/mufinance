@@ -6098,7 +6098,7 @@ function renderImportPreview(){
   }).join('');
 
   const valid=rows.filter(r=>(!r.duplicate||r._includeDup)&&r.name&&r.cat&&Math.abs(r.amount)>0);
-  if(btn)btn.disabled=!valid.length;
+  if(btn){ btn.disabled=!valid.length; btn.textContent = valid.length ? 'Confirmar importação ('+valid.length+')' : 'Selecione categoria para todas as linhas'; }
 }
 
 function importEditRow(i,field,val){
@@ -6123,9 +6123,15 @@ function importToggleRow(i,checked){
   renderImportPreview();
 }
 async function confirmImportExtrato(){
-  if(!importPreview||!currentUser){showToast('Login necessário para importar');return;}
-  const rows=importPreview.rows.filter(r=>(!r.duplicate||r._includeDup)&&r.name&&Math.abs(r.amount)>0);
-  if(!rows.length){showToast('Nenhuma transação válida para importar');return;}
+  if(!importPreview){ showToast('Sessão de importação expirada. Reenvie o arquivo.'); return; }
+  if(!currentUser){ showToast('Login necessário para importar'); return; }
+  const rows=importPreview.rows.filter(r=>(!r.duplicate||r._includeDup)&&r.name&&Math.abs(r.amount)>0 && r.cat);
+  if(!rows.length){
+    const missingCat = importPreview.rows.filter(r=>(!r.duplicate||r._includeDup)&&r.name&&Math.abs(r.amount)>0 && !r.cat);
+    if(missingCat.length) showToast(`Selecione a categoria para ${missingCat.length} linha(s) antes de importar.`);
+    else showToast('Nenhuma transação válida para importar');
+    return;
+  }
   try{
     const batchId=db.collection('import_batches').doc().id; let batch=db.batch(), count=0; const dates=[];
     const allCats=[...(categories.saída||[]),...(categories.entrada||[])];
