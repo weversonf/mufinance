@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Mu Finance v10.16</title>
+<title>Mu Finance v10.17</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" href="icons/logo.png">
 <link rel="apple-touch-icon" href="icons/logo.png">
@@ -1446,7 +1446,7 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
 </head>
 <body data-theme="light">
 
-<span id="loading-debug" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);color:var(--text-main);font-family:var(--font);font-size:16px;z-index:9999">Carregando v10.16...</span>
+<span id="loading-debug" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);color:var(--text-main);font-family:var(--font);font-size:16px;z-index:9999">Carregando v10.17...</span>
 
 <!-- LOGIN PAGE -->
 <div class="login-page hidden" id="login-page" role="main" aria-label="Login">
@@ -1472,7 +1472,7 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
 
 <div class="loading-overlay" id="loading-overlay" aria-busy="true" aria-label="Carregando">
   <div class="loading-spinner" role="status"></div>
-  <span style="font-size:13px;color:var(--text-muted);font-weight:500">Carregando v10.16...</span>
+  <span style="font-size:13px;color:var(--text-muted);font-weight:500">Carregando v10.17...</span>
 </div>
 
 <!-- WELCOME / USERNAME SETUP MODAL -->
@@ -3025,13 +3025,9 @@ function startListeners() {
     if (document.getElementById('settings-page').classList.contains('active')) renderSettingsCatsNew();
   }));
 
-  _unsubs.push(db.collection('transactions').onSnapshot(snap => {
+  _unsubs.push(db.collection('transactions').where('uid','==',currentUser.uid).onSnapshot(snap => {
     transactions = [];
-    snap.forEach(doc => {
-      const d = doc.data();
-      if (d.uid && d.uid !== currentUser.uid) return;
-      transactions.push({ id: doc.id, ...d });
-    });
+    snap.forEach(doc => { transactions.push({ id: doc.id, ...doc.data() }); });
     transactions.sort((a, b) => toMillis(b.createdAt) - toMillis(a.createdAt));
     updateBalance();
     renderRecent();
@@ -3040,22 +3036,14 @@ function startListeners() {
     if (document.getElementById('home-page').classList.contains('active')) { renderHomeReports(); renderHomeMobileCharts(); renderHomeVehicle(); renderHomeChartsDesktop(); }
   }));
 
-  _unsubs.push(db.collection('contacts').onSnapshot(snap => {
+  _unsubs.push(db.collection('contacts').where('uid','==',currentUser.uid).onSnapshot(snap => {
     contacts = [];
-    snap.forEach(doc => {
-      const d = doc.data();
-      if (d.uid && d.uid !== currentUser.uid) return;
-      contacts.push({ id: doc.id, ...d });
-    });
+    snap.forEach(doc => { contacts.push({ id: doc.id, ...doc.data() }); });
   }));
 
-  _unsubs.push(db.collection('cards').onSnapshot(snap => {
+  _unsubs.push(db.collection('cards').where('uid','==',currentUser.uid).onSnapshot(snap => {
     cards = [];
-    snap.forEach(doc => {
-      const d = doc.data();
-      if (d.uid && d.uid !== currentUser.uid) return;
-      cards.push({ id: doc.id, ...d });
-    });
+    snap.forEach(doc => { cards.push({ id: doc.id, ...doc.data() }); });
     if (document.getElementById('cards-page').classList.contains('active')) renderCards();
   }));
 
@@ -6264,26 +6252,18 @@ function startProListeners() {
   const uid = currentUser && currentUser.uid;
   const mine = (d) => !d.uid || d.uid === uid;
 
-  _unsubs.push(db.collection('accounts').onSnapshot(snap => {
+  _unsubs.push(db.collection('accounts').where('uid','==',uid).onSnapshot(snap => {
     accounts = [];
-    snap.forEach(doc => {
-      const d = doc.data();
-      if (!mine(d)) return;
-      accounts.push({ id: doc.id, ...d });
-    });
+    snap.forEach(doc => { accounts.push({ id: doc.id, ...doc.data() }); });
     if (accounts.length === 0 && uid) {
       db.collection('accounts').add({ name: 'Carteira', type: 'carteira', color: '#356FD8', balance: 0, uid });
     }
     if (document.getElementById('settings-page')?.classList.contains('active')) renderSettingsAccounts();
     populateAccountSelects();
   }));
-  _unsubs.push(db.collection('goals').onSnapshot(snap => {
+  _unsubs.push(db.collection('goals').where('uid','==',uid).onSnapshot(snap => {
     goals = [];
-    snap.forEach(doc => {
-      const d = doc.data();
-      if (!mine(d)) return;
-      goals.push({ id: doc.id, ...d });
-    });
+    snap.forEach(doc => { goals.push({ id: doc.id, ...doc.data() }); });
     if (document.getElementById('goals-page')?.classList.contains('active')) renderGoals();
   }));
   const budgetDocId = uid || 'current';
@@ -6328,50 +6308,34 @@ function startProListeners() {
     updateVehicleIcons();
     if (document.getElementById('home-page')?.classList.contains('active')) renderHomeVehicle();
   }));
-  _unsubs.push(db.collection('vehicle_refuels').onSnapshot(snap => {
+  _unsubs.push(db.collection('vehicle_refuels').where('uid','==',uid).onSnapshot(snap => {
     refuels = [];
-    snap.forEach(doc => {
-      const d = doc.data();
-      if (!mine(d)) return;
-      refuels.push({ id: doc.id, ...d });
-    });
+    snap.forEach(doc => { refuels.push({ id: doc.id, ...doc.data() }); });
     refuels.sort((a,b) => toMillis(b.createdAt) - toMillis(a.createdAt));
     if (proSettings.vehicleActive) updateVehicleHomeCard();
     if (document.getElementById('home-page')?.classList.contains('active')) renderHomeVehicle();
   }));
-  _unsubs.push(db.collection('vehicle_maintenance').onSnapshot(snap => {
+  _unsubs.push(db.collection('vehicle_maintenance').where('uid','==',uid).onSnapshot(snap => {
     maintenances = [];
-    snap.forEach(doc => {
-      const d = doc.data();
-      if (!mine(d)) return;
-      maintenances.push({ id: doc.id, ...d });
-    });
+    snap.forEach(doc => { maintenances.push({ id: doc.id, ...doc.data() }); });
     maintenances.sort((a,b) => toMillis(b.createdAt) - toMillis(a.createdAt));
     if (document.getElementById('home-page')?.classList.contains('active')) renderHomeVehicle();
   }));
-  _unsubs.push(db.collection('vehicle_routes').onSnapshot(snap => {
+  _unsubs.push(db.collection('vehicle_routes').where('uid','==',uid).onSnapshot(snap => {
     routes = [];
-    snap.forEach(doc => {
-      const d = doc.data();
-      if (!mine(d)) return;
-      routes.push({ id: doc.id, ...d });
-    });
+    snap.forEach(doc => { routes.push({ id: doc.id, ...doc.data() }); });
     routes.sort((a,b) => toMillis(b.createdAt) - toMillis(a.createdAt));
     if (document.getElementById('home-page')?.classList.contains('active')) renderHomeVehicle();
   }));
   // Vehicle trips
-  _unsubs.push(db.collection('vehicle_trips').onSnapshot(snap => {
+  _unsubs.push(db.collection('vehicle_trips').where('uid','==',uid).onSnapshot(snap => {
     vehicleTrips = [];
-    snap.forEach(doc => {
-      const d = doc.data();
-      if (!mine(d)) return;
-      vehicleTrips.push({ id: doc.id, ...d });
-    });
+    snap.forEach(doc => { vehicleTrips.push({ id: doc.id, ...doc.data() }); });
     vehicleTrips.sort((a,b) => toMillis(b.createdAt) - toMillis(a.createdAt));
     if (document.getElementById('vehicle-page')?.classList.contains('active')) renderVehicleTrips();
   }));
   // Licenses listener (admin)
-  _unsubs.push(db.collection('licenses').onSnapshot(snap => {
+  _unsubs.push(db.collection('licenses').where('uid','==',uid).onSnapshot(snap => {
     window._licenses = []; snap.forEach(d => window._licenses.push({ id: d.id, ...d.data() }));
     if (document.getElementById('licenses-page')?.classList.contains('active')) renderLicenses();
   }));
