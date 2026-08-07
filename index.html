@@ -6202,8 +6202,7 @@ async function confirmImportExtrato(){
       name:r.name, cat:r.cat||cat.id, subcat:'',
       date:txDate, amount:txAmt, type:r.type||'entrada',
       icon:cat.icon||'ti-tag', color:cat.color||'#7f8c8d', bg:(cat.color||'#7f8c8d')+'22',
-      group:'Hoje', status:'efetivada', uid:currentUser.uid, batchId,
-      createdAt:firebase.firestore.FieldValue.serverTimestamp()
+      group:'Hoje', status:'efetivada', uid:currentUser.uid
     });
     refs.push(ref);
     count++; if(count%450===0){await batch.commit();batch=db.batch();}
