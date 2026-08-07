@@ -6082,15 +6082,16 @@ function renderImportPreview(){
     const sel=catOpts.replace('value="'+(r.cat||'')+'"','value="'+(r.cat||'')+'" selected');
     const typeCls=r.type==='entrada'?'upgrade-positive':'upgrade-negative';
     const dupCls=r.duplicate?(r._includeDup?'dup-allowed':'dup'):'';
+    const escQ = s => String(s).replace(/'/g, "\\'");
     return '<div class="import-edit-row '+dupCls+'">'+
       '<label class="import-edit-dup-toggle" title="Incluir esta linha na importação">'+
         '<span class="switch"><input type="checkbox" '+(r.duplicate?(r._includeDup?'checked':''):'checked')+' onchange="importToggleRow('+i+',this.checked)"><span class="track"></span><span class="thumb"></span></span>'+
       '</label>'+
-      '<div class="import-edit-cell"><input class="import-edit-input dt" type="date" value="'+safe(r.date||'')+'" onchange="importEditRow('+i+','date',this.value)"></div>'+
-      '<div class="import-edit-cell grow"><input class="import-edit-input" value="'+safe(r.name||'')+'" onchange="importEditRow('+i+','name',this.value)" placeholder="Descrição"></div>'+
+      '<div class="import-edit-cell"><input class="import-edit-input dt" type="date" value="'+safe(r.date||'')+'" onchange="importEditRow('+i+',&quot;date&quot;,this.value)"></div>'+
+      '<div class="import-edit-cell grow"><input class="import-edit-input" value="'+safe(r.name||'')+'" onchange="importEditRow('+i+',&quot;name&quot;,this.value)" placeholder="Descrição"></div>'+
       '<div class="import-edit-cell"><select class="import-edit-select" onchange="importEditCat('+i+',this.value)">'+sel+'</select></div>'+
-      '<div class="import-edit-cell"><select class="import-edit-select" onchange="importEditRow('+i+','type',this.value)" style="max-width:90px"><option value="entrada" '+(r.type==='entrada'?'selected':'')+'>Receita</option><option value="saída" '+(r.type==='saída'?'selected':'')+'>Despesa</option></select></div>'+
-      '<div class="import-edit-cell"><input class="import-edit-input val" type="number" step="0.01" value="'+(Math.abs(r.amount||0).toFixed(2))+'" onchange="importEditRow('+i+','amount',this.value)"></div>'+
+      '<div class="import-edit-cell"><select class="import-edit-select" onchange="importEditRow('+i+',&quot;type&quot;,this.value)" style="max-width:90px"><option value="entrada" '+(r.type==='entrada'?'selected':'')+'>Receita</option><option value="saída" '+(r.type==='saída'?'selected':'')+'>Despesa</option></select></div>'+
+      '<div class="import-edit-cell"><input class="import-edit-input val" type="number" step="0.01" value="'+(Math.abs(r.amount||0).toFixed(2))+'" onchange="importEditRow('+i+',&quot;amount&quot;,this.value)"></div>'+
       '<span style="font-size:10px;font-weight:600;min-width:54px;text-align:right;color:'+(r.type==='entrada'?'var(--success)':'var(--danger)')+';flex-shrink:0" class="'+typeCls+'">'+(r.type==='entrada'?'Receita':'Despesa')+'</span>'+
       (r.duplicate?'<span style="font-size:10px;color:var(--text-muted);white-space:nowrap;flex-shrink:0">'+ (r._includeDup?'✓ Incluída':'Duplicada') +'</span>':'')+
     '</div>';
