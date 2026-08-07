@@ -6150,6 +6150,9 @@ async function confirmImportExtrato(){
     const validDates=dates.filter(d=>/^\d{4}-\d{2}-\d{2}$/.test(d)).sort();
     if(validDates.length){const n=validDates[validDates.length-1].slice(0,7).split('-').map(Number),now=new Date();txMonthOffset=(n[0]-now.getFullYear())*12+(n[1]-(now.getMonth()+1));}
     showToast(`${count} transações importadas`); renderImportHistory(false); renderUpgradePanels();
+    // Atualiza extrato e home imediatamente
+    updateBalance(); renderRecent();
+    if (document.getElementById('transactions-page').classList.contains('active')) renderAll(txTypeFilter || 'all');
   }catch(e){
     console.error(e);
     const msg = (e && e.code === 'permission-denied')
