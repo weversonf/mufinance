@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Mu Finance v10.15</title>
+<title>Mu Finance v10.16</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" href="icons/logo.png">
 <link rel="apple-touch-icon" href="icons/logo.png">
@@ -1446,7 +1446,7 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
 </head>
 <body data-theme="light">
 
-<span id="loading-debug" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);color:var(--text-main);font-family:var(--font);font-size:16px;z-index:9999">Carregando v10.15...</span>
+<span id="loading-debug" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);color:var(--text-main);font-family:var(--font);font-size:16px;z-index:9999">Carregando v10.16...</span>
 
 <!-- LOGIN PAGE -->
 <div class="login-page hidden" id="login-page" role="main" aria-label="Login">
@@ -1472,7 +1472,7 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
 
 <div class="loading-overlay" id="loading-overlay" aria-busy="true" aria-label="Carregando">
   <div class="loading-spinner" role="status"></div>
-  <span style="font-size:13px;color:var(--text-muted);font-weight:500">Carregando v10.15...</span>
+  <span style="font-size:13px;color:var(--text-muted);font-weight:500">Carregando v10.16...</span>
 </div>
 
 <!-- WELCOME / USERNAME SETUP MODAL -->
@@ -2990,7 +2990,6 @@ function startListeners() {
     const defaults = [
       { id:'supermarket', name:'Supermercado', icon:'ti-shopping-cart', color:'#356FD8', isDefault:true, subcats:[], type:'saída' },
       { id:'food', name:'Alimentação', icon:'ti-tools-kitchen-2', color:'#e07a3a', isDefault:true, subcats:[{id:'restaurant',name:'Restaurante'},{id:'delivery',name:'Delivery'},{id:'lanche',name:'Lanche'}], type:'saída' },
-      { id:'moradia', name:'Moradia', icon:'ti-home', color:'#8e44ad', isDefault:true, subcats:[{id:'aluguel',name:'Aluguel'},{id:'condominio',name:'Condomínio'},{id:'iptu',name:'IPTU'}], type:'saída' },
       { id:'transport', name:'Transporte', icon:'ti-car', color:'#5b7fa6', isDefault:true, subcats:[{id:'gasolina',name:'Gasolina'},{id:'uber',name:'Uber/99'},{id:'onibus',name:'Ônibus/Metrô'},{id:'estacionamento',name:'Estacionamento'}], type:'saída' },
       { id:'contas', name:'Contas e Utilidades', icon:'ti-file-invoice', color:'#d35400', isDefault:true, subcats:[{id:'agua',name:'Água'},{id:'luz',name:'Luz'},{id:'internet',name:'Internet'},{id:'telefone',name:'Telefone'}], type:'saída' },
       { id:'educacao', name:'Educação', icon:'ti-book', color:'#2980b9', isDefault:true, subcats:[{id:'escola',name:'Escola/Faculdade'},{id:'curso',name:'Curso'},{id:'material',name:'Material'}], type:'saída' },
@@ -2998,7 +2997,7 @@ function startListeners() {
       { id:'viagem', name:'Viagem', icon:'ti-plane', color:'#3498db', isDefault:true, subcats:[{id:'hotel',name:'Hotel'},{id:'passagem',name:'Passagem'},{id:'alimentacao-viagem',name:'Alimentação'}], type:'saída' },
       { id:'shopping', name:'Compras', icon:'ti-shopping-bag', color:'#7a5ba6', isDefault:true, subcats:[{id:'roupas',name:'Roupas'},{id:'eletronicos',name:'Eletrônicos'},{id:'casa',name:'Casa'}], type:'saída' },
       { id:'assinaturas', name:'Assinaturas', icon:'ti-repeat', color:'#1abc9c', isDefault:true, subcats:[{id:'netflix',name:'Netflix'},{id:'spotify',name:'Spotify'},{id:'outros-servicos',name:'Outros'}], type:'saída' },
-      { id:'bebidas', name:'Bebidas', icon:'ti-glass-full', color:'#7a1a3a', isDefault:true, subcats:[{id:'cerveja',name:'Cerveja'},{id:'energetico',name:'Energético'},{id:'refrigerante',name:'Refrigerante'}], type:'saída' },
+      { id:'bebidas', name:'Bebidas Alcoólicas', icon:'ti-glass-full', color:'#7a1a3a', isDefault:true, subcats:[{id:'cerveja',name:'Cerveja'},{id:'energetico',name:'Energético'},{id:'refrigerante',name:'Refrigerante'}], type:'saída' },
       { id:'servicos', name:'Serviços', icon:'ti-tool', color:'#7f8c8d', isDefault:true, subcats:[{id:'cabeleireiro',name:'Cabeleireiro'},{id:'reparos',name:'Reparos'},{id:'lavanderia',name:'Lavanderia'}], type:'saída' },
       { id:'pet', name:'Pet', icon:'ti-animal', color:'#9b59b6', isDefault:true, subcats:[{id:'racao',name:'Ração'},{id:'veterinario',name:'Veterinário'},{id:'petshop',name:'Petshop'}], type:'saída' },
       { id:'presente', name:'Presente', icon:'ti-gift', color:'#e67e22', isDefault:true, subcats:[], type:'saída' },
@@ -5564,7 +5563,7 @@ async function submitRefuel() {
     const ref = await db.collection('vehicle_refuels').add({...data,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
     if (account) { const a=accounts.find(x=>x.id===account); if(a) await db.collection('accounts').doc(account).update({balance:(a.balance||0)-total}); }
     await db.collection('transactions').add({
-      name: 'Abastecimento ('+type+')', cat: 'vehicle', subcat: 'gasolina', amount: -total,
+      name: 'Abastecimento ('+type+')', cat: 'transport', subcat: 'gasolina', amount: -total,
       date: todayISO(), group: 'Hoje', type: 'saída',
       icon: 'ti-car', bg: '#2c3e5022', color: '#2c3e50',
       status: 'efetivada', accountId: account, vehicleRefId: ref.id, vehicleType: 'refuel',
@@ -5604,7 +5603,7 @@ async function submitMaint() {
     const ref = await db.collection('vehicle_maintenance').add({type,desc,km,value:val,oilFlag,accountId:account,uid:currentUser?currentUser.uid:null,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
     if (account) { const a=accounts.find(x=>x.id===account); if(a) await db.collection('accounts').doc(account).update({balance:(a.balance||0)-val}); }
     await db.collection('transactions').add({
-      name: desc, cat: 'vehicle',
+      name: desc, cat: 'transport',
       subcat: subcatMap[type] || 'manutencao', amount: -val,
       date: todayISO(), group: 'Hoje', type: 'saída',
       icon: 'ti-car', bg: '#2c3e5022', color: '#2c3e50',
