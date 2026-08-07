@@ -6235,13 +6235,6 @@ async function confirmImportExtrato(){
   closeImportPreview();
   showToast(`${count} transações importadas com sucesso`);
   setTimeout(() => location.reload(), 1200);
-  }catch(e){
-    console.error(e);
-    const msg = (e && e.code === 'permission-denied')
-      ? 'Permissão negada no Firestore. Verifique as regras de segurança.'
-      : ('Erro ao importar: ' + (e && e.message ? e.message : e));
-    showToast(msg);
-  }
 }
 async function undoLastImport(){
   if(!lastImportBatchId){showToast('Nenhuma importação recente para desfazer');return;} try{const snap=await db.collection('transactions').where('batchId','==',lastImportBatchId).get();const batch=db.batch();snap.forEach(d=>batch.delete(d.ref));await batch.commit();await db.collection('import_batches').doc(lastImportBatchId).delete();lastImportBatchId=null;renderImportHistory(false);showToast('Última importação desfeita');}catch(e){console.error(e);showToast('Não foi possível desfazer a importação');}
