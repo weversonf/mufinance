@@ -2766,7 +2766,9 @@ function getProfileName() {
   return 'Usuário';
 }
 
+let _authReady = false;
 auth.onAuthStateChanged(async user => {
+  _authReady = true;
   const loginPage = document.getElementById('login-page');
   const loadingOverlay = document.getElementById('loading-overlay');
   if (user) {
@@ -2840,6 +2842,14 @@ auth.onAuthStateChanged(async user => {
     loginPage.classList.remove('hidden');
   }
 });
+
+// Fallback: se Firebase demorar > 6s, mostra login direto
+setTimeout(() => {
+  if (!_authReady) {
+    document.getElementById('loading-overlay').classList.add('hidden');
+    document.getElementById('login-page').classList.remove('hidden');
+  }
+}, 6000);
 
 function setLoginLoading(on) {
   const btn = document.getElementById('login-submit-btn');
