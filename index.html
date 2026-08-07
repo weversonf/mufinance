@@ -2126,7 +2126,10 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
     </div>
     <div class="danger-zone">
       <div class="section-title-new" style="margin-top:0"><i class="ti ti-alert-triangle" style="color:#c0392b"></i> Zona de Perigo</div>
-      <button class="submit-btn" style="background:#c0392b" onclick="resetAllTransactions()"><i class="ti ti-trash"></i> Zerar Todas as Transações</button>
+      <p style="font-size:11px;color:var(--text-muted);margin-bottom:10px" id="tx-count-info">Total: carregando...</p>
+      <button class="submit-btn" style="background:#c0392b;margin-bottom:8px" onclick="resetAllTransactions()"><i class="ti ti-trash"></i> Zerar Todas as Transações</button>
+      <button class="submit-btn" style="background:#e67e22;margin-bottom:8px" onclick="cleanImportBatches()"><i class="ti ti-history"></i> Limpar Histórico de Importação</button>
+      <button class="submit-btn" style="background:#e67e22" onclick="removeDuplicateTransactions()"><i class="ti ti-copy-off"></i> Remover Transações Duplicadas</button>
     </div>
   </div>
   <div class="tab-bar">
@@ -6155,14 +6158,17 @@ async function confirmImportExtrato(){
     lastImportBatchId=batchId;
     try{await db.collection('import_batches').doc(batchId).set({uid:currentUser.uid,fileName:importPreview.fileName,count,createdAt:firebase.firestore.FieldValue.serverTimestamp()});}catch(ex){console.warn('import_batches save skipped',ex);}
     closeImportPreview();
+    showToast(`${count} transações importadas`);
     const validDates=dates.filter(d=>/^\d{4}-\d{2}-\d{2}$/.test(d)).sort();
     if(validDates.length){const n=validDates[validDates.length-1].slice(0,7).split('-').map(Number),nowD=new Date();txMonthOffset=(n[0]-nowD.getFullYear())*12+(n[1]-(nowD.getMonth()+1));}
-    showToast(`${count} transações importadas`);
-    // Aguarda o Firestore propagar e força refresh
-    setTimeout(() => {
-      updateBalance(); renderRecent(); renderImportHistory(false); renderUpgradePanels();
-      if (document.getElementById('transactions-page').classList.contains('active')) renderAll(txTypeFilter || 'all');
-    }, 600);
+    // Espera o Firestore propagar e então força o refresh
+    await new Promise(r => setTimeout(r, 800));
+    // Re-lê do Firestore pra garantir
+    const snap = await db.collection('transactions').get();
+    transactions = []; snap.forEach(doc => { const d = doc.data(); if (!d.uid || d.uid === currentUser.uid) transactions.push({ id: doc.id, ...d }); });
+    transactions.sort((a, b) => toMillis(b.createdAt) - toMillis(a.createdAt));
+    updateBalance(); renderRecent(); renderImportHistory(false); renderUpgradePanels();
+    if (document.getElementById('transactions-page').classList.contains('active')) renderAll(txTypeFilter || 'all');
   }catch(e){
     console.error(e);
     const msg = (e && e.code === 'permission-denied')
