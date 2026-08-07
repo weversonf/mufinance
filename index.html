@@ -6123,31 +6123,40 @@ function importToggleRow(i,checked){
   renderImportPreview();
 }
 async function confirmImportExtrato(){
-  if(!importPreview||!currentUser)return;
+  if(!importPreview||!currentUser){showToast('Login necessário para importar');return;}
   const rows=importPreview.rows.filter(r=>(!r.duplicate||r._includeDup)&&r.name&&Math.abs(r.amount)>0);
   if(!rows.length){showToast('Nenhuma transação válida para importar');return;}
   try{
     const batchId=db.collection('import_batches').doc().id; let batch=db.batch(), count=0; const dates=[];
     const allCats=[...(categories.saída||[]),...(categories.entrada||[])];
     for(const r of rows){
-      const cat=allCats.find(c=>c.id===r.cat)||importCategory(r.categoryName,r.amount);
-      const ref=db.collection('transactions').doc(); dates.push(r.date);
+      const cat = (r.cat && allCats.find(c=>c.id===r.cat)) || importCategory(r.categoryName||r.name||'', r.amount);
+      const ref=db.collection('transactions').doc();
+      const txDate = (r.date && /^\d{4}-\d{2}-\d{2}$/.test(r.date)) ? r.date : todayISO();
+      dates.push(txDate);
       batch.set(ref,{
-        name:r.name,cat:r.cat||cat.id||'',subcat:'',categoryName:r.categoryName||cat.name||'',
-        date:r.date,amount:r.type==='saída'?-Math.abs(r.amount):Math.abs(r.amount),type:r.type||'entrada',
-        icon:cat.icon||'ti-tag',color:cat.color||'#7f8c8d',bg:(cat.color||'#7f8c8d')+'22',
-        group:'Hoje',status:'efetivada',uid:currentUser.uid,batchId,
+        name:r.name, cat:r.cat||cat.id||'', subcat:'', categoryName:r.categoryName||cat.name||'',
+        date:txDate, amount:r.type==='saída'?-Math.abs(r.amount):Math.abs(r.amount), type:r.type||'entrada',
+        icon:cat.icon||'ti-tag', color:cat.color||'#7f8c8d', bg:(cat.color||'#7f8c8d')+'22',
+        group:'Hoje', status:'efetivada', uid:currentUser.uid, batchId,
         createdAt:firebase.firestore.FieldValue.serverTimestamp()
       });
       count++; if(count%450===0){await batch.commit();batch=db.batch();}
     }
     if(count%450)await batch.commit();
-    await db.collection('import_batches').doc(batchId).set({uid:currentUser.uid,fileName:importPreview.fileName,count,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
-    lastImportBatchId=batchId; closeImportPreview();
+    lastImportBatchId=batchId;
+    try{await db.collection('import_batches').doc(batchId).set({uid:currentUser.uid,fileName:importPreview.fileName,count,createdAt:firebase.firestore.FieldValue.serverTimestamp()});}catch(ex){console.warn('import_batches save skipped',ex);}
+    closeImportPreview();
     const validDates=dates.filter(d=>/^\d{4}-\d{2}-\d{2}$/.test(d)).sort();
     if(validDates.length){const n=validDates[validDates.length-1].slice(0,7).split('-').map(Number),now=new Date();txMonthOffset=(n[0]-now.getFullYear())*12+(n[1]-(now.getMonth()+1));}
     showToast(`${count} transações importadas`); renderImportHistory(false); renderUpgradePanels();
-  }catch(e){console.error(e);showToast('Falha ao importar. Nenhum dado foi confirmado.');}
+  }catch(e){
+    console.error(e);
+    const msg = (e && e.code === 'permission-denied')
+      ? 'Permissão negada no Firestore. Verifique as regras de segurança.'
+      : ('Erro ao importar: ' + (e && e.message ? e.message : e));
+    showToast(msg);
+  }
 }
 async function undoLastImport(){
   if(!lastImportBatchId){showToast('Nenhuma importação recente para desfazer');return;} try{const snap=await db.collection('transactions').where('batchId','==',lastImportBatchId).get();const batch=db.batch();snap.forEach(d=>batch.delete(d.ref));await batch.commit();await db.collection('import_batches').doc(lastImportBatchId).delete();lastImportBatchId=null;renderImportHistory(false);showToast('Última importação desfeita');}catch(e){console.error(e);showToast('Não foi possível desfazer a importação');}
