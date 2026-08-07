@@ -6219,22 +6219,9 @@ async function confirmImportExtrato(){
     return;
   }
 
-  // Verify at least one document was saved
-  try {
-    const verifySnap = await refs[0].get();
-    if (!verifySnap.exists) {
-      showToast('Falha na verificação: documento não foi salvo no Firestore.');
-      return;
-    }
-  } catch(e) {
-    console.error('Verify failed:', e);
-    showToast('Verificação falhou: ' + (e.message || e));
-    return;
-  }
-
   closeImportPreview();
   showToast(`${count} transações importadas com sucesso`);
-  setTimeout(() => location.reload(), 1200);
+  setTimeout(() => location.reload(), 1500);
 }
 async function undoLastImport(){
   if(!lastImportBatchId){showToast('Nenhuma importação recente para desfazer');return;} try{const snap=await db.collection('transactions').where('batchId','==',lastImportBatchId).get();const batch=db.batch();snap.forEach(d=>batch.delete(d.ref));await batch.commit();await db.collection('import_batches').doc(lastImportBatchId).delete();lastImportBatchId=null;renderImportHistory(false);showToast('Última importação desfeita');}catch(e){console.error(e);showToast('Não foi possível desfazer a importação');}
