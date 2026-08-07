@@ -3,8 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Mu Finance v10.14</title>
+<title>Mu Finance v10.11</title>
 <link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/svg+xml" href="icons/icon.svg">
 <link rel="icon" type="image/png" href="icons/logo.png">
 <link rel="apple-touch-icon" href="icons/logo.png">
 <meta name="theme-color" content="#0F172A" media="(prefers-color-scheme: dark)">
@@ -1445,7 +1446,7 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
 </head>
 <body data-theme="light">
 
-<span id="loading-debug" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);color:var(--text-main);font-family:var(--font);font-size:16px;z-index:9999">Carregando v10.14...</span>
+<span id="loading-debug" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);color:var(--text-main);font-family:var(--font);font-size:16px;z-index:9999">Carregando v10.09...</span>
 
 <!-- LOGIN PAGE -->
 <div class="login-page hidden" id="login-page" role="main" aria-label="Login">
@@ -1471,7 +1472,7 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
 
 <div class="loading-overlay" id="loading-overlay" aria-busy="true" aria-label="Carregando">
   <div class="loading-spinner" role="status"></div>
-  <span style="font-size:13px;color:var(--text-muted);font-weight:500">Carregando v10.14...</span>
+  <span style="font-size:13px;color:var(--text-muted);font-weight:500">Carregando v10.09...</span>
 </div>
 
 <!-- WELCOME / USERNAME SETUP MODAL -->
@@ -6090,6 +6091,11 @@ function importCategory(name,amount){
 }
 async function prepareImportFile(file){
   if(!file)return; if(typeof XLSX==='undefined'){showToast('Biblioteca de planilhas ainda carregando');return;}
+  // Limpa o input imediatamente: sem isso, selecionar o MESMO arquivo de novo
+  // (ex.: após um erro ou depois de cancelar) não dispara o evento "change"
+  // novamente e a importação parece simplesmente "não carregar".
+  const extratoInputEl = document.getElementById('extrato-input');
+  if (extratoInputEl) extratoInputEl.value = '';
   try{
     const wb=XLSX.read(await file.arrayBuffer(),{type:'array',cellDates:true}); const ws=wb.Sheets[wb.SheetNames[0]]; const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
     if(!rows.length){showToast('Planilha vazia');return;}
@@ -6201,12 +6207,22 @@ async function confirmImportExtrato(){
       name:r.name, cat:r.cat||cat.id, subcat:'',
       date:txDate, amount:txAmt, type:r.type||'entrada',
       icon:cat.icon||'ti-tag', color:cat.color||'#7f8c8d', bg:(cat.color||'#7f8c8d')+'22',
-      group:'Hoje', status:'efetivada', uid:currentUser.uid
+      group:'Hoje', status:'efetivada', uid:currentUser.uid, batchId,
+      createdAt:firebase.firestore.FieldValue.serverTimestamp()
     });
     refs.push(ref);
     count++; if(count%450===0){await batch.commit();batch=db.batch();}
   }
   if (count === 0) { showToast('Nenhum dado válido para importar'); return; }
+
+  // Registra o lote de importação (antes isso era gerado mas nunca gravado
+  // no Firestore, então o histórico de importações ficava sempre vazio).
+  batch.set(batchRef, {
+    fileName: importPreview.fileName || 'Arquivo',
+    count,
+    uid: currentUser.uid,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
 
   try {
     await batch.commit();
@@ -6215,15 +6231,6 @@ async function confirmImportExtrato(){
     showToast('Erro ao salvar: ' + (e.message || e.code || 'desconhecido'));
     return;
   }
-
-  // Histórico de importação (separado, não bloqueia se falhar)
-  try {
-    await batchRef.set({
-      fileName: importPreview.fileName || 'Arquivo',
-      count, uid: currentUser.uid,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
-  } catch(ex) { console.warn('import_batches skip', ex); }
 
   lastImportBatchId = batchId;
   closeImportPreview();
