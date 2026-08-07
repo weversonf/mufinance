@@ -6196,8 +6196,8 @@ async function confirmImportExtrato(){
     // Espera o Firestore propagar e então força o refresh
     await new Promise(r => setTimeout(r, 800));
     // Re-lê do Firestore pra garantir
-    const snap = await db.collection('transactions').get();
-    transactions = []; snap.forEach(doc => { const d = doc.data(); if (!d.uid || d.uid === currentUser.uid) transactions.push({ id: doc.id, ...d }); });
+    const snap = await db.collection('transactions').where('uid','==',currentUser.uid).get();
+    transactions = []; snap.forEach(doc => { transactions.push({ id: doc.id, ...doc.data() }); });
     transactions.sort((a, b) => toMillis(b.createdAt) - toMillis(a.createdAt));
     updateBalance(); renderRecent(); renderImportHistory(false); renderUpgradePanels();
     if (document.getElementById('transactions-page').classList.contains('active')) renderAll(txTypeFilter || 'all');
