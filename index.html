@@ -3260,7 +3260,8 @@ function openModal(type, txId = null) {
 
   if (isEditing && tx && tx.cat) {
     selectedCatId = tx.cat;
-    const cat = (categories[catType] || []).find(c => c.id === tx.cat);
+    // Search across BOTH type lists in case category type doesn't match transaction type
+    const cat = (categories.saída || []).find(c => c.id === tx.cat) || (categories.entrada || []).find(c => c.id === tx.cat);
     if (cat && cat.subcats && cat.subcats.length > 0) {
       if (subCatContainer) subCatContainer.style.display = 'block';
       const subCatEl = document.getElementById('modal-subcategories');
@@ -3339,7 +3340,7 @@ async function submitTransaction() {
   try {
 
   const catType = (activeModalType === 'send' || activeModalType === 'saída') ? 'saída' : 'entrada';
-  const cat = (categories[catType] || []).find(c => c.id === selectedCatId);
+  const cat = (categories.saída || []).find(c => c.id === selectedCatId) || (categories.entrada || []).find(c => c.id === selectedCatId);
   if (!cat) {
     showToast('Categoria inválida. Selecione novamente.');
     if (submitBtn) { submitBtn.disabled = false; submitBtn.style.opacity = ''; }
