@@ -3522,6 +3522,38 @@ async function resetAllTransactions() {
   updateBalance();
 }
 
+async function cleanImportBatches() {
+  if (!currentUser || !confirm('Remover todo o histórico de importações?')) return;
+  const snap = await db.collection('import_batches').where('uid','==',currentUser.uid).get();
+  let batch=db.batch(), count=0;
+  snap.forEach(d=>{batch.delete(d.ref);count++;if(count%450===0){batch.commit();batch=db.batch();}});
+  if(count%450)await batch.commit();
+  showToast(count+' registros de importação removidos');
+  renderImportHistory(false);
+}
+
+async function removeDuplicateTransactions() {
+  if (!currentUser || !confirm('Remover transações duplicadas (mesma data+nome+valor)?')) return;
+  const seen=new Set(); let batch=db.batch(), count=0, total=0;
+  const snap = await db.collection('transactions').where('uid','==',currentUser.uid).get();
+  snap.forEach(doc=>{
+    const d=doc.data(); const fp=`${d.date||''}|${String(d.name||'').trim().toLowerCase()}|${Number(d.amount||0).toFixed(2)}`;
+    if(seen.has(fp)){batch.delete(doc.ref);count++;if(count%450===0){batch.commit();batch=db.batch();}}
+    else seen.add(fp);
+    total++;
+  });
+  if(count%450)await batch.commit();
+  showToast(`${count} duplicatas removidas de ${total} transações`);
+  updateTxCountInfo();
+}
+
+function updateTxCountInfo() {
+  const el = document.getElementById('tx-count-info');
+  if (!el || !currentUser) return;
+  const mine = transactions.filter(t => !t.uid || t.uid === currentUser.uid);
+  el.textContent = `Total: ${mine.length} transações no app`;
+}
+
 // ===== EXCEL IMPORT/EXPORT =====
 function downloadExcelTemplate() {
   if (typeof XLSX === 'undefined') { showToast('Carregando... tente novamente'); return; }
