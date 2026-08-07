@@ -821,6 +821,7 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
   box-shadow: 0 8px 24px rgba(37, 99, 235, 0.3);
   overflow: hidden;
 }
+.profile-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 20px; }
 .profile-name { font-size: 18px; font-weight: 700; color: var(--text-main); letter-spacing: -0.3px; }
 .profile-email { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
 .menu-list { margin-top: 24px; }
@@ -1491,7 +1492,7 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
 <!-- DESKTOP SIDEBAR (web only — hidden on mobile) -->
 <nav class="desktop-sidebar" id="desktop-sidebar">
   <div class="brand">
-    <div class="brand-mark"><i class="ti ti-wallet"></i></div>
+    <div class="brand-mark"><img src="icons/logo.png" style="width:100%;height:100%;object-fit:cover;border-radius:10px" alt="Mu Finance"></div>
     <div class="brand-name">Mu Finance</div>
   </div>
   <nav>
