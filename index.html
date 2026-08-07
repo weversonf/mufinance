@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Mu Finance v10.08</title>
+<title>Mu Finance v10.09</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/webp" href="logo.webp">
 <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
@@ -1683,7 +1683,10 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
     <button class="filter-chip active" onclick="filterTx('all',this)">Todas</button>
     <button class="filter-chip" onclick="filterTx('entrada',this)">Entradas</button>
     <button class="filter-chip" onclick="filterTx('saída',this)">Saídas</button>
-    <button class="filter-chip" onclick="showPage('reports')" style="margin-left:auto;color:var(--primary);border-color:var(--primary);font-weight:600"><i class="ti ti-report" style="font-size:13px"></i> Relatórios</button>
+  </div>
+  <div style="display:flex;gap:6px;padding:0 18px 8px;flex-wrap:wrap">
+    <input class="field-input" id="tx-search-input" placeholder="Buscar descrição..." style="flex:1;min-width:120px;margin:0;padding:7px 10px;font-size:12px;border-radius:8px" oninput="applyTxFilters()">
+    <select class="field-input" id="tx-cat-filter" onchange="applyTxFilters()" style="flex:1;min-width:100px;margin:0;padding:7px 10px;font-size:12px;border-radius:8px"><option value="">Todas categorias</option></select>
   </div>
   <div style="display:flex;align-items:center;justify-content:center;gap:12px;padding:6px 18px">
     <button class="icon-btn" onclick="prevTxMonth()"><i class="ti ti-chevron-left"></i></button>
@@ -4083,8 +4086,20 @@ function renderAll(filter) {
   const label = document.getElementById('tx-month-label');
   if (label) label.textContent = meses[m-1].charAt(0).toUpperCase() + meses[m-1].slice(1) + ' ' + y;
 
-  const list = (txTypeFilter === 'all' ? transactions : transactions.filter(t => t.type === txTypeFilter))
+  const search = (window._txSearch || '').toLowerCase();
+  const catFilter = window._txCatFilter || '';
+  let list = (txTypeFilter === 'all' ? transactions : transactions.filter(t => t.type === txTypeFilter))
     .filter(t => txBelongsToMonth(t, monthISO));
+  if (search) list = list.filter(t => (t.name || t.categoryName || '').toLowerCase().includes(search));
+  if (catFilter) list = list.filter(t => t.cat === catFilter);
+
+  // Update category dropdown
+  const catSelect = document.getElementById('tx-cat-filter');
+  if (catSelect && catSelect.options.length <= 1) {
+    const allCats = [...(categories.saída || []), ...(categories.entrada || [])];
+    catSelect.innerHTML = '<option value="">Todas categorias</option>' + allCats.map(c => '<option value="'+c.id+'"'+(c.id===catFilter?' selected':'')+'>'+c.name+'</option>').join('');
+  }
+
   const groups = [...new Set(list.map(txGroupKey))];
   groups.sort((a, b) => a < b ? -1 : a > b ? 1 : 0);
   let runningBalance = 0;
@@ -4130,11 +4145,16 @@ function renderAll(filter) {
 function prevTxMonth() { txMonthOffset--; renderAll(); }
 function nextTxMonth() { txMonthOffset++; renderAll(); }
 function filterTx(type, el) {
-  const row = document.getElementById('filter-row');
-  if (row) row.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('#filter-row .filter-chip').forEach(c => c.classList.remove('active'));
   if (el) el.classList.add('active');
   window._txFilter = type;
   renderAll(type);
+}
+
+function applyTxFilters() {
+  window._txSearch = document.getElementById('tx-search-input')?.value || '';
+  window._txCatFilter = document.getElementById('tx-cat-filter')?.value || '';
+  renderAll();
 }
 function renderReports() {
   const tx = _getRepTx();
