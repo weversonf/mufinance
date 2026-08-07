@@ -6220,6 +6220,14 @@ async function confirmImportExtrato(){
 
   lastImportBatchId = batchId;
   closeImportPreview();
+  // Ajusta o mês para mostrar as transações importadas
+  const validDates = rows.map(r=>r.date).filter(d=>/^\d{4}-\d{2}-\d{2}$/.test(d)).sort();
+  if(validDates.length){
+    const lastDate = validDates[validDates.length-1];
+    const [y,m] = lastDate.split('-').map(Number);
+    const now = new Date();
+    txMonthOffset = (y - now.getFullYear()) * 12 + (m - 1 - now.getMonth());
+  }
   updateBalance(); renderRecent();
   if (document.getElementById('transactions-page').classList.contains('active')) renderAll(txTypeFilter || 'all');
   showToast(`${count} transações importadas com sucesso`);
