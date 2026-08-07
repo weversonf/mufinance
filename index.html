@@ -6135,30 +6135,39 @@ async function confirmImportExtrato(){
   try{
     const batchId=db.collection('import_batches').doc().id; let batch=db.batch(), count=0; const dates=[];
     const allCats=[...(categories.saída||[]),...(categories.entrada||[])];
+    const now = firebase.firestore.FieldValue.serverTimestamp();
+    // Inserir direto no array local para aparecer imediatamente
+    const newTxns = [];
     for(const r of rows){
-      const cat = (r.cat && allCats.find(c=>c.id===r.cat)) || importCategory(r.categoryName||r.name||'', r.amount);
+      const cat = allCats.find(c=>c.id===r.cat) || allCats[0] || {};
       const ref=db.collection('transactions').doc();
       const txDate = (r.date && /^\d{4}-\d{2}-\d{2}$/.test(r.date)) ? r.date : todayISO();
+      const txAmt = r.type==='saída' ? -Math.abs(r.amount) : Math.abs(r.amount);
       dates.push(txDate);
-      batch.set(ref,{
+      const txData = {
         name:r.name, cat:r.cat||cat.id||'', subcat:'', categoryName:r.categoryName||cat.name||'',
-        date:txDate, amount:r.type==='saída'?-Math.abs(r.amount):Math.abs(r.amount), type:r.type||'entrada',
+        date:txDate, amount:txAmt, type:r.type||'entrada',
         icon:cat.icon||'ti-tag', color:cat.color||'#7f8c8d', bg:(cat.color||'#7f8c8d')+'22',
         group:'Hoje', status:'efetivada', uid:currentUser.uid, batchId,
-        createdAt:firebase.firestore.FieldValue.serverTimestamp()
-      });
+        createdAt:now
+      };
+      batch.set(ref, txData);
+      // Adiciona ao array local (simula o que o onSnapshot faria)
+      newTxns.push({ id: ref.id, ...txData, createdAt: new Date() });
       count++; if(count%450===0){await batch.commit();batch=db.batch();}
     }
     if(count%450)await batch.commit();
     lastImportBatchId=batchId;
     try{await db.collection('import_batches').doc(batchId).set({uid:currentUser.uid,fileName:importPreview.fileName,count,createdAt:firebase.firestore.FieldValue.serverTimestamp()});}catch(ex){console.warn('import_batches save skipped',ex);}
     closeImportPreview();
-    const validDates=dates.filter(d=>/^\d{4}-\d{2}-\d{2}$/.test(d)).sort();
-    if(validDates.length){const n=validDates[validDates.length-1].slice(0,7).split('-').map(Number),now=new Date();txMonthOffset=(n[0]-now.getFullYear())*12+(n[1]-(now.getMonth()+1));}
-    showToast(`${count} transações importadas`); renderImportHistory(false); renderUpgradePanels();
-    // Atualiza extrato e home imediatamente
+    // Insere manualmente no array de transações
+    transactions = [...newTxns, ...transactions];
     updateBalance(); renderRecent();
+    const validDates=dates.filter(d=>/^\d{4}-\d{2}-\d{2}$/.test(d)).sort();
+    if(validDates.length){const n=validDates[validDates.length-1].slice(0,7).split('-').map(Number),nowD=new Date();txMonthOffset=(n[0]-nowD.getFullYear())*12+(n[1]-(nowD.getMonth()+1));}
+    showToast(`${count} transações importadas`);
     if (document.getElementById('transactions-page').classList.contains('active')) renderAll(txTypeFilter || 'all');
+    renderImportHistory(false); renderUpgradePanels();
   }catch(e){
     console.error(e);
     const msg = (e && e.code === 'permission-denied')
