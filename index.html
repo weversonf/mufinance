@@ -6187,7 +6187,7 @@ async function confirmImportExtrato(){
     else showToast('Nenhuma transação válida para importar');
     return;
   }
-  const batchId=db.collection('import_batches').doc().id; let batch=db.batch(), count=0;
+  const batchRef=db.collection('import_batches').doc(); const batchId=batchRef.id; let batch=db.batch(), count=0;
   const allCats=[...(categories.saída||[]),...(categories.entrada||[])];
 
   // Store refs to verify later
@@ -6210,8 +6210,16 @@ async function confirmImportExtrato(){
   }
   if (count === 0) { showToast('Nenhum dado válido para importar'); return; }
 
+  // Inclui o registro de importação no mesmo batch
+  batch.set(batchRef, {
+    fileName: importPreview.fileName || 'Arquivo',
+    count,
+    uid: currentUser.uid,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+
   try {
-    if(count%450) await batch.commit();
+    await batch.commit();
   } catch(e) {
     console.error('Batch commit failed:', e);
     showToast('Erro ao salvar: ' + (e.message || e.code || 'desconhecido'));
@@ -6230,6 +6238,7 @@ async function confirmImportExtrato(){
   }
   updateBalance(); renderRecent();
   if (document.getElementById('transactions-page').classList.contains('active')) renderAll(txTypeFilter || 'all');
+  renderImportHistory(false);
   showToast(`${count} transações importadas com sucesso`);
 }
 async function undoLastImport(){
