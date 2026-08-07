@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Mu Finance v10.17</title>
+<title>Mu Finance v10.18</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" href="icons/logo.png">
 <link rel="apple-touch-icon" href="icons/logo.png">
@@ -1446,7 +1446,7 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
 </head>
 <body data-theme="light">
 
-<span id="loading-debug" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);color:var(--text-main);font-family:var(--font);font-size:16px;z-index:9999">Carregando v10.17...</span>
+<span id="loading-debug" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);color:var(--text-main);font-family:var(--font);font-size:16px;z-index:9999">Carregando v10.18...</span>
 
 <!-- LOGIN PAGE -->
 <div class="login-page hidden" id="login-page" role="main" aria-label="Login">
@@ -1472,7 +1472,7 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
 
 <div class="loading-overlay" id="loading-overlay" aria-busy="true" aria-label="Carregando">
   <div class="loading-spinner" role="status"></div>
-  <span style="font-size:13px;color:var(--text-muted);font-weight:500">Carregando v10.17...</span>
+  <span style="font-size:13px;color:var(--text-muted);font-weight:500">Carregando v10.18...</span>
 </div>
 
 <!-- WELCOME / USERNAME SETUP MODAL -->
@@ -1646,17 +1646,12 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
         <div class="chart-canvas-box"><canvas id="home-bar-chart"></canvas></div>
       </div>
       <div class="chart-wrap-new">
-        <h4><i class="ti ti-pie-chart" style="font-size:13px"></i> Categorias
-          <select id="pie-type-filter" onchange="renderHomeChartsDesktop()" style="float:right;font-size:10px;padding:3px 6px;background:var(--input-bg);color:var(--text-main);border:1px solid var(--border);border-radius:6px">
-            <option value="despesa">Despesas</option>
-            <option value="receita">Receitas</option>
-          </select>
-        </h4>
-        <div class="chart-canvas-box"><canvas id="home-pie-chart"></canvas></div>
+        <h4><i class="ti ti-arrow-up-circle" style="font-size:13px"></i> Categorias de Receita</h4>
+        <div class="chart-canvas-box"><canvas id="home-pie-inc-chart"></canvas></div>
       </div>
       <div class="chart-wrap-new">
-        <h4><i class="ti ti-chart-line" style="font-size:13px"></i> Saldo Mensal · 6 Meses</h4>
-        <div class="chart-canvas-box"><canvas id="home-net-chart"></canvas></div>
+        <h4><i class="ti ti-arrow-down-circle" style="font-size:13px"></i> Categorias de Despesa</h4>
+        <div class="chart-canvas-box"><canvas id="home-pie-exp-chart"></canvas></div>
       </div>
     </div>
 
@@ -3377,6 +3372,26 @@ async function submitTransaction() {
 
   if(editingTxId) {
     await db.collection('transactions').doc(editingTxId).update(txData);
+    if (isRecurring) {
+      const rawMonths = parseInt(document.getElementById('recur-months').value) || 12;
+      const months = Math.min(Math.max(1, rawMonths), 24);
+      const groupId = Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+      const baseDate = new Date(txDateISO + 'T00:00:00');
+      const MAX_BATCH = 20;
+      let batch = db.batch();
+      let batchCount = 0;
+      for (let i = 1; i < months; i++) {
+        const copy = { ...txData, recurGroup: groupId };
+        const parcela = new Date(baseDate.getFullYear(), baseDate.getMonth() + i, baseDate.getDate());
+        copy.date = dpDateToISO(parcela);
+        copy.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+        copy.status = 'prevista'; copy.group = 'Previsto';
+        batch.set(db.collection('transactions').doc(), copy);
+        batchCount++;
+        if (batchCount === MAX_BATCH) { await batch.commit(); batch = db.batch(); batchCount = 0; }
+      }
+      if (batchCount > 0) await batch.commit();
+    }
     showToast("Atualizado!");
   } else {
     const now = new Date();
