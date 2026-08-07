@@ -6667,7 +6667,8 @@ async function rejectP2PRequest(requestId) {
 
 
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js');
+  navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister()));
+  navigator.serviceWorker.register('sw.js?v=1005');
 }
 
 // ===== KEYBOARD DETECTION (hide tab-bar when keyboard opens on Android) =====
