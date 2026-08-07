@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Mu Finance v10.18</title>
+<title>Mu Finance v10.19</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" href="icons/logo.png">
 <link rel="apple-touch-icon" href="icons/logo.png">
@@ -1446,7 +1446,7 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
 </head>
 <body data-theme="light">
 
-<span id="loading-debug" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);color:var(--text-main);font-family:var(--font);font-size:16px;z-index:9999">Carregando v10.18...</span>
+<span id="loading-debug" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);color:var(--text-main);font-family:var(--font);font-size:16px;z-index:9999">Carregando v10.19...</span>
 
 <!-- LOGIN PAGE -->
 <div class="login-page hidden" id="login-page" role="main" aria-label="Login">
@@ -1472,7 +1472,7 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
 
 <div class="loading-overlay" id="loading-overlay" aria-busy="true" aria-label="Carregando">
   <div class="loading-spinner" role="status"></div>
-  <span style="font-size:13px;color:var(--text-muted);font-weight:500">Carregando v10.18...</span>
+  <span style="font-size:13px;color:var(--text-muted);font-weight:500">Carregando v10.19...</span>
 </div>
 
 <!-- WELCOME / USERNAME SETUP MODAL -->
@@ -1585,21 +1585,27 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
       <div style="position:relative;height:110px"><canvas id="home-mobile-bar-chart"></canvas></div>
     </div>
 
-    <!-- Donut categorias + saldo linha (mobile row) -->
+    <!-- Donut categorias receita/despesa (mobile row) -->
     <div class="two-col" style="margin-bottom:8px">
       <div class="income-card" style="display:flex;flex-direction:column;align-items:center;padding:12px">
-        <div class="income-label" style="align-self:flex-start;margin-bottom:8px">Categorias</div>
+        <div class="income-label" style="align-self:flex-start;margin-bottom:8px">Categorias de Receita</div>
         <div style="position:relative;width:90px;height:90px">
-          <canvas id="home-mobile-donut"></canvas>
+          <canvas id="home-mobile-donut-inc"></canvas>
           <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none">
-            <span style="font-size:8px;color:var(--text-muted)">Desp.</span>
-            <span id="home-mobile-donut-total" style="font-size:10px;font-weight:800;color:var(--text-main)">R$0</span>
+            <span style="font-size:8px;color:var(--text-muted)">Rec.</span>
+            <span id="home-mobile-donut-inc-total" style="font-size:10px;font-weight:800;color:var(--text-main)">R$0</span>
           </div>
         </div>
       </div>
-      <div class="income-card" style="display:flex;flex-direction:column;padding:12px">
-        <div class="income-label" style="margin-bottom:8px">Saldo mensal</div>
-        <div style="flex:1;position:relative;min-height:74px"><canvas id="home-mobile-net"></canvas></div>
+      <div class="income-card" style="display:flex;flex-direction:column;align-items:center;padding:12px">
+        <div class="income-label" style="align-self:flex-start;margin-bottom:8px">Categorias de Despesa</div>
+        <div style="position:relative;width:90px;height:90px">
+          <canvas id="home-mobile-donut-exp"></canvas>
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none">
+            <span style="font-size:8px;color:var(--text-muted)">Desp.</span>
+            <span id="home-mobile-donut-exp-total" style="font-size:10px;font-weight:800;color:var(--text-main)">R$0</span>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -4601,28 +4607,11 @@ function renderHomeReports() {
   const expense = monthTx.filter(t => (t.amount||0) < 0).reduce((s,t) => s + Math.abs(t.amount), 0);
   // Update Receitas/Despesas cards (via updateBalance already, but keep for chart refresh)
   updateBalance();
-  const catTotals = {};
-  monthTx.filter(t => (t.amount||0) < 0).forEach(t => {
-    const all = [...(categories.saída||[]), ...(categories.entrada||[])];
-    const cat = all.find(c => c.id === t.cat);
-    if (!cat) return;
-    if (!catTotals[cat.id]) catTotals[cat.id] = { name: cat.name, icon: cat.icon, color: cat.color, total: 0 };
-    catTotals[cat.id].total += Math.abs(t.amount);
-  });
-  const topCats = Object.values(catTotals).sort((a,b) => b.total - a.total).slice(0,3);
-  const maxCat = topCats.length ? topCats[0].total : 1;
   const tl = budget?.totalLimit || 0;
   const budgetPct = tl > 0 ? Math.min(expense / tl * 100, 100) : 0;
   el.innerHTML =
     (tl > 0 ?
     '<div class="income-card" style="margin-bottom:8px"><div class="section-row" style="margin-bottom:2px"><span class="section-label" style="font-size:12px">Orçamento</span><span style="font-size:11px;color:var(--text-muted)">'+budgetPct.toFixed(0)+'% · R$ '+expense.toLocaleString('pt-BR',{minimumFractionDigits:2})+' de R$ '+tl.toLocaleString('pt-BR',{minimumFractionDigits:2})+'</span></div><div class="progress-bar-new"><div class="progress-fill-new" style="width:'+budgetPct+'%;background:'+(budgetPct>90?'#c0392b':budgetPct>70?'#e07a3a':'var(--primary)')+'"></div></div></div>'
-    : '') +
-    (topCats.length ?
-    '<div class="income-card" style="margin-bottom:12px"><div class="section-label" style="font-size:13px;font-weight:700;color:var(--text-main);margin-bottom:8px">Top Categorias</div>' +
-    topCats.map(c => {
-      const pct = expense > 0 ? (c.total / expense * 100).toFixed(0) : '0';
-      return '<div class="rep-cat-new"><div class="rc-icon" style="background:'+c.color+'22;color:'+c.color+'"><i class="ti '+c.icon+'"></i></div><div class="rc-info"><div class="rc-name">'+c.name+' <span style="font-size:10px;color:var(--text-muted);font-weight:400">'+pct+'%</span></div><div class="rc-bar"><div class="rc-fill" style="width:'+Math.max(4,(c.total/maxCat*100))+'%;background:'+c.color+'"></div></div></div><div class="rc-amt" style="color:'+c.color+'">R$ '+c.total.toLocaleString('pt-BR',{minimumFractionDigits:2})+'</div></div>';
-    }).join('')+'</div>'
     : '') +
     '<div style="font-size:11px;color:var(--text-muted);text-align:center;padding:8px 0">'+monthTx.length+' transações este mês</div>';
 }
@@ -4638,118 +4627,82 @@ function shiftBarChart(delta) {
   renderHomeChartsDesktop();
 }
 function renderHomeChartsDesktop() {
-  const pieCanvas = document.getElementById('home-pie-chart');
+  const pieIncCanvas = document.getElementById('home-pie-inc-chart');
+  const pieExpCanvas = document.getElementById('home-pie-exp-chart');
   const barCanvas = document.getElementById('home-bar-chart');
-  const netCanvas = document.getElementById('home-net-chart');
-  if (!pieCanvas || !barCanvas) return;
-  const w = pieCanvas.parentElement.offsetWidth;
-  if (w < 100) return;
+  if (!pieIncCanvas || !barCanvas) return;
   const now = new Date();
   const isDark = document.body.getAttribute('data-theme') === 'dark';
   const textColor = isDark ? '#bbb' : '#555';
   const gridColor = isDark ? '#333' : '#eee';
-  // Destroy existing charts
-  if (window._homePieChart) { window._homePieChart.destroy(); window._homePieChart = null; }
+  if (window._homePieInc) { window._homePieInc.destroy(); window._homePieInc = null; }
+  if (window._homePieExp) { window._homePieExp.destroy(); window._homePieExp = null; }
   if (window._homeBarChart) { window._homeBarChart.destroy(); window._homeBarChart = null; }
-  if (window._homeNetChart) { window._homeNetChart.destroy(); window._homeNetChart = null; }
 
-  // Donut — Categorias com filtro Despesa/Receita
-  const pieType = document.getElementById('pie-type-filter')?.value || 'despesa';
-  const pieCatList = pieType === 'receita' ? (categories.entrada||[]) : (categories.saída||[]);
-  const catTotals = {};
   const monthTx = getMonthTxns();
-  monthTx.filter(t => pieType === 'receita' ? (t.amount||0) > 0 : (t.amount||0) < 0).forEach(t => {
-    const cat = pieCatList.find(c => c.id === t.cat);
-    if (cat) catTotals[cat.name] = (catTotals[cat.name]||0) + Math.abs(t.amount);
-  });
-  const pieLabels = Object.keys(catTotals);
-  const pieData = Object.values(catTotals);
-  if (pieLabels.length) {
-    const colors = ['#356FD8','#e74c3c','#f39c12','#2ecc71','#9b59b6','#1abc9c','#e67e22','#34495e','#16a085','#c0392b','#27ae60','#8e44ad'];
-    window._homePieChart = new Chart(pieCanvas, {
-      type: 'doughnut',
-      data: { labels: pieLabels, datasets: [{ data: pieData, backgroundColor: colors.slice(0,pieLabels.length), borderWidth: 0 }] },
-      options: { responsive: true, maintainAspectRatio: false, cutout: '60%',
-        plugins: { legend: { position: 'bottom', labels: { color: textColor, font: { size: 11 }, boxWidth: 10, padding: 8 } } } }
+  const colors = ['#356FD8','#e74c3c','#f39c12','#2ecc71','#9b59b6','#1abc9c','#e67e22','#34495e','#16a085','#c0392b','#27ae60','#8e44ad'];
+
+  // Donut Receitas
+  if (pieIncCanvas) {
+    const incTotals = {};
+    monthTx.filter(t => (t.amount||0) > 0).forEach(t => {
+      const cat = (categories.entrada||[]).find(c => c.id === t.cat);
+      if (cat) incTotals[cat.name] = (incTotals[cat.name]||0) + Math.abs(t.amount);
     });
+    const incLabels = Object.keys(incTotals), incData = Object.values(incTotals);
+    if (incLabels.length) {
+      window._homePieInc = new Chart(pieIncCanvas, {
+        type: 'doughnut', data: { labels: incLabels, datasets: [{ data: incData, backgroundColor: colors.slice(0,incLabels.length), borderWidth:0 }] },
+        options: { responsive:true, maintainAspectRatio:false, cutout:'60%', plugins: { legend: { position:'bottom', labels: { color:textColor, font:{size:10}, boxWidth:8, padding:6 } } } }
+      });
+    }
+  }
+  // Donut Despesas
+  if (pieExpCanvas) {
+    const expTotals = {};
+    monthTx.filter(t => (t.amount||0) < 0).forEach(t => {
+      const cat = (categories.saída||[]).find(c => c.id === t.cat);
+      if (cat) expTotals[cat.name] = (expTotals[cat.name]||0) + Math.abs(t.amount);
+    });
+    const expLabels = Object.keys(expTotals), expData = Object.values(expTotals);
+    if (expLabels.length) {
+      window._homePieExp = new Chart(pieExpCanvas, {
+        type: 'doughnut', data: { labels: expLabels, datasets: [{ data: expData, backgroundColor: colors.slice(0,expLabels.length), borderWidth:0 }] },
+        options: { responsive:true, maintainAspectRatio:false, cutout:'60%', plugins: { legend: { position:'bottom', labels: { color:textColor, font:{size:10}, boxWidth:8, padding:6 } } } }
+      });
+    }
   }
 
-  // Bar chart — Receitas vs Despesas (6 meses, navegavel)
-  const barLabels = [];
-  const incomeData = [];
-  const expenseData = [];
-  const startMonth = new Date(now.getFullYear(), now.getMonth() + _barOffset, 1);
-  for (let i = 5; i >= 0; i--) {
-    const m = new Date(startMonth.getFullYear(), startMonth.getMonth() - i, 1);
+  // Bar chart — Receitas vs Despesas (current month = 2nd column) + Saldo line
+  const barLabels = [], incomeData = [], expenseData = [], netData = [];
+  const currentMonth = new Date(now.getFullYear(), now.getMonth() + _barOffset, 1);
+  for (let i = -1; i <= 4; i++) {
+    const m = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + i, 1);
     barLabels.push(m.toLocaleString('pt-BR', { month: 'short', year: '2-digit' }));
     const vals = getTxnsByMonth(m.getFullYear(), m.getMonth());
     incomeData.push(vals.filter(t => (t.amount||0) > 0).reduce((s,t) => s + t.amount, 0));
     expenseData.push(vals.filter(t => (t.amount||0) < 0).reduce((s,t) => s + Math.abs(t.amount), 0));
+    netData.push(vals.reduce((s,t) => s + (t.amount||0), 0));
   }
   window._homeBarChart = new Chart(barCanvas, {
     type: 'bar',
     data: {
       labels: barLabels,
       datasets: [
-        { label: 'Receitas', data: incomeData, backgroundColor: '#356FD844', borderColor: '#356FD8', borderWidth: 1, borderRadius: 6 },
-        { label: 'Despesas', data: expenseData, backgroundColor: '#e74c3c44', borderColor: '#e74c3c', borderWidth: 1, borderRadius: 6 }
+        { label: 'Receitas', data: incomeData, backgroundColor: '#356FD844', borderColor: '#356FD8', borderWidth:1, borderRadius:6, order:2 },
+        { label: 'Despesas', data: expenseData, backgroundColor: '#e74c3c44', borderColor: '#e74c3c', borderWidth:1, borderRadius:6, order:2 },
+        { label: 'Saldo', type: 'line', data: netData, borderColor: '#2ecc71', backgroundColor: 'rgba(46,204,113,0.05)', borderWidth:2.5, pointBackgroundColor:'#2ecc71', pointBorderColor:'#fff', pointBorderWidth:2, pointRadius:5, tension:0.4, fill:true, order:1 }
       ]
     },
     options: {
-      responsive: true, maintainAspectRatio: false,
+      responsive:true, maintainAspectRatio:false,
       scales: {
-        x: { ticks: { color: textColor, font: { size: 10 } }, grid: { display: false } },
-        y: { ticks: { color: textColor, font: { size: 10 }, callback: v => 'R$'+(v/1000).toFixed(0)+'k' }, grid: { color: gridColor } }
+        x: { ticks: { color:textColor, font:{size:10} }, grid: { display:false } },
+        y: { ticks: { color:textColor, font:{size:10}, callback:v=>'R$'+(v/1000).toFixed(0)+'k' }, grid: { color:gridColor } }
       },
-      plugins: {
-        legend: { position: 'top', labels: { color: textColor, font: { size: 11 }, boxWidth: 12, padding: 8 } }
-      }
+      plugins: { legend: { position:'top', labels: { color:textColor, font:{size:11}, boxWidth:12, padding:8 } } }
     }
   });
-
-  // Saldo mensal — 6 meses com gradiente
-  if (netCanvas) {
-    const netLabels = [];
-    const netData = [];
-    for (let i = 5; i >= 0; i--) {
-      const m = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      netLabels.push(m.toLocaleString('pt-BR', { month: 'short', year: '2-digit' }));
-      const monthSum = getTxnsByMonth(m.getFullYear(), m.getMonth())
-        .reduce((s, t) => s + (t.amount || 0), 0);
-      netData.push(monthSum);
-    }
-    const gradient = netCanvas.getContext('2d').createLinearGradient(0, 0, 0, netCanvas.parentElement.offsetHeight || 250);
-    gradient.addColorStop(0, 'rgba(53,111,216,0.25)');
-    gradient.addColorStop(1, 'rgba(53,111,216,0.02)');
-    window._homeNetChart = new Chart(netCanvas, {
-      type: 'line',
-      data: {
-        labels: netLabels,
-        datasets: [{
-          label: 'Saldo',
-          data: netData,
-          borderColor: '#356FD8',
-          backgroundColor: gradient,
-          borderWidth: 2.5,
-          pointBackgroundColor: '#356FD8',
-          pointBorderColor: '#fff',
-          pointBorderWidth: 2,
-          pointRadius: 5,
-          pointHoverRadius: 7,
-          fill: true,
-          tension: 0.4
-        }]
-      },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        scales: {
-          x: { ticks: { color: textColor, font: { size: 10 } }, grid: { display: false } },
-          y: { ticks: { color: textColor, font: { size: 10 }, callback: v => 'R$'+(v/1000).toFixed(1)+'k' }, grid: { color: gridColor } }
-        },
-        plugins: { legend: { display: false } }
-      }
-    });
-  }
 }
 
 // ===== SIDEBAR TOGGLE =====
@@ -4781,95 +4734,81 @@ function renderHomeMobileCharts() {
   const isDark = document.body.getAttribute('data-theme') === 'dark';
   const textColor = isDark ? '#aaa' : '#666';
   const gridColor = isDark ? '#1e3a6a' : '#eef1f6';
+  const colors = ['#356FD8','#e74c3c','#f39c12','#2ecc71','#9b59b6','#1abc9c','#e67e22','#e91e63','#00bcd4'];
+  const monthTx = getMonthTxns();
 
-  // — Bar chart: 6 meses receitas vs despesas —
+  // — Bar chart: 6 meses receitas vs despesas + saldo line —
   const barCanvas = document.getElementById('home-mobile-bar-chart');
   if (barCanvas) {
     if (window._hmBar) { window._hmBar.destroy(); window._hmBar = null; }
-      const bLabels = [], bInc = [], bExp = [];
-      for (let i = 5; i >= 0; i--) {
-        const m = new Date(now.getFullYear(), now.getMonth() - i, 1);
-        bLabels.push(m.toLocaleString('pt-BR', { month: 'short' }));
-        const vals = getTxnsByMonth(m.getFullYear(), m.getMonth());
-        bInc.push(vals.filter(t => (t.amount||0) > 0).reduce((s,t) => s + t.amount, 0));
-        bExp.push(vals.filter(t => (t.amount||0) < 0).reduce((s,t) => s + Math.abs(t.amount), 0));
-      }
+    const bLabels = [], bInc = [], bExp = [], bNet = [];
+    const currentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    for (let i = -1; i <= 4; i++) {
+      const m = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + i, 1);
+      bLabels.push(m.toLocaleString('pt-BR', { month: 'short' }));
+      const vals = getTxnsByMonth(m.getFullYear(), m.getMonth());
+      bInc.push(vals.filter(t => (t.amount||0) > 0).reduce((s,t) => s + t.amount, 0));
+      bExp.push(vals.filter(t => (t.amount||0) < 0).reduce((s,t) => s + Math.abs(t.amount), 0));
+      bNet.push(vals.reduce((s,t) => s + (t.amount||0), 0));
+    }
     window._hmBar = new Chart(barCanvas, {
       type: 'bar',
       data: {
         labels: bLabels,
         datasets: [
-          { label: 'Rec.', data: bInc, backgroundColor: 'rgba(53,111,216,0.55)', borderColor: '#356FD8', borderWidth: 1, borderRadius: 4 },
-          { label: 'Desp.', data: bExp, backgroundColor: 'rgba(192,57,43,0.5)', borderColor: '#c0392b', borderWidth: 1, borderRadius: 4 }
+          { label: 'Rec.', data: bInc, backgroundColor: 'rgba(53,111,216,0.55)', borderColor:'#356FD8', borderWidth:1, borderRadius:4, order:2 },
+          { label: 'Desp.', data: bExp, backgroundColor: 'rgba(192,57,43,0.5)', borderColor:'#c0392b', borderWidth:1, borderRadius:4, order:2 },
+          { label: 'Saldo', type: 'line', data: bNet, borderColor: '#2ecc71', backgroundColor: 'rgba(46,204,113,0.1)', borderWidth:1.5, pointRadius:2, fill:true, tension:0.4, order:1 }
         ]
       },
       options: {
         responsive: true, maintainAspectRatio: false,
-        scales: {
-          x: { ticks: { color: textColor, font: { size: 9 } }, grid: { display: false } },
-          y: { display: false }
-        },
-        plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => 'R$ ' + ctx.raw.toLocaleString('pt-BR', { minimumFractionDigits: 0 }) } } }
+        scales: { x: { ticks: { color:textColor, font:{size:9} }, grid: { display:false } }, y: { display:false } },
+        plugins: { legend: { display:false }, tooltip: { callbacks: { label: ctx => 'R$ ' + ctx.raw.toLocaleString('pt-BR', { minimumFractionDigits:0 }) } } }
       }
     });
   }
 
-  // — Donut: categorias do mês —
-  const donutCanvas = document.getElementById('home-mobile-donut');
-  if (donutCanvas) {
-    if (window._hmDonut) { window._hmDonut.destroy(); window._hmDonut = null; }
-    const monthTx = getMonthTxns();
-    const catTotals = {};
-    const allCats = [...(categories.saída||[])];
-    monthTx.filter(t => (t.amount||0) < 0).forEach(t => {
-      const cat = allCats.find(c => c.id === t.cat);
-      if (cat) catTotals[cat.name] = (catTotals[cat.name]||0) + Math.abs(t.amount);
+  // — Donut Receitas —
+  const donutInc = document.getElementById('home-mobile-donut-inc');
+  if (donutInc) {
+    if (window._hmDonutInc) { window._hmDonutInc.destroy(); window._hmDonutInc = null; }
+    const incTotals = {};
+    monthTx.filter(t => (t.amount||0) > 0).forEach(t => {
+      const cat = (categories.entrada||[]).find(c => c.id === t.cat);
+      if (cat) incTotals[cat.name] = (incTotals[cat.name]||0) + Math.abs(t.amount);
     });
-    const pieLabels = Object.keys(catTotals);
-    const pieData = Object.values(catTotals);
-    const total = pieData.reduce((s,v)=>s+v,0);
-    const totEl = document.getElementById('home-mobile-donut-total');
+    const labels = Object.keys(incTotals), data = Object.values(incTotals);
+    const total = data.reduce((s,v)=>s+v,0);
+    const totEl = document.getElementById('home-mobile-donut-inc-total');
     if (totEl) totEl.textContent = total >= 1000 ? 'R$'+(total/1000).toFixed(1)+'k' : 'R$'+Math.round(total);
-    const colors = ['#356FD8','#e74c3c','#f39c12','#2ecc71','#9b59b6','#1abc9c','#e67e22','#e91e63','#00bcd4'];
-    if (pieLabels.length) {
-      window._hmDonut = new Chart(donutCanvas, {
-        type: 'doughnut',
-        data: { labels: pieLabels, datasets: [{ data: pieData, backgroundColor: colors.slice(0,pieLabels.length), borderWidth: 0 }] },
-        options: {
-          responsive: true, maintainAspectRatio: false, cutout: '68%',
-          plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ctx.label + ': R$ ' + ctx.raw.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) } } }
-        }
+    if (labels.length) {
+      window._hmDonutInc = new Chart(donutInc, {
+        type:'doughnut', data:{ labels, datasets:[{ data, backgroundColor:colors.slice(0,labels.length), borderWidth:0 }] },
+        options: { responsive:true, maintainAspectRatio:false, cutout:'68%', plugins: { legend:{ display:false } } }
       });
     }
   }
 
-  // — Line chart: saldo mensal 6 meses —
-  const netCanvas = document.getElementById('home-mobile-net');
-  if (netCanvas) {
-    if (window._hmNet) { window._hmNet.destroy(); window._hmNet = null; }
-    const netLabels = [], netData = [];
-    for (let i = 5; i >= 0; i--) {
-      const m = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      netLabels.push(m.toLocaleString('pt-BR', { month: 'short' }));
-      netData.push(getTxnsByMonth(m.getFullYear(), m.getMonth()).reduce((s,t) => s + (t.amount||0), 0));
-    }
-    const isPos = netData[netData.length-1] >= netData[0];
-    const lineColor = isPos ? '#356FD8' : '#c0392b';
-    window._hmNet = new Chart(netCanvas, {
-      type: 'line',
-      data: {
-        labels: netLabels,
-        datasets: [{ data: netData, borderColor: lineColor, backgroundColor: lineColor+'22', borderWidth: 2, pointRadius: 2, fill: true, tension: 0.4 }]
-      },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        scales: {
-          x: { ticks: { color: textColor, font: { size: 9 } }, grid: { display: false } },
-          y: { display: false }
-        },
-        plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => 'R$ ' + ctx.raw.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) } } }
-      }
+  // — Donut Despesas —
+  const donutExp = document.getElementById('home-mobile-donut-exp');
+  if (donutExp) {
+    if (window._hmDonutExp) { window._hmDonutExp.destroy(); window._hmDonutExp = null; }
+    const expTotals = {};
+    monthTx.filter(t => (t.amount||0) < 0).forEach(t => {
+      const cat = (categories.saída||[]).find(c => c.id === t.cat);
+      if (cat) expTotals[cat.name] = (expTotals[cat.name]||0) + Math.abs(t.amount);
     });
+    const labels = Object.keys(expTotals), data = Object.values(expTotals);
+    const total = data.reduce((s,v)=>s+v,0);
+    const totEl = document.getElementById('home-mobile-donut-exp-total');
+    if (totEl) totEl.textContent = total >= 1000 ? 'R$'+(total/1000).toFixed(1)+'k' : 'R$'+Math.round(total);
+    if (labels.length) {
+      window._hmDonutExp = new Chart(donutExp, {
+        type:'doughnut', data:{ labels, datasets:[{ data, backgroundColor:colors.slice(0,labels.length), borderWidth:0 }] },
+        options: { responsive:true, maintainAspectRatio:false, cutout:'68%', plugins: { legend:{ display:false } } }
+      });
+    }
   }
 }
 
