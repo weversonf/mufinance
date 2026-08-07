@@ -6232,7 +6232,6 @@ async function confirmImportExtrato(){
   if (document.getElementById('transactions-page').classList.contains('active')) renderAll(txTypeFilter || 'all');
   showToast(`${count} transações importadas com sucesso`);
 }
-}
 async function undoLastImport(){
   if(!lastImportBatchId){showToast('Nenhuma importação recente para desfazer');return;} try{const snap=await db.collection('transactions').where('batchId','==',lastImportBatchId).get();const batch=db.batch();snap.forEach(d=>batch.delete(d.ref));await batch.commit();await db.collection('import_batches').doc(lastImportBatchId).delete();lastImportBatchId=null;renderImportHistory(false);showToast('Última importação desfeita');}catch(e){console.error(e);showToast('Não foi possível desfazer a importação');}
 }
