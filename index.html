@@ -6188,31 +6188,53 @@ async function confirmImportExtrato(){
     else showToast('Nenhuma transação válida para importar');
     return;
   }
-  try{
-    const batchId=db.collection('import_batches').doc().id; let batch=db.batch(), count=0; const dates=[];
-    const allCats=[...(categories.saída||[]),...(categories.entrada||[])];
-    for(const r of rows){
-      const cat = allCats.find(c=>c.id===r.cat) || allCats[0] || {};
-      const ref=db.collection('transactions').doc();
-      const txDate = (r.date && /^\d{4}-\d{2}-\d{2}$/.test(r.date)) ? r.date : todayISO();
-      const txAmt = r.type==='saída' ? -Math.abs(r.amount) : Math.abs(r.amount);
-      dates.push(txDate);
-      batch.set(ref, {
-        name:r.name, cat:r.cat||cat.id||'', subcat:'', categoryName:r.categoryName||cat.name||'',
-        date:txDate, amount:txAmt, type:r.type||'entrada',
-        icon:cat.icon||'ti-tag', color:cat.color||'#7f8c8d', bg:(cat.color||'#7f8c8d')+'22',
-        group:'Hoje', status:'efetivada', uid:currentUser.uid, batchId,
-        createdAt:firebase.firestore.FieldValue.serverTimestamp()
-      });
-      count++; if(count%450===0){await batch.commit();batch=db.batch();}
+  const batchId=db.collection('import_batches').doc().id; let batch=db.batch(), count=0;
+  const allCats=[...(categories.saída||[]),...(categories.entrada||[])];
+
+  // Store refs to verify later
+  const refs = [];
+  for(const r of rows){
+    const cat = allCats.find(c=>c.id===r.cat) || allCats[0];
+    if (!cat) continue;
+    const ref=db.collection('transactions').doc();
+    const txDate = (r.date && /^\d{4}-\d{2}-\d{2}$/.test(r.date)) ? r.date : todayISO();
+    const txAmt = r.type==='saída' ? -Math.abs(r.amount) : Math.abs(r.amount);
+    batch.set(ref, {
+      name:r.name, cat:r.cat||cat.id, subcat:'',
+      date:txDate, amount:txAmt, type:r.type||'entrada',
+      icon:cat.icon||'ti-tag', color:cat.color||'#7f8c8d', bg:(cat.color||'#7f8c8d')+'22',
+      group:'Hoje', status:'efetivada', uid:currentUser.uid, batchId,
+      createdAt:firebase.firestore.FieldValue.serverTimestamp()
+    });
+    refs.push(ref);
+    count++; if(count%450===0){await batch.commit();batch=db.batch();}
+  }
+  if (count === 0) { showToast('Nenhum dado válido para importar'); return; }
+
+  try {
+    if(count%450) await batch.commit();
+  } catch(e) {
+    console.error('Batch commit failed:', e);
+    showToast('Erro ao salvar: ' + (e.message || e.code || 'desconhecido'));
+    return;
+  }
+
+  // Verify at least one document was saved
+  try {
+    const verifySnap = await refs[0].get();
+    if (!verifySnap.exists) {
+      showToast('Falha na verificação: documento não foi salvo no Firestore.');
+      return;
     }
-    if(count%450)await batch.commit();
-    lastImportBatchId=batchId;
-    try{await db.collection('import_batches').doc(batchId).set({uid:currentUser.uid,fileName:importPreview.fileName,count,createdAt:firebase.firestore.FieldValue.serverTimestamp()});}catch(ex){console.warn('import_batches save skipped',ex);}
-    closeImportPreview();
-    showToast(`${count} transações importadas`);
-    // Força reload para o listener do Firestore carregar os dados novos
-    setTimeout(() => location.reload(), 1500);
+  } catch(e) {
+    console.error('Verify failed:', e);
+    showToast('Verificação falhou: ' + (e.message || e));
+    return;
+  }
+
+  closeImportPreview();
+  showToast(`${count} transações importadas com sucesso`);
+  setTimeout(() => location.reload(), 1200);
   }catch(e){
     console.error(e);
     const msg = (e && e.code === 'permission-denied')
