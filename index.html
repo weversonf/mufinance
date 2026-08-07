@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Mu Finance v10.20</title>
+<title>Mu Finance v10.21</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" href="icons/logo.png">
 <link rel="apple-touch-icon" href="icons/logo.png">
@@ -1446,7 +1446,7 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
 </head>
 <body data-theme="light">
 
-<span id="loading-debug" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);color:var(--text-main);font-family:var(--font);font-size:16px;z-index:9999">Carregando v10.20...</span>
+<span id="loading-debug" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);color:var(--text-main);font-family:var(--font);font-size:16px;z-index:9999">Carregando v10.21...</span>
 
 <!-- LOGIN PAGE -->
 <div class="login-page hidden" id="login-page" role="main" aria-label="Login">
@@ -1472,7 +1472,7 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
 
 <div class="loading-overlay" id="loading-overlay" aria-busy="true" aria-label="Carregando">
   <div class="loading-spinner" role="status"></div>
-  <span style="font-size:13px;color:var(--text-muted);font-weight:500">Carregando v10.20...</span>
+  <span style="font-size:13px;color:var(--text-muted);font-weight:500">Carregando v10.21...</span>
 </div>
 
 <!-- WELCOME / USERNAME SETUP MODAL -->
@@ -1573,46 +1573,26 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
       </div>
     </div>
 
-    <!-- Gráfico de barras mensal (mobile) -->
-    <div class="income-card" style="margin-bottom:8px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-        <div class="income-label" style="margin:0">Receitas vs Despesas</div>
-        <span style="display:flex;gap:4px">
-          <button class="filter-chip" style="font-size:10px;padding:2px 6px" onclick="shiftBarChart(-12)">-12M</button>
-          <button class="filter-chip" style="font-size:10px;padding:2px 6px" onclick="shiftBarChart(-6)">-6M</button>
-          <button class="filter-chip" style="font-size:10px;padding:2px 6px" onclick="shiftBarChart(6)">+6M</button>
-          <button class="filter-chip" style="font-size:10px;padding:2px 6px" onclick="shiftBarChart(12)">+12M</button>
-        </span>
+    <!-- Gráficos: Receitas vs Despesas + Categorias -->
+    <div class="desktop-chart-row" id="desktop-charts-row">
+      <div class="chart-wrap-new" style="grid-column:1 / -1">
+        <h4><i class="ti ti-trending-up" style="font-size:13px"></i> Receitas vs Despesas
+          <span style="display:flex;gap:4px;float:right">
+            <button class="filter-chip" style="font-size:10px;padding:3px 8px" onclick="shiftBarChart(-12)">-12M</button>
+            <button class="filter-chip" style="font-size:10px;padding:3px 8px" onclick="shiftBarChart(-6)">-6M</button>
+            <button class="filter-chip" style="font-size:10px;padding:3px 8px" onclick="shiftBarChart(6)">+6M</button>
+            <button class="filter-chip" style="font-size:10px;padding:3px 8px" onclick="shiftBarChart(12)">+12M</button>
+          </span>
+        </h4>
+        <div class="chart-canvas-box"><canvas id="home-bar-chart"></canvas></div>
       </div>
-      <div style="display:flex;gap:10px;font-size:10px;color:var(--text-muted);margin-bottom:6px">
-        <span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--primary);margin-right:3px;vertical-align:middle"></span>Rec.</span>
-        <span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#c0392b;margin-right:3px;vertical-align:middle"></span>Desp.</span>
-        <span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#2ecc71;margin-right:3px;vertical-align:middle"></span>Saldo</span>
+      <div class="chart-wrap-new">
+        <h4><i class="ti ti-arrow-up-circle" style="font-size:13px"></i> Categorias de Receita</h4>
+        <div class="chart-canvas-box"><canvas id="home-pie-inc-chart"></canvas></div>
       </div>
-      <div style="position:relative;height:110px"><canvas id="home-mobile-bar-chart"></canvas></div>
-    </div>
-
-    <!-- Donut categorias receita/despesa (mobile row) -->
-    <div class="two-col" style="margin-bottom:8px">
-      <div class="income-card" style="display:flex;flex-direction:column;align-items:center;padding:12px">
-        <div class="income-label" style="align-self:flex-start;margin-bottom:8px">Categorias de Receita</div>
-        <div style="position:relative;width:90px;height:90px">
-          <canvas id="home-mobile-donut-inc"></canvas>
-          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none">
-            <span style="font-size:8px;color:var(--text-muted)">Rec.</span>
-            <span id="home-mobile-donut-inc-total" style="font-size:10px;font-weight:800;color:var(--text-main)">R$0</span>
-          </div>
-        </div>
-      </div>
-      <div class="income-card" style="display:flex;flex-direction:column;align-items:center;padding:12px">
-        <div class="income-label" style="align-self:flex-start;margin-bottom:8px">Categorias de Despesa</div>
-        <div style="position:relative;width:90px;height:90px">
-          <canvas id="home-mobile-donut-exp"></canvas>
-          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none">
-            <span style="font-size:8px;color:var(--text-muted)">Desp.</span>
-            <span id="home-mobile-donut-exp-total" style="font-size:10px;font-weight:800;color:var(--text-main)">R$0</span>
-          </div>
-        </div>
+      <div class="chart-wrap-new">
+        <h4><i class="ti ti-arrow-down-circle" style="font-size:13px"></i> Categorias de Despesa</h4>
+        <div class="chart-canvas-box"><canvas id="home-pie-exp-chart"></canvas></div>
       </div>
     </div>
 
@@ -1642,29 +1622,6 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
       <div class="upgrade-card full">
         <h4><i class="ti ti-alert-triangle" style="color:#f39c12"></i> Próximos compromissos</h4>
         <div id="upcoming-commitments" class="upgrade-list"></div>
-      </div>
-    </div>
-
-    <!-- Desktop-only charts row -->
-    <div class="desktop-only desktop-chart-row" id="desktop-charts-row">
-      <div class="chart-wrap-new" style="grid-column:1 / -1">
-        <h4><i class="ti ti-trending-up" style="font-size:13px"></i> Receitas vs Despesas
-          <span style="display:flex;gap:4px;float:right">
-            <button class="filter-chip" style="font-size:10px;padding:3px 8px" onclick="shiftBarChart(-12)">-12M</button>
-            <button class="filter-chip" style="font-size:10px;padding:3px 8px" onclick="shiftBarChart(-6)">-6M</button>
-            <button class="filter-chip" style="font-size:10px;padding:3px 8px" onclick="shiftBarChart(6)">+6M</button>
-            <button class="filter-chip" style="font-size:10px;padding:3px 8px" onclick="shiftBarChart(12)">+12M</button>
-          </span>
-        </h4>
-        <div class="chart-canvas-box"><canvas id="home-bar-chart"></canvas></div>
-      </div>
-      <div class="chart-wrap-new">
-        <h4><i class="ti ti-arrow-up-circle" style="font-size:13px"></i> Categorias de Receita</h4>
-        <div class="chart-canvas-box"><canvas id="home-pie-inc-chart"></canvas></div>
-      </div>
-      <div class="chart-wrap-new">
-        <h4><i class="ti ti-arrow-down-circle" style="font-size:13px"></i> Categorias de Despesa</h4>
-        <div class="chart-canvas-box"><canvas id="home-pie-exp-chart"></canvas></div>
       </div>
     </div>
 
@@ -3041,7 +2998,7 @@ function startListeners() {
     renderRecent();
     if (document.getElementById('transactions-page').classList.contains('active')) renderAll(txTypeFilter || 'all');
     if (document.getElementById('reports-page').classList.contains('active')) renderReports();
-    if (document.getElementById('home-page').classList.contains('active')) { renderHomeReports(); renderHomeMobileCharts(); renderHomeVehicle(); renderHomeChartsDesktop(); }
+    if (document.getElementById('home-page').classList.contains('active')) { renderHomeReports(); renderHomeVehicle(); renderHomeChartsDesktop(); }
   }));
 
   _unsubs.push(db.collection('contacts').where('uid','==',currentUser.uid).onSnapshot(snap => {
@@ -4520,7 +4477,7 @@ window.showPage = function(name) {
       if (vehTab) vehTab.classList.add('active');
     });
   }
-  if (name === 'home') { renderHomeReports(); renderHomeMobileCharts(); renderHomeVehicle(); renderHomeChartsDesktop(); }
+  if (name === 'home') { renderHomeReports(); renderHomeVehicle(); renderHomeChartsDesktop(); }
   window.scrollTo(0, 0);
 };
 
@@ -4733,91 +4690,6 @@ document.addEventListener('keydown', e => {
     }
   } catch(e){}
 })();
-
-// ===== HOME MOBILE CHARTS =====
-function renderHomeMobileCharts() {
-  if (typeof Chart === 'undefined') return;
-  const now = new Date();
-  const isDark = document.body.getAttribute('data-theme') === 'dark';
-  const textColor = isDark ? '#aaa' : '#666';
-  const gridColor = isDark ? '#1e3a6a' : '#eef1f6';
-  const colors = ['#356FD8','#e74c3c','#f39c12','#2ecc71','#9b59b6','#1abc9c','#e67e22','#e91e63','#00bcd4'];
-  const monthTx = getMonthTxns();
-
-  // — Bar chart: 6 meses receitas vs despesas + saldo line —
-  const barCanvas = document.getElementById('home-mobile-bar-chart');
-  if (barCanvas) {
-    if (window._hmBar) { window._hmBar.destroy(); window._hmBar = null; }
-    const bLabels = [], bInc = [], bExp = [], bNet = [];
-    const currentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    for (let i = -1; i <= 4; i++) {
-      const m = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + i, 1);
-      bLabels.push(m.toLocaleString('pt-BR', { month: 'short' }));
-      const vals = getTxnsByMonth(m.getFullYear(), m.getMonth());
-      bInc.push(vals.filter(t => (t.amount||0) > 0).reduce((s,t) => s + t.amount, 0));
-      bExp.push(vals.filter(t => (t.amount||0) < 0).reduce((s,t) => s + Math.abs(t.amount), 0));
-      bNet.push(vals.reduce((s,t) => s + (t.amount||0), 0));
-    }
-    window._hmBar = new Chart(barCanvas, {
-      type: 'bar',
-      data: {
-        labels: bLabels,
-        datasets: [
-          { label: 'Rec.', data: bInc, backgroundColor: 'rgba(53,111,216,0.55)', borderColor:'#356FD8', borderWidth:1, borderRadius:4, order:2 },
-          { label: 'Desp.', data: bExp, backgroundColor: 'rgba(192,57,43,0.5)', borderColor:'#c0392b', borderWidth:1, borderRadius:4, order:2 },
-          { label: 'Saldo', type: 'line', data: bNet, borderColor: '#2ecc71', backgroundColor: 'rgba(46,204,113,0.1)', borderWidth:1.5, pointRadius:2, fill:true, tension:0.4, order:1 }
-        ]
-      },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        scales: { x: { ticks: { color:textColor, font:{size:9} }, grid: { display:false } }, y: { display:false } },
-        plugins: { legend: { display:false }, tooltip: { callbacks: { label: ctx => 'R$ ' + ctx.raw.toLocaleString('pt-BR', { minimumFractionDigits:0 }) } } }
-      }
-    });
-  }
-
-  // — Donut Receitas —
-  const donutInc = document.getElementById('home-mobile-donut-inc');
-  if (donutInc) {
-    if (window._hmDonutInc) { window._hmDonutInc.destroy(); window._hmDonutInc = null; }
-    const incTotals = {};
-    monthTx.filter(t => (t.amount||0) > 0).forEach(t => {
-      const cat = (categories.entrada||[]).find(c => c.id === t.cat);
-      if (cat) incTotals[cat.name] = (incTotals[cat.name]||0) + Math.abs(t.amount);
-    });
-    const labels = Object.keys(incTotals), data = Object.values(incTotals);
-    const total = data.reduce((s,v)=>s+v,0);
-    const totEl = document.getElementById('home-mobile-donut-inc-total');
-    if (totEl) totEl.textContent = total >= 1000 ? 'R$'+(total/1000).toFixed(1)+'k' : 'R$'+Math.round(total);
-    if (labels.length) {
-      window._hmDonutInc = new Chart(donutInc, {
-        type:'doughnut', data:{ labels, datasets:[{ data, backgroundColor:colors.slice(0,labels.length), borderWidth:0 }] },
-        options: { responsive:true, maintainAspectRatio:false, cutout:'68%', plugins: { legend:{ display:false } } }
-      });
-    }
-  }
-
-  // — Donut Despesas —
-  const donutExp = document.getElementById('home-mobile-donut-exp');
-  if (donutExp) {
-    if (window._hmDonutExp) { window._hmDonutExp.destroy(); window._hmDonutExp = null; }
-    const expTotals = {};
-    monthTx.filter(t => (t.amount||0) < 0).forEach(t => {
-      const cat = (categories.saída||[]).find(c => c.id === t.cat);
-      if (cat) expTotals[cat.name] = (expTotals[cat.name]||0) + Math.abs(t.amount);
-    });
-    const labels = Object.keys(expTotals), data = Object.values(expTotals);
-    const total = data.reduce((s,v)=>s+v,0);
-    const totEl = document.getElementById('home-mobile-donut-exp-total');
-    if (totEl) totEl.textContent = total >= 1000 ? 'R$'+(total/1000).toFixed(1)+'k' : 'R$'+Math.round(total);
-    if (labels.length) {
-      window._hmDonutExp = new Chart(donutExp, {
-        type:'doughnut', data:{ labels, datasets:[{ data, backgroundColor:colors.slice(0,labels.length), borderWidth:0 }] },
-        options: { responsive:true, maintainAspectRatio:false, cutout:'68%', plugins: { legend:{ display:false } } }
-      });
-    }
-  }
-}
 
 // ===== BLUR TOGGLE =====
 let blurActive = false; // saldo sempre visível (botão do olho removido)
@@ -6522,7 +6394,7 @@ window.startListeners = function() {
       const recentSection = document.getElementById('recent-tx-list');
       if (recentSection && recentSection.parentNode) {
         recentSection.parentNode.insertBefore(reportEl, recentSection.nextSibling);
-        renderHomeReports(); renderHomeMobileCharts(); renderHomeVehicle(); renderHomeChartsDesktop();
+        renderHomeReports(); renderHomeVehicle(); renderHomeChartsDesktop();
       }
     }
 
