@@ -1152,6 +1152,21 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
 #vehicle-page { max-height: 100vh; min-height: 0; overflow: hidden; }
 @media (min-width: 768px) {
   .tab-fab-wrap, .tab-fab-sub, #fab-overlay { display: none !important; }
+  .actions { display: none !important; }
+  .desktop-fab {
+    display: flex; align-items: center; justify-content: center;
+    position: fixed; right: 32px; bottom: 32px;
+    width: 56px; height: 56px; border-radius: 50%;
+    background: var(--primary); color: #fff; font-size: 24px;
+    z-index: 90; border: none; cursor: pointer;
+    box-shadow: 0 8px 24px rgba(37, 99, 235, 0.4);
+    transition: transform .2s var(--ease), background .2s;
+  }
+  .desktop-fab:hover { transform: scale(1.08); background: var(--primary-hover); }
+  .desktop-fab:active { transform: scale(0.94); }
+}
+@media (max-width: 767px) {
+  .desktop-fab { display: none !important; }
 }
 
 .pwa-install-banner {
@@ -2215,6 +2230,8 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
   <button class="fab-opt fab-opt-income" onclick="openTxModal('receive');closeQuickMenu()" title="Nova Receita"><i class="ti ti-plus"></i></button>
   <button class="fab-opt fab-opt-vehicle" id="fab-veh-btn" onclick="closeQuickMenu();openVehActionSelector()" title="Veículo"><i class="ti ti-car" id="fab-veh-icon"></i></button>
 </div>
+
+<button class="desktop-fab" onclick="toggleQuickMenu()" title="Nova transação" aria-label="Nova transação"><i class="ti ti-plus"></i></button>
 
 <div class="veh-action-overlay" id="veh-action-overlay" onclick="closeVehActionSelector(event)">
   <div class="veh-action-card" onclick="event.stopPropagation()">
