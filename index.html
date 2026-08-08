@@ -4884,8 +4884,7 @@ function renderSettingsAccounts() {
     '<div class="ci-info"><div class="ci-name">'+a.name+(a.isDefault ? ' <span style="font-size:10px;color:var(--primary);font-weight:700">Padrão</span>' : '')+'</div><div class="ci-sub">'+a.type+' · R$ '+(a.balance||0).toLocaleString('pt-BR',{minimumFractionDigits:2})+'</div></div>' +
     '<div class="ci-actions" style="display:flex;gap:4px;align-items:center">'+
       '<button onclick="setDefaultAccount(\''+a.id+'\')" title="Definir como padrão" style="color:'+(a.isDefault?'var(--primary)':'var(--text-muted)')+'"><i class="ti ti-star'+(a.isDefault?'-filled':'')+'"></i></button>'+
-      '<button onclick="adjustAccountBalance(\''+a.id+'\',\''+a.name+'\','+(a.balance||0)+')" title="Ajustar saldo"><i class="ti ti-pencil"></i></button>'+
-      '<button onclick="openAccountModal(\''+a.id+'\')"><i class="ti ti-edit"></i></button>'+
+      '<button onclick="openAccountModal(\''+a.id+'\')" title="Editar conta"><i class="ti ti-edit"></i></button>'+
       '<button class="del" onclick="deleteAccountById(\''+a.id+'\')"><i class="ti ti-trash"></i></button>'+
     '</div></div>'
   ).join('') || '<div style="color:var(--text-muted);font-size:13px;padding:8px">Nenhuma conta</div>';
