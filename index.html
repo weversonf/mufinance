@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Mu Finance v10.23</title>
+<title>Mu Finance v10.24</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" href="icons/logo.png">
 <link rel="apple-touch-icon" href="icons/logo.png">
@@ -1446,7 +1446,7 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
 </head>
 <body data-theme="light">
 
-<span id="loading-debug" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);color:var(--text-main);font-family:var(--font);font-size:16px;z-index:9999">Carregando v10.23...</span>
+<span id="loading-debug" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);color:var(--text-main);font-family:var(--font);font-size:16px;z-index:9999">Carregando v10.24...</span>
 
 <!-- LOGIN PAGE -->
 <div class="login-page hidden" id="login-page" role="main" aria-label="Login">
@@ -1472,7 +1472,7 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
 
 <div class="loading-overlay" id="loading-overlay" aria-busy="true" aria-label="Carregando">
   <div class="loading-spinner" role="status"></div>
-  <span style="font-size:13px;color:var(--text-muted);font-weight:500">Carregando v10.23...</span>
+  <span style="font-size:13px;color:var(--text-muted);font-weight:500">Carregando v10.24...</span>
 </div>
 
 <!-- WELCOME / USERNAME SETUP MODAL -->
@@ -1563,12 +1563,12 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
     <div class="two-col" style="margin-bottom:8px">
       <div class="income-card" id="home-income-card" style="position:relative;overflow:hidden">
         <div style="position:absolute;top:-8px;right:-8px;font-size:32px;opacity:.1;color:#2ecc71"><i class="ti ti-trending-up"></i></div>
-        <div class="income-label" style="display:flex;align-items:center;gap:4px"><i class="ti ti-arrow-up-circle" style="color:#2ecc71;font-size:14px"></i> Receitas do mês</div>
+        <div class="income-label" style="display:flex;align-items:center;gap:4px"><i class="ti ti-arrow-up-right" style="color:#2ecc71;font-size:14px"></i> Receitas do mês</div>
         <div class="income-amount" style="color:#2ecc71;font-size:16px" id="home-income-amount">R$ 0,00</div>
       </div>
       <div class="income-card" id="home-expense-card" style="position:relative;overflow:hidden">
         <div style="position:absolute;top:-8px;right:-8px;font-size:32px;opacity:.1;color:#c0392b"><i class="ti ti-trending-down"></i></div>
-        <div class="income-label" style="display:flex;align-items:center;gap:4px"><i class="ti ti-arrow-down-circle" style="color:#c0392b;font-size:14px"></i> Despesas do mês</div>
+        <div class="income-label" style="display:flex;align-items:center;gap:4px"><i class="ti ti-arrow-down-right" style="color:#c0392b;font-size:14px"></i> Despesas do mês</div>
         <div class="income-amount" style="color:#c0392b;font-size:16px" id="home-expense-amount">R$ 0,00</div>
       </div>
     </div>
@@ -1587,11 +1587,11 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
         <div class="chart-canvas-box"><canvas id="home-bar-chart"></canvas></div>
       </div>
       <div class="chart-wrap-new">
-        <h4><i class="ti ti-arrow-up-circle" style="font-size:13px"></i> Categorias de Receita</h4>
+        <h4><i class="ti ti-arrow-up-right" style="font-size:13px"></i> Categorias de Receita</h4>
         <div class="chart-canvas-box"><canvas id="home-pie-inc-chart"></canvas></div>
       </div>
       <div class="chart-wrap-new">
-        <h4><i class="ti ti-arrow-down-circle" style="font-size:13px"></i> Categorias de Despesa</h4>
+        <h4><i class="ti ti-arrow-down-right" style="font-size:13px"></i> Categorias de Despesa</h4>
         <div class="chart-canvas-box"><canvas id="home-pie-exp-chart"></canvas></div>
       </div>
     </div>
@@ -1882,6 +1882,9 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
     
     <label class="field-label">Descrição</label>
     <input class="field-input" id="modal-desc" placeholder="Ex: Salário, Aluguel, ou nome da pessoa" />
+
+    <label class="field-label">Conta</label>
+    <select class="field-input" id="modal-account"></select>
 
     <!-- Toggles: P2P | Status | Recorrente -->
     <div class="toggles-row">
@@ -3245,6 +3248,14 @@ function openModal(type, txId = null) {
   const p2pLabel = document.getElementById('p2p-toggle-label');
   if (p2pLabel) p2pLabel.textContent = (type === 'send' || type === 'saída') ? 'Enviar para amigo' : 'Cobrar de amigo';
 
+  // Account selector
+  const accSel = document.getElementById('modal-account');
+  if (accSel) {
+    const defaultAcc = accounts.find(a => a.isDefault) || accounts[0];
+    const opts = accounts.map(a => `<option value="${a.id}"${(isEditing && tx && tx.accountId === a.id) || (!isEditing && a === defaultAcc) ? ' selected' : ''}>${a.name}</option>`).join('');
+    accSel.innerHTML = opts || '<option value="">Sem conta</option>';
+  }
+
   const modal = document.getElementById('tx-modal');
   if (modal) modal.classList.add('open');
   setTxStatus(tx && tx.status === 'prevista' ? 'prevista' : 'efetivada');
@@ -3313,6 +3324,8 @@ async function submitTransaction() {
   const dateInput = document.getElementById('modal-date');
   const txDateISO = (dateInput && dateInput.value) ? dateInput.value : todayISO();
 
+  const accountId = document.getElementById('modal-account')?.value || null;
+
   const txData = {
     name: displayName,
     cat: selectedCatId,
@@ -3326,6 +3339,7 @@ async function submitTransaction() {
     group: txStatus === 'prevista' ? 'Previsto' : 'Hoje',
     status: txStatus,
     uid: currentUser ? currentUser.uid : null,
+    accountId: accountId,
   };
 
   // Add P2P counterpart info to own transaction
@@ -3340,7 +3354,25 @@ async function submitTransaction() {
   }
 
   if(editingTxId) {
+    const oldTx = transactions.find(t => t.id === editingTxId);
     await db.collection('transactions').doc(editingTxId).update(txData);
+    // Handle account balance change on edit
+    if (txStatus !== 'prevista' && accountId) {
+      const acc = accounts.find(a => a.id === accountId);
+      if (acc) {
+        let balanceChange = 0;
+        if (oldTx && oldTx.accountId === accountId && oldTx.status !== 'prevista') {
+          balanceChange = txAmt - (oldTx.amount || 0);
+        } else {
+          if (oldTx && oldTx.accountId && oldTx.status !== 'prevista') {
+            const oldAcc = accounts.find(a => a.id === oldTx.accountId);
+            if (oldAcc) await db.collection('accounts').doc(oldTx.accountId).update({ balance: (oldAcc.balance || 0) - (oldTx.amount || 0) });
+          }
+          balanceChange = txAmt;
+        }
+        await db.collection('accounts').doc(accountId).update({ balance: (acc.balance || 0) + balanceChange });
+      }
+    }
     if (isRecurring) {
       const rawMonths = parseInt(document.getElementById('recur-months').value) || 12;
       const months = Math.min(Math.max(1, rawMonths), 24);
@@ -3388,6 +3420,12 @@ async function submitTransaction() {
       if (batchCount === MAX_BATCH) { await batch.commit(); batch = db.batch(); batchCount = 0; }
     }
     if (batchCount > 0) await batch.commit();
+
+    // Update account balance for new transaction
+    if (txStatus !== 'prevista' && accountId) {
+      const acc = accounts.find(a => a.id === accountId);
+      if (acc) await db.collection('accounts').doc(accountId).update({ balance: (acc.balance || 0) + txAmt });
+    }
 
     // P2P — enviar/cobrar amigo
     if (selectedP2PUser && selectedP2PUser.uid) {
@@ -3466,7 +3504,12 @@ async function submitTransaction() {
 async function deleteTransaction() {
   if(!editingTxId) return;
   if(confirm("Deseja excluir esta transação?")) {
+    const tx = transactions.find(t => t.id === editingTxId);
     await db.collection('transactions').doc(editingTxId).delete();
+    if (tx && tx.accountId && tx.status !== 'prevista') {
+      const acc = accounts.find(a => a.id === tx.accountId);
+      if (acc) await db.collection('accounts').doc(tx.accountId).update({ balance: (acc.balance || 0) - (tx.amount || 0) });
+    }
     closeModal('tx-modal');
     showToast("Excluído!");
   }
@@ -4895,6 +4938,12 @@ async function deleteAccount() {
 function populateAccountSelects() {
   const opts = '<option value="">Nenhuma</option>' + accounts.map(a => '<option value="'+a.id+'">'+a.name+'</option>').join('');
   ['refuel-account','maint-account'].forEach(id => { const el = document.getElementById(id); if (el) { const v = el.value; el.innerHTML = opts; el.value = v; } });
+  const modalAcc = document.getElementById('modal-account');
+  if (modalAcc) {
+    const defaultAcc = accounts.find(a => a.isDefault) || accounts[0];
+    const txOpts = accounts.map(a => `<option value="${a.id}"${a === defaultAcc ? ' selected' : ''}>${a.name}</option>`).join('');
+    modalAcc.innerHTML = txOpts || '<option value="">Sem conta</option>';
+  }
 }
 
 // ===== BUDGET =====
@@ -6559,9 +6608,11 @@ async function rejectP2PRequest(requestId) {
 
 
 
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister()));
-  navigator.serviceWorker.register('sw.js?v=1005');
+if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
+  try {
+    navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister()));
+    navigator.serviceWorker.register('sw.js?v=1005');
+  } catch(e) {}
 }
 
 // ===== KEYBOARD DETECTION (hide tab-bar when keyboard opens on Android) =====
