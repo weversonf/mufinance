@@ -3020,7 +3020,7 @@ function startListeners() {
     const avatar = document.getElementById('profile-avatar');
     if (avatar) {
       if (profile.photoURL) {
-        avatar.innerHTML = `<img src="${profile.photoURL}" style="width:100%;height:100%;border-radius:50%;object-fit:cover" />`;
+        avatar.innerHTML = `<img src="${profile.photoURL}" style="width:100%;height:100%;border-radius:20px;object-fit:cover" />`;
       } else {
         avatar.textContent = getProfileName().charAt(0).toUpperCase();
       }
@@ -4510,7 +4510,7 @@ window.showPage = function(name) {
     if (pn) pn.textContent = profile.name || '';
     if (pe) pe.textContent = profile.email || '';
     const av = document.getElementById('profile-avatar');
-    if (av && profile.photoURL) av.innerHTML = '<img src="'+profile.photoURL+'" style="width:100%;height:100%;border-radius:50%;object-fit:cover" />';
+    if (av && profile.photoURL) av.innerHTML = '<img src="'+profile.photoURL+'" style="width:100%;height:100%;border-radius:20px;object-fit:cover" />';
   }
   // Desktop sidebar sync (web layout only)
   document.querySelectorAll('.desktop-sidebar .d-tab').forEach(t => t.classList.remove('active'));
@@ -4660,9 +4660,15 @@ function renderHomeChartsDesktop() {
     });
     const incLabels = Object.keys(incTotals), incData = Object.values(incTotals);
     if (incLabels.length) {
+      const incTotal = incData.reduce((s, v) => s + v, 0);
       window._homePieInc = new Chart(pieIncCanvas, {
         type: 'doughnut', data: { labels: incLabels, datasets: [{ data: incData, backgroundColor: colors.slice(0,incLabels.length), borderWidth:0 }] },
-        options: { responsive:true, maintainAspectRatio:false, cutout:'60%', plugins: { legend: { position:'bottom', labels: { color:textColor, font:{size:10}, boxWidth:8, padding:6 } } } }
+        options: { responsive:true, maintainAspectRatio:false, cutout:'60%',
+          plugins: {
+            legend: { position:'bottom', labels: { color:textColor, font:{size:10}, boxWidth:8, padding:6 } },
+            tooltip: { callbacks: { label: function(ctx) { const pct = incTotal > 0 ? (ctx.raw / incTotal * 100).toFixed(1) : 0; return ctx.label + ': ' + pct + '% (R$ ' + ctx.raw.toLocaleString('pt-BR', {minimumFractionDigits:2}) + ')'; } } }
+          }
+        }
       });
     }
   }
@@ -4675,9 +4681,15 @@ function renderHomeChartsDesktop() {
     });
     const expLabels = Object.keys(expTotals), expData = Object.values(expTotals);
     if (expLabels.length) {
+      const expTotal = expData.reduce((s, v) => s + v, 0);
       window._homePieExp = new Chart(pieExpCanvas, {
         type: 'doughnut', data: { labels: expLabels, datasets: [{ data: expData, backgroundColor: colors.slice(0,expLabels.length), borderWidth:0 }] },
-        options: { responsive:true, maintainAspectRatio:false, cutout:'60%', plugins: { legend: { position:'bottom', labels: { color:textColor, font:{size:10}, boxWidth:8, padding:6 } } } }
+        options: { responsive:true, maintainAspectRatio:false, cutout:'60%',
+          plugins: {
+            legend: { position:'bottom', labels: { color:textColor, font:{size:10}, boxWidth:8, padding:6 } },
+            tooltip: { callbacks: { label: function(ctx) { const pct = expTotal > 0 ? (ctx.raw / expTotal * 100).toFixed(1) : 0; return ctx.label + ': ' + pct + '% (R$ ' + ctx.raw.toLocaleString('pt-BR', {minimumFractionDigits:2}) + ')'; } } }
+          }
+        }
       });
     }
   }
