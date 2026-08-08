@@ -4902,6 +4902,15 @@ async function loadProSettings() {
 }
 
 // ===== ACCOUNTS =====
+function getAccountBalance(accountId) {
+  const isDefault = accounts.find(a => a.id === accountId)?.isDefault || false;
+  return transactions.filter(t => {
+    if (t.status === 'prevista') return false;
+    if (t.accountId === accountId) return true;
+    if (isDefault && !t.accountId) return true;
+    return false;
+  }).reduce((s, t) => s + (t.amount || 0), 0);
+}
 const bankColors = { nubank:'#820AD1', inter:'#FF6600', caixa:'#003399', bb:'#FFEF00', bradesco:'#CC0033', santander:'#CC0000', itau:'#FF6600', c6:'#000000', original:'#FF6A00', pagbank:'#2E8B57', picpay:'#21C25E', mercadopago:'#00BFFF', neon:'#00BFA5', next:'#FFD700', sofisa:'#003366' };
 function onAccTypeChange() {
   const v = document.getElementById('acc-type-input').value;
@@ -4928,8 +4937,7 @@ function renderSettingsAccounts() {
   }).join('') || '<div style="color:var(--text-muted);font-size:13px;padding:8px">Nenhuma conta</div>';
 }
 async function adjustAccountBalance(id, name) {
-  const accTxns = transactions.filter(t => t.accountId === id && t.status !== 'prevista');
-  const currentBalance = accTxns.reduce((s, t) => s + (t.amount || 0), 0);
+  const currentBalance = getAccountBalance(id);
   const input = prompt('Saldo atual de ' + name + ': R$ ' + currentBalance.toFixed(2) + '\n\nDigite o saldo real desejado (ex: 1500,00):', '');
   if (input === null) return;
   const newBalance = parseFloat(String(input).replace(/[^\d,-]/g, '').replace(',', '.'));
@@ -4964,8 +4972,7 @@ function adjustAccountBalanceFromModal() {
   setTimeout(() => {
     const a = accounts.find(x => x.id === window._adjustAccountId);
     if (a) {
-      const accTxns = transactions.filter(t => t.accountId === a.id && t.status !== 'prevista');
-      const realBalance = accTxns.reduce((s, t) => s + (t.amount || 0), 0);
+      const realBalance = getAccountBalance(a.id);
       const realBalEl = document.getElementById('acc-real-balance');
       if (realBalEl) realBalEl.textContent = 'Saldo real: R$ ' + realBalance.toLocaleString('pt-BR', {minimumFractionDigits:2});
     }
@@ -4986,8 +4993,7 @@ function openAccountModal(id) {
   const realBalEl = document.getElementById('acc-real-balance');
   if (a && adjustSection && realBalEl) {
     adjustSection.style.display = 'block';
-    const accTxns = transactions.filter(t => t.accountId === a.id && t.status !== 'prevista');
-    const realBalance = accTxns.reduce((s, t) => s + (t.amount || 0), 0);
+    const realBalance = getAccountBalance(a.id);
     realBalEl.textContent = 'Saldo real: R$ ' + realBalance.toLocaleString('pt-BR', {minimumFractionDigits:2});
     window._adjustAccountId = a.id;
     window._adjustAccountName = a.name;
