@@ -4880,8 +4880,9 @@ function renderSettingsAccounts() {
   c.innerHTML = accounts.map(a =>
     '<div class="config-item-new">' +
     '<div class="ci-icon" style="background:'+a.color+'22;color:'+a.color+'"><i class="ti ti-wallet"></i></div>' +
-    '<div class="ci-info"><div class="ci-name">'+a.name+'</div><div class="ci-sub">'+a.type+' · R$ '+(a.balance||0).toLocaleString('pt-BR',{minimumFractionDigits:2})+'</div></div>' +
+    '<div class="ci-info"><div class="ci-name">'+a.name+(a.isDefault ? ' <span style="font-size:10px;color:var(--primary);font-weight:700">Padrão</span>' : '')+'</div><div class="ci-sub">'+a.type+' · R$ '+(a.balance||0).toLocaleString('pt-BR',{minimumFractionDigits:2})+'</div></div>' +
     '<div class="ci-actions" style="display:flex;gap:4px;align-items:center">'+
+      '<button onclick="setDefaultAccount(\''+a.id+'\')" title="Definir como padrão" style="color:'+(a.isDefault?'var(--primary)':'var(--text-muted)')+'"><i class="ti ti-star'+(a.isDefault?'-filled':'')+'"></i></button>'+
       '<button onclick="adjustAccountBalance(\''+a.id+'\',\''+a.name+'\','+(a.balance||0)+')" title="Ajustar saldo"><i class="ti ti-pencil"></i></button>'+
       '<button onclick="openAccountModal(\''+a.id+'\')"><i class="ti ti-edit"></i></button>'+
       '<button class="del" onclick="deleteAccountById(\''+a.id+'\')"><i class="ti ti-trash"></i></button>'+
@@ -4934,6 +4935,15 @@ async function deleteAccount() {
   if (!confirm('Excluir?')) return;
   await db.collection('accounts').doc(editingAccountId).delete();
   closeModal('account-modal'); showToast('Excluída!');
+}
+async function setDefaultAccount(id) {
+  const batch = db.batch();
+  accounts.forEach(a => {
+    if (a.isDefault && a.id !== id) batch.update(db.collection('accounts').doc(a.id), { isDefault: false });
+  });
+  batch.update(db.collection('accounts').doc(id), { isDefault: true });
+  await batch.commit();
+  showToast('Conta padrão definida!');
 }
 function populateAccountSelects() {
   const opts = '<option value="">Nenhuma</option>' + accounts.map(a => '<option value="'+a.id+'">'+a.name+'</option>').join('');
@@ -6138,7 +6148,7 @@ function startProListeners() {
     accounts = [];
     snap.forEach(doc => { accounts.push({ id: doc.id, ...doc.data() }); });
     if (accounts.length === 0 && uid) {
-      db.collection('accounts').add({ name: 'Carteira', type: 'carteira', color: '#356FD8', balance: 0, uid });
+      db.collection('accounts').add({ name: 'Carteira', type: 'carteira', color: '#356FD8', balance: 0, uid, isDefault: true });
     }
     if (document.getElementById('settings-page')?.classList.contains('active')) renderSettingsAccounts();
     populateAccountSelects();
