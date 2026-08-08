@@ -5013,7 +5013,30 @@ async function submitAccount() {
   if (!n) { showToast('Nome obrigatório'); return; }
   const data = { name: n, type: t, color: c, balance: b, uid: currentUser ? currentUser.uid : null };
   if (bank) data.bank = bank;
-  if (editingAccountId) { await db.collection('accounts').doc(editingAccountId).update(data); showToast('Atualizada!'); }
+  if (editingAccountId) {
+    await db.collection('accounts').doc(editingAccountId).update(data);
+    // If balance was changed, auto-create adjustment for the difference
+    const currentBalance = getAccountBalance(editingAccountId);
+    const diff = b - currentBalance;
+    if (Math.abs(diff) >= 0.01) {
+      const catType = diff > 0 ? 'entrada' : 'saída';
+      const catList = categories[catType] || [];
+      const ajusteCat = catList.find(c => c.name === 'Ajuste') || catList.find(c => c.id === 'outros') || catList[0];
+      if (ajusteCat) {
+        await db.collection('transactions').add({
+          name: 'Ajuste - ' + n,
+          cat: ajusteCat.id, amount: diff, type: catType,
+          date: todayISO(), status: 'efetivada', group: 'Hoje',
+          icon: ajusteCat.icon || 'ti-adjustments',
+          bg: (ajusteCat.color || '#888') + '22', color: ajusteCat.color || '#888',
+          accountId: editingAccountId,
+          uid: currentUser ? currentUser.uid : null,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      }
+    }
+    showToast('Atualizada!');
+  }
   else { await db.collection('accounts').add(data); showToast('Adicionada!'); }
   closeModal('account-modal');
 }
