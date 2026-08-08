@@ -4890,24 +4890,49 @@ function onAccBankChange() {
 function renderSettingsAccounts() {
   const c = document.getElementById('accounts-list');
   if (!c) return;
-  c.innerHTML = accounts.map(a =>
-    '<div class="config-item-new">' +
+  c.innerHTML = accounts.map(a => {
+    const accTxns = transactions.filter(t => t.accountId === a.id && t.status !== 'prevista');
+    const realBalance = accTxns.reduce((s, t) => s + (t.amount || 0), 0);
+    return '<div class="config-item-new">' +
     '<div class="ci-icon" style="background:'+a.color+'22;color:'+a.color+'"><i class="ti ti-wallet"></i></div>' +
-    '<div class="ci-info"><div class="ci-name">'+a.name+(a.isDefault ? ' <span style="font-size:10px;color:var(--primary);font-weight:700">Padrão</span>' : '')+'</div><div class="ci-sub">'+a.type+' · R$ '+(a.balance||0).toLocaleString('pt-BR',{minimumFractionDigits:2})+'</div></div>' +
+    '<div class="ci-info"><div class="ci-name">'+a.name+(a.isDefault ? ' <span style="font-size:10px;color:var(--primary);font-weight:700">Padrão</span>' : '')+'</div><div class="ci-sub">'+a.type+' · R$ '+realBalance.toLocaleString('pt-BR',{minimumFractionDigits:2})+'</div></div>' +
     '<div class="ci-actions" style="display:flex;gap:4px;align-items:center">'+
+      '<button onclick="adjustAccountBalance(\''+a.id+'\',\''+a.name.replace(/'/g,"\\'")+'\')" title="Ajustar saldo"><i class="ti ti-cash"></i></button>'+
       '<button onclick="setDefaultAccount(\''+a.id+'\')" title="Definir como padrão" style="color:'+(a.isDefault?'var(--primary)':'var(--text-muted)')+'"><i class="ti ti-star'+(a.isDefault?'-filled':'')+'"></i></button>'+
       '<button onclick="openAccountModal(\''+a.id+'\')" title="Editar conta"><i class="ti ti-edit"></i></button>'+
       '<button class="del" onclick="deleteAccountById(\''+a.id+'\')"><i class="ti ti-trash"></i></button>'+
-    '</div></div>'
-  ).join('') || '<div style="color:var(--text-muted);font-size:13px;padding:8px">Nenhuma conta</div>';
+    '</div></div>';
+  }).join('') || '<div style="color:var(--text-muted);font-size:13px;padding:8px">Nenhuma conta</div>';
 }
-async function adjustAccountBalance(id, name, current) {
-  const input = prompt('Saldo atual de '+name+':\nDigite o valor correto (ex: 1500,00)', current);
+async function adjustAccountBalance(id, name) {
+  const accTxns = transactions.filter(t => t.accountId === id && t.status !== 'prevista');
+  const currentBalance = accTxns.reduce((s, t) => s + (t.amount || 0), 0);
+  const input = prompt('Saldo atual de ' + name + ': R$ ' + currentBalance.toFixed(2) + '\n\nDigite o saldo real desejado (ex: 1500,00):', '');
   if (input === null) return;
-  const val = parseFloat(input.replace(/[^\d,-]/g,'').replace(',','.'));
-  if (isNaN(val)) { showToast('Valor inválido'); return; }
-  await db.collection('accounts').doc(id).update({ balance: val });
-  showToast('Saldo de '+name+' ajustado para R$ '+val.toFixed(2).replace('.',','));
+  const newBalance = parseFloat(String(input).replace(/[^\d,-]/g, '').replace(',', '.'));
+  if (isNaN(newBalance)) { showToast('Valor inválido'); return; }
+  const diff = newBalance - currentBalance;
+  if (Math.abs(diff) < 0.01) { showToast('Saldo já está correto'); return; }
+  const catType = diff > 0 ? 'entrada' : 'saída';
+  const catList = categories[catType] || [];
+  const ajusteCat = catList.find(c => c.name === 'Ajuste') || catList.find(c => c.id === 'outros') || catList[0];
+  if (!ajusteCat) { showToast('Cadastre uma categoria primeiro'); return; }
+  await db.collection('transactions').add({
+    name: 'Ajuste - ' + name,
+    cat: ajusteCat.id,
+    amount: diff,
+    type: catType,
+    date: todayISO(),
+    status: 'efetivada',
+    group: 'Hoje',
+    icon: ajusteCat.icon || 'ti-adjustments',
+    bg: (ajusteCat.color || '#888') + '22',
+    color: ajusteCat.color || '#888',
+    accountId: id,
+    uid: currentUser ? currentUser.uid : null,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+  showToast('Saldo de ' + name + ' ajustado! Diferença: R$ ' + diff.toFixed(2));
 }
 function openAccountModal(id) {
   editingAccountId = id || null;
@@ -6685,6 +6710,15 @@ if (window.visualViewport) {
     });
     if (count > 0) await batch.commit();
     if (updated > 0) console.log('Migração: '+updated+' transações vinculadas à Carteira');
+    // Recalculate account balance from linked transactions
+    const balanceSnap = await db.collection('transactions').where('uid','==',uid).where('accountId','==',carteiraId).get();
+    let balanceFromTx = 0;
+    balanceSnap.forEach(doc => {
+      const d = doc.data();
+      if (d.status !== 'prevista') balanceFromTx += (d.amount || 0);
+    });
+    await db.collection('accounts').doc(carteiraId).update({ balance: balanceFromTx });
+    if (updated > 0) console.log('Migração: saldo da Carteira recalculado: R$ ' + balanceFromTx.toFixed(2));
   } catch(e) { console.warn('Migração accountId:', e); }
   localStorage.setItem('tx_account_migrated_v24', '1');
 })();
