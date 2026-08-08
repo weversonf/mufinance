@@ -2278,6 +2278,13 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
     <input class="field-input" id="acc-color-input" type="color" value="#356FD8" style="height:44px;padding:4px" />
     <label class="field-label">Saldo Inicial (R$)</label>
     <input class="field-input" id="acc-balance-input" type="number" step="0.01" placeholder="0,00" />
+    <div id="acc-adjust-section" style="display:none;margin-bottom:14px">
+      <label class="field-label">Ajustar Saldo</label>
+      <div style="display:flex;gap:8px;align-items:center">
+        <span id="acc-real-balance" style="flex:1;font-size:14px;font-weight:700;color:var(--primary)">R$ 0,00</span>
+        <button class="submit-btn" onclick="adjustAccountBalanceFromModal()" style="width:auto;padding:8px 16px;font-size:12px;margin:0">Ajustar</button>
+      </div>
+    </div>
     <button class="submit-btn" onclick="submitAccount()">Salvar</button>
     <button class="submit-btn" id="acc-delete-btn" onclick="deleteAccount()" style="background:#c0392b;margin-top:10px;display:none">Excluir Conta</button>
   </div>
@@ -4914,7 +4921,6 @@ function renderSettingsAccounts() {
     '<div class="ci-icon" style="background:'+a.color+'22;color:'+a.color+'"><i class="ti ti-wallet"></i></div>' +
     '<div class="ci-info"><div class="ci-name">'+a.name+(a.isDefault ? ' <span style="font-size:10px;color:var(--primary);font-weight:700">Padrão</span>' : '')+'</div><div class="ci-sub">'+a.type+' · R$ '+realBalance.toLocaleString('pt-BR',{minimumFractionDigits:2})+'</div></div>' +
     '<div class="ci-actions" style="display:flex;gap:4px;align-items:center">'+
-      '<button onclick="adjustAccountBalance(\''+a.id+'\',\''+a.name.replace(/'/g,"\\'")+'\')" title="Ajustar saldo"><i class="ti ti-cash"></i></button>'+
       '<button onclick="setDefaultAccount(\''+a.id+'\')" title="Definir como padrão" style="color:'+(a.isDefault?'var(--primary)':'var(--text-muted)')+'"><i class="ti ti-star'+(a.isDefault?'-filled':'')+'"></i></button>'+
       '<button onclick="openAccountModal(\''+a.id+'\')" title="Editar conta"><i class="ti ti-edit"></i></button>'+
       '<button class="del" onclick="deleteAccountById(\''+a.id+'\')"><i class="ti ti-trash"></i></button>'+
@@ -4951,6 +4957,20 @@ async function adjustAccountBalance(id, name) {
   });
   showToast('Saldo de ' + name + ' ajustado! Diferença: R$ ' + diff.toFixed(2));
 }
+function adjustAccountBalanceFromModal() {
+  if (!window._adjustAccountId) return;
+  adjustAccountBalance(window._adjustAccountId, window._adjustAccountName);
+  // Refresh the modal display after adjustment
+  setTimeout(() => {
+    const a = accounts.find(x => x.id === window._adjustAccountId);
+    if (a) {
+      const accTxns = transactions.filter(t => t.accountId === a.id && t.status !== 'prevista');
+      const realBalance = accTxns.reduce((s, t) => s + (t.amount || 0), 0);
+      const realBalEl = document.getElementById('acc-real-balance');
+      if (realBalEl) realBalEl.textContent = 'Saldo real: R$ ' + realBalance.toLocaleString('pt-BR', {minimumFractionDigits:2});
+    }
+  }, 1500);
+}
 function openAccountModal(id) {
   editingAccountId = id || null;
   const a = id ? accounts.find(x => x.id === id) : null;
@@ -4961,6 +4981,20 @@ function openAccountModal(id) {
   onAccTypeChange();
   document.getElementById('acc-color-input').value = a ? a.color : '#1a7a4a';
   document.getElementById('acc-balance-input').value = a ? a.balance : '';
+  // Show real balance for adjustment (only when editing)
+  const adjustSection = document.getElementById('acc-adjust-section');
+  const realBalEl = document.getElementById('acc-real-balance');
+  if (a && adjustSection && realBalEl) {
+    adjustSection.style.display = 'block';
+    const accTxns = transactions.filter(t => t.accountId === a.id && t.status !== 'prevista');
+    const realBalance = accTxns.reduce((s, t) => s + (t.amount || 0), 0);
+    realBalEl.textContent = 'Saldo real: R$ ' + realBalance.toLocaleString('pt-BR', {minimumFractionDigits:2});
+    window._adjustAccountId = a.id;
+    window._adjustAccountName = a.name;
+  } else if (adjustSection) {
+    adjustSection.style.display = 'none';
+    window._adjustAccountId = null;
+  }
   document.getElementById('acc-delete-btn').style.display = a ? '' : 'none';
   document.getElementById('account-modal').classList.add('open');
 }
