@@ -6649,6 +6649,34 @@ if (window.visualViewport) {
   }
 })();
 
+// ===== MIGRATION: associar transações existentes à conta Carteira =====
+(async function migrateTxAccounts() {
+  if (localStorage.getItem('tx_account_migrated_v24')) return;
+  try {
+    const uid = currentUser?.uid;
+    if (!uid) return;
+    const accSnap = await db.collection('accounts').where('uid','==',uid).where('name','==','Carteira').limit(1).get();
+    if (accSnap.empty) return;
+    const carteiraId = accSnap.docs[0].id;
+    const txSnap = await db.collection('transactions').where('uid','==',uid).get();
+    let batch = db.batch();
+    let count = 0;
+    let updated = 0;
+    txSnap.forEach(doc => {
+      const d = doc.data();
+      if (!d.accountId) {
+        batch.update(doc.ref, { accountId: carteiraId });
+        count++;
+        updated++;
+        if (count >= 450) { batch.commit(); batch = db.batch(); count = 0; }
+      }
+    });
+    if (count > 0) await batch.commit();
+    if (updated > 0) console.log('Migração: '+updated+' transações vinculadas à Carteira');
+  } catch(e) { console.warn('Migração accountId:', e); }
+  localStorage.setItem('tx_account_migrated_v24', '1');
+})();
+
 </script>
 
 </body>
