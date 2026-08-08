@@ -1537,7 +1537,7 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
     </div>
     <div class="balance-section" id="balance-section" style="cursor:pointer" onclick="toggleSaldoMode()">
       <div class="currency-badge"><i class="ti ti-coin" style="font-size:13px"></i> BRL</div>
-      <div class="balance" id="main-balance"><sup>R$</sup>0</div>
+      <div class="balance" id="main-balance"><sup>R$</sup>0<small>,00</small></div>
       <div id="saldo-legend" style="font-size:11px;font-weight:600;color:var(--text-muted);display:flex;align-items:center;gap:6px;margin-top:4px">
         <span id="saldo-label">Saldo Acumulado</span>
         <span id="saldo-toggle-icon" style="font-size:14px;color:var(--primary)"><i class="ti ti-arrows-shuffle"></i></span>
@@ -4034,8 +4034,9 @@ function updateBalance() {
   const bal = txns.reduce((sum, t) => sum + (t.amount || 0), 0);
   const absBal = Math.abs(bal);
   const intPart = Math.floor(absBal).toLocaleString('pt-BR');
+  const dec = (absBal % 1).toFixed(2).split('.')[1];
   const sign = bal < 0 ? '-' : '';
-  document.getElementById('main-balance').innerHTML = `<sup>R$</sup>${sign}${intPart}`;
+  document.getElementById('main-balance').innerHTML = `<sup>R$</sup>${sign}${intPart}<small>,${dec}</small>`;
 
   // Income/Expense cards (same filter as balance)
   const income = txns.filter(t => (t.amount||0) > 0).reduce((s,t) => s + t.amount, 0);
