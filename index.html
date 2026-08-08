@@ -4689,7 +4689,19 @@ function renderHomeChartsDesktop() {
         type: 'doughnut', data: { labels: incLabels, datasets: [{ data: incData, backgroundColor: colors.slice(0,incLabels.length), borderWidth:0 }] },
         options: { responsive:true, maintainAspectRatio:false, cutout:'60%',
           plugins: {
-            legend: { display: true, position:'bottom', labels: { color:textColor, font:{size:11}, boxWidth:10, padding:8, usePointStyle:true, pointStyleWidth:10 } },
+            legend: { display: true, position:'bottom',
+              labels: { color:textColor, font:{size:11}, boxWidth:10, padding:8, usePointStyle:true, pointStyleWidth:10,
+                generateLabels: function(chart) {
+                  const data = chart.data;
+                  const total = data.datasets[0].data.reduce((s, v) => s + v, 0);
+                  return data.labels.map((label, i) => {
+                    const value = data.datasets[0].data[i];
+                    const pct = total > 0 ? (value / total * 100).toFixed(1) : 0;
+                    return { text: label + ' ' + pct + '%', fillStyle: data.datasets[0].backgroundColor[i], strokeStyle: data.datasets[0].backgroundColor[i], hidden: false, index: i, pointStyle: 'circle', rotation: 0 };
+                  });
+                }
+              }
+            },
             tooltip: { callbacks: { label: function(ctx) { const pct = incTotal > 0 ? (ctx.raw / incTotal * 100).toFixed(1) : 0; return ctx.label + ': ' + pct + '% (R$ ' + ctx.raw.toLocaleString('pt-BR', {minimumFractionDigits:2}) + ')'; } } }
           }
         }
@@ -4710,7 +4722,19 @@ function renderHomeChartsDesktop() {
         type: 'doughnut', data: { labels: expLabels, datasets: [{ data: expData, backgroundColor: colors.slice(0,expLabels.length), borderWidth:0 }] },
         options: { responsive:true, maintainAspectRatio:false, cutout:'60%',
           plugins: {
-            legend: { display: true, position:'bottom', labels: { color:textColor, font:{size:11}, boxWidth:10, padding:8, usePointStyle:true, pointStyleWidth:10 } },
+            legend: { display: true, position:'bottom',
+              labels: { color:textColor, font:{size:11}, boxWidth:10, padding:8, usePointStyle:true, pointStyleWidth:10,
+                generateLabels: function(chart) {
+                  const data = chart.data;
+                  const total = data.datasets[0].data.reduce((s, v) => s + v, 0);
+                  return data.labels.map((label, i) => {
+                    const value = data.datasets[0].data[i];
+                    const pct = total > 0 ? (value / total * 100).toFixed(1) : 0;
+                    return { text: label + ' ' + pct + '%', fillStyle: data.datasets[0].backgroundColor[i], strokeStyle: data.datasets[0].backgroundColor[i], hidden: false, index: i, pointStyle: 'circle', rotation: 0 };
+                  });
+                }
+              }
+            },
             tooltip: { callbacks: { label: function(ctx) { const pct = expTotal > 0 ? (ctx.raw / expTotal * 100).toFixed(1) : 0; return ctx.label + ': ' + pct + '% (R$ ' + ctx.raw.toLocaleString('pt-BR', {minimumFractionDigits:2}) + ')'; } } }
           }
         }
