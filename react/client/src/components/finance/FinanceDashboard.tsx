@@ -20,6 +20,7 @@ import {
   Landmark,
   LayoutDashboard,
   Menu,
+  Moon,
   MoreHorizontal,
   PanelLeftClose,
   PanelLeftOpen,
@@ -28,6 +29,7 @@ import {
   Search,
   Settings,
   Sparkles,
+  Sun,
   Target,
   TrendingUp,
   UserRound,
@@ -49,7 +51,9 @@ import {
   YAxis,
 } from "recharts";
 import { toast } from "sonner";
-import { accounts, budgets, cashflowData, formatBRL, formatCompactBRL, navItems, spendingData, transactions, upcomingBills } from "@/lib/financeData";
+import { accounts, budgets, cashflowData, formatBRL, formatCompactBRL, navItems, spendingData, transactions, upcomingBills, type Transaction } from "@/lib/financeData";
+import { useTheme } from "@/contexts/ThemeContext";
+import { NewTransactionPayload, TransactionModal } from "./TransactionModal";
 
 type IconName = "home" | "receipt" | "chart" | "card" | "target" | "wallet" | "user" | "settings" | "bank" | "sparkles";
 
@@ -108,11 +112,21 @@ export default function FinanceDashboard() {
   const [periodOpen, setPeriodOpen] = useState(false);
   const [selectedPeriod, setSelectedPeriod] = useState("Últimos 30 dias");
   const [query, setQuery] = useState("");
+  const [transactionModalOpen, setTransactionModalOpen] = useState(false);
+  const [localTransactions, setLocalTransactions] = useState<Transaction[]>(transactions);
+  const { theme } = useTheme();
 
   const filteredNav = useMemo(() => navItems.filter((item) => item.label.toLowerCase().includes(query.toLowerCase())), [query]);
   const selectedCurrency = currencyValues[currency];
+  const chartMuted = theme === "dark" ? "#9aaabd" : "#9aa2b4";
+  const chartGrid = theme === "dark" ? "#2b3849" : "#eef0f5";
 
   const action = (message: string) => toast.success(message, { description: "Esta interação está pronta para receber dados reais." });
+  const addTransaction = (transaction: NewTransactionPayload) => {
+    setLocalTransactions((current) => [{ ...transaction, date: "13 ago" }, ...current]);
+    setTransactionModalOpen(false);
+    toast.success("Transação adicionada", { description: `${transaction.payee} · ${formatBRL(transaction.amount)}` });
+  };
 
   return (
     <div className="app-shell">
@@ -144,7 +158,7 @@ export default function FinanceDashboard() {
                       </motion.div>}
                     </AnimatePresence>
                   </div>
-                  <button className="primary-button" onClick={() => action("Nova transação iniciada")}><Plus size={16} /> Adicionar transação</button>
+                  <button className="primary-button" onClick={() => setTransactionModalOpen(true)}><Plus size={16} /> Adicionar transação</button>
                 </div>
               </div>
             </div>
@@ -169,7 +183,7 @@ export default function FinanceDashboard() {
             <motion.article className="surface-card cashflow-card" variants={child}>
               <CardHeader eyebrow="FLUXO DE CAIXA" title="Receitas vs. despesas" subtitle="Entrada, saída e saldo líquido no período" action={<div className="segmented-control">{["6M", "12M", "YTD"].map((range) => <button key={range} className={timeRange === range ? "is-active" : ""} onClick={() => setTimeRange(range)}>{range}</button>)}</div>} />
               <div className="chart-legend"><span><i className="legend-dot legend-dot--income" /> Receitas</span><span><i className="legend-dot legend-dot--expense" /> Despesas</span><span><i className="legend-dot legend-dot--net" /> Líquido</span></div>
-              <div className="cashflow-chart"><ResponsiveContainer width="100%" height="100%"><AreaChart data={cashflowData} margin={{ top: 8, right: 5, left: -18, bottom: 0 }}><defs><linearGradient id="incomeFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#65bfae" stopOpacity={0.24} /><stop offset="100%" stopColor="#65bfae" stopOpacity={0} /></linearGradient><linearGradient id="expenseFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f3a299" stopOpacity={0.16} /><stop offset="100%" stopColor="#f3a299" stopOpacity={0} /></linearGradient></defs><CartesianGrid vertical={false} stroke="#eef0f5" strokeDasharray="3 5" /><XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: "#9aa2b4", fontSize: 11 }} dy={10} /><YAxis axisLine={false} tickLine={false} tick={{ fill: "#adb3c1", fontSize: 10 }} tickFormatter={(value) => `R$${value / 1000}k`} domain={[0, 60000]} /><Tooltip cursor={{ stroke: "#cbd5df", strokeWidth: 1 }} contentStyle={{ border: 0, borderRadius: 12, boxShadow: "0 10px 30px rgba(22, 32, 54, .12)", fontSize: 12 }} formatter={(value) => formatCompactBRL(Number(value))} /><Area type="monotone" dataKey="income" stroke="#138a72" strokeWidth={2.5} fill="url(#incomeFill)" activeDot={{ r: 5, fill: "#138a72", stroke: "#fff", strokeWidth: 3 }} /><Area type="monotone" dataKey="expenses" stroke="#e9857d" strokeWidth={2} fill="url(#expenseFill)" activeDot={{ r: 4, fill: "#e9857d", stroke: "#fff", strokeWidth: 3 }} /><Area type="monotone" dataKey="net" stroke="#7486ca" strokeWidth={2} strokeDasharray="4 4" fill="transparent" /></AreaChart></ResponsiveContainer></div>
+              <div className="cashflow-chart"><ResponsiveContainer width="100%" height="100%"><AreaChart data={cashflowData} margin={{ top: 8, right: 5, left: -18, bottom: 0 }}><defs><linearGradient id="incomeFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#65bfae" stopOpacity={0.24} /><stop offset="100%" stopColor="#65bfae" stopOpacity={0} /></linearGradient><linearGradient id="expenseFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f3a299" stopOpacity={0.16} /><stop offset="100%" stopColor="#f3a299" stopOpacity={0} /></linearGradient></defs><CartesianGrid vertical={false} stroke={chartGrid} strokeDasharray="3 5" /><XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: chartMuted, fontSize: 11 }} dy={10} /><YAxis axisLine={false} tickLine={false} tick={{ fill: chartMuted, fontSize: 10 }} tickFormatter={(value) => `R$${value / 1000}k`} domain={[0, 60000]} /><Tooltip cursor={{ stroke: chartGrid, strokeWidth: 1 }} contentStyle={{ backgroundColor: theme === "dark" ? "#1b2839" : "#fff", color: theme === "dark" ? "#edf3f4" : "#172033", border: 0, borderRadius: 12, boxShadow: "0 10px 30px rgba(22, 32, 54, .12)", fontSize: 12 }} formatter={(value) => formatCompactBRL(Number(value))} /><Area type="monotone" dataKey="income" stroke="#138a72" strokeWidth={2.5} fill="url(#incomeFill)" activeDot={{ r: 5, fill: "#138a72", stroke: theme === "dark" ? "#172132" : "#fff", strokeWidth: 3 }} /><Area type="monotone" dataKey="expenses" stroke="#e9857d" strokeWidth={2} fill="url(#expenseFill)" activeDot={{ r: 4, fill: "#e9857d", stroke: theme === "dark" ? "#172132" : "#fff", strokeWidth: 3 }} /><Area type="monotone" dataKey="net" stroke="#7486ca" strokeWidth={2} strokeDasharray="4 4" fill="transparent" /></AreaChart></ResponsiveContainer></div>
               <div className="chart-bottom-stat"><div><span>Saldo líquido</span><strong>+R$ 1.644,00</strong></div><div className="stat-delta"><ArrowUpRight size={14} /> 12,4% <small>vs. mês anterior</small></div><button className="icon-button" aria-label="Mais opções" onClick={() => action("Opções do fluxo de caixa")}><MoreHorizontal size={18} /></button></div>
             </motion.article>
 
@@ -193,12 +207,13 @@ export default function FinanceDashboard() {
             <motion.article className="surface-card bills-card" variants={child}><CardHeader eyebrow="PRÓXIMOS COMPROMISSOS" title="Contas a pagar" subtitle="O que merece atenção" action={<button className="text-button" onClick={() => action("Agenda de compromissos aberta")}>Agendar <ChevronRight size={14} /></button>} /><div className="bills-list">{upcomingBills.map((bill) => <button className="bill-row" key={bill.label} onClick={() => action(`${bill.label} selecionado`)}><span className={`bill-date bill-date--${bill.tone}`}><CalendarDays size={15} /><small>{bill.date}</small></span><span className="bill-info"><strong>{bill.label}</strong><small>{bill.days}</small></span><span className="bill-amount">{bill.amount}</span><ChevronRight size={15} /></button>)}</div></motion.article>
           </motion.section>
 
-          <motion.section className="surface-card transactions-card" variants={child}><CardHeader eyebrow="ATIVIDADE RECENTE" title="Últimos lançamentos" subtitle="Movimentações recentes em suas contas" action={<div className="transactions-actions"><button className="soft-button soft-button--small" onClick={() => action("Filtros de lançamentos abertos")}><Filter size={14} /> Filtrar</button><button className="text-button" onClick={() => action("Extrato completo aberto")}>Ver tudo <ChevronRight size={14} /></button></div>} /><div className="transactions-table-wrap"><table><thead><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th>Conta</th><th className="amount-cell">Valor</th><th /></tr></thead><tbody>{transactions.map((transaction) => <tr key={`${transaction.date}-${transaction.payee}`}><td className="muted-cell">{transaction.date}</td><td><span className={`transaction-icon transaction-icon--${transaction.type}`}>{transaction.type === "income" ? <ArrowDownLeft size={15} /> : <ArrowUpRight size={15} />}</span><strong>{transaction.payee}</strong></td><td><span className="category-chip">{transaction.category}</span></td><td className="muted-cell">{transaction.account}</td><td className={`amount-cell ${transaction.type === "income" ? "income-text" : "expense-text"}`}>{transaction.type === "income" ? "+" : "−"}{formatBRL(transaction.amount).replace("R$ ", "R$ ")}</td><td><button className="row-more" onClick={() => action(`Opções para ${transaction.payee}`)} aria-label={`Mais opções para ${transaction.payee}`}><MoreHorizontal size={16} /></button></td></tr>)}</tbody></table></div></motion.section>
+          <motion.section className="surface-card transactions-card" variants={child}><CardHeader eyebrow="ATIVIDADE RECENTE" title="Últimos lançamentos" subtitle="Movimentações recentes em suas contas" action={<div className="transactions-actions"><button className="soft-button soft-button--small" onClick={() => action("Filtros de lançamentos abertos")}><Filter size={14} /> Filtrar</button><button className="text-button" onClick={() => action("Extrato completo aberto")}>Ver tudo <ChevronRight size={14} /></button></div>} /><div className="transactions-table-wrap"><table><thead><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th>Conta</th><th className="amount-cell">Valor</th><th /></tr></thead><tbody>{localTransactions.map((transaction) => <tr key={`${transaction.date}-${transaction.payee}`}><td className="muted-cell">{transaction.date}</td><td><span className={`transaction-icon transaction-icon--${transaction.type}`}>{transaction.type === "income" ? <ArrowDownLeft size={15} /> : <ArrowUpRight size={15} />}</span><strong>{transaction.payee}</strong></td><td><span className="category-chip">{transaction.category}</span></td><td className="muted-cell">{transaction.account}</td><td className={`amount-cell ${transaction.type === "income" ? "income-text" : "expense-text"}`}>{transaction.type === "income" ? "+" : "−"}{formatBRL(transaction.amount).replace("R$ ", "R$ ")}</td><td><button className="row-more" onClick={() => action(`Opções para ${transaction.payee}`)} aria-label={`Mais opções para ${transaction.payee}`}><MoreHorizontal size={16} /></button></td></tr>)}</tbody></table></div></motion.section>
 
           <footer className="dashboard-footer"><span>© 2026 MuFinance · Versão React</span><div><button onClick={() => action("Sobre o MuFinance aberto")}>Sobre</button><button onClick={() => action("Suporte aberto")}>Suporte</button><button onClick={() => action("Privacidade aberta")}>Privacidade</button></div><span className="footer-secure"><Check size={13} /> Seus dados estão protegidos</span></footer>
         </motion.div>
       </main>
       <MobileNav activeNav={activeNav} onSelect={setActiveNav} onMore={() => setMobileOpen(true)} />
+      <TransactionModal open={transactionModalOpen} onClose={() => setTransactionModalOpen(false)} onSubmit={addTransaction} />
     </div>
   );
 }
@@ -208,7 +223,8 @@ function Sidebar({ collapsed, mobileOpen, activeNav, filteredNav, query, setQuer
 }
 
 function TopBar({ onMenu, onAction }: { onMenu: () => void; onAction: (message: string) => void }) {
-  return <header className="topbar"><button className="mobile-menu-button" onClick={onMenu} aria-label="Abrir menu"><Menu size={20} /></button><div className="topbar-search"><Search size={16} /><input placeholder="Pesquisar ou ir para…" aria-label="Pesquisar ou ir para" /><kbd>⌘K</kbd></div><div className="topbar-actions"><button className="topbar-icon-button language-button" onClick={() => onAction("Idioma: Português (BR)")}><Globe2 size={16} /><span>PT</span></button><button className="topbar-icon-button" onClick={() => onAction("Modo compacto alternado")}><Eye size={17} /></button><button className="topbar-icon-button" onClick={() => onAction("Tema claro ativo")}><Sparkles size={17} /></button><button className="topbar-icon-button notification-button" onClick={() => onAction("Você não tem novas notificações")}><Bell size={17} /><span>2</span></button><div className="topbar-avatar" onClick={() => onAction("Perfil aberto")}>B</div></div></header>;
+  const { theme, toggleTheme } = useTheme();
+  return <header className="topbar"><button className="mobile-menu-button" onClick={onMenu} aria-label="Abrir menu"><Menu size={20} /></button><div className="topbar-search"><Search size={16} /><input placeholder="Pesquisar ou ir para…" aria-label="Pesquisar ou ir para" /><kbd>⌘K</kbd></div><div className="topbar-actions"><button className="topbar-icon-button language-button" onClick={() => onAction("Idioma: Português (BR)")}><Globe2 size={16} /><span>PT</span></button><button className="topbar-icon-button" onClick={() => onAction("Modo compacto alternado")}><Eye size={17} /></button><button className="topbar-icon-button theme-toggle-button" onClick={() => toggleTheme?.()} aria-label={theme === "dark" ? "Ativar modo claro" : "Ativar modo escuro"} aria-pressed={theme === "dark"} title={theme === "dark" ? "Ativar modo claro" : "Ativar modo escuro"}>{theme === "dark" ? <Sun size={17} /> : <Moon size={17} />}</button><button className="topbar-icon-button notification-button" onClick={() => onAction("Você não tem novas notificações")}><Bell size={17} /><span>2</span></button><div className="topbar-avatar" onClick={() => onAction("Perfil aberto")}>B</div></div></header>;
 }
 
 function MobileNav({ activeNav, onSelect, onMore }: { activeNav: string; onSelect: (label: string) => void; onMore: () => void }) {
