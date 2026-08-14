@@ -360,3 +360,60 @@
   .dark .card-wallet-card { background: linear-gradient(112deg, #172536 0%, #172b36 68%, #1a3a3b 100%); }.dark .card-wallet-summary { background: rgba(18,32,48,.65); border-color: #2c4a4b; }.dark .card-wallet-summary > strong { color: #edf3f4; }.dark .card-wallet-summary p, .dark .card-stack-empty span { color: #93a2b5; }.dark .card-stack-empty { color: #7fd7c4; border-color: #39706b; background: rgba(27,65,62,.36); }.dark .card-stack-empty strong { color: #b1d9d0; }.dark .source-type-picker, .dark .card-color-field legend { color: #a9b6c5; }.dark .source-type-picker { border-color: #2a394d; background: #122030; }.dark .source-type-picker button.is-active { color: #7fd7c4; background: #234b4c; }.dark .transaction-row:hover td { background: #1c2b3c; }.dark .transaction-edit-cell { color: #78938e; }.dark .transaction-row:hover .transaction-edit-cell, .dark .transaction-row:focus-visible .transaction-edit-cell { color: #7fd7c4; }
   @media (max-width: 640px) { .card-wallet-layout { display: block; }.card-stack { height: 207px; margin-bottom: 16px; }.wallet-card { width: calc(100% - 12px); height: 190px; padding: 18px 19px 16px; }.card-wallet-summary { padding: 17px; }.card-wallet-summary p { max-width: none; }.card-preview { height: 135px; }.transaction-edit-cell span { display: none; }.transaction-edit-cell { opacity: 1; }.source-type-picker button { font-size: 8px; } }
 }
+
+/* MuFinance credit-center layer: month/year period controls, invoice rhythm and scheduled billing. */
+@layer components {
+  .period-menu--calendar { width: 258px; padding: 8px; }
+  .period-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 3px; margin-bottom: 7px; border-radius: 8px; background: #f5f7fa; }
+  .period-tabs button { justify-content: center; padding: 7px 8px; color: #9aa4b3; font-size: 10px; }
+  .period-tabs button.is-active { color: #138a72; background: #fff; box-shadow: 0 2px 7px rgba(30,45,65,.08); }
+  .period-months { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+  .period-years { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
+  .period-months button, .period-years button { justify-content: center; min-height: 31px; padding: 6px 5px; font-size: 9px; }
+  .period-months button.is-selected, .period-years button.is-selected { color: #138a72; background: #eaf7f3; font-weight: 700; }
+  .credit-center-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: -2px 0 20px; padding: 12px 14px; border: 1px solid #edf1f4; border-radius: 12px; background: rgba(247,250,250,.78); }
+  .credit-center-stats div { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+  .credit-center-stats span { color: #97a1af; font-size: 9px; }
+  .credit-center-stats strong { color: #243047; font-size: 13px; letter-spacing: -.035em; }
+  .invoice-progress { height: 6px; overflow: hidden; margin: 2px 0 8px; border-radius: 999px; background: #e8eef0; }
+  .invoice-progress span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #138a72, #6c8fd0); transition: width .35s cubic-bezier(.23,1,.32,1); }
+  .invoice-progress-meta { display: flex; justify-content: space-between; margin-bottom: 16px; color: #9aa4b1; font-size: 9px; }
+  .invoice-progress-meta strong { color: #138a72; }
+  .invoice-strip { display: flex; align-items: center; gap: 8px; margin-top: 20px; padding-top: 14px; border-top: 1px solid #edf1f3; }
+  .invoice-strip > div:not(.invoice-pills) { display: flex; flex-direction: column; gap: 3px; margin-right: auto; }
+  .invoice-strip > div:not(.invoice-pills) span { color: #9aa4b1; font-size: 9px; }
+  .invoice-strip > div:not(.invoice-pills) strong { color: #28344c; font-size: 11px; }
+  .invoice-pills { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 6px; margin-left: auto; }
+  .invoice-pill { display: inline-flex; align-items: center; gap: 5px; min-height: 29px; padding: 0 9px; color: #8793a3; border: 1px solid #e6ebef; border-radius: 8px; background: #fff; font-size: 9px; font-weight: 700; transition: color .16s ease, border-color .16s ease, background .16s ease; }
+  .invoice-pill:hover, .invoice-pill.is-active { color: #138a72; border-color: #cfe7df; background: #eff8f5; }
+  .wallet-card.is-selected { box-shadow: 0 21px 40px rgba(29,54,78,.23), 0 0 0 2px rgba(255,255,255,.7); }
+  .billing-field { display: grid; grid-column: 1 / -1; gap: 9px; padding: 12px; border: 1px solid #e9edf2; border-radius: 11px; background: #fafbfc; }
+  .billing-field legend { padding: 0 5px; color: #718095; font-size: 10px; font-weight: 700; }
+  .billing-type-picker { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; padding: 3px; border-radius: 8px; background: #f0f3f5; }
+  .billing-type-picker button { min-height: 31px; color: #94a0ae; border-radius: 6px; background: transparent; font-size: 9px; font-weight: 700; transition: color .16s ease, background .16s ease, transform .16s ease; }
+  .billing-type-picker button:hover { color: #138a72; transform: translateY(-1px); }
+  .billing-type-picker button.is-active { color: #138a72; background: #fff; box-shadow: 0 2px 7px rgba(30,45,65,.08); }
+  .billing-field .form-field { margin-top: 2px; }
+  .billing-hint { margin: 0; color: #9aa4b2; font-size: 9px; line-height: 1.45; }
+  .modal-panel--transaction { width: min(100%, 620px); }
+  .dark .period-tabs, .dark .billing-type-picker, .dark .billing-field { background: #122030; }
+  .dark .period-tabs button.is-active, .dark .billing-type-picker button.is-active { background: #234b4c; color: #7fd7c4; }
+  .dark .period-months button.is-selected, .dark .period-years button.is-selected { background: #1b4646; color: #7fd7c4; }
+  .dark .credit-center-stats { border-color: #2a394d; background: rgba(18,32,48,.72); }
+  .dark .credit-center-stats strong, .dark .invoice-strip > div:not(.invoice-pills) strong { color: #edf3f4; }
+  .dark .invoice-strip { border-color: #2a394d; }
+  .dark .invoice-pill { color: #a4b0c0; border-color: #314259; background: #172536; }
+  .dark .invoice-pill:hover, .dark .invoice-pill.is-active { color: #7fd7c4; border-color: #39706b; background: #1b4646; }
+  .dark .billing-field { border-color: #2a394d; }
+  .dark .billing-field legend, .dark .billing-hint { color: #a9b6c5; }
+  @media (max-width: 640px) {
+    .period-menu--calendar { right: -34px; width: 244px; }
+    .credit-center-stats { gap: 7px; padding: 10px; }
+    .credit-center-stats strong { font-size: 11px; }
+    .invoice-strip { flex-wrap: wrap; }
+    .invoice-strip > div:not(.invoice-pills) { width: 100%; margin-bottom: 2px; }
+    .invoice-pills { width: 100%; justify-content: stretch; margin-left: 0; }
+    .invoice-pill { flex: 1; justify-content: center; }
+    .modal-panel--transaction { max-height: calc(100vh - 24px); overflow: auto; }
+  }
+}

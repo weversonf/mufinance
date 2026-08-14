@@ -9,12 +9,19 @@ export type NavItem = {
 };
 
 export type Transaction = {
+  id?: string;
   date: string;
+  dateISO?: string;
   payee: string;
   category: string;
   account: string;
   sourceType?: "account" | "credit-card";
   sourceId?: string;
+  invoiceId?: string;
+  billingKind?: "single" | "installment" | "subscription";
+  billingCount?: number;
+  billingIndex?: number;
+  totalAmount?: number;
   amount: number;
   type: "income" | "expense";
 };
@@ -30,6 +37,18 @@ export type CreditCard = {
   color: CardColor;
   balance: string;
   dueDate: string;
+  limit: number;
+  closingDay: number;
+  dueDay: number;
+};
+
+export type CreditInvoice = {
+  id: string;
+  cardId: string;
+  month: string;
+  label: string;
+  dueDate: string;
+  closingDate: string;
 };
 
 export const navItems: NavItem[] = [
@@ -69,8 +88,8 @@ export const accounts = [
 ];
 
 export const creditCards: CreditCard[] = [
-  { id: "mu-platinum", name: "Mu Platinum", last4: "3391", brand: "Mastercard", color: "ocean", balance: "R$ 842,00", dueDate: "vence em 28 ago" },
-  { id: "mu-travel", name: "Mu Travel", last4: "2208", brand: "Visa", color: "forest", balance: "R$ 1.284,90", dueDate: "vence em 04 set" },
+  { id: "mu-platinum", name: "Mu Platinum", last4: "3391", brand: "Mastercard", color: "ocean", balance: "R$ 842,00", dueDate: "vence em 28 ago", limit: 12000, closingDay: 20, dueDay: 28 },
+  { id: "mu-travel", name: "Mu Travel", last4: "2208", brand: "Visa", color: "forest", balance: "R$ 1.284,90", dueDate: "vence em 04 set", limit: 18000, closingDay: 27, dueDay: 4 },
 ];
 
 export const budgets = [
@@ -81,12 +100,12 @@ export const budgets = [
 ];
 
 export const transactions: Transaction[] = [
-  { date: "12 ago", payee: "Recebimento freelance", category: "Receitas", account: "Conta •7045", amount: 18420, type: "income" },
-  { date: "11 ago", payee: "Folha de pagamento", category: "Moradia", account: "Conta •7045", amount: 9870, type: "expense" },
-  { date: "11 ago", payee: "Mercado Vila Madalena", category: "Alimentação", account: "Cartão •3391", amount: 2840, type: "expense" },
-  { date: "10 ago", payee: "Cora mobilidade", category: "Transporte", account: "Cartão •3391", amount: 1640, type: "expense" },
-  { date: "09 ago", payee: "Nota fiscal #0241", category: "Receitas", account: "Conta •7045", amount: 9200, type: "income" },
-  { date: "08 ago", payee: "Coworking Pinheiros", category: "Trabalho", account: "Conta •7045", amount: 1129, type: "expense" },
+  { id: "tx-freelance", date: "12 ago", dateISO: "2026-08-12", payee: "Recebimento freelance", category: "Receitas", account: "Conta •7045", sourceType: "account", sourceId: "Conta •7045", amount: 18420, type: "income" },
+  { id: "tx-salary", date: "11 ago", dateISO: "2026-08-11", payee: "Folha de pagamento", category: "Moradia", account: "Conta •7045", sourceType: "account", sourceId: "Conta •7045", amount: 9870, type: "expense" },
+  { id: "tx-market", date: "11 ago", dateISO: "2026-08-11", payee: "Mercado Vila Madalena", category: "Alimentação", account: "Cartão •3391", sourceType: "credit-card", sourceId: "mu-platinum", invoiceId: "mu-platinum-2026-08", amount: 2840, type: "expense" },
+  { id: "tx-mobility", date: "10 ago", dateISO: "2026-08-10", payee: "Cora mobilidade", category: "Transporte", account: "Cartão •3391", sourceType: "credit-card", sourceId: "mu-platinum", invoiceId: "mu-platinum-2026-08", amount: 1640, type: "expense" },
+  { id: "tx-invoice", date: "09 ago", dateISO: "2026-08-09", payee: "Nota fiscal #0241", category: "Receitas", account: "Conta •7045", sourceType: "account", sourceId: "Conta •7045", amount: 9200, type: "income" },
+  { id: "tx-coworking", date: "08 ago", dateISO: "2026-08-08", payee: "Coworking Pinheiros", category: "Trabalho", account: "Conta •7045", sourceType: "account", sourceId: "Conta •7045", amount: 1129, type: "expense" },
 ];
 
 export const upcomingBills = [
