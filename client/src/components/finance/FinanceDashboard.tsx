@@ -66,6 +66,8 @@ import {
 import { toast } from "sonner";
 import { accounts, budgets, cashflowData, creditCards as initialCreditCards, defaultFinanceCategories, formatBRL, formatCompactBRL, getTransactionStatus, navItems, spendingData, transactionStatusLabel, transactions, upcomingBills, vehicleProfile as initialVehicleProfile, type Account, type CreditCard as CreditCardData, type FinanceCategory, type Transaction, type VehicleProfile } from "@/lib/financeData";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { useFinancePersistence } from "@/hooks/useFinancePersistence";
 import { ActionDialog } from "./ActionDialog";
 import { CardWallet, type NewCreditCardPayload } from "./CardWallet";
 import { CardDetailsDialog, type CardHistoryPeriod } from "./CardDetailsDialog";
@@ -229,7 +231,44 @@ export default function FinanceDashboard() {
   const [p2pActivities, setP2PActivities] = useState<P2PActivity[]>([
     { id: "p2p-activity-demo", mode: "send", contact: demoP2PContacts[1], amount: 84.9, description: "Café e transporte", dateLabel: "ontem", status: "completed" },
   ]);
+  const { user, logout } = useAuth();
   const { theme } = useTheme();
+
+  useEffect(() => {
+    if (!user) return;
+    setProfile((current) => current.email === "ben@exemplo.com" ? { ...current, email: user.email ?? current.email, name: user.displayName ?? current.name } : current);
+  }, [user?.uid]);
+  const { storageError } = useFinancePersistence({
+    user,
+    localTransactions,
+    setLocalTransactions,
+    localAccounts,
+    setLocalAccounts,
+    localCreditCards,
+    setLocalCreditCards,
+    localVehicle,
+    setLocalVehicle,
+    localCategories,
+    setLocalCategories,
+    paidBills,
+    setPaidBills,
+    profile,
+    setProfile,
+    p2pRequests,
+    setP2PRequests,
+    p2pActivities,
+    setP2PActivities,
+    accountBalanceAdjustment,
+    setAccountBalanceAdjustment,
+    compactMode,
+    setCompactMode,
+    alertsEnabled,
+    setAlertsEnabled,
+  });
+
+  useEffect(() => {
+    if (storageError) toast.error(storageError);
+  }, [storageError]);
 
   useEffect(() => {
     const handleKeyboard = (event: KeyboardEvent) => {
@@ -589,9 +628,7 @@ export default function FinanceDashboard() {
     action("Mensagem enviada", "O atendimento foi registrado nesta sessão demonstrativa.");
   };
   const handleLogout = () => {
-    setSessionActive(false);
-    setProfileOpen(false);
-    setActionPanel("session");
+    void logout();
   };
   const handleLogin = () => {
     setSessionActive(true);
