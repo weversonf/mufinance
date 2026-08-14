@@ -1,0 +1,454 @@
+/* MuFinance — refinamento do Extrato.
+   A tela prioriza uma leitura vertical clara: contexto, saldo, filtros e lançamentos, sem grids comprimidos ou overflow acidental. */
+
+.statement-page {
+  min-width: 0;
+}
+
+.statement-page > * {
+  min-width: 0;
+}
+
+.statement-page .dedicated-page-header {
+  align-items: flex-end;
+  padding-bottom: 24px;
+}
+
+.statement-page .dedicated-page-header > div:first-child {
+  min-width: 0;
+}
+
+.statement-page .dedicated-page-header h1,
+.statement-page .dedicated-page-header .page-subtitle {
+  max-width: 100%;
+}
+
+.statement-page .dedicated-page-actions {
+  flex: 0 0 auto;
+}
+
+.statement-page .statement-hero-grid,
+.statement-page .statement-layout {
+  min-width: 0;
+}
+
+.statement-page .statement-balance-card,
+.statement-page .statement-summary-card,
+.statement-page .statement-health-card,
+.statement-page .statement-insight-card,
+.statement-page .daily-balance-card,
+.statement-page .statement-transactions-card {
+  min-width: 0;
+}
+
+.statement-page .statement-balance-card,
+.statement-page .statement-summary-card,
+.statement-page .statement-health-card,
+.statement-page .statement-insight-card,
+.statement-page .daily-balance-card,
+.statement-page .statement-transactions-card {
+  overflow: hidden;
+}
+
+.statement-page .statement-health-card {
+  grid-template-columns: minmax(0, 1fr) minmax(230px, .72fr);
+}
+
+.statement-page .statement-health-copy,
+.statement-page .statement-health-metrics,
+.statement-page .statement-health-metrics > div {
+  min-width: 0;
+}
+
+.statement-page .statement-health-copy p,
+.statement-page .statement-insight-card > p:not(.eyebrow),
+.statement-page .insight-note span {
+  overflow-wrap: anywhere;
+}
+
+.statement-page .statement-toolbar {
+  flex-wrap: wrap;
+}
+
+.statement-page .statement-search {
+  flex: 1 1 240px;
+  min-width: 0;
+}
+
+.statement-page .statement-toolbar .segmented-control {
+  flex: 0 0 auto;
+}
+
+.statement-page .surface-card > .card-header {
+  min-width: 0;
+  align-items: flex-start;
+}
+
+.statement-page .surface-card > .card-header > div:first-child {
+  min-width: 0;
+}
+
+.statement-page .surface-card > .card-header h2,
+.statement-page .surface-card > .card-header .card-subtitle {
+  overflow-wrap: anywhere;
+}
+
+.statement-page .daily-balance-list {
+  min-width: 0;
+  max-height: 420px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.statement-page .daily-balance-row {
+  min-width: 0;
+}
+
+.statement-page .daily-date,
+.statement-page .daily-flow,
+.statement-page .daily-net {
+  min-width: 0;
+}
+
+.statement-page .daily-date strong,
+.statement-page .daily-net strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.statement-page .statement-transactions-card .card-header {
+  gap: 16px;
+}
+
+.statement-page .statement-count {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.statement-page .transactions-table-wrap {
+  width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.statement-page .transactions-table-wrap table {
+  width: 100%;
+  min-width: 720px;
+  table-layout: fixed;
+}
+
+.statement-page .transactions-table-wrap th,
+.statement-page .transactions-table-wrap td {
+  min-width: 0;
+}
+
+.statement-page .transactions-table-wrap th:nth-child(1),
+.statement-page .transactions-table-wrap td:nth-child(1) {
+  width: 96px;
+}
+
+.statement-page .transactions-table-wrap th:nth-child(2),
+.statement-page .transactions-table-wrap td:nth-child(2) {
+  width: 25%;
+  min-width: 180px;
+}
+
+.statement-page .transactions-table-wrap th:nth-child(3),
+.statement-page .transactions-table-wrap td:nth-child(3) {
+  width: 18%;
+  min-width: 125px;
+}
+
+.statement-page .transactions-table-wrap th:nth-child(4),
+.statement-page .transactions-table-wrap td:nth-child(4) {
+  width: 18%;
+  min-width: 130px;
+}
+
+.statement-page .transactions-table-wrap th:nth-child(5),
+.statement-page .transactions-table-wrap td:nth-child(5) {
+  width: 125px;
+}
+
+.statement-page .transactions-table-wrap th:nth-child(6),
+.statement-page .transactions-table-wrap td:nth-child(6) {
+  width: 30px;
+}
+
+.statement-page .transaction-row td:nth-child(2) strong,
+.statement-page .transaction-row td:nth-child(4) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.statement-page .transaction-row td:nth-child(2) {
+  overflow: hidden;
+}
+
+@media (max-width: 900px) {
+  .statement-page .statement-health-card {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .statement-page .statement-health-metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .statement-page .dedicated-page-header {
+    gap: 12px;
+    padding-bottom: 18px;
+  }
+
+  .statement-page .dedicated-page-actions,
+  .statement-page .dedicated-page-actions .primary-button {
+    width: 100%;
+  }
+
+  .statement-page .statement-health-metrics > div {
+    min-width: 0;
+  }
+
+  .statement-page .statement-health-metrics span {
+    min-height: 24px;
+  }
+
+  .statement-page .statement-toolbar {
+    gap: 9px;
+  }
+
+  .statement-page .statement-toolbar .segmented-control {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .statement-page .statement-toolbar .segmented-control button {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .statement-page .surface-card > .card-header {
+    gap: 11px;
+  }
+
+  .statement-page .surface-card > .card-header .card-header-symbol {
+    flex: 0 0 auto;
+  }
+
+  .statement-page .daily-balance-list {
+    max-height: none;
+    overflow: visible;
+  }
+
+  .statement-page .statement-transactions-card .card-header {
+    flex-wrap: wrap;
+  }
+
+  .statement-page .statement-count {
+    margin-left: auto;
+  }
+}
+
+.dark .statement-page .daily-balance-list {
+  scrollbar-color: #3a5960 #152533;
+}
+
+.dark .statement-page .transactions-table-wrap {
+  scrollbar-color: #3a5960 #152533;
+}
+
+/* MuFinance — controles do Extrato mensal: filtros operacionais, saldo diário separado e paginação com foco visível. */
+.statement-page .statement-toolbar--filters {
+  align-items: flex-end;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: 0 10px 28px rgba(30, 52, 75, .045);
+}
+
+.statement-page .statement-toolbar--filters .statement-search {
+  flex: 1 1 220px;
+}
+
+.statement-page .statement-filter {
+  display: grid;
+  gap: 5px;
+  flex: 0 1 180px;
+  min-width: 145px;
+}
+
+.statement-page .statement-filter span {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+}
+
+.statement-page .statement-filter select {
+  width: 100%;
+  min-height: 38px;
+  padding: 0 30px 0 11px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-soft);
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  outline: none;
+}
+
+.statement-page .statement-filter select:focus-visible,
+.statement-page .statement-filter-clear:focus-visible,
+.statement-page .statement-pagination button:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--accent) 24%, transparent);
+  outline-offset: 2px;
+}
+
+.statement-page .statement-type-filter {
+  flex: 0 0 auto;
+  min-height: 38px;
+}
+
+.statement-page .statement-filter-clear {
+  min-height: 38px;
+  white-space: nowrap;
+}
+
+.statement-page .statement-results-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 28px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.statement-page .statement-results-meta strong {
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+
+.statement-page .statement-daily-section {
+  grid-column: 1 / -1;
+}
+
+.statement-page .statement-daily-section .daily-balance-list {
+  max-height: none;
+}
+
+.statement-page .statement-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px 16px;
+  border-top: 1px solid var(--line);
+}
+
+.statement-page .statement-pagination > .icon-button:disabled {
+  cursor: not-allowed;
+  opacity: .38;
+}
+
+.statement-page .statement-pagination-pages {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.statement-page .statement-pagination-pages button {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  transition: background 160ms ease, border-color 160ms ease, color 160ms ease, transform 160ms ease;
+}
+
+.statement-page .statement-pagination-pages button:hover {
+  border-color: var(--line);
+  color: var(--text);
+  transform: translateY(-1px);
+}
+
+.statement-page .statement-pagination-pages button.is-active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 6px 14px rgba(19, 138, 114, .2);
+}
+
+@media (max-width: 900px) {
+  .statement-page .statement-toolbar--filters .statement-search {
+    flex-basis: 100%;
+  }
+
+  .statement-page .statement-filter {
+    flex: 1 1 150px;
+  }
+
+  .statement-page .statement-type-filter {
+    flex: 1 1 240px;
+  }
+}
+
+@media (max-width: 600px) {
+  .statement-page .statement-toolbar--filters {
+    align-items: stretch;
+    padding: 12px;
+  }
+
+  .statement-page .statement-filter,
+  .statement-page .statement-type-filter,
+  .statement-page .statement-filter-clear {
+    width: 100%;
+    flex-basis: 100%;
+  }
+
+  .statement-page .statement-type-filter {
+    display: flex;
+  }
+
+  .statement-page .statement-type-filter button {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .statement-page .statement-filter-clear {
+    justify-content: center;
+  }
+
+  .statement-page .statement-results-meta {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .statement-page .statement-pagination {
+    padding-inline: 12px;
+  }
+
+  .statement-page .statement-pagination-pages {
+    gap: 3px;
+  }
+}

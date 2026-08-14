@@ -51,6 +51,29 @@ export type CreditCard = {
   dueDay: number;
 };
 
+export type AccountTone = "mint" | "lavender" | "peach" | "blue";
+
+export type Account = {
+  name: string;
+  number: string;
+  value: string;
+  balance: number;
+  change: string;
+  tone: AccountTone;
+  icon: string;
+};
+
+export type VehicleType = "car" | "motorcycle";
+
+export type VehicleProfile = {
+  type: VehicleType;
+  manufacturer: string;
+  model: string;
+  year: number;
+  fuel: "Gasolina" | "Etanol" | "Diesel";
+  city: string;
+};
+
 export type FinanceCategory = {
   id: string;
   name: string;
@@ -135,17 +158,26 @@ export const spendingData = [
   { name: "Outros", value: 8200, color: "#e8eaf0" },
 ];
 
-export const accounts = [
-  { name: "Conta principal", number: "•••• 7045", value: "R$ 18.421,00", change: "+2,4%", tone: "mint", icon: "bank" },
-  { name: "Reserva de emergência", number: "•••• 2208", value: "R$ 9.640,00", change: "+4,0%", tone: "lavender", icon: "sparkles" },
-  { name: "Cartão Mu Platinum", number: "•••• 3391", value: "−R$ 842,00", change: "vence 28 ago", tone: "peach", icon: "card" },
-  { name: "Caixinha viagem", number: "•••• 0117", value: "R$ 4.350,00", change: "bloqueada", tone: "blue", icon: "target" },
+export const accounts: Account[] = [
+  { name: "Conta principal", number: "•••• 7045", value: "R$ 18.421,00", balance: 18421, change: "+2,4%", tone: "mint", icon: "bank" },
+  { name: "Reserva de emergência", number: "•••• 2208", value: "R$ 9.640,00", balance: 9640, change: "+4,0%", tone: "lavender", icon: "sparkles" },
+  { name: "Cartão Mu Platinum", number: "•••• 3391", value: "−R$ 842,00", balance: -842, change: "vence 28 ago", tone: "peach", icon: "card" },
+  { name: "Caixinha viagem", number: "•••• 0117", value: "R$ 4.350,00", balance: 4350, change: "bloqueada", tone: "blue", icon: "target" },
 ];
 
 export const creditCards: CreditCard[] = [
   { id: "mu-platinum", name: "Mu Platinum", last4: "3391", brand: "Mastercard", color: "ocean", balance: "R$ 842,00", dueDate: "vence em 28 ago", limit: 12000, closingDay: 20, dueDay: 28 },
   { id: "mu-travel", name: "Mu Travel", last4: "2208", brand: "Visa", color: "forest", balance: "R$ 1.284,90", dueDate: "vence em 04 set", limit: 18000, closingDay: 27, dueDay: 4 },
 ];
+
+export const vehicleProfile: VehicleProfile = {
+  type: "car",
+  manufacturer: "Honda",
+  model: "HR-V Touring",
+  year: 2023,
+  fuel: "Gasolina",
+  city: "São Paulo",
+};
 
 export const budgets = [
   { label: "Moradia", value: "R$ 9,8K", limit: "R$ 12K", progress: 82, tone: "mint" },

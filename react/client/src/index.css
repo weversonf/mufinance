@@ -2,6 +2,8 @@
 @import "tw-animate-css";
 @import "./brand-refinement.css";
 @import "./dedicated-pages.css";
+@import "./vehicle-editor-refinement.css";
+@import "./statement-refinement.css";
 @import "./modal-refinement.css";
 @import "./transaction-fab.css";
 
@@ -370,6 +372,11 @@
 
 /* MuFinance credit-center layer: month/year period controls, invoice rhythm and scheduled billing. */
 @layer components {
+  .period-controls { display: flex; align-items: center; gap: 5px; }
+  .period-arrow { width: 30px; height: 30px; display: grid; flex: 0 0 30px; place-items: center; color: #7f8b9b; border: 1px solid #e8edf1; border-radius: 9px; background: #fff; transition: color .18s ease, border-color .18s ease, background-color .18s ease, transform .18s ease; }
+  .period-arrow:hover { color: #138a72; border-color: rgba(19,138,114,.25); background: #eaf7f3; transform: translateY(-1px); }
+  .period-arrow:focus-visible { outline: 2px solid rgba(19,138,114,.4); outline-offset: 2px; }
+  .period-controls .period-button { min-width: 0; flex: 1; }
   .period-menu--calendar { width: 258px; padding: 8px; }
   .period-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 3px; margin-bottom: 7px; border-radius: 8px; background: #f5f7fa; }
   .period-tabs button { justify-content: center; padding: 7px 8px; color: #9aa4b3; font-size: 10px; }
@@ -404,6 +411,8 @@
   .billing-hint { margin: 0; color: #9aa4b2; font-size: 9px; line-height: 1.45; }
   .modal-panel--transaction { width: min(100%, 620px); }
   .dark .period-tabs, .dark .billing-type-picker, .dark .billing-field { background: #122030; }
+  .dark .period-arrow { color: #a9b6c5; border-color: #2a394d; background: #172536; }
+  .dark .period-arrow:hover { color: #7fd7c4; border-color: #39706b; background: #1b4646; }
   .dark .period-tabs button.is-active, .dark .billing-type-picker button.is-active { background: #234b4c; color: #7fd7c4; }
   .dark .period-months button.is-selected, .dark .period-years button.is-selected { background: #1b4646; color: #7fd7c4; }
   .dark .credit-center-stats { border-color: #2a394d; background: rgba(18,32,48,.72); }
@@ -415,6 +424,7 @@
   .dark .billing-field legend, .dark .billing-hint { color: #a9b6c5; }
   @media (max-width: 640px) {
     .period-menu--calendar { right: -34px; width: 244px; }
+    .period-controls { width: 100%; }
     .credit-center-stats { gap: 7px; padding: 10px; }
     .credit-center-stats strong { font-size: 11px; }
     .invoice-strip { flex-wrap: wrap; }
@@ -679,17 +689,18 @@
     .mobile-nav button:active { transform: scale(.94); }
     .mobile-nav button.is-active { color: #138a72; background: #e9f7f3; }
     .mobile-fab-wrap { position: relative; width: 68px; height: 68px; margin: -27px 6px 0; display: grid; place-items: center; z-index: 2; }
-    .mobile-fab { width: 58px; height: 58px; display: grid; place-items: center; color: #fff; border: 5px solid #f5f7fb; border-radius: 50%; background: linear-gradient(145deg, #16a184, #0d765f); box-shadow: 0 11px 23px rgba(19,138,114,.31); cursor: pointer; transition: transform .22s cubic-bezier(.23,1,.32,1), box-shadow .22s ease, background .22s ease; }
+    .mobile-nav .mobile-fab { position: relative; z-index: 2; width: 58px; height: 58px; min-height: 0; aspect-ratio: 1; flex: 0 0 58px; display: grid; place-items: center; color: #fff; border: 5px solid #f5f7fb; border-radius: 999px !important; background: linear-gradient(145deg, #16a184, #0d765f); box-shadow: 0 11px 23px rgba(19,138,114,.31); cursor: pointer; transition: transform .22s cubic-bezier(.23,1,.32,1), box-shadow .22s ease, background .22s ease; }
     .mobile-fab:hover { box-shadow: 0 15px 27px rgba(19,138,114,.38); transform: translateY(-2px); }
     .mobile-fab-wrap.is-open .mobile-fab { transform: rotate(45deg); background: linear-gradient(145deg, #e9857d, #ca7069); }
-    .mobile-fab-actions { position: absolute; inset: auto 0 52px; height: 118px; pointer-events: none; }
-    .mobile-fab-action { position: absolute; width: 38px; height: 38px; display: grid !important; place-items: center; gap: 0 !important; padding: 0; color: #fff !important; border: 3px solid #f5f7fb; border-radius: 50% !important; opacity: 0; box-shadow: 0 9px 18px rgba(25,44,61,.18); transform: translateY(15px) scale(.82); transition: opacity .2s ease, transform .24s cubic-bezier(.23,1,.32,1); }
-    .mobile-fab-action span { position: absolute; top: -20px; padding: 3px 5px; color: #526275; border-radius: 5px; background: #fff; box-shadow: 0 4px 12px rgba(29,47,67,.11); font-size: 8px; white-space: nowrap; }
+    .mobile-fab-actions { position: absolute; top: 50%; left: 50%; width: 0; height: 0; pointer-events: none; z-index: 1; }
+    .mobile-nav .mobile-fab-action { position: absolute; top: 0; left: 0; width: 38px; height: 38px; min-height: 0; display: grid !important; place-items: center; gap: 0 !important; padding: 0; color: #fff !important; border: 3px solid #f5f7fb; border-radius: 999px !important; opacity: 0; box-shadow: 0 8px 16px rgba(25,44,61,.16), 0 2px 5px rgba(25,44,61,.12); transform: translate(-50%, -50%) translate(var(--fab-x), var(--fab-y)) scale(.18) rotate(-12deg); transform-origin: center; transition: opacity .18s ease, transform .34s cubic-bezier(.23,1,.32,1); }
+    .mobile-fab-action span { position: absolute; top: -22px; padding: 3px 5px; color: #526275; border-radius: 5px; background: #fff; box-shadow: 0 4px 12px rgba(29,47,67,.11); font-size: 8px; white-space: nowrap; opacity: 0; transform: translateY(4px) scale(.88); transition: opacity .18s ease .08s, transform .24s cubic-bezier(.23,1,.32,1) .08s; }
     .mobile-fab-action svg { width: 16px; height: 16px; }
-    .mobile-fab-action--income { left: -14px; bottom: 23px; background: #138a72; }
-    .mobile-fab-action--expense { right: -14px; bottom: 23px; background: #df8077; }
-    .mobile-fab-action--vehicle { left: 15px; bottom: 84px; background: #8175d0; }
-    .mobile-fab-wrap.is-open .mobile-fab-action { opacity: 1; pointer-events: auto; transform: translateY(0) scale(1); }
+    .mobile-fab-action--income { --fab-x: -42px; --fab-y: -35px; background: #138a72; }
+    .mobile-fab-action--expense { --fab-x: 42px; --fab-y: -35px; background: #df8077; }
+    .mobile-fab-action--vehicle { --fab-x: 0px; --fab-y: -78px; background: #8175d0; }
+    .mobile-fab-wrap.is-open .mobile-fab-action { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%) translate(var(--fab-x), var(--fab-y)) scale(1) rotate(0deg); }
+    .mobile-fab-wrap.is-open .mobile-fab-action span { opacity: 1; transform: translateY(0) scale(1); }
     .mobile-scrim { z-index: 29; }
   }
 
@@ -864,6 +875,23 @@
   .profile-panel > button:hover { color: #147b6b; background: #edf8f5; transform: translateX(2px); }
   .profile-panel > button:last-child { color: #b66d69; }
   .profile-panel > button:last-child:hover { background: #fff2f0; }
+  .balance-adjustment-card { display: grid; gap: 11px; padding: 12px; border: 1px solid #dcebe8; border-radius: 13px; background: linear-gradient(135deg, #f2faf8, #f7f9fd); }
+  .balance-adjustment-summary { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .balance-adjustment-summary > div { display: flex; flex-direction: column; gap: 4px; padding: 9px 10px; border-radius: 9px; background: rgba(255,255,255,.78); }
+  .balance-adjustment-summary span, .balance-adjustment-control > span { color: #758694; font-size: 9px; font-weight: 700; }
+  .balance-adjustment-summary strong { color: #29384b; font-size: 13px; letter-spacing: -.03em; }
+  .balance-adjustment-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; align-items: end; }
+  .balance-adjustment-control { display: grid; gap: 5px; }
+  .balance-adjustment-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 3px; border: 1px solid #e1ebe9; border-radius: 9px; background: rgba(255,255,255,.78); }
+  .balance-adjustment-toggle button { min-height: 34px; padding: 0 8px; color: #82919b; border: 0; border-radius: 7px; background: transparent; font-size: 9px; font-weight: 800; cursor: pointer; transition: color .18s ease, background .18s ease, box-shadow .18s ease; }
+  .balance-adjustment-toggle button.is-active { color: #138a72; background: #fff; box-shadow: 0 3px 10px rgba(30, 65, 75, .09); }
+  .dark .balance-adjustment-card { border-color: #2a5c58; background: linear-gradient(135deg, #173c3d, #202b3c); }
+  .dark .balance-adjustment-summary > div, .dark .balance-adjustment-toggle { background: rgba(18,32,48,.78); border-color: #2a4651; }
+  .dark .balance-adjustment-summary span, .dark .balance-adjustment-control > span { color: #9bb0b8; }
+  .dark .balance-adjustment-summary strong { color: #edf4f4; }
+  .dark .balance-adjustment-toggle button { color: #9bb0b8; }
+  .dark .balance-adjustment-toggle button.is-active { color: #a8e3d5; background: #234b4c; }
+  @media (max-width: 600px) { .balance-adjustment-grid { grid-template-columns: 1fr; } }
   .app-shell--values-hidden .kpi-card strong,
   .app-shell--values-hidden .account-value strong,
   .app-shell--values-hidden .chart-bottom-stat strong,

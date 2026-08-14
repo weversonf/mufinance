@@ -1,8 +1,8 @@
 /* MuFinance React — credit layer embedded in the patrimony card.
    Cards, invoices and limits share one calm, premium surface with the account balance. */
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, ChevronRight, CreditCard as CreditCardIcon, FileText, Plus, Sparkles, X } from "lucide-react";
-import { FormEvent, useMemo, useState, type CSSProperties } from "react";
+import { Check, ChevronRight, CreditCard as CreditCardIcon, FileText, Pencil, Plus, Sparkles, X } from "lucide-react";
+import { FormEvent, useEffect, useMemo, useState, type CSSProperties } from "react";
 import type { CardBrand, CardColor, CreditCard, Transaction } from "@/lib/financeData";
 
 export type NewCreditCardPayload = Omit<CreditCard, "id">;
@@ -11,6 +11,7 @@ type CardWalletProps = {
   cards: CreditCard[];
   transactions: Transaction[];
   onAddCard: (card: NewCreditCardPayload) => void;
+  onEditCard?: (card: CreditCard) => void;
   onSelectCard?: (card: CreditCard) => void;
   onOpenDetails?: (card: CreditCard) => void;
   embedded?: boolean;
@@ -37,7 +38,7 @@ function invoiceMonthFor(transaction: Transaction) {
   return match?.[0] ?? transaction.dateISO?.slice(0, 7) ?? "2026-08";
 }
 
-export function CardWallet({ cards, transactions, onAddCard, onSelectCard, onOpenDetails, embedded = false }: CardWalletProps) {
+export function CardWallet({ cards, transactions, onAddCard, onEditCard, onSelectCard, onOpenDetails, embedded = false }: CardWalletProps) {
   const [open, setOpen] = useState(false);
   const [selectedCardId, setSelectedCardId] = useState(cards[0]?.id ?? "");
   const [name, setName] = useState("");
@@ -55,6 +56,10 @@ export function CardWallet({ cards, transactions, onAddCard, onSelectCard, onOpe
   const selectedInvoiceTotal = selectedCardTransactions.filter((item) => invoiceMonthFor(item) === selectedInvoiceMonth).reduce((sum, item) => sum + item.amount, 0);
   const usage = selectedCard ? Math.min((selectedInvoiceTotal / selectedCard.limit) * 100, 100) : 0;
   const currentInvoiceLabel = selectedCard ? `Fatura de ${new Date(`${selectedInvoiceMonth}-01T12:00:00`).toLocaleDateString("pt-BR", { month: "long" })} · ${formatDay(selectedCard.dueDay)}` : "Nenhuma fatura cadastrada";
+
+  useEffect(() => {
+    if (selectedCard && !cards.some((card) => card.id === selectedCardId)) setSelectedCardId(selectedCard.id);
+  }, [cards, selectedCard, selectedCardId]);
 
   const close = () => {
     setOpen(false);
@@ -111,7 +116,7 @@ export function CardWallet({ cards, transactions, onAddCard, onSelectCard, onOpe
             <span className="wallet-card-head"><strong>MuFinance</strong><span>{card.brand}</span></span><span className="wallet-card-chip"><span /><span /><span /></span><span className="wallet-card-number">•••• &nbsp;•••• &nbsp;•••• &nbsp;{card.last4}</span><span className="wallet-card-foot"><span><small>{card.name}</small><strong>{formatBRL(transactions.filter((item) => item.sourceType === "credit-card" && item.sourceId === card.id && !item.settled).reduce((sum, item) => sum + item.amount, 0))}</strong></span><span><small>vence {formatDay(card.dueDay)}</small><strong>{card.brand === "Mastercard" ? "MC" : card.brand}</strong></span></span>
           </motion.button>) : <div className="card-stack-empty"><CreditCardIcon size={22} /><strong>Seu primeiro cartão começa aqui</strong><span>Adicione um cartão para acompanhar o limite e as faturas.</span></div>}
         </div>
-        <div className="card-wallet-summary"><div className="wallet-summary-kicker"><Sparkles size={14} /> FATURA ATUAL</div><strong>{formatBRL(selectedInvoiceTotal)}</strong><p>{selectedCard ? `${selectedCard.name} · ${currentInvoiceLabel}` : "Adicione um cartão para começar a organizar suas faturas."}</p><div className="invoice-progress" aria-label={selectedCard ? `${formatBRL(selectedInvoiceTotal)} de ${formatBRL(selectedCard.limit)} do limite do cartão` : "Sem limite de cartão"}><span style={{ width: `${usage}%` }} /></div><div className="invoice-progress-meta"><span>Valor / limite do cartão</span><strong>{selectedCard ? `${Math.round(usage)}%` : "0%"}</strong></div><div className="wallet-summary-actions">{selectedCard && <button className="text-button" type="button" onClick={() => onOpenDetails?.(selectedCard)}><FileText size={14} /> Ver histórico <ChevronRight size={14} /></button>}<button className="text-button" type="button" onClick={() => setOpen(true)}><Plus size={14} /> Novo cartão</button></div></div>
+        <div className="card-wallet-summary"><div className="wallet-summary-kicker"><Sparkles size={14} /> FATURA ATUAL</div><strong>{formatBRL(selectedInvoiceTotal)}</strong><p>{selectedCard ? `${selectedCard.name} · ${currentInvoiceLabel}` : "Adicione um cartão para começar a organizar suas faturas."}</p><div className="invoice-progress" aria-label={selectedCard ? `${formatBRL(selectedInvoiceTotal)} de ${formatBRL(selectedCard.limit)} do limite do cartão` : "Sem limite de cartão"}><span style={{ width: `${usage}%` }} /></div><div className="invoice-progress-meta"><span>Valor / limite do cartão</span><strong>{selectedCard ? `${Math.round(usage)}%` : "0%"}</strong></div><div className="wallet-summary-actions">{selectedCard && <><button className="text-button" type="button" onClick={() => onOpenDetails?.(selectedCard)}><FileText size={14} /> Ver histórico <ChevronRight size={14} /></button>{onEditCard && <button className="text-button" type="button" onClick={() => onEditCard(selectedCard)}><Pencil size={14} /> Editar cartão</button>}</>}<button className="text-button" type="button" onClick={() => setOpen(true)}><Plus size={14} /> Novo cartão</button></div></div>
       </div>
     </>
   );

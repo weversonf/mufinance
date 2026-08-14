@@ -63,3 +63,6 @@ O wordmark usa a marca gráfica original do farol em tamanho visível, com “Mu
 
 - A fidelidade à referência prevalece sobre variações estilísticas: não usar tema escuro como padrão, neon, roxos dominantes ou painéis centralizados genéricos.
 - A versão inicial usa dados locais demonstrativos do produto, deixando explícita a separação entre visualização e integração futura com dados reais.
+- A sidebar deve atuar como âncora permanente do produto: wordmark MuFinance visível, símbolo do farol, navegação ativa em Farol Esmeralda e hierarquia navy/esmeralda mesmo quando o dashboard estiver denso.
+- O Farol Esmeralda `#138A72` fica reservado para ação primária, movimento positivo, navegação ativa e destaques de progresso; lavanda, azul, pêssego e amarelo permanecem códigos semânticos secundários.
+- A leitura editorial segue a regra título curto, valor dominante e contexto discreto; o rastro de maré aparece como curva leve em cabeçalhos, resumos e gráficos, sem adicionar decoração concorrente.
