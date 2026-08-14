@@ -59,6 +59,7 @@ import { accounts, budgets, cashflowData, creditCards as initialCreditCards, for
 import { useTheme } from "@/contexts/ThemeContext";
 import { ActionDialog } from "./ActionDialog";
 import { CardWallet, type NewCreditCardPayload } from "./CardWallet";
+import { CardDetailsDialog, type CardHistoryPeriod } from "./CardDetailsDialog";
 import { NewTransactionPayload, TransactionModal } from "./TransactionModal";
 
 type IconName = "home" | "receipt" | "chart" | "card" | "target" | "wallet" | "user" | "settings" | "bank" | "sparkles";
@@ -154,6 +155,8 @@ export default function FinanceDashboard() {
   const [supportView, setSupportView] = useState<SupportView>("home");
   const [supportMessage, setSupportMessage] = useState("");
   const [sessionActive, setSessionActive] = useState(true);
+  const [accountBalanceAdjustment, setAccountBalanceAdjustment] = useState(0);
+  const [cardDetails, setCardDetails] = useState<CreditCardData | null>(null);
   const { theme } = useTheme();
 
   useEffect(() => {
@@ -175,6 +178,8 @@ export default function FinanceDashboard() {
 
   const filteredNav = useMemo(() => navItems.filter((item) => item.label.toLowerCase().includes(query.toLowerCase())), [query]);
   const selectedCurrency = currencyValues[currency];
+  const selectedAvailableValue = currency === "BRL" ? 32540 + accountBalanceAdjustment : currency === "USD" ? 5820 : 4210;
+  const selectedAvailableLabel = currency === "BRL" ? formatBRL(selectedAvailableValue) : selectedCurrency.available;
   const chartMuted = theme === "dark" ? "#9aaabd" : "#9aa2b4";
   const chartGrid = theme === "dark" ? "#2b3849" : "#eef0f5";
   const chartData = timeRange === "6M" ? cashflowData.slice(-6) : timeRange === "YTD" ? cashflowData : [...cashflowData.slice(0, 2), ...cashflowData, { month: "Set", income: 50200, expenses: 32900, net: 17300 }];
@@ -213,6 +218,18 @@ export default function FinanceDashboard() {
     URL.revokeObjectURL(url);
     action("Extrato exportado", `${localTransactions.length} lançamentos foram baixados em CSV.`);
   };
+  const exportCardHistory = (card: CreditCardData, period: CardHistoryPeriod, items: Transaction[]) => {
+    const label = period === "all" ? "historico" : period;
+    const rows = [["Data", "Descrição", "Categoria", "Cartão", "Fatura", "Status", "Valor"], ...items.map((item) => [item.date, item.payee, item.category, `${card.name} •••• ${card.last4}`, item.invoiceId ?? "", item.settled ? "Baixado" : "Em aberto", item.amount.toFixed(2).replace(".", ",")])];
+    const csv = rows.map((row) => row.map((value) => `"${String(value).replace(/"/g, '""')}"`).join(",")).join("\n");
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `mufinance-${card.id}-${label}.csv`;
+    anchor.click();
+    URL.revokeObjectURL(url);
+    action("Histórico exportado", `${items.length} lançamentos de ${card.name} foram baixados em CSV.`);
+  };
   const openNewTransaction = () => {
     setEditingTransaction(null);
     setTransactionModalOpen(true);
@@ -245,6 +262,15 @@ export default function FinanceDashboard() {
   const addCreditCard = (card: NewCreditCardPayload) => {
     setLocalCreditCards((current) => current.concat({ ...card, id: `card-${Date.now()}` }));
     action("Cartão adicionado", `${card.name} · ${card.brand}`);
+  };
+  const payCardInvoice = (card: CreditCardData, month: string, amount: number, transactionIds: string[]) => {
+    if (!transactionIds.length || amount <= 0) return;
+    const settlementId = `settlement-${card.id}-${month}`;
+    const paidAt = "2026-08-13";
+    setLocalTransactions((current) => current.map((item) => transactionIds.includes(item.id ?? "") ? { ...item, settled: true, settledAt: paidAt, settlementId } : item));
+    setAccountBalanceAdjustment((current) => current - amount);
+    setCardDetails(null);
+    action("Fatura paga", `${card.name} · ${formatBRL(amount)} debitados da Conta principal e lançamentos baixados.`);
   };
   const submitTransfer = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -330,7 +356,7 @@ export default function FinanceDashboard() {
 
           <motion.section className="dashboard-grid dashboard-grid--primary" variants={stagger}><motion.article className="surface-card cashflow-card" variants={child}><CardHeader eyebrow="FLUXO DE CAIXA" title="Receitas vs. despesas" subtitle="Entrada, saída e saldo líquido no período" action={<div className="segmented-control">{["6M", "12M", "YTD"].map((range) => <button key={range} className={timeRange === range ? "is-active" : ""} onClick={() => setTimeRange(range)}>{range}</button>)}</div>} /><div className="chart-legend"><span><i className="legend-dot legend-dot--income" /> Receitas</span><span><i className="legend-dot legend-dot--expense" /> Despesas</span><span><i className="legend-dot legend-dot--net" /> Líquido</span></div><div className="cashflow-chart"><ResponsiveContainer width="100%" height="100%"><AreaChart data={chartData} margin={{ top: 8, right: 5, left: -18, bottom: 0 }}><defs><linearGradient id="incomeFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#65bfae" stopOpacity={0.24} /><stop offset="100%" stopColor="#65bfae" stopOpacity={0} /></linearGradient><linearGradient id="expenseFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f3a299" stopOpacity={0.16} /><stop offset="100%" stopColor="#f3a299" stopOpacity={0} /></linearGradient></defs><CartesianGrid vertical={false} stroke={chartGrid} strokeDasharray="3 5" /><XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: chartMuted, fontSize: 11 }} dy={10} /><YAxis axisLine={false} tickLine={false} tick={{ fill: chartMuted, fontSize: 10 }} tickFormatter={(value) => `R$${value / 1000}k`} domain={[0, 60000]} /><Tooltip cursor={{ stroke: chartGrid, strokeWidth: 1 }} contentStyle={{ backgroundColor: theme === "dark" ? "#1b2839" : "#fff", color: theme === "dark" ? "#edf3f4" : "#172033", border: 0, borderRadius: 12, boxShadow: "0 10px 30px rgba(22, 32, 54, .12)", fontSize: 12 }} formatter={(value) => formatCompactBRL(Number(value))} /><Area type="monotone" dataKey="income" stroke="#138a72" strokeWidth={2.5} fill="url(#incomeFill)" activeDot={{ r: 5, fill: "#138a72", stroke: theme === "dark" ? "#172132" : "#fff", strokeWidth: 3 }} /><Area type="monotone" dataKey="expenses" stroke="#e9857d" strokeWidth={2} fill="url(#expenseFill)" activeDot={{ r: 4, fill: "#e9857d", stroke: theme === "dark" ? "#172132" : "#fff", strokeWidth: 3 }} /><Area type="monotone" dataKey="net" stroke="#7486ca" strokeWidth={2} strokeDasharray="4 4" fill="transparent" /></AreaChart></ResponsiveContainer></div><div className="chart-bottom-stat"><div><span>Saldo líquido</span><strong>+R$ 1.644,00</strong></div><div className="stat-delta"><ArrowUpRight size={14} /> 12,4% <small>vs. mês anterior</small></div><button className="icon-button" aria-label="Mais opções do fluxo de caixa" onClick={() => setActionPanel("report")}><MoreHorizontal size={18} /></button></div></motion.article>
 
-            <motion.article id="balance" className="surface-card balance-card balance-card--hybrid" variants={child}><CardHeader eyebrow="SALDO TOTAL" title="Saldo disponível" subtitle="Patrimônio consolidado" action={<div className="currency-switcher">{Object.keys(currencyValues).map((item) => <button key={item} className={currency === item ? "is-active" : ""} onClick={() => setCurrency(item)}>{item}</button>)}</div>} /><div className="balance-card-art"><div className="balance-card-top"><span>{selectedCurrency.label}</span><Wallet size={22} /></div><div className="balance-card-label">Saldo disponível</div><strong>{selectedCurrency.available}</strong><div className="card-number">Conta principal &nbsp;•••• &nbsp;7045</div><div className="card-bottom"><span>MuFinance</span><span>Principal</span></div></div><div className="balance-actions"><button className="primary-button primary-button--small" onClick={() => setActionPanel("transfer")}><ArrowUpRight size={14} /> Transferir</button><button className="soft-button soft-button--small" onClick={() => setActionPanel("deposit")}><ArrowDownLeft size={14} /> Depositar</button></div><div className="balance-summary"><div><span>Receitas</span><strong className="income-text">+R$ 4.820</strong></div><div><span>Despesas</span><strong className="expense-text">−R$ 3.176</strong></div><div><span>Guardado</span><strong>R$ 1.644</strong></div></div><CardWallet cards={localCreditCards} transactions={localTransactions} onAddCard={addCreditCard} onSelectCard={(card) => action("Cartão selecionado", `${card.name} · ${card.brand}`)} embedded /></motion.article></motion.section>
+            <motion.article id="balance" className="surface-card balance-card balance-card--hybrid" variants={child}><CardHeader eyebrow="SALDO TOTAL" title="Saldo disponível" subtitle="Patrimônio consolidado" action={<div className="currency-switcher">{Object.keys(currencyValues).map((item) => <button key={item} className={currency === item ? "is-active" : ""} onClick={() => setCurrency(item)}>{item}</button>)}</div>} /><div className="balance-card-art"><div className="balance-card-top"><span>{selectedCurrency.label}</span><Wallet size={22} /></div><div className="balance-card-label">Saldo disponível</div><strong>{selectedAvailableLabel}</strong><div className="card-number">Conta principal &nbsp;•••• &nbsp;7045</div><div className="card-bottom"><span>MuFinance</span><span>Principal</span></div></div><div className="balance-actions"><button className="primary-button primary-button--small" onClick={() => setActionPanel("transfer")}><ArrowUpRight size={14} /> Transferir</button><button className="soft-button soft-button--small" onClick={() => setActionPanel("deposit")}><ArrowDownLeft size={14} /> Depositar</button></div><div className="balance-summary"><div><span>Receitas</span><strong className="income-text">+R$ 4.820</strong></div><div><span>Despesas</span><strong className="expense-text">−R$ 3.176</strong></div><div><span>Guardado</span><strong>R$ 1.644</strong></div></div><CardWallet cards={localCreditCards} transactions={localTransactions} onAddCard={addCreditCard} onSelectCard={(card) => action("Cartão selecionado", `${card.name} · ${card.brand}`)} onOpenDetails={(card) => setCardDetails(card)} embedded /></motion.article></motion.section>
 
           <motion.section className="dashboard-grid dashboard-grid--secondary" variants={stagger}><motion.article id="spending" className="surface-card spending-card" variants={child}><CardHeader eyebrow="GASTOS POR CATEGORIA" title="Onde seu dinheiro foi" subtitle="Distribuição das despesas no período" action={<button className="text-button" onClick={() => setActionPanel("report")}>Ver relatório <ChevronRight size={14} /></button>} /><div className="spending-content"><div className="donut-wrap"><ResponsiveContainer width="100%" height="100%"><PieChart><Pie data={spendingData} dataKey="value" nameKey="name" innerRadius={62} outerRadius={87} paddingAngle={3} stroke="none">{spendingData.map((entry) => <Cell key={entry.name} fill={entry.color} />)}</Pie><Tooltip formatter={(value) => formatBRL(Number(value))} contentStyle={{ border: 0, borderRadius: 12, boxShadow: "0 10px 30px rgba(22, 32, 54, .12)", fontSize: 12 }} /></PieChart></ResponsiveContainer><div className="donut-center"><strong>R$ 31,8K</strong><span>gastos</span></div></div><div className="spending-list">{spendingData.map((item, index) => <div className="spending-row" key={item.name}><span><i style={{ background: item.color }} />{item.name}</span><strong>{formatCompactBRL(item.value)}</strong><small>{[31, 20, 14, 10, 25][index]}%</small></div>)}</div></div></motion.article>
 
@@ -349,6 +375,7 @@ export default function FinanceDashboard() {
       <MobileNav activeNav={activeNav} onSelect={handleNavSelect} onMore={() => setMobileOpen(true)} />
       <TransactionModal open={transactionModalOpen} onClose={() => { setTransactionModalOpen(false); setEditingTransaction(null); }} onSubmit={addTransaction} editingTransaction={editingTransaction} accountOptions={transactionAccountOptions} creditCards={localCreditCards} />
       <ActionPanels actionPanel={actionPanel} selectedBill={selectedBill} selectedAccount={selectedAccount} selectedTransaction={selectedTransaction} paidBills={paidBills} transferAmount={transferAmount} transferDestination={transferDestination} depositAmount={depositAmount} scheduleDate={scheduleDate} budgetAdjusted={budgetAdjusted} accountConnected={accountConnected} scheduledReminder={scheduledReminder} supportView={supportView} supportMessage={supportMessage} sessionActive={sessionActive} reportTransactions={filteredTransactions} transactionTypeFilter={transactionTypeFilter} transactionCategoryFilter={transactionCategoryFilter} transactionCategories={transactionCategories} onClose={closePanels} onOpenPanel={setActionPanel} onSelectBill={(label) => { setSelectedBill(label); setActionPanel("pay-bills"); }} onSelectAccount={(name) => { setSelectedAccount(name); setActionPanel("accounts"); }} onTransferAmount={setTransferAmount} onTransferDestination={setTransferDestination} onDepositAmount={setDepositAmount} onScheduleDate={setScheduleDate} onSubmitTransfer={submitTransfer} onSubmitDeposit={submitDeposit} onMarkBillAsPaid={markBillAsPaid} onSchedule={handleSchedule} onExport={exportTransactions} onDuplicate={duplicateSelectedTransaction} onDelete={deleteSelectedTransaction} onConnectAccount={handleConnectAccount} onBudgetSave={() => { setBudgetAdjusted(true); closePanels(); action("Orçamento atualizado", "O limite de alimentação foi sinalizado para revisão."); }} onSupportChoice={setSupportView} onSupportMessage={setSupportMessage} onSubmitSupport={handleSupportSubmit} onLogin={handleLogin} onTransactionTypeFilter={setTransactionTypeFilter} onTransactionCategoryFilter={setTransactionCategoryFilter} />
+      <CardDetailsDialog open={Boolean(cardDetails)} card={cardDetails} transactions={localTransactions} onClose={() => setCardDetails(null)} onExport={exportCardHistory} onPayInvoice={payCardInvoice} />
     </div>
   );
 }

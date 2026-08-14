@@ -24,6 +24,9 @@ export type Transaction = {
   totalAmount?: number;
   amount: number;
   type: "income" | "expense";
+  settled?: boolean;
+  settledAt?: string;
+  settlementId?: string;
 };
 
 export type CardBrand = "Visa" | "Mastercard" | "Elo" | "Amex";

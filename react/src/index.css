@@ -466,3 +466,58 @@
     .credit-wallet-embedded .invoice-strip { flex-wrap: wrap; }
   }
 }
+
+/* MuFinance credit interactions — motion communicates selection, payment state and a calm premium card surface. */
+@layer components {
+  .wallet-card { will-change: transform; transition: box-shadow .28s cubic-bezier(.23,1,.32,1), filter .28s ease, border-color .28s ease; }
+  .wallet-card::after { content: ""; position: absolute; inset: 0; z-index: 0; border-radius: inherit; background: linear-gradient(110deg, rgba(255,255,255,0) 20%, rgba(255,255,255,.18) 48%, rgba(255,255,255,0) 74%); opacity: 0; transform: translateX(-45%); transition: opacity .24s ease, transform .6s cubic-bezier(.23,1,.32,1); pointer-events: none; }
+  .wallet-card:hover::after, .wallet-card:focus-visible::after { opacity: 1; transform: translateX(45%); }
+  .wallet-card:hover, .wallet-card:focus-visible { border-color: rgba(255,255,255,.52); filter: saturate(1.12) brightness(1.03); }
+  .wallet-card.is-selected { box-shadow: 0 21px 40px rgba(29,54,78,.23), 0 0 0 2px rgba(255,255,255,.75), 0 0 0 5px rgba(19,138,114,.18); }
+  .wallet-card:active { filter: saturate(1.08) brightness(.98); }
+  .wallet-card > * { pointer-events: none; }
+  .wallet-summary-actions { position: relative; z-index: 1; display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+  .wallet-summary-actions .text-button { display: inline-flex; align-items: center; gap: 4px; }
+  .card-detail-balance-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 18px; padding: 12px 13px; border: 1px solid #edf1f4; border-radius: 12px; background: #f8fafb; }
+  .card-detail-balance-row div { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+  .card-detail-balance-row span, .card-history-limit { color: #97a1af; font-size: 9px; }
+  .card-detail-balance-row strong { color: #26334a; font-size: 13px; letter-spacing: -.035em; }
+  .card-detail-toolbar { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
+  .card-detail-toolbar .form-field { flex: 1; margin: 0; }
+  .card-detail-toolbar > .soft-button { flex: 0 0 auto; }
+  .card-history-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+  .card-history-heading .eyebrow { margin-bottom: 4px; }
+  .card-history-heading h3 { color: #26334a; font-size: 15px; letter-spacing: -.04em; }
+  .card-history-list { max-height: 292px; overflow-y: auto; padding-right: 3px; }
+  .card-history-row { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid #eef1f4; }
+  .card-history-row:last-child { border-bottom: 0; }
+  .card-history-icon { width: 28px; height: 28px; display: grid; place-items: center; color: #d17b72; border-radius: 9px; background: #fff1ee; }
+  .card-history-icon.is-settled { color: #138a72; background: #e8f7f2; }
+  .card-history-info, .card-history-amount { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .card-history-info strong, .card-history-amount strong { overflow: hidden; color: #354157; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+  .card-history-info small, .card-history-amount small { color: #9aa4b1; font-size: 9px; }
+  .card-history-amount { align-items: flex-end; }
+  .card-history-amount strong { color: #d17b72; }
+  .card-history-row.is-settled .card-history-amount strong { color: #138a72; }
+  .card-history-row.is-settled .card-history-info strong { color: #74808f; }
+  .card-history-empty { display: flex; flex-direction: column; align-items: center; gap: 7px; padding: 26px 14px; color: #97a1af; border: 1px dashed #dfe8e8; border-radius: 12px; background: #fbfdfc; text-align: center; }
+  .card-history-empty strong { color: #586579; font-size: 11px; }
+  .card-history-empty span { max-width: 245px; font-size: 9px; line-height: 1.5; }
+  .dark .card-detail-balance-row { border-color: #2a394d; background: #122030; }
+  .dark .card-detail-balance-row strong, .dark .card-history-heading h3, .dark .card-history-info strong { color: #edf3f4; }
+  .dark .card-history-row { border-color: #2a394d; }
+  .dark .card-history-icon { color: #f0a19a; background: #3b2b32; }
+  .dark .card-history-icon.is-settled { color: #7fd7c4; background: #1b4646; }
+  .dark .card-history-empty { color: #a9b6c5; border-color: #314259; background: #172536; }
+  .dark .card-history-empty strong { color: #dce6ed; }
+  @media (max-width: 640px) {
+    .card-detail-balance-row { gap: 7px; padding: 10px; }
+    .card-detail-balance-row strong { font-size: 11px; }
+    .card-detail-toolbar { align-items: stretch; flex-direction: column; }
+    .card-detail-toolbar > .soft-button { justify-content: center; }
+    .card-history-list { max-height: 260px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .wallet-card, .wallet-card::after { transition: none; }
+  }
+}

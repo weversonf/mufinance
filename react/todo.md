@@ -37,3 +37,10 @@
 - [x] Exibir conta principal, cartões, limite disponível e faturas sem duplicação.
 - [x] Preservar criação, seleção de cartão, seleção de fatura e lançamentos parcelados/recorrentes.
 - [x] Validar o módulo unificado em desktop/mobile, executar check/build e registrar o checkpoint.
+
+## Nova solicitação
+
+- [x] Implementar pagamento de fatura com baixa automática dos lançamentos correspondentes e débito no saldo da conta principal.
+- [x] Criar visualização detalhada por cartão com histórico mensal de transações, fatura selecionada e exportação em CSV.
+- [x] Refinar a experiência dos cartões empilhados com transições suaves, hover, foco por teclado e feedback de seleção.
+- [x] Validar os fluxos em desktop/mobile, executar check/build e registrar o checkpoint.
