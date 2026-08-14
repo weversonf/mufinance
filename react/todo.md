@@ -157,10 +157,10 @@
 
 ## Nova solicitação: edição de carteiras e cadastro do veículo
 
-- [ ] Permitir editar dados da conta bancária e ajustar o saldo demonstrativo com confirmação e feedback.
-- [ ] Permitir editar cartão de crédito, incluindo limite, bandeira, fechamento, vencimento e identificação visual.
-- [ ] Permitir editar o veículo, selecionando tipo (carro ou moto), fabricante e modelo.
-- [ ] Validar formulários, persistência local, estados de erro/sucesso, desktop/mobile, check/build e registrar checkpoint.
+- [x] Permitir editar dados da conta bancária e ajustar o saldo demonstrativo com confirmação e feedback.
+- [x] Permitir editar cartão de crédito, incluindo limite, bandeira, fechamento, vencimento e identificação visual.
+- [x] Permitir editar o veículo, selecionando tipo (carro ou moto), fabricante e modelo.
+- [x] Validar formulários, persistência local, estados de erro/sucesso, desktop/mobile, check/build e registrar checkpoint.
 
 ## Nova solicitação: simplificação da navegação
 
@@ -218,3 +218,10 @@
 - [x] Adicionar paginação funcional e estado vazio para resultados filtrados.
 - [x] Remover os cards de resumo da tela de Extrato e manter o saldo diário em seção própria.
 - [x] Validar navegação, filtros, paginação, edição por clique, desktop/mobile, check/build e registrar checkpoint.
+
+## Nova solicitação: saldo diário ao final de cada dia
+
+- [x] Agrupar os lançamentos do Extrato por data, mantendo a ordem cronológica e os filtros atuais.
+- [x] Exibir o saldo do dia depois dos lançamentos de cada grupo diário, sem deixá-lo no topo da seção.
+- [x] Recalcular o saldo diário corretamente conforme receitas, despesas, cartões e ajustes demonstrativos.
+- [x] Validar a leitura no padrão de extratos financeiros, responsividade, tema, check/build e registrar checkpoint.

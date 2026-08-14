@@ -1,4 +1,4 @@
-// MuFinance — Extrato mensal operacional; prioriza todas as transações, filtros claros, paginação e saldo diário separado.
+/* MuFinance — Soft Swiss Fintech editorial: grupos diários claros, fechamento no rodapé de cada dia e leitura operacional sem ruído. */
 import { ArrowDownLeft, ArrowUpRight, CalendarDays, ChevronLeft, ChevronRight, Download, FileText, Search, SlidersHorizontal } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import type { Transaction } from "@/lib/financeData";
@@ -10,6 +10,15 @@ type StatementPageProps = {
   onBack: () => void;
   onEdit: (transaction: Transaction) => void;
   onExport: () => void;
+};
+
+type StatementDayGroup = {
+  date: string;
+  items: Transaction[];
+  income: number;
+  expense: number;
+  net: number;
+  balance: number;
 };
 
 const openingBalance = 21500;
@@ -24,6 +33,7 @@ export function StatementPage({ transactions, periodLabel, onBack, onEdit, onExp
 
   const categories = useMemo(() => ["Todas", ...Array.from(new Set(transactions.map((item) => item.category)))], [transactions]);
   const accountOptions = useMemo(() => ["Todas", ...Array.from(new Set(transactions.map((item) => item.account)))], [transactions]);
+
   const filtered = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
     return transactions.filter((item) => {
@@ -35,26 +45,39 @@ export function StatementPage({ transactions, periodLabel, onBack, onEdit, onExp
     });
   }, [accountFilter, categoryFilter, mode, query, transactions]);
 
-  const dailyRows = useMemo(() => {
-    const grouped = new Map<string, Transaction[]>();
+  const dailyGroups = useMemo<StatementDayGroup[]>(() => {
+    const visibleByDate = new Map<string, Transaction[]>();
+    const periodByDate = new Map<string, Transaction[]>();
+
+    filtered.forEach((item) => {
+      const key = item.dateISO ?? item.date;
+      visibleByDate.set(key, [...(visibleByDate.get(key) ?? []), item]);
+    });
+
     transactions.forEach((item) => {
       const key = item.dateISO ?? item.date;
-      grouped.set(key, [...(grouped.get(key) ?? []), item]);
+      periodByDate.set(key, [...(periodByDate.get(key) ?? []), item]);
     });
-    let balance = openingBalance;
-    return Array.from(grouped.entries())
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([date, items]) => {
-        const income = items.filter((item) => item.type === "income").reduce((sum, item) => sum + item.amount, 0);
-        const expense = items.filter((item) => item.type === "expense").reduce((sum, item) => sum + item.amount, 0);
-        balance += income - expense;
-        return { date, items, income, expense, net: income - expense, balance };
-      })
-      .reverse();
-  }, [transactions]);
 
-  const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
-  const visibleTransactions = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+    let balance = openingBalance;
+    const closingByDate = new Map<string, Omit<StatementDayGroup, "items">>();
+    Array.from(periodByDate.entries()).sort(([firstDate], [secondDate]) => firstDate.localeCompare(secondDate)).forEach(([date, items]) => {
+      const income = items.filter((item) => item.type === "income").reduce((sum, item) => sum + item.amount, 0);
+      const expense = items.filter((item) => item.type === "expense").reduce((sum, item) => sum + item.amount, 0);
+      const net = income - expense;
+      balance += net;
+      closingByDate.set(date, { date, income, expense, net, balance });
+    });
+
+    return Array.from(visibleByDate.entries())
+      .sort(([firstDate], [secondDate]) => firstDate.localeCompare(secondDate))
+      .map(([date, items]) => ({ ...closingByDate.get(date)!, items }))
+      .reverse();
+  }, [filtered, transactions]);
+
+  const paginatedGroups = useMemo(() => paginateDailyGroups(dailyGroups, pageSize), [dailyGroups]);
+  const pageCount = Math.max(1, paginatedGroups.length);
+  const visibleGroups = paginatedGroups[currentPage - 1] ?? [];
 
   useEffect(() => {
     setCurrentPage(1);
@@ -93,21 +116,62 @@ export function StatementPage({ transactions, periodLabel, onBack, onEdit, onExp
 
       <div className="statement-results-meta"><span>{filtered.length} {filtered.length === 1 ? "lançamento" : "lançamentos"} encontrados em {periodLabel.toLowerCase()}</span>{filtered.length !== transactions.length && <strong>Filtros ativos</strong>}</div>
 
-      <article className="surface-card daily-balance-card statement-daily-section">
-        <div className="card-header"><div><p className="eyebrow">SALDO DIÁRIO</p><h2>Como o caixa evoluiu</h2><p className="card-subtitle">O saldo acumulado após os movimentos de cada dia do período.</p></div><CalendarDays size={18} className="card-header-symbol" /></div>
-        <div className="daily-balance-list">{dailyRows.map((row) => <div className="daily-balance-row" key={row.date}><div className="daily-date"><strong>{formatStatementDate(row.date)}</strong><span>{row.items.length} {row.items.length === 1 ? "lançamento" : "lançamentos"}</span></div><div className="daily-flow"><span className="income-text">+{formatCompactBRL(row.income)}</span><span className="expense-text">−{formatCompactBRL(row.expense)}</span></div><div className="daily-net"><span>Saldo do dia</span><strong>{formatCompactBRL(row.balance)}</strong><small className={row.net >= 0 ? "income-text" : "expense-text"}>{row.net >= 0 ? "+" : "−"}{formatCompactBRL(Math.abs(row.net))}</small></div></div>)}{dailyRows.length === 0 && <div className="table-empty"><FileText size={18} /><strong>Nenhum dia encontrado</strong><span>Não há movimentos registrados neste período.</span></div>}</div>
-      </article>
+      <article className="surface-card statement-transactions-card statement-ledger-card">
+        <div className="card-header"><div><p className="eyebrow">EXTRATO DIÁRIO</p><h2>Lançamentos de {periodLabel.toLowerCase()}</h2><p className="card-subtitle">Cada dia termina com seu saldo após as movimentações.</p></div><span className="statement-count">Página {filtered.length === 0 ? 0 : currentPage} de {filtered.length === 0 ? 0 : pageCount}</span></div>
 
-      <article className="surface-card statement-transactions-card">
-        <div className="card-header"><div><p className="eyebrow">TODAS AS TRANSAÇÕES</p><h2>Lançamentos de {periodLabel.toLowerCase()}</h2><p className="card-subtitle">Clique em uma linha para editar o lançamento.</p></div><span className="statement-count">Página {filtered.length === 0 ? 0 : currentPage} de {filtered.length === 0 ? 0 : pageCount}</span></div>
-        <div className="transactions-table-wrap"><table><thead><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th>Conta</th><th className="amount-cell">Valor</th><th /></tr></thead><tbody>{visibleTransactions.map((transaction) => <tr key={`${transaction.id ?? transaction.date}-${transaction.payee}-${transaction.amount}`} className="transaction-row" tabIndex={0} role="button" onClick={() => onEdit(transaction)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); onEdit(transaction); } }}><td className="muted-cell">{transaction.date}</td><td><span className={`transaction-icon transaction-icon--${transaction.type}`}>{transaction.type === "income" ? <ArrowDownLeft size={15} /> : <ArrowUpRight size={15} />}</span><strong>{transaction.payee}</strong></td><td><span className="category-chip">{transaction.category}</span></td><td className="muted-cell">{transaction.account}</td><td className={`amount-cell ${transaction.type === "income" ? "income-text" : "expense-text"}`}>{transaction.type === "income" ? "+" : "−"}{formatBRL(transaction.amount).replace("R$ ", "R$ ")}</td><td aria-label="Abrir edição" /></tr>)}</tbody></table>{filtered.length === 0 && <div className="table-empty"><Search size={18} /><strong>Nenhum lançamento encontrado</strong><span>Tente outro termo ou limpe os filtros para continuar.</span></div>}</div>
+        {filtered.length > 0 ? <div className="statement-ledger" aria-label="Lançamentos agrupados por dia">
+          <div className="statement-ledger-columns" aria-hidden="true"><span>Data</span><span>Descrição</span><span>Categoria</span><span>Conta</span><span className="amount-cell">Valor</span></div>
+          {visibleGroups.map((group) => <section className="statement-day-group" key={group.date}>
+            <header className="statement-day-header">
+              <div className="statement-day-title"><span className="statement-day-marker"><CalendarDays size={14} /></span><div><strong>{formatStatementDay(group.date)}</strong><span>{group.items.length} {group.items.length === 1 ? "lançamento" : "lançamentos"}</span></div></div>
+              <div className="statement-day-flow"><span className="income-text">+{formatCompactBRL(group.income)}</span><span className="expense-text">−{formatCompactBRL(group.expense)}</span></div>
+            </header>
+            <div className="statement-day-items">{group.items.map((transaction) => <div key={`${transaction.id ?? transaction.date}-${transaction.payee}-${transaction.amount}`} className="statement-ledger-row transaction-row" tabIndex={0} role="button" onClick={() => onEdit(transaction)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); onEdit(transaction); } }}>
+              <span className="muted-cell">{transaction.date}</span>
+              <span className="statement-ledger-description"><span className={`transaction-icon transaction-icon--${transaction.type}`}>{transaction.type === "income" ? <ArrowDownLeft size={15} /> : <ArrowUpRight size={15} />}</span><strong>{transaction.payee}</strong></span>
+              <span><span className="category-chip">{transaction.category}</span></span>
+              <span className="muted-cell statement-ledger-account">{transaction.account}</span>
+              <span className={`amount-cell ${transaction.type === "income" ? "income-text" : "expense-text"}`}>{transaction.type === "income" ? "+" : "−"}{formatBRL(transaction.amount).replace("R$ ", "R$ ")}</span>
+            </div>)}</div>
+            <footer className="statement-day-closing"><div><span className="statement-day-closing-label">Saldo do dia</span><small>Após os lançamentos deste dia</small></div><strong className={group.balance >= 0 ? "income-text" : "expense-text"}>{formatBRL(group.balance).replace("R$ ", "R$ ")}</strong><span className={`statement-day-net ${group.net >= 0 ? "income-text" : "expense-text"}`}>{group.net >= 0 ? "+" : "−"}{formatBRL(Math.abs(group.net)).replace("R$ ", "R$ ")}</span></footer>
+          </section>)}
+        </div> : <div className="table-empty"><Search size={18} /><strong>Nenhum lançamento encontrado</strong><span>Tente outro termo ou limpe os filtros para continuar.</span></div>}
+
         {filtered.length > 0 && <nav className="statement-pagination" aria-label="Paginação do extrato"><button className="icon-button" type="button" onClick={() => setCurrentPage((page) => Math.max(1, page - 1))} disabled={currentPage === 1} aria-label="Página anterior"><ChevronLeft size={16} /></button><div className="statement-pagination-pages">{Array.from({ length: pageCount }, (_, index) => index + 1).map((page) => <button key={page} className={page === currentPage ? "is-active" : ""} type="button" onClick={() => setCurrentPage(page)} aria-label={`Ir para página ${page}`} aria-current={page === currentPage ? "page" : undefined}>{page}</button>)}</div><button className="icon-button" type="button" onClick={() => setCurrentPage((page) => Math.min(pageCount, page + 1))} disabled={currentPage === pageCount} aria-label="Próxima página"><ChevronRight size={16} /></button></nav>}
       </article>
     </section>
   );
 }
 
-function formatStatementDate(date: string) {
+function paginateDailyGroups(groups: StatementDayGroup[], targetSize: number) {
+  const pages: StatementDayGroup[][] = [];
+  let currentPage: StatementDayGroup[] = [];
+  let currentSize = 0;
+
+  groups.forEach((group) => {
+    const shouldStartNewPage = currentPage.length > 0 && currentSize + group.items.length > targetSize;
+    if (shouldStartNewPage) {
+      pages.push(currentPage);
+      currentPage = [];
+      currentSize = 0;
+    }
+
+    currentPage.push(group);
+    currentSize += group.items.length;
+
+    if (currentSize >= targetSize) {
+      pages.push(currentPage);
+      currentPage = [];
+      currentSize = 0;
+    }
+  });
+
+  if (currentPage.length > 0) pages.push(currentPage);
+  return pages;
+}
+
+function formatStatementDay(date: string) {
   if (!date.includes("-")) return date;
-  return new Intl.DateTimeFormat("pt-BR", { weekday: "short", day: "2-digit", month: "short" }).format(new Date(`${date}T12:00:00`)).replace(".", "");
+  const formatted = new Intl.DateTimeFormat("pt-BR", { weekday: "long", day: "2-digit", month: "long" }).format(new Date(`${date}T12:00:00`));
+  return formatted.charAt(0).toUpperCase() + formatted.slice(1);
 }
