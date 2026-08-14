@@ -51,6 +51,53 @@ export type CreditCard = {
   dueDay: number;
 };
 
+export type FinanceCategory = {
+  id: string;
+  name: string;
+  type: "income" | "expense";
+  tone: "mint" | "blue" | "lavender" | "peach" | "coral";
+  active: boolean;
+  usage: number;
+};
+
+export type VehicleFuelEntry = {
+  id: string;
+  date: string;
+  station: string;
+  liters: number;
+  amount: number;
+  odometer: number;
+  fuel: "Gasolina" | "Etanol" | "Diesel";
+};
+
+export type VehicleMaintenanceEntry = {
+  id: string;
+  date: string;
+  title: string;
+  workshop: string;
+  amount: number;
+  odometer: number;
+  status: "concluída" | "agendada";
+};
+
+export type VehicleOdometerEntry = {
+  id: string;
+  date: string;
+  odometer: number;
+  note: string;
+};
+
+export const defaultFinanceCategories: FinanceCategory[] = [
+  { id: "category-food", name: "Alimentação", type: "expense", tone: "lavender", active: true, usage: 1 },
+  { id: "category-housing", name: "Moradia", type: "expense", tone: "mint", active: true, usage: 1 },
+  { id: "category-transport", name: "Transporte", type: "expense", tone: "peach", active: true, usage: 1 },
+  { id: "category-subscriptions", name: "Assinaturas", type: "expense", tone: "blue", active: true, usage: 0 },
+  { id: "category-work", name: "Trabalho", type: "expense", tone: "coral", active: true, usage: 1 },
+  { id: "category-other", name: "Outros", type: "expense", tone: "blue", active: true, usage: 0 },
+  { id: "category-income", name: "Receitas", type: "income", tone: "mint", active: true, usage: 2 },
+  { id: "category-investments", name: "Investimentos", type: "income", tone: "blue", active: true, usage: 0 },
+];
+
 export type CreditInvoice = {
   id: string;
   cardId: string;
@@ -68,8 +115,6 @@ export const navItems: NavItem[] = [
   { label: "Veículo", icon: "vehicle" },
   { label: "Metas", icon: "target" },
   { label: "Orçamento", icon: "wallet" },
-  { label: "Perfil", icon: "user", section: "Pessoal" },
-  { label: "Configurações", icon: "settings" },
 ];
 
 export const cashflowData = [
@@ -123,6 +168,23 @@ export const upcomingBills = [
   { label: "Aluguel do apartamento", date: "01 set", amount: "R$ 4.129,00", days: "5 dias", tone: "lavender" },
   { label: "Ferramentas de trabalho", date: "05 set", amount: "R$ 2.840,00", days: "9 dias", tone: "blue" },
   { label: "Imposto trimestral", date: "15 set", amount: "R$ 2.210,00", days: "19 dias", tone: "mint" },
+];
+
+export const vehicleFuelEntries: VehicleFuelEntry[] = [
+  { id: "fuel-aug-1", date: "12 ago 2026", station: "Posto Ipiranga Vila Madalena", liters: 42.8, amount: 286.4, odometer: 48216, fuel: "Gasolina" },
+  { id: "fuel-jul-2", date: "28 jul 2026", station: "Shell Faria Lima", liters: 38.2, amount: 254.9, odometer: 47784, fuel: "Gasolina" },
+  { id: "fuel-jul-1", date: "13 jul 2026", station: "Auto Posto Pinheiros", liters: 40.1, amount: 267.3, odometer: 47396, fuel: "Gasolina" },
+];
+
+export const vehicleMaintenanceEntries: VehicleMaintenanceEntry[] = [
+  { id: "maintenance-1", date: "03 ago 2026", title: "Troca de óleo e filtros", workshop: "Oficina Central", amount: 480, odometer: 48090, status: "concluída" },
+  { id: "maintenance-2", date: "22 set 2026", title: "Revisão dos 50 mil km", workshop: "Agendada · Oficina Central", amount: 950, odometer: 50000, status: "agendada" },
+];
+
+export const vehicleOdometerEntries: VehicleOdometerEntry[] = [
+  { id: "odo-1", date: "12 ago 2026", odometer: 48216, note: "Abastecimento" },
+  { id: "odo-2", date: "28 jul 2026", odometer: 47784, note: "Viagem de trabalho" },
+  { id: "odo-3", date: "13 jul 2026", odometer: 47396, note: "Abastecimento" },
 ];
 
 export const formatBRL = (value: number) =>

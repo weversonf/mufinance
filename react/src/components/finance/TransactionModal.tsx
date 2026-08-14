@@ -18,9 +18,9 @@ type TransactionModalProps = {
   initialType?: Transaction["type"];
   accountOptions: string[];
   creditCards: CreditCardType[];
+  categories: string[];
 };
 
-const categories = ["Alimentação", "Moradia", "Transporte", "Assinaturas", "Trabalho", "Receitas", "Outros"];
 const invoiceMonths = ["2026-08", "2026-09", "2026-10", "2026-11"];
 
 function parseAmount(value: string) {
@@ -36,11 +36,12 @@ function fallbackDate() {
   return "2026-08-13";
 }
 
-export function TransactionModal({ open, onClose, onSubmit, editingTransaction, initialType = "expense", accountOptions, creditCards }: TransactionModalProps) {
+export function TransactionModal({ open, onClose, onSubmit, editingTransaction, initialType = "expense", accountOptions, creditCards, categories }: TransactionModalProps) {
+  const categoryOptions = categories.length ? categories : ["Outros"];
   const [type, setType] = useState<Transaction["type"]>("expense");
   const [payee, setPayee] = useState("");
   const [amount, setAmount] = useState("");
-  const [category, setCategory] = useState(categories[0]);
+  const [category, setCategory] = useState(categoryOptions[0]);
   const [sourceType, setSourceType] = useState<"account" | "credit-card">("account");
   const [sourceId, setSourceId] = useState(accountOptions[0] ?? "Conta principal");
   const [dateISO, setDateISO] = useState(fallbackDate());
@@ -61,7 +62,7 @@ export function TransactionModal({ open, onClose, onSubmit, editingTransaction, 
     setType(current?.type ?? initialType);
     setPayee(current?.payee ?? "");
     setAmount(current ? String((current.totalAmount ?? current.amount).toFixed(2)).replace(".", ",") : "");
-    setCategory(current?.category ?? categories[0]);
+    setCategory(current?.category ?? categoryOptions[0]);
     setSourceType(inferredSourceType);
     setSourceId(current?.sourceId ?? matchedCard?.id ?? current?.account ?? (inferredSourceType === "credit-card" ? cardOptions[0]?.value : accountOptions[0]) ?? "");
     setDateISO(current?.dateISO ?? fallbackDate());
@@ -69,7 +70,7 @@ export function TransactionModal({ open, onClose, onSubmit, editingTransaction, 
     setBillingKind(current?.billingKind ?? "single");
     setBillingCount(String(current?.billingCount ?? 3));
     setError("");
-  }, [open, editingTransaction, initialType, accountOptions, cardOptions, creditCards]);
+  }, [open, editingTransaction, initialType, accountOptions, cardOptions, creditCards, categoryOptions]);
 
   const close = () => {
     setError("");
@@ -137,7 +138,7 @@ export function TransactionModal({ open, onClose, onSubmit, editingTransaction, 
               <div className="transaction-type-toggle" aria-label="Tipo de transação"><button type="button" className={type === "expense" ? "is-active is-expense" : ""} onClick={() => selectType("expense")}><ArrowUpRight size={15} /><span>Despesa</span>{type === "expense" && <Check size={14} />}</button><button type="button" className={type === "income" ? "is-active is-income" : ""} onClick={() => selectType("income")}><ArrowDownLeft size={15} /><span>Receita</span>{type === "income" && <Check size={14} />}</button></div>
               <label className="form-field form-field--wide"><span>Descrição</span><div className="input-shell"><FileText size={15} /><input autoFocus value={payee} onChange={(event) => { setPayee(event.target.value); setError(""); }} placeholder="Ex.: Mercado do mês ou Netflix" /></div></label>
               <label className="form-field form-field--amount"><span>Valor total</span><div className="amount-shell"><b>R$</b><input inputMode="decimal" value={amount} onChange={(event) => { setAmount(event.target.value); setError(""); }} placeholder="0,00" /></div></label>
-              <div className="form-grid"><label className="form-field"><span>Categoria</span><div className="select-shell"><Wallet size={15} /><select value={category} onChange={(event) => setCategory(event.target.value)}>{categories.map((item) => <option key={item}>{item}</option>)}</select><ChevronDown size={14} /></div></label><label className="form-field form-field--source"><span>{type === "income" ? "Conta que recebe" : sourceType === "credit-card" ? "Cartão de crédito" : "Conta do movimento"}</span><div className="select-shell">{sourceType === "credit-card" ? <CreditCard size={15} /> : <Wallet size={15} />}<select value={sourceId} onChange={(event) => setSourceId(event.target.value)}>{sourceOptions.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select><ChevronDown size={14} /></div></label></div>
+              <div className="form-grid"><label className="form-field"><span>Categoria</span><div className="select-shell"><Wallet size={15} /><select value={category} onChange={(event) => setCategory(event.target.value)}>{categoryOptions.map((item) => <option key={item}>{item}</option>)}</select><ChevronDown size={14} /></div></label><label className="form-field form-field--source"><span>{type === "income" ? "Conta que recebe" : sourceType === "credit-card" ? "Cartão de crédito" : "Conta do movimento"}</span><div className="select-shell">{sourceType === "credit-card" ? <CreditCard size={15} /> : <Wallet size={15} />}<select value={sourceId} onChange={(event) => setSourceId(event.target.value)}>{sourceOptions.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select><ChevronDown size={14} /></div></label></div>
               <div className="source-type-picker" aria-label="Origem do movimento"><button type="button" className={sourceType === "account" ? "is-active" : ""} onClick={() => selectSourceType("account")}><Wallet size={14} /><span>Conta</span>{sourceType === "account" && <Check size={13} />}</button><button type="button" className={`${sourceType === "credit-card" ? "is-active" : ""} ${type === "income" ? "is-disabled" : ""}`} onClick={() => selectSourceType("credit-card")} disabled={type === "income"}><CreditCard size={14} /><span>Cartão de crédito</span>{sourceType === "credit-card" && <Check size={13} />}</button></div>
               {sourceType === "credit-card" && <>
                 <div className="form-grid"><label className="form-field"><span>Fatura de lançamento</span><div className="select-shell"><CreditCard size={15} /><select value={invoiceMonth} onChange={(event) => setInvoiceMonth(event.target.value)}>{invoiceMonths.map((month) => <option key={month} value={month}>{monthLabel(month, selectedCard?.dueDay ?? 28)}</option>)}</select><ChevronDown size={14} /></div></label><label className="form-field"><span>Data da compra</span><div className="input-shell"><CalendarDays size={15} /><input type="date" value={dateISO} onChange={(event) => setDateISO(event.target.value)} /></div></label></div>
