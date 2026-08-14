@@ -13,8 +13,23 @@ export type Transaction = {
   payee: string;
   category: string;
   account: string;
+  sourceType?: "account" | "credit-card";
+  sourceId?: string;
   amount: number;
   type: "income" | "expense";
+};
+
+export type CardBrand = "Visa" | "Mastercard" | "Elo" | "Amex";
+export type CardColor = "ocean" | "forest" | "plum" | "sunset" | "graphite";
+
+export type CreditCard = {
+  id: string;
+  name: string;
+  last4: string;
+  brand: CardBrand;
+  color: CardColor;
+  balance: string;
+  dueDate: string;
 };
 
 export const navItems: NavItem[] = [
@@ -51,6 +66,11 @@ export const accounts = [
   { name: "Reserva de emergência", number: "•••• 2208", value: "R$ 9.640,00", change: "+4,0%", tone: "lavender", icon: "sparkles" },
   { name: "Cartão Mu Platinum", number: "•••• 3391", value: "−R$ 842,00", change: "vence 28 ago", tone: "peach", icon: "card" },
   { name: "Caixinha viagem", number: "•••• 0117", value: "R$ 4.350,00", change: "bloqueada", tone: "blue", icon: "target" },
+];
+
+export const creditCards: CreditCard[] = [
+  { id: "mu-platinum", name: "Mu Platinum", last4: "3391", brand: "Mastercard", color: "ocean", balance: "R$ 842,00", dueDate: "vence em 28 ago" },
+  { id: "mu-travel", name: "Mu Travel", last4: "2208", brand: "Visa", color: "forest", balance: "R$ 1.284,90", dueDate: "vence em 04 set" },
 ];
 
 export const budgets = [
