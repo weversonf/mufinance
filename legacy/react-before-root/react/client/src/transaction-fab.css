@@ -1,0 +1,16 @@
+/* MuFinance React — Soft Swiss Fintech / editorial dashboard.
+   FAB circular como farol de ação: emerald disciplinado, sombra suave e presença fixa sem competir com o conteúdo. */
+
+@layer components {
+  .heading-actions > .primary-button { display: none !important; }
+  .desktop-transaction-fab { position: fixed; right: 28px; bottom: 28px; z-index: 35; display: grid; place-items: center; width: 60px; height: 60px; padding: 0; color: #fff; border: 0; border-radius: 50%; background: linear-gradient(145deg, #18a486 0%, #0d765f 100%); box-shadow: 0 16px 30px rgba(19,138,114,.28), 0 3px 8px rgba(19,138,114,.2); cursor: pointer; transition: box-shadow .2s ease, background .2s ease, transform .2s ease; }
+  .desktop-transaction-fab::after { position: absolute; right: 72px; padding: 7px 9px; color: #fff; border-radius: 8px; background: #172033; box-shadow: 0 8px 20px rgba(22,32,54,.16); content: "Adicionar transação"; font-size: 10px; font-weight: 800; letter-spacing: -.01em; opacity: 0; pointer-events: none; transform: translateX(5px); transition: opacity .18s ease, transform .18s ease; white-space: nowrap; }
+  .desktop-transaction-fab:hover { box-shadow: 0 20px 34px rgba(19,138,114,.34), 0 4px 10px rgba(19,138,114,.22); }
+  .desktop-transaction-fab:hover::after, .desktop-transaction-fab:focus-visible::after { opacity: 1; transform: translateX(0); }
+  .desktop-transaction-fab:focus-visible { outline: 3px solid rgba(19,138,114,.25); outline-offset: 4px; }
+  .desktop-transaction-fab:active { transform: scale(.94); }
+  .dark .desktop-transaction-fab { background: linear-gradient(145deg, #29b79b 0%, #0d806b 100%); box-shadow: 0 16px 30px rgba(0,0,0,.34), 0 3px 9px rgba(44,174,151,.2); }
+  .dark .desktop-transaction-fab::after { color: #edf4f4; background: #1a3040; }
+  @media (max-width: 900px) { .desktop-transaction-fab { right: 22px; bottom: 22px; } }
+  @media (max-width: 640px) { .desktop-transaction-fab { display: none; } }
+}

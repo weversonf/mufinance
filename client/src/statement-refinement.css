@@ -1,0 +1,951 @@
+/* MuFinance — refinamento do Extrato.
+   A tela prioriza uma leitura vertical clara: contexto, saldo, filtros e lançamentos, sem grids comprimidos ou overflow acidental. */
+
+.statement-page {
+  min-width: 0;
+}
+
+.statement-page > * {
+  min-width: 0;
+}
+
+.statement-page .dedicated-page-header {
+  align-items: flex-end;
+  padding-bottom: 24px;
+}
+
+.statement-page .dedicated-page-header > div:first-child {
+  min-width: 0;
+}
+
+.statement-page .dedicated-page-header h1,
+.statement-page .dedicated-page-header .page-subtitle {
+  max-width: 100%;
+}
+
+.statement-page .dedicated-page-actions {
+  flex: 0 0 auto;
+}
+
+.statement-page .statement-hero-grid,
+.statement-page .statement-layout {
+  min-width: 0;
+}
+
+.statement-page .statement-balance-card,
+.statement-page .statement-summary-card,
+.statement-page .statement-health-card,
+.statement-page .statement-insight-card,
+.statement-page .daily-balance-card,
+.statement-page .statement-transactions-card {
+  min-width: 0;
+}
+
+.statement-page .statement-balance-card,
+.statement-page .statement-summary-card,
+.statement-page .statement-health-card,
+.statement-page .statement-insight-card,
+.statement-page .daily-balance-card,
+.statement-page .statement-transactions-card {
+  overflow: hidden;
+}
+
+.statement-page .statement-health-card {
+  grid-template-columns: minmax(0, 1fr) minmax(230px, .72fr);
+}
+
+.statement-page .statement-health-copy,
+.statement-page .statement-health-metrics,
+.statement-page .statement-health-metrics > div {
+  min-width: 0;
+}
+
+.statement-page .statement-health-copy p,
+.statement-page .statement-insight-card > p:not(.eyebrow),
+.statement-page .insight-note span {
+  overflow-wrap: anywhere;
+}
+
+.statement-page .statement-toolbar {
+  flex-wrap: wrap;
+}
+
+.statement-page .statement-search {
+  flex: 1 1 240px;
+  min-width: 0;
+}
+
+.statement-page .statement-toolbar .segmented-control {
+  flex: 0 0 auto;
+}
+
+.statement-page .surface-card > .card-header {
+  min-width: 0;
+  align-items: flex-start;
+}
+
+.statement-page .surface-card > .card-header > div:first-child {
+  min-width: 0;
+}
+
+.statement-page .surface-card > .card-header h2,
+.statement-page .surface-card > .card-header .card-subtitle {
+  overflow-wrap: anywhere;
+}
+
+.statement-page .daily-balance-list {
+  min-width: 0;
+  max-height: 420px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.statement-page .daily-balance-row {
+  min-width: 0;
+}
+
+.statement-page .daily-date,
+.statement-page .daily-flow,
+.statement-page .daily-net {
+  min-width: 0;
+}
+
+.statement-page .daily-date strong,
+.statement-page .daily-net strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.statement-page .statement-transactions-card .card-header {
+  gap: 16px;
+}
+
+.statement-page .statement-count {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.statement-page .transactions-table-wrap {
+  width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.statement-page .transactions-table-wrap table {
+  width: 100%;
+  min-width: 720px;
+  table-layout: fixed;
+}
+
+.statement-page .transactions-table-wrap th,
+.statement-page .transactions-table-wrap td {
+  min-width: 0;
+}
+
+.statement-page .transactions-table-wrap th:nth-child(1),
+.statement-page .transactions-table-wrap td:nth-child(1) {
+  width: 96px;
+}
+
+.statement-page .transactions-table-wrap th:nth-child(2),
+.statement-page .transactions-table-wrap td:nth-child(2) {
+  width: 25%;
+  min-width: 180px;
+}
+
+.statement-page .transactions-table-wrap th:nth-child(3),
+.statement-page .transactions-table-wrap td:nth-child(3) {
+  width: 18%;
+  min-width: 125px;
+}
+
+.statement-page .transactions-table-wrap th:nth-child(4),
+.statement-page .transactions-table-wrap td:nth-child(4) {
+  width: 18%;
+  min-width: 130px;
+}
+
+.statement-page .transactions-table-wrap th:nth-child(5),
+.statement-page .transactions-table-wrap td:nth-child(5) {
+  width: 125px;
+}
+
+.statement-page .transactions-table-wrap th:nth-child(6),
+.statement-page .transactions-table-wrap td:nth-child(6) {
+  width: 30px;
+}
+
+.statement-page .transaction-row td:nth-child(2) strong,
+.statement-page .transaction-row td:nth-child(4) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.statement-page .transaction-row td:nth-child(2) {
+  overflow: hidden;
+}
+
+@media (max-width: 900px) {
+  .statement-page .statement-health-card {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .statement-page .statement-health-metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .statement-page .dedicated-page-header {
+    gap: 12px;
+    padding-bottom: 18px;
+  }
+
+  .statement-page .dedicated-page-actions,
+  .statement-page .dedicated-page-actions .primary-button {
+    width: 100%;
+  }
+
+  .statement-page .statement-health-metrics > div {
+    min-width: 0;
+  }
+
+  .statement-page .statement-health-metrics span {
+    min-height: 24px;
+  }
+
+  .statement-page .statement-toolbar {
+    gap: 9px;
+  }
+
+  .statement-page .statement-toolbar .segmented-control {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .statement-page .statement-toolbar .segmented-control button {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .statement-page .surface-card > .card-header {
+    gap: 11px;
+  }
+
+  .statement-page .surface-card > .card-header .card-header-symbol {
+    flex: 0 0 auto;
+  }
+
+  .statement-page .daily-balance-list {
+    max-height: none;
+    overflow: visible;
+  }
+
+  .statement-page .statement-transactions-card .card-header {
+    flex-wrap: wrap;
+  }
+
+  .statement-page .statement-count {
+    margin-left: auto;
+  }
+}
+
+.dark .statement-page .daily-balance-list {
+  scrollbar-color: #3a5960 #152533;
+}
+
+.dark .statement-page .transactions-table-wrap {
+  scrollbar-color: #3a5960 #152533;
+}
+
+/* MuFinance — controles do Extrato mensal: filtros operacionais, saldo diário separado e paginação com foco visível. */
+.statement-page .statement-toolbar--filters {
+  align-items: flex-end;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: 0 10px 28px rgba(30, 52, 75, .045);
+}
+
+.statement-page .statement-toolbar--filters .statement-search {
+  flex: 1 1 220px;
+}
+
+.statement-page .statement-filter {
+  display: grid;
+  gap: 5px;
+  flex: 0 1 180px;
+  min-width: 145px;
+}
+
+.statement-page .statement-filter span {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+}
+
+.statement-page .statement-filter select {
+  width: 100%;
+  min-height: 38px;
+  padding: 0 30px 0 11px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-soft);
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  outline: none;
+}
+
+.statement-page .statement-filter select:focus-visible,
+.statement-page .statement-filter-clear:focus-visible,
+.statement-page .statement-pagination button:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--accent) 24%, transparent);
+  outline-offset: 2px;
+}
+
+.statement-page .statement-type-filter {
+  flex: 0 0 auto;
+  min-height: 38px;
+}
+
+.statement-page .statement-filter-clear {
+  min-height: 38px;
+  white-space: nowrap;
+}
+
+.statement-page .statement-results-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 28px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.statement-page .statement-results-meta strong {
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+
+.statement-page .statement-daily-section {
+  grid-column: 1 / -1;
+}
+
+.statement-page .statement-daily-section .daily-balance-list {
+  max-height: none;
+}
+
+.statement-page .statement-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px 16px;
+  border-top: 1px solid var(--line);
+}
+
+.statement-page .statement-pagination > .icon-button:disabled {
+  cursor: not-allowed;
+  opacity: .38;
+}
+
+.statement-page .statement-pagination-pages {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.statement-page .statement-pagination-pages button {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  transition: background 160ms ease, border-color 160ms ease, color 160ms ease, transform 160ms ease;
+}
+
+.statement-page .statement-pagination-pages button:hover {
+  border-color: var(--line);
+  color: var(--text);
+  transform: translateY(-1px);
+}
+
+.statement-page .statement-pagination-pages button.is-active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 6px 14px rgba(19, 138, 114, .2);
+}
+
+@media (max-width: 900px) {
+  .statement-page .statement-toolbar--filters .statement-search {
+    flex-basis: 100%;
+  }
+
+  .statement-page .statement-filter {
+    flex: 1 1 150px;
+  }
+
+  .statement-page .statement-type-filter {
+    flex: 1 1 240px;
+  }
+}
+
+@media (max-width: 600px) {
+  .statement-page .statement-toolbar--filters {
+    align-items: stretch;
+    padding: 12px;
+  }
+
+  .statement-page .statement-filter,
+  .statement-page .statement-type-filter,
+  .statement-page .statement-filter-clear {
+    width: 100%;
+    flex-basis: 100%;
+  }
+
+  .statement-page .statement-type-filter {
+    display: flex;
+  }
+
+  .statement-page .statement-type-filter button {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .statement-page .statement-filter-clear {
+    justify-content: center;
+  }
+
+  .statement-page .statement-results-meta {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .statement-page .statement-pagination {
+    padding-inline: 12px;
+  }
+
+  .statement-page .statement-pagination-pages {
+    gap: 3px;
+  }
+}
+
+/* MuFinance — ledger diário: o saldo fecha cada bloco de data, como em um extrato financeiro operacional. */
+.statement-page .statement-ledger-card {
+  overflow: hidden;
+}
+
+.statement-page .statement-ledger {
+  display: flex;
+  flex-direction: column;
+}
+
+.statement-page .statement-ledger-columns,
+.statement-page .statement-ledger-row {
+  display: grid;
+  grid-template-columns: 96px minmax(180px, 1.35fr) minmax(125px, .9fr) minmax(130px, .95fr) minmax(104px, .76fr) 125px;
+  align-items: center;
+  gap: 14px;
+  min-width: 830px;
+}
+
+.statement-page .statement-ledger-columns {
+  padding: 13px 20px 8px;
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.statement-page .statement-ledger-columns .amount-cell {
+  text-align: right;
+}
+
+.statement-page .statement-day-group {
+  overflow: hidden;
+  margin: 0 18px 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface-soft);
+}
+
+.statement-page .statement-day-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 13px 15px;
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--surface-soft) 72%, var(--accent) 6%);
+}
+
+.statement-page .statement-day-title,
+.statement-page .statement-day-title > div {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.statement-page .statement-day-title {
+  gap: 9px;
+}
+
+.statement-page .statement-day-title > div {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+}
+
+.statement-page .statement-day-marker {
+  display: grid;
+  width: 29px;
+  height: 29px;
+  flex: 0 0 auto;
+  place-items: center;
+  color: var(--accent);
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--accent) 11%, var(--surface));
+}
+
+.statement-page .statement-day-title strong {
+  overflow: hidden;
+  color: var(--text);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.statement-page .statement-day-title span:not(.statement-day-marker) {
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.statement-page .statement-day-flow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 0 0 auto;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.statement-page .statement-day-items {
+  padding: 0 12px;
+  background: var(--surface);
+}
+
+.statement-page .statement-ledger-row {
+  min-height: 56px;
+  padding: 8px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+  cursor: pointer;
+  outline: none;
+  transition: background 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.statement-page .statement-ledger-row:last-child {
+  border-bottom: 0;
+}
+
+.statement-page .statement-ledger-row:hover,
+.statement-page .statement-ledger-row:focus-visible {
+  background: color-mix(in srgb, var(--accent) 5%, var(--surface));
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.statement-page .statement-ledger-row:active {
+  transform: scale(.998);
+}
+
+.statement-page .statement-ledger-description {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+
+.statement-page .statement-ledger-description strong,
+.statement-page .statement-ledger-account {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.statement-page .statement-ledger-row .amount-cell {
+  text-align: right;
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: -.015em;
+}
+
+.statement-page .statement-day-closing {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 16px;
+  padding: 13px 15px;
+  border-top: 1px solid color-mix(in srgb, var(--accent) 18%, var(--line));
+  background: color-mix(in srgb, var(--accent) 6%, var(--surface-soft));
+}
+
+.statement-page .statement-day-closing > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.statement-page .statement-day-closing-label {
+  color: var(--text);
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.statement-page .statement-day-closing small {
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.statement-page .statement-day-closing > strong {
+  font-size: 13px;
+  letter-spacing: -.02em;
+  white-space: nowrap;
+}
+
+.statement-page .statement-day-net {
+  min-width: 94px;
+  text-align: right;
+  font-size: 10px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.dark .statement-page .statement-day-header,
+.dark .statement-page .statement-day-closing {
+  background: color-mix(in srgb, var(--surface-soft) 82%, var(--accent) 9%);
+}
+
+.dark .statement-page .statement-day-items,
+.dark .statement-page .statement-ledger-row {
+  background: var(--surface);
+}
+
+@media (max-width: 700px) {
+  .statement-page .statement-ledger-columns {
+    display: none;
+  }
+
+  .statement-page .statement-day-group {
+    margin-inline: 12px;
+  }
+
+  .statement-page .statement-day-header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 9px;
+  }
+
+  .statement-page .statement-day-flow {
+    padding-left: 38px;
+  }
+
+  .statement-page .statement-ledger-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px 12px;
+    min-width: 0;
+    padding: 12px 5px;
+  }
+
+  .statement-page .statement-ledger-row > .muted-cell:first-child {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .statement-page .statement-ledger-description {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .statement-page .statement-ledger-row > span:nth-child(3) {
+    grid-column: 2;
+    grid-row: 2;
+    justify-self: end;
+  }
+
+  .statement-page .statement-ledger-row > span:nth-child(5) {
+    grid-column: 2;
+    grid-row: 3;
+    justify-self: end;
+  }
+
+  .statement-page .statement-ledger-account {
+    grid-column: 1;
+    grid-row: 3;
+    font-size: 9px;
+  }
+
+  .statement-page .statement-ledger-row .amount-cell {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: start;
+  }
+
+  .statement-page .statement-day-closing {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px 12px;
+  }
+
+  .statement-page .statement-day-closing > strong {
+    font-size: 12px;
+  }
+
+  .statement-page .statement-day-net {
+    grid-column: 1 / -1;
+    min-width: 0;
+    text-align: left;
+    font-size: 9px;
+  }
+}
+
+/* MuFinance — refinamento editorial: menos peso tipográfico e separadores discretos entre dias. */
+.statement-page .statement-ledger-card .card-header {
+  padding-bottom: 13px;
+}
+
+.statement-page .statement-ledger-card .card-header h2 {
+  margin-bottom: 5px;
+  font-size: 17px;
+  letter-spacing: -.04em;
+}
+
+.statement-page .statement-ledger-card .card-subtitle {
+  font-size: 10px;
+}
+
+.statement-page .statement-ledger-columns {
+  padding: 10px 20px 7px;
+  font-size: 8px;
+}
+
+.statement-page .statement-day-group {
+  margin: 0 18px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.statement-page .statement-day-group + .statement-day-group {
+  padding-top: 10px;
+  margin-top: 10px;
+  border-top: 1px solid color-mix(in srgb, var(--line) 82%, var(--accent) 18%);
+}
+
+.statement-page .statement-day-header {
+  padding: 9px 5px;
+  border-bottom-color: color-mix(in srgb, var(--line) 80%, var(--accent) 20%);
+  background: transparent;
+}
+
+.statement-page .statement-day-marker {
+  width: 25px;
+  height: 25px;
+  border-radius: 7px;
+}
+
+.statement-page .statement-day-title strong {
+  font-size: 10px;
+}
+
+.statement-page .statement-day-title span:not(.statement-day-marker) {
+  font-size: 8px;
+}
+
+.statement-page .statement-day-flow {
+  font-size: 9px;
+}
+
+.statement-page .statement-day-items {
+  padding: 0 5px;
+}
+
+.statement-page .statement-ledger-row {
+  min-height: 49px;
+  padding: 6px 3px;
+}
+
+.statement-page .statement-ledger-description {
+  gap: 8px;
+}
+
+.statement-page .statement-ledger-description strong {
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.statement-page .statement-ledger-row .category-chip,
+.statement-page .statement-ledger-row .muted-cell {
+  font-size: 9px;
+}
+
+.statement-page .statement-day-closing {
+  padding: 9px 5px;
+  border-top-color: color-mix(in srgb, var(--accent) 18%, var(--line));
+  background: color-mix(in srgb, var(--accent) 4%, var(--surface));
+}
+
+.statement-page .statement-day-closing-label {
+  font-size: 9px;
+}
+
+.statement-page .statement-day-closing small {
+  font-size: 8px;
+}
+
+.statement-page .statement-day-closing > strong {
+  font-size: 11px;
+}
+
+.statement-page .statement-day-net {
+  min-width: 84px;
+  font-size: 9px;
+}
+
+.dark .statement-page .statement-day-header,
+.dark .statement-page .statement-day-closing {
+  background: color-mix(in srgb, var(--surface) 92%, var(--accent) 8%);
+}
+
+@media (max-width: 700px) {
+  .statement-page .statement-day-group {
+    margin-inline: 12px;
+  }
+
+  .statement-page .statement-day-group + .statement-day-group {
+    padding-top: 8px;
+    margin-top: 8px;
+  }
+
+  .statement-page .statement-day-header {
+    padding-inline: 3px;
+  }
+
+  .statement-page .statement-day-items {
+    padding-inline: 3px;
+  }
+
+  .statement-page .statement-day-closing {
+    padding-inline: 3px;
+  }
+}
+
+/* MuFinance — fechamento enxuto: data centralizada e somente o saldo diário em destaque. */
+.statement-page .statement-day-header {
+  justify-content: center;
+}
+
+.statement-page .statement-day-title--centered {
+  justify-content: center;
+  width: 100%;
+}
+
+.statement-page .statement-day-title--centered > div {
+  align-items: center;
+  text-align: center;
+}
+
+.statement-page .statement-day-closing {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.statement-page .statement-day-closing-label {
+  display: block;
+}
+
+@media (max-width: 700px) {
+  .statement-page .statement-day-header {
+    align-items: center;
+  }
+
+  .statement-page .statement-day-title--centered {
+    justify-content: center;
+  }
+
+  .statement-page .statement-day-closing {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+}
+
+.statement-page .statement-filter--status {
+  min-width: 142px;
+}
+
+.statement-page .statement-status-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  min-height: 21px;
+  padding: 3px 7px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: .02em;
+  white-space: nowrap;
+}
+
+.statement-page .statement-status-chip--completed {
+  color: #18705f;
+  border-color: #bfe5dc;
+  background: #e6f6f1;
+}
+
+.statement-page .statement-status-chip--planned {
+  color: #745ca8;
+  border-color: #d9cdf2;
+  background: #f0ebfb;
+}
+
+.dark .statement-page .statement-status-chip--completed {
+  color: #a8e3d5;
+  border-color: #2a635d;
+  background: #1a4548;
+}
+
+.dark .statement-page .statement-status-chip--planned {
+  color: #d2c8f4;
+  border-color: #554a83;
+  background: #312d55;
+}
+
+@media (max-width: 700px) {
+  .statement-page .statement-filter--status {
+    min-width: 0;
+  }
+}
