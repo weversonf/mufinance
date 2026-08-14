@@ -277,4 +277,4 @@
 - [x] Copiar a aplicação React para a raiz do repositório GitHub sem apagar o legado.
 - [x] Preservar o projeto anterior em uma pasta de backup claramente identificada.
 - [x] Ajustar package.json, Vite, metadados e caminhos para build a partir da raiz.
-- [ ] Validar a raiz com check/build e sincronizar a branch main antes do deploy no Vercel.
+- [x] Validar a raiz com check/build e sincronizar a branch main antes do deploy no Vercel.
