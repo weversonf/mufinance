@@ -15,6 +15,7 @@ type TransactionModalProps = {
   onClose: () => void;
   onSubmit: (transaction: NewTransactionPayload, editingTransaction?: Transaction | null) => void;
   editingTransaction?: Transaction | null;
+  initialType?: Transaction["type"];
   accountOptions: string[];
   creditCards: CreditCardType[];
 };
@@ -35,7 +36,7 @@ function fallbackDate() {
   return "2026-08-13";
 }
 
-export function TransactionModal({ open, onClose, onSubmit, editingTransaction, accountOptions, creditCards }: TransactionModalProps) {
+export function TransactionModal({ open, onClose, onSubmit, editingTransaction, initialType = "expense", accountOptions, creditCards }: TransactionModalProps) {
   const [type, setType] = useState<Transaction["type"]>("expense");
   const [payee, setPayee] = useState("");
   const [amount, setAmount] = useState("");
@@ -57,7 +58,7 @@ export function TransactionModal({ open, onClose, onSubmit, editingTransaction, 
     const current = editingTransaction;
     const inferredSourceType = current?.sourceType ?? (current?.account.toLowerCase().includes("cartão") ? "credit-card" : "account");
     const matchedCard = creditCards.find((card) => card.id === current?.sourceId || current?.account.includes(card.last4));
-    setType(current?.type ?? "expense");
+    setType(current?.type ?? initialType);
     setPayee(current?.payee ?? "");
     setAmount(current ? String((current.totalAmount ?? current.amount).toFixed(2)).replace(".", ",") : "");
     setCategory(current?.category ?? categories[0]);
@@ -68,7 +69,7 @@ export function TransactionModal({ open, onClose, onSubmit, editingTransaction, 
     setBillingKind(current?.billingKind ?? "single");
     setBillingCount(String(current?.billingCount ?? 3));
     setError("");
-  }, [open, editingTransaction, accountOptions, cardOptions, creditCards]);
+  }, [open, editingTransaction, initialType, accountOptions, cardOptions, creditCards]);
 
   const close = () => {
     setError("");

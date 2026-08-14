@@ -27,6 +27,12 @@ export type Transaction = {
   settled?: boolean;
   settledAt?: string;
   settlementId?: string;
+  p2pRole?: "send" | "request" | "payment";
+  p2pStatus?: "pending" | "completed" | "rejected";
+  p2pCounterpartName?: string;
+  p2pRequestId?: string;
+  p2pSenderUid?: string;
+  p2pTargetUid?: string;
 };
 
 export type CardBrand = "Visa" | "Mastercard" | "Elo" | "Amex";
@@ -59,6 +65,7 @@ export const navItems: NavItem[] = [
   { label: "Extrato", icon: "receipt", badge: "12" },
   { label: "Relatórios", icon: "chart" },
   { label: "Cartões", icon: "card" },
+  { label: "Veículo", icon: "vehicle" },
   { label: "Metas", icon: "target" },
   { label: "Orçamento", icon: "wallet" },
   { label: "Perfil", icon: "user", section: "Pessoal" },
