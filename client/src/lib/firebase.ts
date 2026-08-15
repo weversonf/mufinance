@@ -3,7 +3,7 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY ?? "AIzaSyCWlVvnK1ZDnLyR1I",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY ?? "AIzaSyCWlVvnA29CnKco7mBG6LvpzDtcYmr28cY",
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN ?? "projetomu-d5722.firebaseapp.com",
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID ?? "projetomu-d5722",
   storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET ?? "projetomu-d5722.firebasestorage.app",
