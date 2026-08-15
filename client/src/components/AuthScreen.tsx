@@ -4,10 +4,15 @@ import { useAuth } from "@/contexts/AuthContext";
 
 function firebaseErrorMessage(error: unknown) {
   const code = typeof error === "object" && error && "code" in error ? String(error.code) : "";
-  if (code.includes("invalid-credential") || code.includes("wrong-password") || code.includes("user-not-found")) return "E-mail ou senha inválidos.";
+  if (code.includes("invalid-api-key")) return "A configuração do Firebase está inválida. Atualize a aplicação e tente novamente.";
+  if (code.includes("network-request-failed")) return "Não foi possível conectar ao Firebase. Verifique sua internet e tente novamente.";
+  if (code.includes("unauthorized-continue-uri")) return "O domínio do MuFinance ainda não foi autorizado no Firebase Authentication.";
+  if (code.includes("invalid-credential") || code.includes("wrong-password")) return "E-mail ou senha inválidos.";
+  if (code.includes("user-not-found")) return "Não encontramos uma conta com este e-mail.";
+  if (code.includes("user-disabled")) return "Esta conta está desativada no Firebase.";
   if (code.includes("email-already-in-use")) return "Este e-mail já possui uma conta.";
   if (code.includes("weak-password")) return "Use uma senha com pelo menos 6 caracteres.";
-  if (code.includes("invalid-email")) return "Digite um e-mail válido.";
+  if (code.includes("invalid-email") || code.includes("missing-email")) return "Digite um e-mail válido.";
   if (code.includes("too-many-requests")) return "Muitas tentativas. Aguarde alguns minutos e tente novamente.";
   if (code.includes("operation-not-allowed")) return "O login por e-mail ainda não foi ativado no Firebase.";
   if (code.includes("permission-denied") || code.includes("failed-precondition")) return "O Firestore ainda precisa ser habilitado ou configurado no projeto Firebase.";
