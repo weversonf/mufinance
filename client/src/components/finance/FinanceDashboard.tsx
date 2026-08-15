@@ -220,7 +220,7 @@ export default function FinanceDashboard() {
   const [supportView, setSupportView] = useState<SupportView>("home");
   const [supportMessage, setSupportMessage] = useState("");
   const [sessionActive, setSessionActive] = useState(true);
-  const [profile, setProfile] = useState<ProfileData>({ name: "Ben Oliveira", email: "ben@exemplo.com", username: "ben.oliveira", usernameChangedAt: null });
+  const [profile, setProfile] = useState<ProfileData>({ name: "", email: "", username: "", usernameChangedAt: null });
   const [accountBalanceAdjustment, setAccountBalanceAdjustment] = useState(0);
   const [cardDetails, setCardDetails] = useState<CreditCardData | null>(null);
   const [editingCard, setEditingCard] = useState<CreditCardData | null>(null);
@@ -236,8 +236,14 @@ export default function FinanceDashboard() {
 
   useEffect(() => {
     if (!user) return;
-    setProfile((current) => current.email === "ben@exemplo.com" ? { ...current, email: user.email ?? current.email, name: user.displayName ?? current.name } : current);
-  }, [user?.uid]);
+    const emailName = user.email?.split("@")[0]?.replace(/[._-]+/g, " ").trim() || "Usuário";
+    setProfile((current) => ({
+      ...current,
+      email: current.email || user.email || "",
+      name: current.name || user.displayName || emailName,
+      username: current.username || user.email?.split("@")[0]?.replace(/[^a-zA-Z0-9_.]/g, "").slice(0, 20) || "usuario",
+    }));
+  }, [user?.uid, user?.displayName, user?.email]);
   const { storageError } = useFinancePersistence({
     user,
     localTransactions,
