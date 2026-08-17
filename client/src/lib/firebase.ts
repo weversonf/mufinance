@@ -1,6 +1,6 @@
 import { getApp, getApps, initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { getFirestore, initializeFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY ?? "AIzaSyCWlVvnA29CnKco7mBG6LvpzDtcYmr28cY",
@@ -13,4 +13,13 @@ const firebaseConfig = {
 
 export const firebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig);
 export const firebaseAuth = getAuth(firebaseApp);
-export const firebaseDb = getFirestore(firebaseApp);
+
+// Os dados legados possuem campos opcionais; ignorar undefined evita que uma
+// única propriedade ausente impeça a persistência do estado inteiro.
+export const firebaseDb = (() => {
+  try {
+    return initializeFirestore(firebaseApp, { ignoreUndefinedProperties: true });
+  } catch {
+    return getFirestore(firebaseApp);
+  }
+})();
