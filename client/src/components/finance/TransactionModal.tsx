@@ -25,7 +25,9 @@ type TransactionModalProps = {
 const invoiceMonths = ["2026-08", "2026-09", "2026-10", "2026-11"];
 
 function parseAmount(value: string) {
-  return Number(value.replace(/\s/g, "").replace(/\./g, "").replace(",", "."));
+  const normalized = value.trim().replace(/\s/g, "");
+  if (!normalized) return NaN;
+  return Number(normalized.includes(",") ? normalized.replace(/\./g, "").replace(",", ".") : normalized);
 }
 
 function monthLabel(month: string, dueDay: number) {
@@ -38,8 +40,8 @@ function fallbackDate() {
 }
 
 export function TransactionModal({ open, onClose, onSubmit, editingTransaction, initialType = "expense", accountOptions, creditCards, categories }: TransactionModalProps) {
-  const categoryOptions = categories.length ? categories : ["Outros"];
-  const [type, setType] = useState<Transaction["type"]>("expense");
+  const categoryOptions = useMemo(() => categories.length ? categories : ["Outros"], [categories]);
+  const [type, setType] = useState<Transaction["type"]>(initialType);
   const [payee, setPayee] = useState("");
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState(categoryOptions[0]);
