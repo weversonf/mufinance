@@ -42,6 +42,7 @@ type LegacyFinanceData = {
   accounts: Account[];
   transactions: Transaction[];
   cards: CreditCard[];
+  fingerprint: string;
 };
 
 const statePath = (uid: string) => doc(firebaseDb, "users", uid, "finance", "state");
@@ -167,11 +168,15 @@ async function readLegacyFinanceData(user: User): Promise<LegacyFinanceData> {
     username: text(profileData.username),
     usernameChangedAt: text(profileData.usernameChangedAt) || null,
   } : null;
-  return {
+  const legacy = {
     profile: legacyProfile,
     accounts: mapLegacyAccounts(accountDocs),
     transactions: mapLegacyTransactions(transactionDocs, accountDocs),
     cards: mapLegacyCards(cardDocs),
+  };
+  return {
+    ...legacy,
+    fingerprint: JSON.stringify(legacy) ?? "",
   };
 }
 
@@ -194,29 +199,41 @@ export function useFinancePersistence(input: PersistenceInput) {
       try {
         const snapshot = await getDoc(statePath(user.uid));
         const currentData = snapshot.exists() ? snapshot.data() : {};
-        const needsLegacyMigration = currentData.legacyMigrated !== true;
-        const legacy = needsLegacyMigration ? await readLegacyFinanceData(user) : { profile: null, accounts: [], transactions: [], cards: [] };
+        // Sempre consultamos as coleções legadas. O marcador legacyMigrated antigo
+        // não é suficiente para indicar que a migração foi concluída corretamente.
+        const legacy = await readLegacyFinanceData(user);
+        const legacyChanged = currentData.legacySyncVersion !== legacy.fingerprint;
+        const hasLegacyData = hasLegacyFinanceData(legacy);
+        const shouldApplyLegacy = hasLegacyData && legacyChanged;
+        const useLegacyTransactions = legacy.transactions.length > 0 && (shouldApplyLegacy || !Array.isArray(currentData.localTransactions));
+        const useLegacyAccounts = legacy.accounts.length > 0 && (shouldApplyLegacy || !Array.isArray(currentData.localAccounts));
+        const useLegacyCards = legacy.cards.length > 0 && (shouldApplyLegacy || !Array.isArray(currentData.localCreditCards));
         if (cancelled) return;
 
-        if (Array.isArray(currentData.localTransactions) && !legacy.transactions.length) input.setLocalTransactions(currentData.localTransactions as Transaction[]);
-        if (Array.isArray(currentData.localAccounts) && !legacy.accounts.length) input.setLocalAccounts(currentData.localAccounts as Account[]);
-        if (Array.isArray(currentData.localCreditCards) && !legacy.cards.length) input.setLocalCreditCards(currentData.localCreditCards as CreditCard[]);
-        if (legacy.transactions.length) input.setLocalTransactions(legacy.transactions);
-        if (legacy.accounts.length) input.setLocalAccounts(legacy.accounts);
-        if (legacy.cards.length) input.setLocalCreditCards(legacy.cards);
+        if (Array.isArray(currentData.localTransactions) && !useLegacyTransactions) input.setLocalTransactions(currentData.localTransactions as Transaction[]);
+        if (Array.isArray(currentData.localAccounts) && !useLegacyAccounts) input.setLocalAccounts(currentData.localAccounts as Account[]);
+        if (Array.isArray(currentData.localCreditCards) && !useLegacyCards) input.setLocalCreditCards(currentData.localCreditCards as CreditCard[]);
+        if (useLegacyTransactions) input.setLocalTransactions(legacy.transactions);
+        if (useLegacyAccounts) input.setLocalAccounts(legacy.accounts);
+        if (useLegacyCards) input.setLocalCreditCards(legacy.cards);
         if (currentData.localVehicle && typeof currentData.localVehicle === "object") input.setLocalVehicle(currentData.localVehicle as VehicleProfile);
         if (Array.isArray(currentData.localCategories)) input.setLocalCategories(currentData.localCategories as FinanceCategory[]);
         if (Array.isArray(currentData.paidBills)) input.setPaidBills(currentData.paidBills as string[]);
-        if (currentData.profile && typeof currentData.profile === "object" && !legacy.profile) input.setProfile(currentData.profile as PersistedProfile);
-        if (legacy.profile || !currentData.profile) input.setProfile(fallbackProfile(user, legacy.profile));
+        if (shouldApplyLegacy && legacy.profile) input.setProfile(fallbackProfile(user, legacy.profile));
+        else if (currentData.profile && typeof currentData.profile === "object") input.setProfile(currentData.profile as PersistedProfile);
+        else input.setProfile(fallbackProfile(user, null));
         if (Array.isArray(currentData.p2pRequests)) input.setP2PRequests(currentData.p2pRequests as P2PRequest[]);
         if (Array.isArray(currentData.p2pActivities)) input.setP2PActivities(currentData.p2pActivities as P2PActivity[]);
         if (typeof currentData.accountBalanceAdjustment === "number") input.setAccountBalanceAdjustment(currentData.accountBalanceAdjustment);
         if (typeof currentData.compactMode === "boolean") input.setCompactMode(currentData.compactMode);
         if (typeof currentData.alertsEnabled === "boolean") input.setAlertsEnabled(currentData.alertsEnabled);
 
-        if (needsLegacyMigration) {
-          await setDoc(statePath(user.uid), { legacyMigrated: true, migratedAt: new Date().toISOString() }, { merge: true });
+        if (legacyChanged) {
+          await setDoc(statePath(user.uid), {
+            legacyMigrated: true,
+            legacySyncVersion: legacy.fingerprint,
+            migratedAt: new Date().toISOString(),
+          }, { merge: true });
         }
         setHydrated(true);
       } catch (error) {
