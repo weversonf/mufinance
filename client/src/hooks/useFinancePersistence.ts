@@ -215,7 +215,10 @@ export function useFinancePersistence(input: PersistenceInput) {
       try {
         const snapshot = await getDoc(statePath(user.uid));
         const currentData = snapshot.exists() ? snapshot.data() : {};
-        const configured = stateWasConfigured(currentData);
+        const legacy = await readLegacyFinanceData(user);
+        const legacyChanged = currentData.legacySyncVersion !== legacy.fingerprint;
+        const hasLegacyData = hasLegacyFinanceData(legacy);
+        const configured = stateWasConfigured(currentData) || hasLegacyData;
         if (cancelled) return;
 
         if (!configured) {
@@ -236,19 +239,36 @@ export function useFinancePersistence(input: PersistenceInput) {
           return;
         }
 
-        if (Array.isArray(currentData.localTransactions)) input.setLocalTransactions(currentData.localTransactions as Transaction[]);
-        if (Array.isArray(currentData.localAccounts)) input.setLocalAccounts(currentData.localAccounts as Account[]);
-        if (Array.isArray(currentData.localCreditCards)) input.setLocalCreditCards(currentData.localCreditCards as CreditCard[]);
+        const useLegacyTransactions = legacy.transactions.length > 0 && (legacyChanged || !Array.isArray(currentData.localTransactions));
+        const useLegacyAccounts = legacy.accounts.length > 0 && (legacyChanged || !Array.isArray(currentData.localAccounts));
+        const useLegacyCards = legacy.cards.length > 0 && (legacyChanged || !Array.isArray(currentData.localCreditCards));
+        if (Array.isArray(currentData.localTransactions) && !useLegacyTransactions) input.setLocalTransactions(currentData.localTransactions as Transaction[]);
+        if (Array.isArray(currentData.localAccounts) && !useLegacyAccounts) input.setLocalAccounts(currentData.localAccounts as Account[]);
+        if (Array.isArray(currentData.localCreditCards) && !useLegacyCards) input.setLocalCreditCards(currentData.localCreditCards as CreditCard[]);
+        if (useLegacyTransactions) input.setLocalTransactions(legacy.transactions);
+        if (useLegacyAccounts) input.setLocalAccounts(legacy.accounts);
+        if (useLegacyCards) input.setLocalCreditCards(legacy.cards);
         if (currentData.localVehicle && typeof currentData.localVehicle === "object") input.setLocalVehicle(currentData.localVehicle as VehicleProfile);
         if (Array.isArray(currentData.localCategories)) input.setLocalCategories(currentData.localCategories as FinanceCategory[]);
         if (Array.isArray(currentData.paidBills)) input.setPaidBills(currentData.paidBills as string[]);
-        if (currentData.profile && typeof currentData.profile === "object") input.setProfile(currentData.profile as PersistedProfile);
+        const stateProfile = currentData.profile && typeof currentData.profile === "object" ? currentData.profile as PersistedProfile : null;
+        const stateProfileConfigured = Boolean(text(stateProfile?.name).length >= 2 || text(stateProfile?.username).replace(/^@/, "").length >= 3);
+        if (legacy.profile && (!stateProfileConfigured || legacyChanged)) input.setProfile(fallbackProfile(user, legacy.profile));
+        else if (stateProfile) input.setProfile(stateProfile);
+        else input.setProfile(fallbackProfile(user, null));
         if (Array.isArray(currentData.p2pRequests)) input.setP2PRequests(currentData.p2pRequests as P2PRequest[]);
         if (Array.isArray(currentData.p2pActivities)) input.setP2PActivities(currentData.p2pActivities as P2PActivity[]);
         if (typeof currentData.accountBalanceAdjustment === "number") input.setAccountBalanceAdjustment(currentData.accountBalanceAdjustment);
         if (typeof currentData.compactMode === "boolean") input.setCompactMode(currentData.compactMode);
         if (typeof currentData.alertsEnabled === "boolean") input.setAlertsEnabled(currentData.alertsEnabled);
         input.setOnboardingComplete(true);
+        if (legacyChanged && hasLegacyData) {
+          await setDoc(statePath(user.uid), {
+            legacyMigrated: true,
+            legacySyncVersion: legacy.fingerprint,
+            migratedAt: new Date().toISOString(),
+          }, { merge: true });
+        }
         setHydrated(true);
       } catch (error) {
         console.error("Falha ao carregar dados do Firestore", error);
