@@ -33,6 +33,8 @@ type PersistenceInput = {
   setCompactMode: Dispatch<SetStateAction<boolean>>;
   alertsEnabled: boolean;
   setAlertsEnabled: Dispatch<SetStateAction<boolean>>;
+  onboardingComplete: boolean;
+  setOnboardingComplete: Dispatch<SetStateAction<boolean>>;
 };
 
 type LegacyDoc = { id: string; data: Record<string, unknown> };
@@ -46,6 +48,7 @@ type LegacyFinanceData = {
 };
 
 const statePath = (uid: string) => doc(firebaseDb, "users", uid, "finance", "state");
+const emptyVehicleProfile: VehicleProfile = { type: "car", manufacturer: "", model: "", year: new Date().getFullYear(), fuel: "Gasolina", city: "" };
 const toneCycle: Account["tone"][] = ["mint", "lavender", "peach", "blue"];
 const cardColors: CreditCard["color"][] = ["ocean", "forest", "plum", "sunset", "graphite"];
 const acceptedBrands: CreditCard["brand"][] = ["Visa", "Mastercard", "Elo", "Amex"];
@@ -184,6 +187,16 @@ function hasLegacyFinanceData(data: LegacyFinanceData) {
   return Boolean(data.profile?.name || data.profile?.email || data.accounts.length || data.transactions.length || data.cards.length);
 }
 
+function stateWasConfigured(data: Record<string, unknown>) {
+  if (data.onboardingComplete === true) return true;
+  const profile = data.profile && typeof data.profile === "object" ? data.profile as Record<string, unknown> : null;
+  const profileConfigured = Boolean(text(profile?.name).length >= 2 || text(profile?.username).replace(/^@/, "").length >= 3);
+  const hasSavedCollections = ["localAccounts", "localCreditCards", "localTransactions"].some((key) => Array.isArray(data[key]) && (data[key] as unknown[]).length > 0);
+  const legacySyncVersion = text(data.legacySyncVersion);
+  const legacyStateWasConfigured = legacySyncVersion.includes('"profile"') && legacySyncVersion.includes('"name"');
+  return profileConfigured || hasSavedCollections || legacyStateWasConfigured;
+}
+
 export function useFinancePersistence(input: PersistenceInput) {
   const { user } = input;
   const [hydrated, setHydrated] = useState(false);
@@ -199,42 +212,40 @@ export function useFinancePersistence(input: PersistenceInput) {
       try {
         const snapshot = await getDoc(statePath(user.uid));
         const currentData = snapshot.exists() ? snapshot.data() : {};
-        // Sempre consultamos as coleções legadas. O marcador legacyMigrated antigo
-        // não é suficiente para indicar que a migração foi concluída corretamente.
-        const legacy = await readLegacyFinanceData(user);
-        const legacyChanged = currentData.legacySyncVersion !== legacy.fingerprint;
-        const hasLegacyData = hasLegacyFinanceData(legacy);
-        const shouldApplyLegacy = hasLegacyData && legacyChanged;
-        const useLegacyTransactions = legacy.transactions.length > 0 && (shouldApplyLegacy || !Array.isArray(currentData.localTransactions));
-        const useLegacyAccounts = legacy.accounts.length > 0 && (shouldApplyLegacy || !Array.isArray(currentData.localAccounts));
-        const useLegacyCards = legacy.cards.length > 0 && (shouldApplyLegacy || !Array.isArray(currentData.localCreditCards));
+        const configured = stateWasConfigured(currentData);
         if (cancelled) return;
 
-        if (Array.isArray(currentData.localTransactions) && !useLegacyTransactions) input.setLocalTransactions(currentData.localTransactions as Transaction[]);
-        if (Array.isArray(currentData.localAccounts) && !useLegacyAccounts) input.setLocalAccounts(currentData.localAccounts as Account[]);
-        if (Array.isArray(currentData.localCreditCards) && !useLegacyCards) input.setLocalCreditCards(currentData.localCreditCards as CreditCard[]);
-        if (useLegacyTransactions) input.setLocalTransactions(legacy.transactions);
-        if (useLegacyAccounts) input.setLocalAccounts(legacy.accounts);
-        if (useLegacyCards) input.setLocalCreditCards(legacy.cards);
+        if (!configured) {
+          input.setLocalTransactions([]);
+          input.setLocalAccounts([]);
+          input.setLocalCreditCards([]);
+          input.setLocalVehicle(emptyVehicleProfile);
+          input.setLocalCategories([]);
+          input.setPaidBills([]);
+          input.setProfile({ name: "", email: user.email ?? "", username: "", usernameChangedAt: null });
+          input.setP2PRequests([]);
+          input.setP2PActivities([]);
+          input.setAccountBalanceAdjustment(0);
+          input.setCompactMode(false);
+          input.setAlertsEnabled(true);
+          input.setOnboardingComplete(false);
+          setHydrated(true);
+          return;
+        }
+
+        if (Array.isArray(currentData.localTransactions)) input.setLocalTransactions(currentData.localTransactions as Transaction[]);
+        if (Array.isArray(currentData.localAccounts)) input.setLocalAccounts(currentData.localAccounts as Account[]);
+        if (Array.isArray(currentData.localCreditCards)) input.setLocalCreditCards(currentData.localCreditCards as CreditCard[]);
         if (currentData.localVehicle && typeof currentData.localVehicle === "object") input.setLocalVehicle(currentData.localVehicle as VehicleProfile);
         if (Array.isArray(currentData.localCategories)) input.setLocalCategories(currentData.localCategories as FinanceCategory[]);
         if (Array.isArray(currentData.paidBills)) input.setPaidBills(currentData.paidBills as string[]);
-        if (shouldApplyLegacy && legacy.profile) input.setProfile(fallbackProfile(user, legacy.profile));
-        else if (currentData.profile && typeof currentData.profile === "object") input.setProfile(currentData.profile as PersistedProfile);
-        else input.setProfile(fallbackProfile(user, null));
+        if (currentData.profile && typeof currentData.profile === "object") input.setProfile(currentData.profile as PersistedProfile);
         if (Array.isArray(currentData.p2pRequests)) input.setP2PRequests(currentData.p2pRequests as P2PRequest[]);
         if (Array.isArray(currentData.p2pActivities)) input.setP2PActivities(currentData.p2pActivities as P2PActivity[]);
         if (typeof currentData.accountBalanceAdjustment === "number") input.setAccountBalanceAdjustment(currentData.accountBalanceAdjustment);
         if (typeof currentData.compactMode === "boolean") input.setCompactMode(currentData.compactMode);
         if (typeof currentData.alertsEnabled === "boolean") input.setAlertsEnabled(currentData.alertsEnabled);
-
-        if (legacyChanged) {
-          await setDoc(statePath(user.uid), {
-            legacyMigrated: true,
-            legacySyncVersion: legacy.fingerprint,
-            migratedAt: new Date().toISOString(),
-          }, { merge: true });
-        }
+        input.setOnboardingComplete(true);
         setHydrated(true);
       } catch (error) {
         console.error("Falha ao carregar dados do Firestore", error);
@@ -266,6 +277,7 @@ export function useFinancePersistence(input: PersistenceInput) {
           accountBalanceAdjustment: input.accountBalanceAdjustment,
           compactMode: input.compactMode,
           alertsEnabled: input.alertsEnabled,
+          onboardingComplete: input.onboardingComplete,
           updatedAt: new Date().toISOString(),
         }, { merge: true });
         setStorageError(null);
@@ -275,7 +287,7 @@ export function useFinancePersistence(input: PersistenceInput) {
       }
     }, 500);
     return () => window.clearTimeout(timer);
-  }, [hydrated, user?.uid, input.localTransactions, input.localAccounts, input.localCreditCards, input.localVehicle, input.localCategories, input.paidBills, input.profile, input.p2pRequests, input.p2pActivities, input.accountBalanceAdjustment, input.compactMode, input.alertsEnabled]);
+  }, [hydrated, user?.uid, input.localTransactions, input.localAccounts, input.localCreditCards, input.localVehicle, input.localCategories, input.paidBills, input.profile, input.p2pRequests, input.p2pActivities, input.accountBalanceAdjustment, input.compactMode, input.alertsEnabled, input.onboardingComplete]);
 
   return { hydrated, storageError };
 }
