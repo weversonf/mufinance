@@ -1,4 +1,4 @@
-import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
+import { useCallback, useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import { collection, doc, getDoc, getDocs, query, setDoc, where } from "firebase/firestore";
 import type { User } from "firebase/auth";
 import { firebaseDb } from "@/lib/firebase";
@@ -36,6 +36,9 @@ type PersistenceInput = {
   onboardingComplete: boolean;
   setOnboardingComplete: Dispatch<SetStateAction<boolean>>;
 };
+
+type PersistedState = Pick<PersistenceInput, "localTransactions" | "localAccounts" | "localCreditCards" | "localVehicle" | "localCategories" | "paidBills" | "profile" | "p2pRequests" | "p2pActivities" | "accountBalanceAdjustment" | "compactMode" | "alertsEnabled" | "onboardingComplete">;
+type PersistNowOverrides = Partial<PersistedState>;
 
 type LegacyDoc = { id: string; data: Record<string, unknown> };
 
@@ -289,5 +292,32 @@ export function useFinancePersistence(input: PersistenceInput) {
     return () => window.clearTimeout(timer);
   }, [hydrated, user?.uid, input.localTransactions, input.localAccounts, input.localCreditCards, input.localVehicle, input.localCategories, input.paidBills, input.profile, input.p2pRequests, input.p2pActivities, input.accountBalanceAdjustment, input.compactMode, input.alertsEnabled, input.onboardingComplete]);
 
-  return { hydrated, storageError };
+  const persistNow = useCallback(async (overrides: PersistNowOverrides = {}) => {
+    if (!user || !hydrated) return;
+    try {
+      await setDoc(statePath(user.uid), {
+        localTransactions: overrides.localTransactions ?? input.localTransactions,
+        localAccounts: overrides.localAccounts ?? input.localAccounts,
+        localCreditCards: overrides.localCreditCards ?? input.localCreditCards,
+        localVehicle: overrides.localVehicle ?? input.localVehicle,
+        localCategories: overrides.localCategories ?? input.localCategories,
+        paidBills: overrides.paidBills ?? input.paidBills,
+        profile: overrides.profile ?? input.profile,
+        p2pRequests: overrides.p2pRequests ?? input.p2pRequests,
+        p2pActivities: overrides.p2pActivities ?? input.p2pActivities,
+        accountBalanceAdjustment: overrides.accountBalanceAdjustment ?? input.accountBalanceAdjustment,
+        compactMode: overrides.compactMode ?? input.compactMode,
+        alertsEnabled: overrides.alertsEnabled ?? input.alertsEnabled,
+        onboardingComplete: overrides.onboardingComplete ?? input.onboardingComplete,
+        updatedAt: new Date().toISOString(),
+      }, { merge: true });
+      setStorageError(null);
+    } catch (error) {
+      console.error("Falha ao salvar dados do Firestore", error);
+      setStorageError("Não foi possível salvar a última alteração no Firestore.");
+      throw error;
+    }
+  }, [hydrated, input.accountBalanceAdjustment, input.alertsEnabled, input.compactMode, input.localAccounts, input.localCategories, input.localCreditCards, input.localTransactions, input.localVehicle, input.onboardingComplete, input.p2pActivities, input.p2pRequests, input.paidBills, input.profile, user?.uid]);
+
+  return { hydrated, storageError, persistNow };
 }
