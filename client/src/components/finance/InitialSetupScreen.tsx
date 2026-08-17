@@ -15,7 +15,7 @@ export type InitialSetupData = {
   cards: CreditCardData[];
 };
 
-type AccountDraft = { name: string; last4: string; balance: string };
+type AccountDraft = { name: string; balance: string };
 type CardDraft = { name: string; last4: string; brand: CardBrand; limit: string; closingDay: string; dueDay: string; color: CardColor };
 
 const accountTones: Account["tone"][] = ["mint", "lavender", "peach", "blue"];
@@ -28,7 +28,7 @@ const cardColors: { value: CardColor; label: string }[] = [
 ];
 const cardBrands: CardBrand[] = ["Visa", "Mastercard", "Elo", "Amex"];
 
-const emptyAccount = (): AccountDraft => ({ name: "", last4: "", balance: "0" });
+const emptyAccount = (): AccountDraft => ({ name: "", balance: "0" });
 const emptyCard = (): CardDraft => ({ name: "", last4: "", brand: "Visa", limit: "", closingDay: "20", dueDay: "28", color: "ocean" });
 
 function parseBRL(value: string) {
@@ -73,10 +73,9 @@ export function InitialSetupScreen({ email, onComplete }: { email: string; onCom
   };
 
   const buildAccounts = () => {
-    const filled = accounts.filter((item) => item.name.trim() || item.last4.trim() || parseBRL(item.balance) !== 0);
+    const filled = accounts.filter((item) => item.name.trim() || parseBRL(item.balance) !== 0);
     for (const item of filled) {
       if (!item.name.trim()) return { error: "Informe um nome para cada conta preenchida." };
-      if (!/^\d{4}$/.test(item.last4)) return { error: `Digite os quatro últimos números da conta ${item.name}.` };
     }
     return {
       error: "",
@@ -84,7 +83,7 @@ export function InitialSetupScreen({ email, onComplete }: { email: string; onCom
         const balance = parseBRL(item.balance);
         return {
           name: item.name.trim(),
-          number: `•••• ${item.last4}`,
+          number: "",
           value: formatBRL(balance),
           balance,
           change: "",
@@ -164,7 +163,7 @@ export function InitialSetupScreen({ email, onComplete }: { email: string; onCom
         </form>}
 
         {step === 1 && <form className="setup-form" onSubmit={next}>
-          <div className="setup-list">{accounts.map((account, index) => <div className="setup-item" key={`account-${index}`}><div className="setup-item-heading"><div><strong>Conta {index + 1}</strong><small>Saldo inicial opcional</small></div>{accounts.length > 1 && <button type="button" className="setup-remove" onClick={() => setAccounts((current) => current.filter((_, itemIndex) => itemIndex !== index))} aria-label={`Remover conta ${index + 1}`}><Trash2 size={15} /></button>}</div><div className="setup-grid"><label className="setup-field"><span>Nome da conta</span><input autoFocus={index === 0} value={account.name} onChange={(event) => updateAccount(index, "name", event.target.value)} placeholder="Ex.: Nubank" /></label><label className="setup-field"><span>Últimos 4 números</span><input inputMode="numeric" maxLength={4} value={account.last4} onChange={(event) => updateAccount(index, "last4", event.target.value.replace(/\D/g, ""))} placeholder="0000" /></label><label className="setup-field setup-field--wide"><span>Saldo atual</span><div className="setup-input-prefix"><b>R$</b><input inputMode="decimal" value={account.balance} onChange={(event) => updateAccount(index, "balance", event.target.value)} placeholder="0,00" /></div></label></div></div>)}</div><button type="button" className="setup-secondary setup-secondary--full" onClick={() => setAccounts((current) => [...current, emptyAccount()])}><Plus size={15} /> Adicionar outra conta</button>{error && <p className="setup-error" role="alert">{error}</p>}<div className="setup-actions"><button type="button" className="setup-back" onClick={back}><ArrowLeft size={15} /> Voltar</button><button className="setup-primary" type="submit">Continuar <ArrowRight size={16} /></button></div></form>}
+          <div className="setup-list">{accounts.map((account, index) => <div className="setup-item" key={`account-${index}`}><div className="setup-item-heading"><div><strong>Conta {index + 1}</strong><small>Saldo inicial opcional</small></div>{accounts.length > 1 && <button type="button" className="setup-remove" onClick={() => setAccounts((current) => current.filter((_, itemIndex) => itemIndex !== index))} aria-label={`Remover conta ${index + 1}`}><Trash2 size={15} /></button>}</div><div className="setup-grid"><label className="setup-field"><span>Nome da conta</span><input autoFocus={index === 0} value={account.name} onChange={(event) => updateAccount(index, "name", event.target.value)} placeholder="Ex.: Nubank" /></label><label className="setup-field setup-field--wide"><span>Saldo atual</span><div className="setup-input-prefix"><b>R$</b><input inputMode="decimal" value={account.balance} onChange={(event) => updateAccount(index, "balance", event.target.value)} placeholder="0,00" /></div></label></div></div>)}</div><button type="button" className="setup-secondary setup-secondary--full" onClick={() => setAccounts((current) => [...current, emptyAccount()])}><Plus size={15} /> Adicionar outra conta</button>{error && <p className="setup-error" role="alert">{error}</p>}<div className="setup-actions"><button type="button" className="setup-back" onClick={back}><ArrowLeft size={15} /> Voltar</button><button className="setup-primary" type="submit">Continuar <ArrowRight size={16} /></button></div></form>}
 
         {step === 2 && <form className="setup-form" onSubmit={next}>
           {cards.length === 0 && <div className="setup-empty"><CreditCard size={22} /><strong>Nenhum cartão cadastrado</strong><span>Você pode começar sem cartões e adicioná-los depois.</span></div>}
