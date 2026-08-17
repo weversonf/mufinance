@@ -225,7 +225,7 @@ export default function FinanceDashboard() {
       username: current.username || "",
     }));
   }, [user?.uid, user?.displayName, user?.email]);
-  const { storageError } = useFinancePersistence({
+  const { storageError, persistNow } = useFinancePersistence({
     user,
     localTransactions,
     setLocalTransactions,
@@ -503,7 +503,10 @@ export default function FinanceDashboard() {
     const name = nextAccount.name.trim();
     const balance = Number.isFinite(nextAccount.balance) ? nextAccount.balance : 0;
     const previousName = selectedAccount ?? nextAccount.name;
-    setLocalAccounts((current) => current.map((item) => item.name === previousName ? { ...nextAccount, name, number: "", balance, value: formatBRL(balance) } : item));
+    const updatedAccount = { ...nextAccount, name, number: "", balance, value: formatBRL(balance) };
+    const updatedAccounts = localAccounts.map((item) => item.name === previousName ? updatedAccount : item);
+    setLocalAccounts(updatedAccounts);
+    void persistNow({ localAccounts: updatedAccounts }).catch(() => undefined);
     setSelectedAccount(name);
     setSelectedBill(null);
     setSelectedTransaction(null);
