@@ -190,6 +190,15 @@ function hasLegacyFinanceData(data: LegacyFinanceData) {
   return Boolean(data.profile?.name || data.profile?.email || data.accounts.length || data.transactions.length || data.cards.length);
 }
 
+function mergeDefaultCategories(persisted: FinanceCategory[]) {
+  const existingKeys = new Set(persisted.map((category) => `${category.type}:${category.name.trim().toLocaleLowerCase("pt-BR")}`));
+  const missingDefaults = defaultFinanceCategories.filter((category) => {
+    const key = `${category.type}:${category.name.trim().toLocaleLowerCase("pt-BR")}`;
+    return !existingKeys.has(key);
+  });
+  return [...persisted, ...missingDefaults];
+}
+
 function stateWasConfigured(data: Record<string, unknown>) {
   if (data.onboardingComplete === true) return true;
   const profile = data.profile && typeof data.profile === "object" ? data.profile as Record<string, unknown> : null;
@@ -250,7 +259,7 @@ export function useFinancePersistence(input: PersistenceInput) {
         if (useLegacyCards) input.setLocalCreditCards(legacy.cards);
         if (currentData.localVehicle && typeof currentData.localVehicle === "object") input.setLocalVehicle(currentData.localVehicle as VehicleProfile);
         const persistedCategories = Array.isArray(currentData.localCategories) ? currentData.localCategories as FinanceCategory[] : [];
-        input.setLocalCategories(persistedCategories.length ? persistedCategories : defaultFinanceCategories);
+        input.setLocalCategories(persistedCategories.length ? mergeDefaultCategories(persistedCategories) : defaultFinanceCategories);
         if (Array.isArray(currentData.paidBills)) input.setPaidBills(currentData.paidBills as string[]);
         const stateProfile = currentData.profile && typeof currentData.profile === "object" ? currentData.profile as PersistedProfile : null;
         const stateProfileConfigured = Boolean(text(stateProfile?.name).length >= 2 || text(stateProfile?.username).replace(/^@/, "").length >= 3);

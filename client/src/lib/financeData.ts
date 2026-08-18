@@ -119,14 +119,38 @@ export type VehicleOdometerEntry = {
 };
 
 export const defaultFinanceCategories: FinanceCategory[] = [
-  { id: "category-food", name: "Alimentação", type: "expense", tone: "lavender", active: true, usage: 1 },
-  { id: "category-housing", name: "Moradia", type: "expense", tone: "mint", active: true, usage: 1 },
-  { id: "category-transport", name: "Transporte", type: "expense", tone: "peach", active: true, usage: 1 },
+  // Despesas vindas do seed padrão do index.html legado.
+  { id: "category-supermarket", name: "Supermercado", type: "expense", tone: "peach", active: true, usage: 0 },
+  { id: "category-food", name: "Alimentação", type: "expense", tone: "lavender", active: true, usage: 0 },
+  { id: "category-transport", name: "Transporte", type: "expense", tone: "peach", active: true, usage: 0 },
+  { id: "category-bills", name: "Contas e Utilidades", type: "expense", tone: "blue", active: true, usage: 0 },
+  { id: "category-education", name: "Educação", type: "expense", tone: "lavender", active: true, usage: 0 },
+  { id: "category-leisure", name: "Lazer", type: "expense", tone: "coral", active: true, usage: 0 },
+  { id: "category-travel", name: "Viagem", type: "expense", tone: "blue", active: true, usage: 0 },
+  { id: "category-shopping", name: "Compras", type: "expense", tone: "lavender", active: true, usage: 0 },
   { id: "category-subscriptions", name: "Assinaturas", type: "expense", tone: "blue", active: true, usage: 0 },
-  { id: "category-work", name: "Trabalho", type: "expense", tone: "coral", active: true, usage: 1 },
+  { id: "category-alcohol", name: "Bebidas Alcoólicas", type: "expense", tone: "coral", active: true, usage: 0 },
+  { id: "category-services", name: "Serviços", type: "expense", tone: "mint", active: true, usage: 0 },
+  { id: "category-pet", name: "Pet", type: "expense", tone: "peach", active: true, usage: 0 },
+  { id: "category-gift-expense", name: "Presente", type: "expense", tone: "coral", active: true, usage: 0 },
+  { id: "category-taxes", name: "Impostos e Taxas", type: "expense", tone: "coral", active: true, usage: 0 },
+  { id: "category-insurance", name: "Seguros", type: "expense", tone: "blue", active: true, usage: 0 },
+  { id: "category-credit-card", name: "Cartão de Crédito", type: "expense", tone: "lavender", active: true, usage: 0 },
+  { id: "category-vehicle", name: "Veículo", type: "expense", tone: "peach", active: true, usage: 0 },
+  // Categorias que já faziam parte da versão React atual.
+  { id: "category-housing", name: "Moradia", type: "expense", tone: "mint", active: true, usage: 0 },
+  { id: "category-work", name: "Trabalho", type: "expense", tone: "coral", active: true, usage: 0 },
   { id: "category-other", name: "Outros", type: "expense", tone: "blue", active: true, usage: 0 },
-  { id: "category-income", name: "Receitas", type: "income", tone: "mint", active: true, usage: 2 },
+  // Receitas vindas do seed padrão do index.html legado.
+  { id: "category-salary", name: "Salário", type: "income", tone: "mint", active: true, usage: 0 },
+  { id: "category-freelance", name: "Freelance", type: "income", tone: "blue", active: true, usage: 0 },
   { id: "category-investments", name: "Investimentos", type: "income", tone: "blue", active: true, usage: 0 },
+  { id: "category-sales", name: "Vendas", type: "income", tone: "peach", active: true, usage: 0 },
+  { id: "category-gift-income", name: "Presente", type: "income", tone: "coral", active: true, usage: 0 },
+  { id: "category-refund", name: "Reembolso", type: "income", tone: "mint", active: true, usage: 0 },
+  { id: "category-rent-income", name: "Aluguel Recebido", type: "income", tone: "lavender", active: true, usage: 0 },
+  { id: "category-other-income", name: "Outros", type: "income", tone: "blue", active: true, usage: 0 },
+  { id: "category-income", name: "Receitas", type: "income", tone: "mint", active: true, usage: 0 },
 ];
 
 export type CreditInvoice = {
