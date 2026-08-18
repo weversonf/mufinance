@@ -413,7 +413,43 @@
   .billing-type-picker button.is-active { color: #138a72; background: #fff; box-shadow: 0 2px 7px rgba(30,45,65,.08); }
   .billing-field .form-field { margin-top: 2px; }
   .billing-hint { margin: 0; color: #9aa4b2; font-size: 9px; line-height: 1.45; }
-  .modal-panel--transaction { width: min(100%, 620px); }
+  .modal-panel--transaction { width: min(100%, 680px); max-height: min(760px, calc(100dvh - 28px)); padding: 24px; border-radius: 22px; }
+  .modal-panel--transaction .modal-header { margin-bottom: 18px; padding-bottom: 16px; border-bottom: 1px solid #edf0f4; }
+  .modal-panel--transaction .modal-heading h2 { font-size: 24px; }
+  .modal-panel--transaction .modal-heading p:last-child { max-width: 460px; line-height: 1.4; }
+  .modal-panel--transaction .transaction-form { gap: 15px 14px; }
+  .modal-panel--transaction .transaction-type-toggle { gap: 6px; padding: 4px; border-radius: 12px; }
+  .modal-panel--transaction .transaction-type-toggle button { min-height: 42px; border-radius: 9px; font-size: 11px; }
+  .modal-panel--transaction .transaction-type-toggle button.is-active.is-income { color: #138a72; background: #e5f6f1; box-shadow: 0 4px 12px rgba(19,138,114,.12); }
+  .modal-panel--transaction .transaction-type-toggle button.is-active.is-expense { color: #d77970; background: #fff0ed; box-shadow: 0 4px 12px rgba(217,121,112,.12); }
+  .modal-panel--transaction .transaction-type-toggle button.is-active.is-card-expense { color: #8271c4; background: #f0edff; box-shadow: 0 4px 12px rgba(130,113,196,.12); }
+  .modal-panel--transaction .transaction-type-toggle button.is-active.is-transfer { color: #3c83b0; background: #eaf4fb; box-shadow: 0 4px 12px rgba(60,131,176,.12); }
+  .modal-panel--transaction .form-field > span { letter-spacing: .015em; }
+  .transaction-switch-row { display: grid; grid-template-columns: 34px minmax(0, 1fr); align-items: center; gap: 10px; min-height: 62px; padding: 12px 14px; border: 1px solid #e5ebef; border-radius: 12px; background: #f8fafc; }
+  .transaction-switch-row [data-slot="switch"] { width: 34px; height: 20px; }
+  .transaction-switch-row [data-slot="switch-thumb"] { width: 16px; height: 16px; }
+  .transaction-switch-row label { display: flex; min-width: 0; flex-direction: column; gap: 3px; cursor: pointer; }
+  .transaction-switch-row label strong { color: #344053; font-size: 11px; line-height: 1.2; }
+  .transaction-switch-row label span { color: #8b97a5; font-size: 9px; line-height: 1.4; }
+  .transaction-switch-row [data-state="checked"] { background: #138a72; }
+  .transaction-status-field { gap: 8px; padding: 14px; }
+  .transaction-status-field legend { color: #718095; font-size: 10px; font-weight: 700; letter-spacing: .02em; }
+  .modal-panel--transaction .billing-field { gap: 11px; padding: 14px; }
+  .modal-panel--transaction .billing-type-picker { gap: 6px; padding: 4px; border-radius: 10px; }
+  .modal-panel--transaction .billing-type-picker button { min-height: 38px; border-radius: 8px; font-size: 10px; }
+  .modal-panel--transaction .billing-hint { padding: 2px 1px 0; font-size: 10px; }
+  .modal-panel--transaction .modal-actions { gap: 10px; padding-top: 14px; }
+  .modal-panel--transaction .modal-actions .soft-button, .modal-panel--transaction .modal-submit { min-height: 42px; }
+  .dark .modal-panel--transaction .modal-header { border-color: #2a394d; }
+  .dark .modal-panel--transaction .transaction-type-toggle button.is-active.is-income { color: #7fd7c4; background: #1b4646; }
+  .dark .modal-panel--transaction .transaction-type-toggle button.is-active.is-expense { color: #f3a39a; background: #4a2c32; }
+  .dark .modal-panel--transaction .transaction-type-toggle button.is-active.is-card-expense { color: #c7bdf3; background: #383451; }
+  .dark .modal-panel--transaction .transaction-type-toggle button.is-active.is-transfer { color: #9bc8e4; background: #203c51; }
+  .dark .transaction-switch-row { border-color: #2a394d; background: #122030; }
+  .dark .transaction-switch-row label strong { color: #edf3f4; }
+  .dark .transaction-switch-row label span { color: #9caabd; }
+  .dark .transaction-status-field legend { color: #a9b6c5; }
+  .dark .modal-panel--transaction .transaction-switch-row [data-state="checked"] { background: #55bdaa; }
   .dark .period-tabs, .dark .billing-type-picker, .dark .billing-field { background: #122030; }
   .dark .period-arrow { color: #a9b6c5; border-color: #2a394d; background: #172536; }
   .dark .period-arrow:hover { color: #7fd7c4; border-color: #39706b; background: #1b4646; }
@@ -427,6 +463,16 @@
   .dark .billing-field { border-color: #2a394d; }
   .dark .billing-field legend, .dark .billing-hint { color: #a9b6c5; }
   @media (max-width: 640px) {
+    .modal-panel--transaction { width: 100%; max-height: calc(100dvh - 16px); padding: 18px 16px; border-radius: 18px; }
+    .modal-panel--transaction .modal-heading h2 { font-size: 21px; }
+    .modal-panel--transaction .modal-heading p:last-child { font-size: 10px; }
+    .modal-panel--transaction .transaction-form { grid-template-columns: 1fr; gap: 13px; }
+    .modal-panel--transaction .transaction-type-toggle { gap: 4px; }
+    .modal-panel--transaction .transaction-type-toggle button { min-height: 40px; padding: 0 5px; gap: 4px; font-size: 10px; }
+    .modal-panel--transaction .transaction-type-toggle button svg:first-child { width: 14px; }
+    .transaction-switch-row { min-height: 58px; padding: 11px 12px; }
+    .modal-panel--transaction .modal-actions { position: sticky; bottom: -18px; margin: 0 -16px -18px; padding: 12px 16px 18px; background: inherit; }
+    .modal-panel--transaction .modal-actions .soft-button, .modal-panel--transaction .modal-submit { flex: 1; }
     .period-menu--calendar { right: -34px; width: 244px; }
     .period-controls { width: 100%; }
     .credit-center-stats { gap: 7px; padding: 10px; }
