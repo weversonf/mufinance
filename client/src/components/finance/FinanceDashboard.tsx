@@ -64,7 +64,7 @@ import {
   YAxis,
 } from "recharts";
 import { toast } from "sonner";
-import { formatBRL, formatCompactBRL, getTransactionStatus, navItems, transactionStatusLabel, type Account, type CreditCard as CreditCardData, type FinanceCategory, type Transaction, type VehicleProfile } from "@/lib/financeData";
+import { defaultFinanceCategories, formatBRL, formatCompactBRL, getTransactionStatus, navItems, transactionStatusLabel, type Account, type CreditCard as CreditCardData, type FinanceCategory, type Transaction, type VehicleProfile } from "@/lib/financeData";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useFinancePersistence } from "@/hooks/useFinancePersistence";
@@ -180,7 +180,7 @@ export default function FinanceDashboard() {
   const [localAccounts, setLocalAccounts] = useState<Account[]>([]);
   const [localCreditCards, setLocalCreditCards] = useState<CreditCardData[]>([]);
   const [localVehicle, setLocalVehicle] = useState<VehicleProfile>(emptyVehicle);
-  const [localCategories, setLocalCategories] = useState<FinanceCategory[]>([]);
+  const [localCategories, setLocalCategories] = useState<FinanceCategory[]>(defaultFinanceCategories);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [actionPanel, setActionPanel] = useState<ActionPanel>(null);
   const [selectedBill, setSelectedBill] = useState<string | null>(null);
@@ -315,7 +315,7 @@ export default function FinanceDashboard() {
   const budgets: { label: string; value: string; limit: string; progress: number; tone: string }[] = [];
 
   const searchResults = searchItems.filter((item) => item.label.toLowerCase().includes(globalSearch.toLowerCase())).slice(0, 5);
-  const activeCategoryOptions = useMemo(() => localCategories.filter((item) => item.active).map((item) => item.name), [localCategories]);
+  const activeCategoryOptions = useMemo(() => localCategories.filter((item) => item.active), [localCategories]);
   const transactionAccountOptions = useMemo(() => Array.from(new Set(localAccounts.filter((item) => item.icon !== "card").map((item) => item.name).concat(localTransactions.filter((item) => item.sourceType !== "credit-card" && !item.account.toLowerCase().includes("cartão")).map((item) => item.account)))), [localAccounts, localTransactions]);
   const periodTotals = useMemo(() => {
     const income = periodTransactions.filter((item) => item.type === "income").reduce((sum, item) => sum + item.amount, 0);

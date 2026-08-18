@@ -3,7 +3,7 @@ import { collection, doc, getDoc, getDocs, query, setDoc, where } from "firebase
 import type { User } from "firebase/auth";
 import { firebaseDb } from "@/lib/firebase";
 import type { P2PActivity, P2PContact, P2PRequest } from "@/components/finance/P2PDialog";
-import { formatBRL, type Account, type CreditCard, type FinanceCategory, type Transaction, type VehicleProfile } from "@/lib/financeData";
+import { defaultFinanceCategories, formatBRL, type Account, type CreditCard, type FinanceCategory, type Transaction, type VehicleProfile } from "@/lib/financeData";
 
 type PersistedProfile = { name: string; email: string; username: string; usernameChangedAt: string | null };
 
@@ -226,7 +226,7 @@ export function useFinancePersistence(input: PersistenceInput) {
           input.setLocalAccounts([]);
           input.setLocalCreditCards([]);
           input.setLocalVehicle(emptyVehicleProfile);
-          input.setLocalCategories([]);
+          input.setLocalCategories(defaultFinanceCategories);
           input.setPaidBills([]);
           input.setProfile({ name: "", email: user.email ?? "", username: "", usernameChangedAt: null });
           input.setP2PRequests([]);
@@ -249,7 +249,8 @@ export function useFinancePersistence(input: PersistenceInput) {
         if (useLegacyAccounts) input.setLocalAccounts(legacy.accounts);
         if (useLegacyCards) input.setLocalCreditCards(legacy.cards);
         if (currentData.localVehicle && typeof currentData.localVehicle === "object") input.setLocalVehicle(currentData.localVehicle as VehicleProfile);
-        if (Array.isArray(currentData.localCategories)) input.setLocalCategories(currentData.localCategories as FinanceCategory[]);
+        const persistedCategories = Array.isArray(currentData.localCategories) ? currentData.localCategories as FinanceCategory[] : [];
+        input.setLocalCategories(persistedCategories.length ? persistedCategories : defaultFinanceCategories);
         if (Array.isArray(currentData.paidBills)) input.setPaidBills(currentData.paidBills as string[]);
         const stateProfile = currentData.profile && typeof currentData.profile === "object" ? currentData.profile as PersistedProfile : null;
         const stateProfileConfigured = Boolean(text(stateProfile?.name).length >= 2 || text(stateProfile?.username).replace(/^@/, "").length >= 3);

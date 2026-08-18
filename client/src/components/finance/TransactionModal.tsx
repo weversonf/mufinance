@@ -2,7 +2,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowDownLeft, ArrowLeftRight, ArrowUpRight, CalendarDays, Check, ChevronDown, CreditCard, FileText, Repeat2, Wallet, X } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { getTransactionStatus, type CreditCard as CreditCardType, type Transaction, type TransactionStatus } from "@/lib/financeData";
+import { getTransactionStatus, type CreditCard as CreditCardType, type FinanceCategory, type Transaction, type TransactionStatus } from "@/lib/financeData";
 import { Switch } from "@/components/ui/switch";
 
 export type NewTransactionPayload = Omit<Transaction, "date" | "id"> & {
@@ -19,10 +19,17 @@ type TransactionModalProps = {
   initialType?: Transaction["type"];
   accountOptions: string[];
   creditCards: CreditCardType[];
-  categories: string[];
+  categories: FinanceCategory[];
 };
 
 const invoiceMonths = ["2026-08", "2026-09", "2026-10", "2026-11"];
+
+function categoryNames(categories: FinanceCategory[], type: Transaction["type"]) {
+  if (type === "transfer") return [];
+  const categoryType = type === "income" ? "income" : "expense";
+  const options = categories.filter((item) => item.active && item.type === categoryType).map((item) => item.name);
+  return options.length ? options : [categoryType === "income" ? "Receitas" : "Outros"];
+}
 
 function parseAmount(value: string) {
   const normalized = value.trim().replace(/\s/g, "");
@@ -40,8 +47,8 @@ function fallbackDate() {
 }
 
 export function TransactionModal({ open, onClose, onSubmit, editingTransaction, initialType = "expense", accountOptions, creditCards, categories }: TransactionModalProps) {
-  const categoryOptions = useMemo(() => categories.length ? categories : ["Outros"], [categories]);
   const [type, setType] = useState<Transaction["type"]>(initialType);
+  const categoryOptions = useMemo(() => categoryNames(categories, type), [categories, type]);
   const [payee, setPayee] = useState("");
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState(categoryOptions[0]);
@@ -64,10 +71,11 @@ export function TransactionModal({ open, onClose, onSubmit, editingTransaction, 
     const current = editingTransaction;
     const inferredSourceType = current?.sourceType ?? (current?.account.toLowerCase().includes("cartão") ? "credit-card" : "account");
     const matchedCard = creditCards.find((card) => card.id === current?.sourceId || current?.account.includes(card.last4));
-    setType(current?.type ?? initialType);
+    const nextType = current?.type ?? initialType;
+    setType(nextType);
     setPayee(current?.payee ?? "");
     setAmount(current ? String((current.totalAmount ?? current.amount).toFixed(2)).replace(".", ",") : "");
-    setCategory(current?.category ?? categoryOptions[0]);
+    setCategory(current?.category ?? categoryNames(categories, nextType)[0] ?? "Outros");
     setSourceType(inferredSourceType);
     setSourceId(current?.sourceId ?? matchedCard?.id ?? current?.account ?? (inferredSourceType === "credit-card" ? cardOptions[0]?.value : accountOptions[0]) ?? "");
     setDestinationAccount(current?.destinationAccount ?? accountOptions.find((account) => account !== current?.sourceId && account !== current?.account) ?? accountOptions[1] ?? accountOptions[0] ?? "");
@@ -77,7 +85,7 @@ export function TransactionModal({ open, onClose, onSubmit, editingTransaction, 
     setBillingCount(String(current?.billingCount ?? 3));
     setStatus(current ? getTransactionStatus(current) : "completed");
     setError("");
-  }, [open, editingTransaction, initialType, accountOptions, cardOptions, creditCards, categoryOptions]);
+  }, [open, editingTransaction, initialType, accountOptions, cardOptions, creditCards, categories]);
 
   const close = () => {
     setError("");
@@ -86,6 +94,7 @@ export function TransactionModal({ open, onClose, onSubmit, editingTransaction, 
 
   const selectType = (nextType: Transaction["type"]) => {
     setType(nextType);
+    setCategory(categoryNames(categories, nextType)[0] ?? "Outros");
     setError("");
     if (nextType === "transfer") {
       setSourceType("account");
@@ -103,6 +112,7 @@ export function TransactionModal({ open, onClose, onSubmit, editingTransaction, 
 
   const selectExpenseMode = (nextSourceType: "account" | "credit-card") => {
     setType("expense");
+    setCategory(categoryNames(categories, "expense")[0] ?? "Outros");
     setError("");
     setSourceType(nextSourceType);
     setSourceId(nextSourceType === "credit-card" ? cardOptions[0]?.value ?? "" : accountOptions[0] ?? "");
