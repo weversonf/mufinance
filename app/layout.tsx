@@ -5,6 +5,7 @@ import "./globals.css";
 import "../client/src/import.css";
 import "../client/src/reports.css";
 import "../client/src/categories.css";
+import "../client/src/planning.css";
 import { ClientProviders } from "../components/providers/ClientProviders";
 
 export const metadata: Metadata = {
