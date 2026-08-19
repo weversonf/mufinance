@@ -106,6 +106,29 @@ export async function createCategory(input: unknown) {
   return { id: reference.id, ...payload };
 }
 
+export async function updateCategory(id: string, input: unknown) {
+  const user = await requireSessionUser();
+  const data = categoryInputSchema.parse(input);
+  const db = getAdminFirestore();
+  const reference = db.collection("categories").doc(id);
+  const snapshot = await reference.get();
+  if (!snapshot.exists || snapshot.data()?.ownerId !== user.uid) throw new Error("Categoria não encontrada.");
+  await reference.set({ ...data, updatedAt: timestamp() }, { merge: true });
+  revalidatePath("/");
+  return { id, ...data };
+}
+
+export async function deleteCategory(id: string) {
+  const user = await requireSessionUser();
+  const db = getAdminFirestore();
+  const reference = db.collection("categories").doc(id);
+  const snapshot = await reference.get();
+  if (!snapshot.exists || snapshot.data()?.ownerId !== user.uid) throw new Error("Categoria não encontrada.");
+  await reference.delete();
+  revalidatePath("/");
+  return { id, deleted: true };
+}
+
 export async function createGoal(input: unknown) {
   const user = await requireSessionUser();
   const data = goalInputSchema.parse(input);

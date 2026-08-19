@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import "../client/src/index.css";
 import "../client/src/auth.css";
 import "./globals.css";
+import "../client/src/import.css";
+import "../client/src/reports.css";
+import "../client/src/categories.css";
 import { ClientProviders } from "../components/providers/ClientProviders";
 
 export const metadata: Metadata = {
