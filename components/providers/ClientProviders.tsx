@@ -8,6 +8,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import type { ReactNode } from "react";
+import { FinanceMigrationBootstrap } from "./FinanceMigrationBootstrap";
 
 function AuthGate({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
@@ -26,7 +27,10 @@ export function ClientProviders({ children }: { children: ReactNode }) {
         <AuthProvider>
           <TooltipProvider>
             <Toaster />
-            <AuthGate>{children}</AuthGate>
+            <AuthGate>
+              <FinanceMigrationBootstrap />
+              {children}
+            </AuthGate>
           </TooltipProvider>
         </AuthProvider>
       </ThemeProvider>
