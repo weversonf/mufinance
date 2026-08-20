@@ -23,7 +23,7 @@ function AuthGate({ children }: { children: ReactNode }) {
 export function ClientProviders({ children }: { children: ReactNode }) {
   return (
     <ErrorBoundary>
-      <ThemeProvider defaultTheme="light" switchable>
+      <ThemeProvider defaultTheme="dark" switchable>
         <AuthProvider>
           <TooltipProvider>
             <Toaster />
