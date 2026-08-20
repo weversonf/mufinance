@@ -1,5 +1,7 @@
+"use client";
+
 import { useState, type FormEvent } from "react";
-import { ArrowRight, Eye, EyeOff, LockKeyhole, Mail, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowRight, Chrome, Eye, EyeOff, LockKeyhole, Mail, ShieldCheck, Sparkles } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 function firebaseErrorMessage(error: unknown) {
@@ -14,13 +16,16 @@ function firebaseErrorMessage(error: unknown) {
   if (code.includes("weak-password")) return "Use uma senha com pelo menos 6 caracteres.";
   if (code.includes("invalid-email") || code.includes("missing-email")) return "Digite um e-mail válido.";
   if (code.includes("too-many-requests")) return "Muitas tentativas. Aguarde alguns minutos e tente novamente.";
-  if (code.includes("operation-not-allowed")) return "O login por e-mail ainda não foi ativado no Firebase.";
+  if (code.includes("popup-closed-by-user")) return "A janela do Google foi fechada antes de concluir o login.";
+  if (code.includes("popup-blocked")) return "O navegador bloqueou a janela do Google. Permita popups e tente novamente.";
+  if (code.includes("account-exists-with-different-credential")) return "Este e-mail já está associado a outro método de login.";
+  if (code.includes("operation-not-allowed")) return "Este método de login ainda não foi ativado no Firebase.";
   if (code.includes("permission-denied") || code.includes("failed-precondition")) return "O Firestore ainda precisa ser habilitado ou configurado no projeto Firebase.";
   return "Não foi possível concluir a operação. Confira o Firebase e tente novamente.";
 }
 
 export default function AuthScreen() {
-  const { signIn, signUp, resetPassword } = useAuth();
+  const { signIn, signUp, signInWithGoogle, resetPassword } = useAuth();
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -44,6 +49,18 @@ export default function AuthScreen() {
     try {
       if (mode === "login") await signIn(normalizedEmail, password);
       else await signUp(normalizedEmail, password);
+    } catch (error) {
+      setFeedback({ type: "error", message: firebaseErrorMessage(error) });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setBusy(true);
+    setFeedback(null);
+    try {
+      await signInWithGoogle();
     } catch (error) {
       setFeedback({ type: "error", message: firebaseErrorMessage(error) });
     } finally {
@@ -106,6 +123,7 @@ export default function AuthScreen() {
 
           {mode === "login" && <button className="auth-link auth-reset" type="button" onClick={handleResetPassword} disabled={busy}>Esqueci minha senha</button>}
           <div className="auth-divider"><span>ou</span></div>
+          <button className="auth-google-button" type="button" onClick={handleGoogleLogin} disabled={busy}><Chrome size={17} /> Continuar com Google</button>
           <p className="auth-switch">{mode === "login" ? "Ainda não tem uma conta?" : "Já tem uma conta?"} <button type="button" className="auth-link" onClick={() => { setMode((value) => value === "login" ? "signup" : "login"); setFeedback(null); }}>{mode === "login" ? "Criar conta" : "Entrar"}</button></p>
           <p className="auth-legal">Ao continuar, você concorda com o uso do MuFinance para organizar seus dados financeiros pessoais.</p>
         </div>

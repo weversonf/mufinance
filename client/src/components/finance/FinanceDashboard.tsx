@@ -1,3 +1,5 @@
+"use client";
+
 // Soft Swiss Fintech / editorial dashboard: farol MuFinance, rastro de maré nos dados, tipografia editorial e movimento curto.
 
 // MuFinance — dashboard editorial Soft Swiss Fintech; o P2P mantém a mesma linguagem calma, responsiva e demonstrativa.

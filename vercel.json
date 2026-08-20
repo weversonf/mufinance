@@ -1,6 +1,5 @@
 {
-  "framework": "vite",
+  "framework": "nextjs",
   "installCommand": "pnpm install --frozen-lockfile",
-  "buildCommand": "pnpm build",
-  "outputDirectory": "dist/public"
+  "buildCommand": "pnpm build"
 }
