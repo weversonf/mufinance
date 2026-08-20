@@ -1,4 +1,5 @@
 import { CategoriesManager } from "@/components/finance/CategoriesManager";
+import { ReferencePageShell } from "@/components/finance/ReferencePageShell";
 
 export const metadata = {
   title: "Categorias",
@@ -6,5 +7,9 @@ export const metadata = {
 };
 
 export default function CategoriesPage() {
-  return <CategoriesManager />;
+  return (
+    <ReferencePageShell pageLabel="Categorias" pageKicker="ORGANIZAÇÃO FINANCEIRA">
+      <CategoriesManager />
+    </ReferencePageShell>
+  );
 }
