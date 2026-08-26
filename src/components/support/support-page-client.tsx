@@ -111,7 +111,7 @@ function FaqTab() {
         <div className="relative">
           <SearchIcon className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search for answers..."
+            placeholder="Pesquise por respostas..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"
@@ -257,8 +257,8 @@ function TicketsTab() {
       {/* Ticket timeline */}
       <Card>
         <CardHeader>
-          <CardTitle>Ticket History</CardTitle>
-          <CardDescription>Track progress on your support requests</CardDescription>
+          <CardTitle>Histórico de chamados</CardTitle>
+          <CardDescription>Acompanhe o andamento das suas solicitações</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="relative space-y-0">
@@ -431,7 +431,7 @@ function LiveChatSimulator() {
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Type a message..."
+            placeholder="Digite uma mensagem..."
             className="flex-1"
             disabled={typing}
           />
@@ -500,7 +500,7 @@ function TicketForm() {
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <label className="text-sm font-medium" htmlFor="t-subject">Subject</label>
-              <Input id="t-subject" placeholder="Brief description" required />
+              <Input id="t-subject" placeholder="Descrição breve" required />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium" htmlFor="t-category">Category</label>
@@ -535,7 +535,7 @@ function TicketForm() {
           </div>
           <div className="space-y-2">
             <label className="text-sm font-medium" htmlFor="t-desc">Description</label>
-            <Textarea id="t-desc" placeholder="Please provide as much detail as possible..." rows={4} required />
+            <Textarea id="t-desc" placeholder="Descreva o máximo de detalhes possível..." rows={4} required />
           </div>
           <div className="flex items-center justify-end gap-3">
             <AnimatePresence mode="wait">
@@ -716,7 +716,7 @@ function StatusTab() {
           <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
             <span>90 days ago</span>
             <span className="font-medium text-foreground tabular-nums">{uptimePct}% uptime</span>
-            <span>Today</span>
+            <span>Hoje</span>
           </div>
         </CardContent>
       </Card>

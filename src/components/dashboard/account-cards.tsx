@@ -225,7 +225,7 @@ export function AccountCards() {
                     </SelectContent>
                   </Select>
                   <Input
-                    placeholder="Card name (optional)"
+                    placeholder="Nome do cartão (opcional)"
                     value={newCardName}
                     onChange={(e) => setNewCardName(e.target.value)}
                     className="h-9 text-xs"

@@ -68,7 +68,7 @@ export function PortfolioAllocation() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Portfolio Allocation</CardTitle>
+        <CardTitle>Distribuição do portfólio</CardTitle>
       </CardHeader>
       <CardContent>
         <ChartContainer

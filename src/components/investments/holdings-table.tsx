@@ -26,7 +26,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { cn } from "@/lib/utils"
-import { holdings as seedHoldings, type Holding } from "@/data/seed"
+import { holdings as seedAtivos, type Holding } from "@/data/seed"
 
 type SortDir = "asc" | "desc" | null
 type SortKey = "name" | "quantity" | "avgBuyPrice" | "currentPrice" | "plPct" | "plDollar"
@@ -46,7 +46,7 @@ function getPl(h: Holding) {
 export function HoldingsTable() {
   const [prices, setPrices] = useState<Record<string, number>>(() => {
     const map: Record<string, number> = {}
-    for (const h of seedHoldings) map[h.id] = h.currentPrice
+    for (const h of seedAtivos) map[h.id] = h.currentPrice
     return map
   })
   const [flashMap, setFlashMap] = useState<Record<string, "up" | "down" | null>>({})
@@ -60,7 +60,7 @@ export function HoldingsTable() {
       setPrices((prev) => {
         const next = { ...prev }
         const flashes: Record<string, "up" | "down" | null> = {}
-        for (const h of seedHoldings) {
+        for (const h of seedAtivos) {
           const change = 1 + (Math.random() - 0.5) * 0.006 // +/- 0.3%
           const newPrice = Math.round(prev[h.id] * change * 100) / 100
           if (newPrice !== prev[h.id]) {
@@ -85,7 +85,7 @@ export function HoldingsTable() {
 
   const holdings = useMemo(
     () =>
-      seedHoldings.map((h) => ({
+      seedAtivos.map((h) => ({
         ...h,
         currentPrice: prices[h.id] ?? h.currentPrice,
       })),
@@ -138,7 +138,7 @@ export function HoldingsTable() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Holdings</CardTitle>
+        <CardTitle>Ativos</CardTitle>
       </CardHeader>
       <CardContent className="px-0">
         <div className="overflow-x-auto">

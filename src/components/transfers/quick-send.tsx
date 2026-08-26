@@ -177,7 +177,7 @@ export function QuickSend({ onSend }: { onSend?: (record: TransferRecord) => voi
                 </label>
                 <Input
                   type="text"
-                  placeholder="What's it for?"
+                  placeholder="Para que serve?"
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
                   disabled={sendState === "sending"}

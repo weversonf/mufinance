@@ -31,8 +31,8 @@ export function SavingsGoals() {
         {savingsGoals.length === 0 ? (
           <EmptyState
             variant="budgets"
-            title="No savings goals yet"
-            description="Create a goal to track progress toward the things that matter to you."
+            title="Nenhuma meta cadastrada ainda"
+            description="Crie uma meta para acompanhar seu progresso."
             className="py-8"
           />
         ) : (
@@ -92,9 +92,9 @@ export function SavingsGoals() {
                       <span>
                         {goal.monthlyContribution > 0
                           ? `$${goal.monthlyContribution}/mo`
-                          : "Monthly contribution not set"}
+                          : "Contribuição mensal não definida"}
                       </span>
-                      <span>{goal.deadline ? `Target: ${goal.deadline}` : "No deadline"}</span>
+                      <span>{goal.deadline ? `Meta: ${goal.deadline}` : "Sem prazo"}</span>
                     </div>
                   </div>
                 </div>

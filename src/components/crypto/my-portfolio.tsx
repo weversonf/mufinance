@@ -64,7 +64,7 @@ export function MyPortfolio({ prices, originalPrices, selectedCoin, onSelectCoin
     <Card className="lg:col-span-4">
       <CardHeader>
         <div className="flex items-center gap-2">
-          <CardTitle>My Portfolio</CardTitle>
+          <CardTitle>Meu portfólio</CardTitle>
           <Badge variant="secondary" className="text-xs tabular-nums">
             {top3.length} Total Assets
           </Badge>
@@ -165,8 +165,8 @@ export function MyPortfolio({ prices, originalPrices, selectedCoin, onSelectCoin
                     <MoreHorizontalIcon className="size-4" />
                   </DropdownMenuTrigger>
                   <DropdownMenuContent side="bottom" align="end">
-                    <DropdownMenuItem>Buy More</DropdownMenuItem>
-                    <DropdownMenuItem>Sell</DropdownMenuItem>
+                    <DropdownMenuItem>Comprar mais</DropdownMenuItem>
+                    <DropdownMenuItem>Vender</DropdownMenuItem>
                     <DropdownMenuItem onSelect={() => onSelectCoin(seg.coin.id)}>Ver gráfico</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>

@@ -25,7 +25,7 @@ const fmt = (n: number) =>
 function statusBadge(status: TransferRecord["status"]) {
   switch (status) {
     case "completed":
-      return <Badge variant="default">Completed</Badge>
+      return <Badge variant="default">Concluída</Badge>
     case "pending":
       return (
         <Badge variant="outline" className="text-amber-500 dark:text-amber-400">

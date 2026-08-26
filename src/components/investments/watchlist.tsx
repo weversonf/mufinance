@@ -25,7 +25,7 @@ export function Watchlist() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Watchlist</CardTitle>
+        <CardTitle>Lista de observação</CardTitle>
       </CardHeader>
       <CardContent className="px-0">
         <div className="divide-y">
@@ -111,7 +111,7 @@ export function Watchlist() {
         <div className="px-4 pt-3">
           <Button variant="outline" size="sm" className="w-full gap-1.5">
             <Plus className="size-3.5" />
-            Add to Watchlist
+            Add to Lista de observação
           </Button>
         </div>
       </CardContent>

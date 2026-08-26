@@ -54,7 +54,7 @@ const tabs: { id: TabId; label: string; icon: React.ReactNode }[] = [
   { id: "security", label: "Security", icon: <ShieldIcon className="size-4" /> },
   { id: "notifications", label: "Notifications", icon: <BellIcon className="size-4" /> },
   { id: "billing", label: "Billing", icon: <CreditCardIcon className="size-4" /> },
-  { id: "appearance", label: "Appearance", icon: <PaletteIcon className="size-4" /> },
+  { id: "appearance", label: "Aparência", icon: <PaletteIcon className="size-4" /> },
 ]
 
 // ── Profile Tab ──────────────────────────────────────────────────────────────
@@ -79,8 +79,8 @@ function ProfileTab() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Profile Information</CardTitle>
-        <CardDescription>Update your account profile details</CardDescription>
+        <CardTitle>Informações do perfil</CardTitle>
+        <CardDescription>Atualize os dados do seu perfil</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="flex items-center gap-4">
@@ -143,10 +143,10 @@ function SecurityTab() {
 
   return (
     <div className="space-y-6">
-      {/* Change Password */}
+      {/* Alterar senha */}
       <Card>
         <CardHeader>
-          <CardTitle>Change Password</CardTitle>
+          <CardTitle>Alterar senha</CardTitle>
           <CardDescription>
             Update your password to keep your account secure
           </CardDescription>
@@ -173,7 +173,7 @@ function SecurityTab() {
             </div>
           </div>
           <div className="flex justify-end">
-            <Button>Update Password</Button>
+            <Button>Atualizar senha</Button>
           </div>
         </CardContent>
       </Card>
@@ -181,7 +181,7 @@ function SecurityTab() {
       {/* Two-Factor */}
       <Card>
         <CardHeader>
-          <CardTitle>Two-Factor Authentication</CardTitle>
+          <CardTitle>Autenticação em dois fatores</CardTitle>
           <CardDescription>
             Add an extra layer of security to your account
           </CardDescription>
@@ -206,7 +206,7 @@ function SecurityTab() {
       {/* Sessions */}
       <Card>
         <CardHeader>
-          <CardTitle>Active Sessions</CardTitle>
+          <CardTitle>Sessões ativas</CardTitle>
           <CardDescription>
             Manage devices logged into your account
           </CardDescription>
@@ -264,7 +264,7 @@ function NotificationsTab() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Notification Preferences</CardTitle>
+        <CardTitle>Preferências de notificações</CardTitle>
         <CardDescription>
           Choose what notifications you want to receive
         </CardDescription>
@@ -375,11 +375,11 @@ function BillingTab() {
         </CardContent>
       </Card>
 
-      {/* Payment Method */}
+      {/* Método de pagamento */}
       <Card>
         <CardHeader>
-          <CardTitle>Payment Method</CardTitle>
-          <CardDescription>Manage your payment details</CardDescription>
+          <CardTitle>Método de pagamento</CardTitle>
+          <CardDescription>Gerencie seus dados de pagamento</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-between rounded-lg border p-3">
@@ -399,10 +399,10 @@ function BillingTab() {
         </CardContent>
       </Card>
 
-      {/* Billing History */}
+      {/* Histórico de cobrança */}
       <Card>
         <CardHeader>
-          <CardTitle>Billing History</CardTitle>
+          <CardTitle>Histórico de cobrança</CardTitle>
           <CardDescription>
             Download past invoices and receipts
           </CardDescription>
@@ -411,7 +411,7 @@ function BillingTab() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Date</TableHead>
+                <TableHead>Data</TableHead>
                 <TableHead>Valor</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Invoice</TableHead>
@@ -441,9 +441,9 @@ function BillingTab() {
   )
 }
 
-// ── Appearance Tab ───────────────────────────────────────────────────────────
+// ── Aparência Tab ───────────────────────────────────────────────────────────
 
-function AppearanceTab() {
+function AparênciaTab() {
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = React.useState(false)
   React.useEffect(() => setMounted(true), [])
@@ -459,7 +459,7 @@ function AppearanceTab() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Appearance</CardTitle>
+        <CardTitle>Aparência</CardTitle>
         <CardDescription>
           Customize how Vault looks on your device
         </CardDescription>
@@ -505,7 +505,7 @@ export function SettingsPageClient() {
     security: <SecurityTab />,
     notifications: <NotificationsTab />,
     billing: <BillingTab />,
-    appearance: <AppearanceTab />,
+    appearance: <AparênciaTab />,
   }
 
   return (

@@ -121,7 +121,7 @@ export function TradeForm({ prices }: TradeFormProps) {
   return (
     <Card className="lg:col-span-4">
       <CardHeader>
-        <CardTitle>Transaction</CardTitle>
+        <CardTitle>Transação</CardTitle>
         <CardAction>
           <Button variant="ghost" size="icon-xs">
             <SettingsIcon className="size-4 text-muted-foreground" />

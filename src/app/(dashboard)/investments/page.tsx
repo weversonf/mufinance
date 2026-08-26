@@ -11,7 +11,7 @@ export default function Page() {
       <LiveTicker />
 
       <div className="flex flex-1 flex-col gap-4 p-4">
-        {/* Row 1: Allocation + Performance */}
+        {/* Row 1: Allocation + Desempenho */}
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
           <div className="lg:col-span-4">
             <PortfolioAllocation />
@@ -21,10 +21,10 @@ export default function Page() {
           </div>
         </div>
 
-        {/* Row 2: Holdings table */}
+        {/* Row 2: Ativos table */}
         <HoldingsTable />
 
-        {/* Row 3: Watchlist */}
+        {/* Row 3: Lista de observação */}
         <Watchlist />
       </div>
     </>

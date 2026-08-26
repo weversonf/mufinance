@@ -269,7 +269,7 @@ export function MarketOverview({ prices, originalPrices, selectedCoin, onSelectC
                       </DropdownMenuTrigger>
                       <DropdownMenuContent side="bottom" align="end">
                         <DropdownMenuItem>Buy</DropdownMenuItem>
-                        <DropdownMenuItem>Sell</DropdownMenuItem>
+                        <DropdownMenuItem>Vender</DropdownMenuItem>
                         <DropdownMenuItem onSelect={() => onSelectCoin(coin.id)}>
                           Ver gráfico
                         </DropdownMenuItem>

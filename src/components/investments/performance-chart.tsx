@@ -25,7 +25,7 @@ const PERIODS = [
 ] as const
 
 const chartConfig: ChartConfig = {
-  portfolio: { label: "My Portfolio", color: "var(--color-chart-1)" },
+  portfolio: { label: "Meu portfólio", color: "var(--color-chart-1)" },
   sp500: { label: "S&P 500", color: "var(--color-chart-3)" },
 }
 
@@ -41,7 +41,7 @@ export function PerformanceChart() {
     <Card>
       <CardHeader>
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <CardTitle>Performance</CardTitle>
+          <CardTitle>Desempenho</CardTitle>
           <div className="flex flex-wrap gap-1">
             {PERIODS.map((p) => (
               <button
@@ -126,7 +126,7 @@ export function PerformanceChart() {
         <div className="mt-3 flex items-center justify-center gap-6 text-xs">
           <div className="flex items-center gap-1.5">
             <span className="inline-block h-0.5 w-4 rounded-full bg-[var(--color-chart-1)]" />
-            <span className="text-muted-foreground">My Portfolio</span>
+            <span className="text-muted-foreground">Meu portfólio</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="inline-block h-0.5 w-4 rounded-full border-t-2 border-dashed border-[var(--color-chart-3)]" />

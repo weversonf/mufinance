@@ -168,7 +168,7 @@ export function MyBalance({ prices }: { prices: CryptoPrices }) {
               <Input
                 type="text"
                 inputMode="decimal"
-                placeholder="Enter amount..."
+                placeholder="Digite o valor..."
                 value={topUpValor}
                 onChange={(e) => setTopUpValor(e.target.value)}
                 className="mb-2 focus-visible:ring-0"
@@ -187,7 +187,7 @@ export function MyBalance({ prices }: { prices: CryptoPrices }) {
               <Input
                 type="text"
                 inputMode="decimal"
-                placeholder="Enter amount..."
+                placeholder="Digite o valor..."
                 value={withdrawValor}
                 onChange={(e) => setWithdrawValor(e.target.value)}
                 className="mb-2 focus-visible:ring-0"
