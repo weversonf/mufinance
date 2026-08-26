@@ -2,7 +2,6 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { useAuth } from "@/components/auth/auth-provider"
 import { NavMain } from "@/components/nav-main"
 import { NavSecondary } from "@/components/nav-secondary"
 import { NavUser } from "@/components/nav-user"
@@ -34,6 +33,11 @@ import {
 } from "lucide-react"
 
 const data = {
+  user: {
+    name: "Abderrahim G.",
+    email: "abderrahim@fintech.com",
+    avatar: "/avatars/user.jpg",
+  },
   navDaily: [
     { title: "Overview", url: "/dashboard", icon: <LayoutDashboardIcon /> },
     { title: "Accounts", url: "/accounts", icon: <WalletIcon /> },
@@ -61,10 +65,6 @@ const data = {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { user } = useAuth()
-  const name = user?.displayName?.trim() || user?.email?.split("@")[0] || "MuFinance"
-  const email = user?.email || "Sua conta financeira"
-
   return (
     <Sidebar variant="inset" {...props}>
       <SidebarHeader>
@@ -75,7 +75,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <LandmarkIcon className="size-4" />
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">MuFinance</span>
+                <span className="truncate font-semibold">Shadcn Fintech</span>
                 <span className="truncate text-xs text-muted-foreground">
                   Finance Dashboard
                 </span>
@@ -92,7 +92,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={{ name, email, avatar: user?.photoURL || "" }} />
+        <NavUser user={data.user} />
       </SidebarFooter>
     </Sidebar>
   )
