@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils"
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
 export function SpendingCalendar() {
-  const { weeks, maxAmount } = useMemo(() => {
+  const { weeks, maxValor } = useMemo(() => {
     const map = new Map(dailySpending.map((d) => [d.date, d.amount]))
     // Build April 2026 calendar
     const firstDay = new Date(2026, 3, 1) // April 1
@@ -33,7 +33,7 @@ export function SpendingCalendar() {
     const last = weeks[weeks.length - 1]
     while (last.length < 7) last.push({ day: null, amount: 0, date: "" })
 
-    return { weeks, maxAmount: max }
+    return { weeks, maxValor: max }
   }, [])
 
   return (
@@ -63,7 +63,7 @@ export function SpendingCalendar() {
                 const intensity =
                   cell.amount === 0
                     ? 0
-                    : Math.min(Math.round((cell.amount / maxAmount) * 4), 4)
+                    : Math.min(Math.round((cell.amount / maxValor) * 4), 4)
                 const isToday = cell.day === 13 // April 13 (today in seed)
                 return (
                   <div

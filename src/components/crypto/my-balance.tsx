@@ -23,8 +23,8 @@ export function MyBalance({ prices }: { prices: CryptoPrices }) {
   const [highlightedCoin, setHighlightedCoin] = React.useState("eth")
   const [topUpFlow, setTopUpFlow] = React.useState<ActionFlow>("idle")
   const [withdrawFlow, setWithdrawFlow] = React.useState<ActionFlow>("idle")
-  const [topUpAmount, setTopUpAmount] = React.useState("")
-  const [withdrawAmount, setWithdrawAmount] = React.useState("")
+  const [topUpValor, setTopUpValor] = React.useState("")
+  const [withdrawValor, setWithdrawValor] = React.useState("")
   const [successMsg, setSuccessMsg] = React.useState("")
 
   const totalBalance = cryptoCoins.reduce(
@@ -39,14 +39,14 @@ export function MyBalance({ prices }: { prices: CryptoPrices }) {
   const stats = [
     {
       label: "Total Profit",
-      value: `+$${(totalBalance * 0.033).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      value: `+$${(totalBalance * 0.033).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
       positive: true,
     },
     { label: "Avg. Growing", value: "+14.63%", positive: true },
     {
       label: coin ? coin.symbol : "Best Token",
       value: coin
-        ? `$${coinValue.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+        ? `$${coinValue.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
         : "Ethereum",
       positive: null,
     },
@@ -58,7 +58,7 @@ export function MyBalance({ prices }: { prices: CryptoPrices }) {
       return
     }
     if (topUpFlow === "input") {
-      const val = parseFloat(topUpAmount)
+      const val = parseFloat(topUpValor)
       if (!val || val <= 0) return
       setTopUpFlow("loading")
       setTimeout(() => {
@@ -66,7 +66,7 @@ export function MyBalance({ prices }: { prices: CryptoPrices }) {
         setTopUpFlow("success")
         setTimeout(() => {
           setTopUpFlow("idle")
-          setTopUpAmount("")
+          setTopUpValor("")
           setSuccessMsg("")
         }, 2000)
       }, 1000)
@@ -79,7 +79,7 @@ export function MyBalance({ prices }: { prices: CryptoPrices }) {
       return
     }
     if (withdrawFlow === "input") {
-      const val = parseFloat(withdrawAmount)
+      const val = parseFloat(withdrawValor)
       if (!val || val <= 0) return
       setWithdrawFlow("loading")
       setTimeout(() => {
@@ -87,7 +87,7 @@ export function MyBalance({ prices }: { prices: CryptoPrices }) {
         setWithdrawFlow("success")
         setTimeout(() => {
           setWithdrawFlow("idle")
-          setWithdrawAmount("")
+          setWithdrawValor("")
           setSuccessMsg("")
         }, 2000)
       }, 1000)
@@ -121,7 +121,7 @@ export function MyBalance({ prices }: { prices: CryptoPrices }) {
           transition={{ duration: 0.3 }}
           className="text-3xl font-bold tabular-nums tracking-tight"
         >
-          ${totalBalance.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          ${totalBalance.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </motion.p>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
@@ -169,8 +169,8 @@ export function MyBalance({ prices }: { prices: CryptoPrices }) {
                 type="text"
                 inputMode="decimal"
                 placeholder="Enter amount..."
-                value={topUpAmount}
-                onChange={(e) => setTopUpAmount(e.target.value)}
+                value={topUpValor}
+                onChange={(e) => setTopUpValor(e.target.value)}
                 className="mb-2 focus-visible:ring-0"
                 autoFocus
                 onKeyDown={(e) => e.key === "Enter" && handleTopUp()}
@@ -188,8 +188,8 @@ export function MyBalance({ prices }: { prices: CryptoPrices }) {
                 type="text"
                 inputMode="decimal"
                 placeholder="Enter amount..."
-                value={withdrawAmount}
-                onChange={(e) => setWithdrawAmount(e.target.value)}
+                value={withdrawValor}
+                onChange={(e) => setWithdrawValor(e.target.value)}
                 className="mb-2 focus-visible:ring-0"
                 autoFocus
                 onKeyDown={(e) => e.key === "Enter" && handleWithdraw()}

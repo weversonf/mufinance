@@ -154,7 +154,7 @@ function SecurityTab() {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <label className="text-sm font-medium" htmlFor="current-pw">
-              Current Password
+              Atual Password
             </label>
             <Input id="current-pw" type="password" placeholder="Enter current password" />
           </div>
@@ -293,9 +293,9 @@ function NotificationsTab() {
 // ── Billing Tab ──────────────────────────────────────────────────────────────
 
 const invoices = [
-  { date: "Mar 01, 2026", amount: "$0.00", status: "Free Plan", id: "INV-001" },
-  { date: "Feb 01, 2026", amount: "$0.00", status: "Free Plan", id: "INV-002" },
-  { date: "Jan 01, 2026", amount: "$0.00", status: "Free Plan", id: "INV-003" },
+  { date: "01/03/2026", amount: "R$ 0,00", status: "Plano gratuito", id: "INV-001" },
+  { date: "01/02/2026", amount: "R$ 0,00", status: "Plano gratuito", id: "INV-002" },
+  { date: "01/01/2026", amount: "R$ 0,00", status: "Plano gratuito", id: "INV-003" },
 ]
 
 const freeFeatures = [
@@ -317,12 +317,12 @@ const proFeatures = [
 function BillingTab() {
   return (
     <div className="space-y-6">
-      {/* Current Plan */}
+      {/* Plano atual */}
       <Card>
         <CardHeader>
-          <CardTitle>Current Plan</CardTitle>
+          <CardTitle>Plano atual</CardTitle>
           <CardDescription>
-            You are currently on the free plan
+            Você está no plano gratuito
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -330,7 +330,7 @@ function BillingTab() {
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-lg font-semibold">Vault Free</h3>
-                <Badge variant="secondary">Current</Badge>
+                <Badge variant="secondary">Atual</Badge>
               </div>
               <ul className="mt-3 space-y-1.5">
                 {freeFeatures.map((f) => (
@@ -342,8 +342,8 @@ function BillingTab() {
               </ul>
             </div>
             <div className="text-right">
-              <p className="text-2xl font-bold tabular-nums">$0</p>
-              <p className="text-sm text-muted-foreground">/month</p>
+              <p className="text-2xl font-bold tabular-nums">R$ 0</p>
+              <p className="text-sm text-muted-foreground">/mês</p>
             </div>
           </div>
 
@@ -364,12 +364,12 @@ function BillingTab() {
                 </ul>
               </div>
               <div className="text-right">
-                <p className="text-2xl font-bold tabular-nums">$12</p>
-                <p className="text-sm text-muted-foreground">/month</p>
+                <p className="text-2xl font-bold tabular-nums">R$ 12</p>
+                <p className="text-sm text-muted-foreground">/mês</p>
               </div>
             </div>
             <div className="mt-4">
-              <Button>Upgrade to Pro</Button>
+              <Button>Atualizar para o Pro</Button>
             </div>
           </div>
         </CardContent>
@@ -412,7 +412,7 @@ function BillingTab() {
             <TableHeader>
               <TableRow>
                 <TableHead>Date</TableHead>
-                <TableHead>Amount</TableHead>
+                <TableHead>Valor</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Invoice</TableHead>
               </TableRow>

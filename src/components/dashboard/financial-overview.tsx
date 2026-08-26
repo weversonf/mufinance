@@ -44,7 +44,7 @@ function SquareDot({ cx, cy, fill, opacity = 1, size = 6 }: DotProps & { size?: 
 
 const chartConfig = {
   currentYear: {
-    label: "Current Year",
+    label: "Atual Year",
     color: "var(--color-primary)",
   },
   lastYear: {
@@ -97,7 +97,7 @@ export function FinancialOverview() {
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
             <span className="flex items-center gap-1.5">
               <span className="size-2 rounded-full bg-primary" />
-              Current Year{" "}
+              Atual Year{" "}
               <span className="font-medium text-foreground">
                 ${totals.current.toLocaleString()}
               </span>
@@ -154,7 +154,7 @@ export function FinancialOverview() {
             margin={{ top: 8, right: 8, bottom: 0, left: -20 }}
           >
             <defs>
-              <linearGradient id="fillCurrent" x1="0" y1="0" x2="0" y2="1">
+              <linearGradient id="fillAtual" x1="0" y1="0" x2="0" y2="1">
                 <stop
                   offset="0%"
                   stopColor="var(--color-primary)"
@@ -213,7 +213,7 @@ export function FinancialOverview() {
               type="linear"
               stroke="var(--color-primary)"
               strokeWidth={2}
-              fill="url(#fillCurrent)"
+              fill="url(#fillAtual)"
               dot={<SquareDot fill="var(--color-primary)" size={6} />}
               activeDot={<SquareDot fill="var(--color-primary)" size={9} />}
             />

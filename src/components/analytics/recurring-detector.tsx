@@ -78,7 +78,7 @@ export function RecurringDetector() {
               <span className="tabular-nums font-medium text-foreground">
                 ${monthlyTotal.toFixed(2)}
               </span>
-              /month total
+              /mês total
             </CardDescription>
           </div>
         </div>

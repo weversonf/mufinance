@@ -167,7 +167,7 @@ export function HoldingsTable() {
                 className="cursor-pointer select-none text-right"
                 onClick={() => cycleSortDir("currentPrice")}
               >
-                Current <SortIcon col="currentPrice" sortKey={sortKey} sortDir={sortDir} />
+                Atual <SortIcon col="currentPrice" sortKey={sortKey} sortDir={sortDir} />
               </TableHead>
               <TableHead
                 className="cursor-pointer select-none text-right"

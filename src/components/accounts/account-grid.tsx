@@ -14,11 +14,12 @@ interface AccountCardProps {
   onSelect?: (account: BankAccount) => void
 }
 
-const fmt = (n: number, currency = "$") =>
-  `${currency}${new Intl.NumberFormat("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(Math.abs(n))}`
+const fmt = (n: number) => new Intl.NumberFormat("pt-BR", {
+  style: "currency",
+  currency: "BRL",
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+}).format(Math.abs(n))
 
 export function AccountCard({ account, index, onSelect }: AccountCardProps) {
   const [imgError, setImgError] = useState(false)
@@ -75,7 +76,7 @@ export function AccountCard({ account, index, onSelect }: AccountCardProps) {
 
         {/* Balance */}
         <p className="mt-3 tabular-nums text-xl font-bold tracking-tight">
-          {fmt(account.balance, account.currency)}
+          {fmt(account.balance)}
         </p>
 
         {/* Change badge + last activity */}
@@ -95,7 +96,7 @@ export function AccountCard({ account, index, onSelect }: AccountCardProps) {
             )}
             <span className="tabular-nums">
               {account.change >= 0 ? "+" : "-"}
-              {fmt(account.change, account.currency)}{" "}
+              {fmt(account.change)}{" "}
               ({Math.abs(account.changePercent).toFixed(1)}%)
             </span>
           </span>

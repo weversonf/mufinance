@@ -31,7 +31,7 @@ interface TradeFormProps {
 
 export function TradeForm({ prices }: TradeFormProps) {
   const [activeTab, setActiveTab] = React.useState<string>("Trade")
-  const [amount, setAmount] = React.useState("0.5")
+  const [amount, setValor] = React.useState("0.5")
   const [fromCoin, setFromCoin] = React.useState("eth")
   const [toCoin, setToCoin] = React.useState("usd")
   const [loading, setLoading] = React.useState(false)
@@ -60,7 +60,7 @@ export function TradeForm({ prices }: TradeFormProps) {
     }
 
     if (isSellMode) {
-      // Crypto -> USD: val * crypto price
+      // Cripto -> USD: val * crypto price
       const cryptoPrice = prices[fromCoin] ?? 0
       return (val * cryptoPrice).toFixed(2)
     }
@@ -115,7 +115,7 @@ export function TradeForm({ prices }: TradeFormProps) {
     setToCoin(prevFrom)
   }
 
-  const amountLabel = isBuyMode ? "Amount (USD)" : isSellMode ? "Amount (Crypto)" : "Amount"
+  const amountLabel = isBuyMode ? "Valor (USD)" : isSellMode ? "Valor (Cripto)" : "Valor"
   const receivedLabel = isBuyMode ? "You Receive" : isSellMode ? "You Receive (USD)" : "Received"
 
   return (
@@ -154,7 +154,7 @@ export function TradeForm({ prices }: TradeFormProps) {
             <Input
               type="number"
               value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+              onChange={(e) => setValor(e.target.value)}
               disabled={loading || success}
               className="h-10 border-0 bg-transparent px-0 text-base font-semibold tabular-nums shadow-none focus-visible:ring-0"
             />

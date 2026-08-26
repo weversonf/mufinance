@@ -54,7 +54,7 @@ export function TransactionsPageClient() {
 
   function handleExport() {
     const selected = fullTransactions.filter((transaction) => selectedIds.has(transaction.id))
-    const header = "Merchant,Transaction ID,Amount,Date,Status,Type"
+    const header = "Merchant,ID da transação,Valor,Date,Status,Type"
     const rows = selected.map(
       (transaction) =>
         `"${transaction.merchant}","${transaction.transactionId}",${transaction.amount},"${transaction.date}","${transaction.status}","${transaction.type}"`,

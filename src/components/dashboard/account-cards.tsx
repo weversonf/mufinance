@@ -46,7 +46,7 @@ function buildInitialCards(accountCards: AccountCard[]): DisplayCard[] {
 }
 
 const newCardOptions = [
-  { value: "savings", label: "Savings Account", currency: "$", style: "bg-emerald-600 text-white", icon: <TrendingUpIcon className="size-5 opacity-30" />, chipColor: "bg-white/20" },
+  { value: "savings", label: "Poupança Account", currency: "$", style: "bg-emerald-600 text-white", icon: <TrendingUpIcon className="size-5 opacity-30" />, chipColor: "bg-white/20" },
   { value: "business", label: "Business Account", currency: "$", style: "bg-violet-600 text-white", icon: <CreditCardIcon className="size-5 opacity-30" />, chipColor: "bg-white/20" },
   { value: "travel", label: "Travel Card", currency: "€", style: "bg-amber-600 text-white", icon: <EuroIcon className="size-5 opacity-30" />, chipColor: "bg-white/20" },
 ]
@@ -258,9 +258,9 @@ export function AccountCards() {
 
         {/* Wallet balance */}
         <div className="space-y-1.5 border-t pt-5">
-          <p className="text-xs font-medium text-muted-foreground">Wallet Balance</p>
+          <p className="text-xs font-medium text-muted-foreground">Saldo da carteira</p>
           <p className="text-3xl font-bold tabular-nums tracking-tight">
-            ${walletBalance.amount.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+            ${walletBalance.amount.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
           </p>
           <div className="flex items-center gap-1.5 text-sm font-medium text-emerald-600 dark:text-emerald-400">
             <TrendingUpIcon className="size-4" />

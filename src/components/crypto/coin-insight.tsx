@@ -139,7 +139,7 @@ function CandlestickTooltip({ active, payload }: { active?: boolean; payload?: A
   return (
     <div className="rounded-lg border bg-popover px-3 py-2 text-xs text-popover-foreground shadow-md">
       <p className="mb-1 font-medium">
-        {new Date(d.date).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
+        {new Date(d.date).toLocaleDateString("pt-BR", { weekday: "short", month: "short", day: "numeric" })}
       </p>
       <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-muted-foreground">
         <span>Open</span><span className="text-right font-medium text-foreground tabular-nums">{open.toLocaleString()}</span>
@@ -194,10 +194,10 @@ export function CoinInsight({ prices, selectedCoin }: CoinInsightProps) {
     const d = new Date(val)
     const mo = d.getMonth()
     const yr = d.getFullYear().toString().slice(2)
-    if (idx === 0) return `${d.toLocaleString("en-US", { month: "short" })} '${yr}`
+    if (idx === 0) return `${d.toLocaleString("pt-BR", { month: "short" })} '${yr}`
     const prev = data[idx - 1]
     if (prev && new Date(prev.date).getMonth() !== mo) {
-      return `${d.toLocaleString("en-US", { month: "short" })} '${yr}`
+      return `${d.toLocaleString("pt-BR", { month: "short" })} '${yr}`
     }
     return ""
   }
@@ -211,7 +211,7 @@ export function CoinInsight({ prices, selectedCoin }: CoinInsightProps) {
             "rounded px-2 py-0.5 text-sm font-bold tabular-nums",
             lastIsGrowing ? "text-emerald-500" : "text-rose-500"
           )}>
-            ${livePrice.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            ${livePrice.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </span>
         </div>
         <CardAction>

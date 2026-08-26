@@ -108,7 +108,7 @@ function monthKey(date: Date) {
 }
 
 function monthLabel(date: Date) {
-  return new Intl.DateTimeFormat("en-US", { month: "short" }).format(date)
+  return new Intl.DateTimeFormat("pt-BR", { month: "short" }).format(date)
 }
 
 function signedTransaction(transaction: Record<string, unknown>) {
@@ -177,15 +177,15 @@ function buildData(snapshot: FinanceSnapshot | null): Omit<FinanceDataValue, "sn
       const date = dateValue(transaction.date)
       if (!date || date < cutoff) continue
       let key = dateKey(date)
-      let label = new Intl.DateTimeFormat("en-US", { weekday: "short" }).format(date)
+      let label = new Intl.DateTimeFormat("pt-BR", { weekday: "short" }).format(date)
       if (bucket === "week") {
         const weekStart = new Date(date)
         weekStart.setDate(date.getDate() - date.getDay())
         key = dateKey(weekStart)
-        label = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(weekStart)
+        label = new Intl.DateTimeFormat("pt-BR", { month: "short", day: "numeric" }).format(weekStart)
       } else if (bucket === "month") {
         key = monthKey(date)
-        label = new Intl.DateTimeFormat("en-US", { month: "short" }).format(date)
+        label = new Intl.DateTimeFormat("pt-BR", { month: "short" }).format(date)
       }
       const item = grouped.get(key) ?? { label, moneyIn: 0, moneyOut: 0 }
       if (transaction.type === "income") item.moneyIn += Math.abs(numberValue(transaction.amount))
@@ -204,14 +204,14 @@ function buildData(snapshot: FinanceSnapshot | null): Omit<FinanceDataValue, "sn
   }
   const categoryBreakdowns: CategoryBreakdown[] = [...expensesByCategory.entries()].map(([category, amount], index) => ({ category, amount, color: `var(--color-chart-${(index % 5) + 1})`, subcategories: [] }))
 
-  const dailyAmounts = new Map<string, number>()
+  const dailyValors = new Map<string, number>()
   for (const transaction of transactions) {
     const date = dateValue(transaction.date)
     if (!date || date.getFullYear() !== now.getFullYear() || transaction.type !== "expense") continue
     const key = dateKey(date)
-    dailyAmounts.set(key, (dailyAmounts.get(key) ?? 0) + Math.abs(numberValue(transaction.amount)))
+    dailyValors.set(key, (dailyValors.get(key) ?? 0) + Math.abs(numberValue(transaction.amount)))
   }
-  const dailySpending = [...dailyAmounts.entries()]
+  const dailySpending = [...dailyValors.entries()]
     .sort(([left], [right]) => left.localeCompare(right))
     .map(([date, amount]) => ({ date, amount }))
 
@@ -224,7 +224,7 @@ function buildData(snapshot: FinanceSnapshot | null): Omit<FinanceDataValue, "sn
     }
   }
   const categoryMap = new Map(categories.map((category) => [category.id, String(category.name ?? category.id)]))
-  const budgetCategories: BudgetCategory[] = monthBudgets.map((budget, index) => ({ id: budget.id, category: categoryMap.get(String(budget.categoryId)) ?? String(budget.categoryId ?? "Orçamento"), iconName: "wallet", budget: numberValue(budget.limitAmount), spent: spentByCategory.get(String(budget.categoryId)) ?? 0, color: `text-chart-${(index % 5) + 1}` }))
+  const budgetCategories: BudgetCategory[] = monthBudgets.map((budget, index) => ({ id: budget.id, category: categoryMap.get(String(budget.categoryId)) ?? String(budget.categoryId ?? "Orçamento"), iconName: "wallet", budget: numberValue(budget.limitValor), spent: spentByCategory.get(String(budget.categoryId)) ?? 0, color: `text-chart-${(index % 5) + 1}` }))
   const budget = budgetCategories.reduce((sum, item) => sum + item.budget, 0)
   const spent = budgetCategories.reduce((sum, item) => sum + item.spent, 0)
 

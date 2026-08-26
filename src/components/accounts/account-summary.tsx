@@ -13,7 +13,7 @@ interface AccountSummaryProps {
 }
 
 const fmt = (n: number, currency = "$") =>
-  `${currency}${new Intl.NumberFormat("en-US", {
+  `${currency}${new Intl.NumberFormat("pt-BR", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(Math.abs(n))}`

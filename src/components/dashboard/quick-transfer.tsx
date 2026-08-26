@@ -24,13 +24,13 @@ type SendState = "idle" | "sending" | "success"
 export function QuickTransfer() {
   const { contacts } = useFinanceData()
   const [selectedContact, setSelectedContact] = useState<string | null>(null)
-  const [amount, setAmount] = useState("250.00")
+  const [amount, setValor] = useState("250.00")
   const [sendState, setSendState] = useState<SendState>("idle")
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>(null)
   const selectedId = selectedContact ?? contacts[0]?.id ?? null
   const selected = contacts.find((c) => c.id === selectedId)
-  const numericAmount = Number.parseFloat(amount)
-  const canSend = Boolean(selected) && Number.isFinite(numericAmount) && numericAmount > 0
+  const numericValor = Number.parseFloat(amount)
+  const canSend = Boolean(selected) && Number.isFinite(numericValor) && numericValor > 0
 
   const handleSend = () => {
     if (sendState !== "idle" || !canSend) return
@@ -52,7 +52,7 @@ export function QuickTransfer() {
           Quick Transfer
         </CardTitle>
         <Button variant="ghost" size="sm" className="h-auto gap-1 px-0 text-xs text-muted-foreground">
-          See All Contacts
+          Ver todas Contacts
           <ChevronRightIcon className="size-3" />
         </Button>
       </CardHeader>
@@ -61,7 +61,7 @@ export function QuickTransfer() {
         <div className="flex items-center gap-2">
           <div className="flex items-center py-2">
             {contacts.length === 0 ? (
-              <p className="px-1 py-2 text-xs text-muted-foreground">No contacts available yet.</p>
+              <p className="px-1 py-2 text-xs text-muted-foreground">Nenhum contato disponível ainda.</p>
             ) : contacts.slice(0, 6).map((contact) => {
               const isSelected = selectedId === contact.id
               return (
@@ -123,7 +123,7 @@ export function QuickTransfer() {
           </motion.p>
         </AnimatePresence>
 
-        {/* Amount + Send */}
+        {/* Valor + Send */}
         <AnimatePresence mode="wait">
           {sendState === "success" ? (
             <motion.div
@@ -141,7 +141,7 @@ export function QuickTransfer() {
                 <CheckCircle2Icon className="size-10 text-emerald-500" />
               </motion.div>
               <p className="text-sm font-semibold">
-                ${numericAmount.toLocaleString("en-US", { minimumFractionDigits: 2 })} sent!
+                ${numericValor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })} sent!
               </p>
               <p className="text-xs text-muted-foreground">
                 To {selected?.name}
@@ -156,7 +156,7 @@ export function QuickTransfer() {
               className="flex items-end gap-3"
             >
               <div className="flex-1 space-y-1.5">
-                <label className="text-xs text-muted-foreground">Amount</label>
+                <label className="text-xs text-muted-foreground">Valor</label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-muted-foreground">
                     $
@@ -164,7 +164,7 @@ export function QuickTransfer() {
                   <Input
                     type="text"
                     value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
+                    onChange={(e) => setValor(e.target.value)}
                     disabled={sendState === "sending"}
                     className="h-10 pl-7 text-lg font-semibold tabular-nums"
                   />

@@ -32,24 +32,24 @@ interface TransactionTableProps {
 }
 
 const fmt = (n: number) =>
-  new Intl.NumberFormat("en-US", {
+  new Intl.NumberFormat("pt-BR", {
     style: "currency",
-    currency: "USD",
+    currency: "BRL",
     minimumFractionDigits: 2,
   }).format(Math.abs(n))
 
 function statusBadge(status: FullTransaction["status"]) {
   switch (status) {
     case "completed":
-      return <Badge variant="default">Completed</Badge>
+      return <Badge variant="default">Concluída</Badge>
     case "pending":
       return (
         <Badge variant="outline" className="text-amber-500 dark:text-amber-400">
-          Pending
+          Pendente
         </Badge>
       )
     case "failed":
-      return <Badge variant="destructive">Failed</Badge>
+      return <Badge variant="destructive">Falhou</Badge>
   }
 }
 
@@ -100,10 +100,10 @@ export function TransactionTable({
                 className="size-4 cursor-pointer rounded accent-primary"
               />
             </TableHead>
-            <TableHead>Merchant</TableHead>
-            <TableHead className="hidden sm:table-cell">Transaction ID</TableHead>
-            <TableHead className="text-right">Amount</TableHead>
-            <TableHead className="hidden md:table-cell">Date</TableHead>
+            <TableHead>Descrição</TableHead>
+            <TableHead className="hidden sm:table-cell">ID da transação</TableHead>
+            <TableHead className="text-right">Valor</TableHead>
+            <TableHead className="hidden md:table-cell">Data</TableHead>
             <TableHead className="hidden lg:table-cell">Status</TableHead>
             <TableHead className="w-10" />
           </TableRow>

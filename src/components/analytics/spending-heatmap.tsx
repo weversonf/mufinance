@@ -67,7 +67,7 @@ export function SpendingHeatmap() {
         const monthKey = `${d.getFullYear()}-${d.getMonth()}`
         if (!seenMonths.has(monthKey) && row === 0) {
           seenMonths.add(monthKey)
-          const label = d.toLocaleDateString("en-US", { month: "short" })
+          const label = d.toLocaleDateString("pt-BR", { month: "short" })
           months.push({ label, col })
         }
       }
@@ -81,7 +81,7 @@ export function SpendingHeatmap() {
       <CardHeader>
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <CardTitle>Spending Activity</CardTitle>
+            <CardTitle>Atividade de gastos</CardTitle>
             <CardDescription>
               <span className="tabular-nums font-medium text-foreground">
                 ${yearTotal.toLocaleString()}
@@ -164,7 +164,7 @@ export function SpendingHeatmap() {
                     </span>{" "}
                     on{" "}
                     {new Date(cell.date + "T12:00:00").toLocaleDateString(
-                      "en-US",
+                      "pt-BR",
                       {
                         month: "short",
                         day: "numeric",

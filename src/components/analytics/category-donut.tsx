@@ -76,7 +76,7 @@ export function CategoryDonut() {
     }))
   }, [selectedCategory])
 
-  const centerAmount = selectedCategory ? selectedCategory.amount : total
+  const centerValor = selectedCategory ? selectedCategory.amount : total
 
   return (
     <Card>
@@ -153,7 +153,7 @@ export function CategoryDonut() {
                   dominantBaseline="middle"
                   className="fill-foreground text-2xl font-bold tabular-nums"
                 >
-                  ${centerAmount.toLocaleString()}
+                  ${centerValor.toLocaleString()}
                 </text>
                 <text
                   x="50%"

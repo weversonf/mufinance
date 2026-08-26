@@ -99,7 +99,7 @@ export function TopCoins({ prices, originalPrices, selectedCoin, onSelectCoin }:
                   className="rounded px-1 text-xl font-bold tabular-nums"
                 >
                   $
-                  {livePrice.toLocaleString("en-US", {
+                  {livePrice.toLocaleString("pt-BR", {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
                   })}

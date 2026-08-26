@@ -42,8 +42,8 @@ const navigation = {
   ],
   navMoney: [
     { title: "Transfers", url: "/transfers", icon: <SendIcon /> },
-    { title: "Investments", url: "/investments", icon: <TrendingUpIcon /> },
-    { title: "Crypto", url: "/crypto", icon: <BitcoinIcon /> },
+    { title: "Investimentoss", url: "/investments", icon: <TrendingUpIcon /> },
+    { title: "Cripto", url: "/crypto", icon: <BitcoinIcon /> },
   ],
   navInsights: [
     { title: "Analytics", url: "/analytics", icon: <ChartAreaIcon /> },
@@ -56,7 +56,7 @@ const navigation = {
   navSecondary: [
     { title: "Notifications", url: "/notifications", icon: <BellIcon /> },
     { title: "Settings", url: "/settings", icon: <SettingsIcon /> },
-    { title: "Help & Support", url: "/support", icon: <LifeBuoyIcon /> },
+    { title: "Ajuda e suporte", url: "/support", icon: <LifeBuoyIcon /> },
   ],
 }
 

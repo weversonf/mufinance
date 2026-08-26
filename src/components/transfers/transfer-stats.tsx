@@ -8,9 +8,9 @@ interface TransferStatsProps {
 }
 
 const fmt = (n: number) =>
-  new Intl.NumberFormat("en-US", {
+  new Intl.NumberFormat("pt-BR", {
     style: "currency",
-    currency: "USD",
+    currency: "BRL",
     minimumFractionDigits: 2,
   }).format(n)
 

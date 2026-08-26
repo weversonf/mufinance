@@ -233,7 +233,7 @@ export function MarketOverview({ prices, originalPrices, selectedCoin, onSelectC
                       className="rounded px-1"
                     >
                       $
-                      {coin.livePrice.toLocaleString("en-US", {
+                      {coin.livePrice.toLocaleString("pt-BR", {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2,
                       })}
@@ -271,7 +271,7 @@ export function MarketOverview({ prices, originalPrices, selectedCoin, onSelectC
                         <DropdownMenuItem>Buy</DropdownMenuItem>
                         <DropdownMenuItem>Sell</DropdownMenuItem>
                         <DropdownMenuItem onSelect={() => onSelectCoin(coin.id)}>
-                          View Chart
+                          Ver gráfico
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>

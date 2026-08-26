@@ -13,10 +13,10 @@ import { EmptyState } from "@/components/empty-state"
 
 const filterTabs = [
   { value: "all", label: "All" },
-  { value: "checking", label: "Checking" },
-  { value: "savings", label: "Savings" },
-  { value: "crypto", label: "Crypto" },
-  { value: "investment", label: "Investment" },
+  { value: "checking", label: "Conta corrente" },
+  { value: "savings", label: "Poupança" },
+  { value: "crypto", label: "Cripto" },
+  { value: "investment", label: "Investimentos" },
 ] as const
 
 type AccountType = (typeof filterTabs)[number]["value"]
@@ -65,7 +65,7 @@ export function AccountsPageClient() {
       {filtered.length === 0 && (
         <EmptyState
           variant={accounts.length === 0 ? "accounts" : "filter"}
-          title={accounts.length === 0 ? "No accounts linked" : "No accounts in this category"}
+          title={accounts.length === 0 ? "Nenhuma conta vinculada" : "No accounts in this category"}
           description={
             accounts.length === 0
               ? "Connect your first account below to see balances and track spending."

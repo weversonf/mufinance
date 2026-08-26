@@ -148,7 +148,7 @@ function FaqTab() {
                 className="flex flex-col items-center justify-center gap-3 py-16 text-muted-foreground"
               >
                 <SearchIcon className="size-10 opacity-30" />
-                <p className="text-sm font-medium">No matching questions</p>
+                <p className="text-sm font-medium">Nenhuma pergunta encontrada</p>
                 <p className="text-xs">Try a different search term or category</p>
               </motion.div>
             ) : (
@@ -608,8 +608,8 @@ function StatusTab() {
             {allOperational ? <CheckCircle2Icon className="size-7" /> : <AlertCircleIcon className="size-7" />}
           </motion.div>
           <div>
-            <p className="text-lg font-semibold">{allOperational ? "All Systems Operational" : "Partial System Degradation"}</p>
-            <p className="text-sm text-muted-foreground">{allOperational ? "All services running smoothly" : "Some services experiencing issues"}</p>
+            <p className="text-lg font-semibold">{allOperational ? "Todos os sistemas operacionais" : "Degradação parcial do sistema"}</p>
+            <p className="text-sm text-muted-foreground">{allOperational ? "Todos os serviços estão funcionando normalmente" : "Alguns serviços estão apresentando problemas"}</p>
           </div>
           <div className="ml-auto hidden text-right sm:block">
             <p className="text-2xl font-bold tabular-nums">{uptimePct}%</p>
@@ -621,7 +621,7 @@ function StatusTab() {
       {/* Service list with live indicator bars */}
       <Card>
         <CardHeader>
-          <CardTitle>Service Status</CardTitle>
+          <CardTitle>Status dos serviços</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           {systemStatus.map((service, i) => (
@@ -740,7 +740,7 @@ export function SupportPageClient() {
     <div className="space-y-6">
       {/* Header */}
       <div className="space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight">Help & Support</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Ajuda e suporte</h1>
         <p className="text-sm text-muted-foreground">Find answers, chat with us, submit tickets, and check system status</p>
       </div>
 

@@ -338,7 +338,7 @@ const variants: Record<EmptyStateVariant, {
 }> = {
   accounts: {
     illustration: <WalletIllustration />,
-    title: "No accounts linked",
+    title: "Nenhuma conta vinculada",
     description: "Connect your bank accounts to see balances, track spending, and manage everything in one place.",
   },
   transactions: {

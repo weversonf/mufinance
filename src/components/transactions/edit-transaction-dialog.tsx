@@ -12,7 +12,7 @@ export function EditTransactionDialog({ transaction, accountId, open, onOpenChan
   const [payee, setPayee] = useState("")
   const [category, setCategory] = useState("")
   const [date, setDate] = useState("")
-  const [amount, setAmount] = useState("0")
+  const [amount, setValor] = useState("0")
   const [type, setType] = useState<"income" | "expense">("expense")
   const [status, setStatus] = useState<"planned" | "completed">("completed")
   const [notes, setNotes] = useState("")
@@ -24,7 +24,7 @@ export function EditTransactionDialog({ transaction, accountId, open, onOpenChan
     setPayee(transaction.merchant)
     setCategory(transaction.category)
     setDate(transaction.date)
-    setAmount(String(Math.abs(transaction.amount)).replace(",", "."))
+    setValor(String(Math.abs(transaction.amount)).replace(",", "."))
     setType(transaction.type === "income" ? "income" : "expense")
     setStatus(transaction.status === "pending" ? "planned" : "completed")
     setNotes(transaction.notes || "")
@@ -55,7 +55,7 @@ export function EditTransactionDialog({ transaction, accountId, open, onOpenChan
       <form onSubmit={handleSubmit} className="grid gap-4 sm:grid-cols-2">
         <label className="grid gap-1.5 text-sm font-medium sm:col-span-2">Descrição<Input value={payee} onChange={(event) => setPayee(event.target.value)} required /></label>
         <label className="grid gap-1.5 text-sm font-medium">Categoria<Input value={category} onChange={(event) => setCategory(event.target.value)} required /></label>
-        <label className="grid gap-1.5 text-sm font-medium">Valor<Input type="number" step="0.01" min="0.01" value={amount} onChange={(event) => setAmount(event.target.value)} required /></label>
+        <label className="grid gap-1.5 text-sm font-medium">Valor<Input type="number" step="0.01" min="0.01" value={amount} onChange={(event) => setValor(event.target.value)} required /></label>
         <label className="grid gap-1.5 text-sm font-medium">Data<Input type="date" value={date} onChange={(event) => setDate(event.target.value)} required /></label>
         <label className="grid gap-1.5 text-sm font-medium">Tipo<select value={type} onChange={(event) => setType(event.target.value as typeof type)} className="h-9 rounded-md border bg-background px-3 text-sm"><option value="expense">Despesa</option><option value="income">Entrada</option></select></label>
         <label className="grid gap-1.5 text-sm font-medium">Status<select value={status} onChange={(event) => setStatus(event.target.value as typeof status)} className="h-9 rounded-md border bg-background px-3 text-sm"><option value="completed">Concluída</option><option value="planned">Planejada</option></select></label>

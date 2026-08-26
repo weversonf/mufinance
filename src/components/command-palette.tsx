@@ -69,7 +69,7 @@ export function CommandPalette() {
       <Command>
         <CommandInput placeholder="Type a command or search..." />
         <CommandList>
-          <CommandEmpty>No results found.</CommandEmpty>
+          <CommandEmpty>Nenhum resultado encontrado.</CommandEmpty>
 
           <CommandGroup heading="Pages">
             {[
@@ -78,13 +78,13 @@ export function CommandPalette() {
               { label: "Transactions", icon: ArrowLeftRightIcon, href: "/transactions" },
               { label: "Transfers", icon: SendIcon, href: "/transfers" },
               { label: "Cards", icon: CreditCardIcon, href: "/cards" },
-              { label: "Crypto", icon: BitcoinIcon, href: "/crypto" },
+              { label: "Cripto", icon: BitcoinIcon, href: "/crypto" },
               { label: "Analytics", icon: ChartAreaIcon, href: "/analytics" },
-              { label: "Investments", icon: TrendingUpIcon, href: "/investments" },
+              { label: "Investimentoss", icon: TrendingUpIcon, href: "/investments" },
               { label: "Budgets", icon: TargetIcon, href: "/budgets" },
               { label: "Settings", icon: SettingsIcon, href: "/settings" },
               { label: "Notifications", icon: BellIcon, href: "/notifications" },
-              { label: "Help & Support", icon: LifeBuoyIcon, href: "/support" },
+              { label: "Ajuda e suporte", icon: LifeBuoyIcon, href: "/support" },
               { label: "Sign In", icon: LogInIcon, href: "/sign-in" },
               { label: "Sign Up", icon: UserPlusIcon, href: "/sign-up" },
             ].map((page) => (
@@ -97,7 +97,7 @@ export function CommandPalette() {
 
           <CommandSeparator />
 
-          <CommandGroup heading="Recent Transactions">
+          <CommandGroup heading="Transações recentes">
             {recentTransactions.slice(0, 5).map((tx) => (
               <CommandItem key={tx.id} onSelect={() => run(() => router.push("/transactions"))}>
                 <SearchIcon className="mr-2 size-4" />
@@ -122,7 +122,7 @@ export function CommandPalette() {
 
           <CommandSeparator />
 
-          <CommandGroup heading="Crypto">
+          <CommandGroup heading="Cripto">
             {cryptoCoins.slice(0, 4).map((coin) => (
               <CommandItem key={coin.id} onSelect={() => run(() => router.push("/crypto"))}>
                 <BitcoinIcon className="mr-2 size-4" />

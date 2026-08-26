@@ -24,14 +24,14 @@ type SendState = "idle" | "sending" | "success"
 export function QuickSend({ onSend }: { onSend?: (record: TransferRecord) => void }) {
   const { contacts } = useFinanceData()
   const [selectedContact, setSelectedContact] = useState<string | null>(null)
-  const [amount, setAmount] = useState("")
+  const [amount, setValor] = useState("")
   const [note, setNote] = useState("")
   const [sendState, setSendState] = useState<SendState>("idle")
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>(null)
   const selectedId = selectedContact ?? contacts[0]?.id ?? null
   const selected = contacts.find((c) => c.id === selectedId)
-  const numericAmount = Number.parseFloat(amount)
-  const canSend = Boolean(selected) && Number.isFinite(numericAmount) && numericAmount > 0
+  const numericValor = Number.parseFloat(amount)
+  const canSend = Boolean(selected) && Number.isFinite(numericValor) && numericValor > 0
 
   const handleSend = () => {
     if (sendState !== "idle" || !canSend) return
@@ -46,7 +46,7 @@ export function QuickSend({ onSend }: { onSend?: (record: TransferRecord) => voi
           contactName: selected.name,
           contactAvatar: selected.avatar,
           amount: parseFloat(amount),
-          date: new Date().toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" }),
+          date: new Date().toLocaleDateString("pt-BR", { month: "short", day: "2-digit", year: "numeric" }),
           status: "completed",
           note: note || undefined,
         }
@@ -54,7 +54,7 @@ export function QuickSend({ onSend }: { onSend?: (record: TransferRecord) => voi
       }
       timeoutRef.current = setTimeout(() => {
         setSendState("idle")
-        setAmount("")
+        setValor("")
         setNote("")
       }, 2000)
     }, 1500)
@@ -83,7 +83,7 @@ export function QuickSend({ onSend }: { onSend?: (record: TransferRecord) => voi
                 <CheckCircle2Icon className="size-10 text-emerald-500" />
               </motion.div>
               <p className="text-sm font-semibold">
-                ${numericAmount.toLocaleString("en-US", { minimumFractionDigits: 2 })} sent!
+                ${numericValor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })} sent!
               </p>
               <p className="text-xs text-muted-foreground">
                 To {selected?.name ?? "no recipient selected"}
@@ -102,7 +102,7 @@ export function QuickSend({ onSend }: { onSend?: (record: TransferRecord) => voi
                 <label className="mb-1.5 block text-xs text-muted-foreground">To</label>
                 <div className="flex items-center gap-1 pt-1">
                   {contacts.length === 0 ? (
-                    <p className="py-2 text-xs text-muted-foreground">No contacts available yet.</p>
+                    <p className="py-2 text-xs text-muted-foreground">Nenhum contato disponível ainda.</p>
                   ) : contacts.slice(0, 6).map((contact) => {
                     const isSelected = selectedId === contact.id
                     return (
@@ -152,9 +152,9 @@ export function QuickSend({ onSend }: { onSend?: (record: TransferRecord) => voi
                 </AnimatePresence>
               </div>
 
-              {/* Amount input */}
+              {/* Valor input */}
               <div className="flex-1 space-y-1.5 lg:max-w-[160px]">
-                <label className="text-xs text-muted-foreground">Amount</label>
+                <label className="text-xs text-muted-foreground">Valor</label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-muted-foreground">
                     $
@@ -163,7 +163,7 @@ export function QuickSend({ onSend }: { onSend?: (record: TransferRecord) => voi
                     type="text"
                     placeholder="0.00"
                     value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
+                    onChange={(e) => setValor(e.target.value)}
                     disabled={sendState === "sending"}
                     className="h-9 pl-7 tabular-nums"
                   />

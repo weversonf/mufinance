@@ -42,7 +42,7 @@ const defaultBlocks: Block[] = [
   { id: "transfer-spending", label: "Transfer & Spending", size: "sm", component: <div className="flex flex-col gap-4 [&>*]:flex-1"><QuickTransfer /><SpendingLimit /></div> },
   { id: "money-movement", label: "Money Movement", size: "sm", component: <MoneyMovement /> },
   { id: "health-score", label: "Financial Health", size: "sm", component: <HealthScore /> },
-  { id: "recent-transactions", label: "Recent Transactions", size: "full", component: <RecentTransactions /> },
+  { id: "recent-transactions", label: "Transações recentes", size: "full", component: <RecentTransactions /> },
 ]
 
 const sizeClass: Record<WidgetSize, string> = {

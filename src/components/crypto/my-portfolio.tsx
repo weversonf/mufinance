@@ -137,7 +137,7 @@ export function MyPortfolio({ prices, originalPrices, selectedCoin, onSelectCoin
                 <div className="text-right">
                   <p className="text-sm font-semibold tabular-nums">
                     $
-                    {seg.value.toLocaleString("en-US", {
+                    {seg.value.toLocaleString("pt-BR", {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
                     })}
@@ -167,7 +167,7 @@ export function MyPortfolio({ prices, originalPrices, selectedCoin, onSelectCoin
                   <DropdownMenuContent side="bottom" align="end">
                     <DropdownMenuItem>Buy More</DropdownMenuItem>
                     <DropdownMenuItem>Sell</DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => onSelectCoin(seg.coin.id)}>View Chart</DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => onSelectCoin(seg.coin.id)}>Ver gráfico</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>

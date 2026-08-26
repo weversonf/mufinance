@@ -25,7 +25,7 @@ export function SavingsGoals() {
   return (
     <Card className="col-span-full">
       <CardHeader>
-        <CardTitle className="text-base font-semibold">Savings Goals</CardTitle>
+        <CardTitle className="text-base font-semibold">Metas de economia</CardTitle>
       </CardHeader>
       <CardContent>
         {savingsGoals.length === 0 ? (
@@ -81,10 +81,10 @@ export function SavingsGoals() {
                     </div>
                     <div className="flex items-baseline gap-1">
                       <span className="text-lg font-bold tabular-nums">
-                        ${goal.currentAmount.toLocaleString()}
+                        {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(goal.currentAmount)}
                       </span>
                       <span className="text-xs text-muted-foreground">
-                        / ${goal.targetAmount.toLocaleString()}
+                        / {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(goal.targetAmount)}
                       </span>
                     </div>
                     <Progress value={percent} className="h-2" />

@@ -16,9 +16,9 @@ interface TransferListProps {
 }
 
 const fmt = (n: number) =>
-  new Intl.NumberFormat("en-US", {
+  new Intl.NumberFormat("pt-BR", {
     style: "currency",
-    currency: "USD",
+    currency: "BRL",
     minimumFractionDigits: 2,
   }).format(n)
 
@@ -93,7 +93,7 @@ export function TransferList({ transfers, onCancel }: TransferListProps) {
                 )}
               </div>
 
-              {/* Amount */}
+              {/* Valor */}
               <div className="shrink-0 text-right">
                 <p
                   className={cn(

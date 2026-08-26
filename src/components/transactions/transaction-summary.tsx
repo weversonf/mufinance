@@ -8,9 +8,9 @@ interface TransactionSummaryProps {
 }
 
 const fmt = (n: number) =>
-  new Intl.NumberFormat("en-US", {
+  new Intl.NumberFormat("pt-BR", {
     style: "currency",
-    currency: "USD",
+    currency: "BRL",
     minimumFractionDigits: 2,
   }).format(n)
 
@@ -31,28 +31,28 @@ export function TransactionSummary({ transactions }: TransactionSummaryProps) {
 
   const cards = [
     {
-      label: "Total In",
+      label: "Total de entradas",
       value: fmt(totalIn),
       icon: ArrowDownLeftIcon,
       color: "text-emerald-500",
       bg: "bg-emerald-500/10",
     },
     {
-      label: "Total Out",
+      label: "Total de saídas",
       value: fmt(totalOut),
       icon: ArrowUpRightIcon,
       color: "text-rose-500",
       bg: "bg-rose-500/10",
     },
     {
-      label: "Largest",
-      value: largest ? fmt(Math.abs(largest.amount)) : "$0.00",
+      label: "Maior lançamento",
+      value: largest ? fmt(Math.abs(largest.amount)) : "R$ 0,00",
       icon: TrendingUpIcon,
       color: "text-primary",
       bg: "bg-primary/10",
     },
     {
-      label: "Count",
+      label: "Quantidade",
       value: transactions.length.toString(),
       icon: HashIcon,
       color: "text-muted-foreground",

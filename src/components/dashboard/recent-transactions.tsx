@@ -31,10 +31,10 @@ export function RecentTransactions() {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
         <CardTitle className="text-base font-semibold">
-          Recent Transactions
+          Transações recentes
         </CardTitle>
         <Button variant="outline" size="sm" className="h-8 gap-1 text-xs">
-          See All
+          Ver todas
           <ChevronRightIcon className="size-3" />
         </Button>
       </CardHeader>
@@ -43,10 +43,10 @@ export function RecentTransactions() {
           <div className="min-w-[600px] space-y-1">
             {/* Header */}
             <div className="grid grid-cols-[1fr_140px_100px_120px_32px] gap-4 border-b pb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              <span>Merchant</span>
-              <span className="hidden sm:inline">Transaction ID</span>
-              <span className="text-right">Amount</span>
-              <span className="hidden md:inline">Date</span>
+              <span>Descrição</span>
+              <span className="hidden sm:inline">ID da transação</span>
+              <span className="text-right">Valor</span>
+              <span className="hidden md:inline">Data</span>
               <span />
             </div>
 
@@ -80,12 +80,12 @@ export function RecentTransactions() {
                   </div>
                 </div>
 
-                {/* Transaction ID */}
+                {/* ID da transação */}
                 <span className="hidden font-mono text-xs text-muted-foreground sm:inline">
                   {tx.transactionId}
                 </span>
 
-                {/* Amount */}
+                {/* Valor */}
                 <span
                   className={cn(
                     "text-right text-sm font-semibold tabular-nums",
@@ -94,10 +94,7 @@ export function RecentTransactions() {
                       : "text-foreground"
                   )}
                 >
-                  {tx.amount > 0 ? "+" : ""}$
-                  {Math.abs(tx.amount).toLocaleString("en-US", {
-                    minimumFractionDigits: 2,
-                  })}
+                  {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(tx.amount)}
                 </span>
 
                 {/* Date */}

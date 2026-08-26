@@ -25,10 +25,10 @@ interface AddAccountProps {
 type Step = "idle" | "form" | "loading" | "success"
 
 const accountTypes = [
-  { value: "checking", label: "Checking" },
-  { value: "savings", label: "Savings" },
-  { value: "crypto", label: "Crypto" },
-  { value: "investment", label: "Investment" },
+  { value: "checking", label: "Conta corrente" },
+  { value: "savings", label: "Poupança" },
+  { value: "crypto", label: "Cripto" },
+  { value: "investment", label: "Investimentos" },
 ] as const
 
 const typeColors: Record<string, string> = {
@@ -169,7 +169,7 @@ export function AddAccount({ onAdd }: AddAccountProps) {
               className="flex flex-col items-center gap-2 text-muted-foreground"
             >
               <LoaderIcon className="size-6 animate-spin" />
-              <span className="text-sm">Connecting...</span>
+              <span className="text-sm">Conectando...</span>
             </motion.div>
           )}
 
@@ -184,7 +184,7 @@ export function AddAccount({ onAdd }: AddAccountProps) {
               <div className="flex size-10 items-center justify-center rounded-full bg-emerald-500/10">
                 <CheckIcon className="size-5" />
               </div>
-              <span className="text-sm font-medium">Connected!</span>
+              <span className="text-sm font-medium">Conectado!</span>
             </motion.div>
           )}
         </AnimatePresence>
