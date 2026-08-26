@@ -28,8 +28,7 @@ interface TransactionTableProps {
   transactions: FullTransaction[]
   selectedIds: Set<string>
   setSelectedIds: (ids: Set<string>) => void
-  expandedId: string | null
-  setExpandedId: (id: string | null) => void
+  onEdit: (transaction: FullTransaction) => void
 }
 
 const fmt = (n: number) =>
@@ -58,8 +57,7 @@ export function TransactionTable({
   transactions,
   selectedIds,
   setSelectedIds,
-  expandedId,
-  setExpandedId,
+  onEdit,
 }: TransactionTableProps) {
   const allSelected =
     transactions.length > 0 && transactions.every((t) => selectedIds.has(t.id))
@@ -121,7 +119,7 @@ export function TransactionTable({
           )}
 
           {transactions.map((tx) => {
-            const isExpanded = expandedId === tx.id
+            const isExpanded = false
             return (
               <TransactionRow
                 key={tx.id}
@@ -129,9 +127,7 @@ export function TransactionTable({
                 isSelected={selectedIds.has(tx.id)}
                 isExpanded={isExpanded}
                 onToggleSelect={() => toggleOne(tx.id)}
-                onToggleExpand={() =>
-                  setExpandedId(isExpanded ? null : tx.id)
-                }
+                onEdit={() => onEdit(tx)}
               />
             )
           })}
@@ -147,13 +143,13 @@ function TransactionRow({
   isSelected,
   isExpanded,
   onToggleSelect,
-  onToggleExpand,
+  onEdit,
 }: {
   tx: FullTransaction
   isSelected: boolean
   isExpanded: boolean
   onToggleSelect: () => void
-  onToggleExpand: () => void
+  onEdit: () => void
 }) {
   return (
     <>
@@ -163,7 +159,7 @@ function TransactionRow({
           isSelected && "bg-muted/50",
           isExpanded && "border-b-0"
         )}
-        onClick={onToggleExpand}
+        onClick={onEdit}
       >
         <TableCell className="pl-3">
           <input
@@ -227,6 +223,7 @@ function TransactionRow({
             className="opacity-0 transition-opacity group-hover:opacity-100"
             onClick={(e) => {
               e.stopPropagation()
+              onEdit()
             }}
           >
             <MoreHorizontalIcon className="size-4" />

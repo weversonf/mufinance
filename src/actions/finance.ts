@@ -90,6 +90,28 @@ export async function migrateLegacyFinanceState() {
   return { migrated: true, writes: result.writes };
 }
 
+async function findOwnedReference(collectionNames: string[], id: string, ownerId: string) {
+  const db = getAdminFirestore();
+  for (const collectionName of collectionNames) {
+    const reference = db.collection(collectionName).doc(id);
+    const snapshot = await reference.get();
+    if (snapshot.exists && (snapshot.data()?.ownerId === ownerId || snapshot.data()?.uid === ownerId)) {
+      return reference;
+    }
+  }
+  throw new Error("Registro não encontrado para este usuário.");
+}
+
+export async function updateAccount(id: string, input: unknown) {
+  const user = await requireSessionUser();
+  const data = accountInputSchema.parse(input);
+  const reference = await findOwnedReference(["accounts"], id, user.uid);
+  const payload = { ...data, ownerId: user.uid, updatedAt: timestamp() };
+  await reference.set(payload, { merge: true });
+  revalidatePath("/");
+  return { id, ...payload };
+}
+
 export async function createAccount(input: unknown) {
   const user = await requireSessionUser();
   const data = accountInputSchema.parse(input);
@@ -110,6 +132,16 @@ export async function createCreditCard(input: unknown) {
   await reference.set(payload);
   revalidatePath("/");
   return { id: reference.id, ...payload };
+}
+
+export async function updateTransaction(id: string, input: unknown) {
+  const user = await requireSessionUser();
+  const data = transactionInputSchema.parse(input);
+  const reference = await findOwnedReference(["transactions"], id, user.uid);
+  const payload = { ...data, ownerId: user.uid, updatedAt: timestamp() };
+  await reference.set(payload, { merge: true });
+  revalidatePath("/");
+  return { id, ...payload };
 }
 
 export async function createTransaction(input: unknown) {

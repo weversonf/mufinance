@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react"
 
 import { useFinanceData } from "@/components/finance/finance-provider"
+import { EditAccountDialog } from "@/components/accounts/edit-account-dialog"
 import { cn } from "@/lib/utils"
 import type { BankAccount } from "@/data/seed"
 import { AccountSummary } from "@/components/accounts/account-summary"
@@ -21,9 +22,10 @@ const filterTabs = [
 type AccountType = (typeof filterTabs)[number]["value"]
 
 export function AccountsPageClient() {
-  const { bankAccounts } = useFinanceData()
+  const { bankAccounts, refresh } = useFinanceData()
   const [selectedType, setSelectedType] = useState<AccountType>("all")
   const [localAccounts, setLocalAccounts] = useState<BankAccount[]>([])
+  const [selectedAccount, setSelectedAccount] = useState<BankAccount | null>(null)
   const accounts = useMemo(() => [...bankAccounts, ...localAccounts], [bankAccounts, localAccounts])
 
   const filtered = useMemo(
@@ -75,10 +77,12 @@ export function AccountsPageClient() {
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {filtered.map((account, index) => (
-          <AccountCard key={account.id} account={account} index={index} />
+          <AccountCard key={account.id} account={account} index={index} onSelect={setSelectedAccount} />
         ))}
         <AddAccount onAdd={handleAddAccount} />
       </div>
+
+      <EditAccountDialog account={selectedAccount} open={selectedAccount !== null} onOpenChange={(open) => { if (!open) setSelectedAccount(null) }} onSaved={refresh} />
     </div>
   )
 }

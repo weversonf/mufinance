@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react"
 
 import { useFinanceData } from "@/components/finance/finance-provider"
+import { EditTransactionDialog } from "@/components/transactions/edit-transaction-dialog"
 import type { FullTransaction } from "@/data/seed"
 import { TransactionSummary } from "@/components/transactions/transaction-summary"
 import { TransactionFilters } from "@/components/transactions/transaction-filters"
@@ -10,13 +11,13 @@ import { TransactionTable } from "@/components/transactions/transaction-table"
 import { TransactionActions } from "@/components/transactions/transaction-actions"
 
 export function TransactionsPageClient() {
-  const { fullTransactions } = useFinanceData()
+  const { fullTransactions, snapshot, bankAccounts, refresh } = useFinanceData()
   const [search, setSearch] = useState("")
   const [categoryFilter, setCategoryFilter] = useState("all")
   const [statusFilter, setStatusFilter] = useState("all")
   const [typeFilter, setTypeFilter] = useState("all")
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
-  const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [selectedTransaction, setSelectedTransaction] = useState<FullTransaction | null>(null)
 
   const categories = useMemo(() => {
     const categoryNames = new Set(fullTransactions.map((transaction) => transaction.category))
@@ -88,8 +89,15 @@ export function TransactionsPageClient() {
         transactions={filteredData}
         selectedIds={selectedIds}
         setSelectedIds={setSelectedIds}
-        expandedId={expandedId}
-        setExpandedId={setExpandedId}
+        onEdit={setSelectedTransaction}
+      />
+
+      <EditTransactionDialog
+        transaction={selectedTransaction ? { ...selectedTransaction, ...(snapshot?.transactions.find((item) => item.id === selectedTransaction.id) || {}) } : null}
+        accountId={bankAccounts[0]?.id || "legacy-account"}
+        open={selectedTransaction !== null}
+        onOpenChange={(open) => { if (!open) setSelectedTransaction(null) }}
+        onSaved={refresh}
       />
 
       <TransactionActions
