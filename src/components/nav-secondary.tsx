@@ -84,7 +84,7 @@ function NotificationDropdown({ icon, badge }: { icon: React.ReactNode; badge: n
         }
       >
         {icon}
-        <span className="flex-1">Notifications</span>
+        <span className="flex-1">Notificações</span>
         {badge > 0 && (
           <span className="flex size-4.5 items-center justify-center rounded-full bg-primary text-[10px] font-semibold leading-none text-primary-foreground tabular-nums">
             {badge}
@@ -93,10 +93,10 @@ function NotificationDropdown({ icon, badge }: { icon: React.ReactNode; badge: n
       </PopoverTrigger>
       <PopoverContent side="right" align="end" sideOffset={8} className="w-80 p-0">
         <div className="flex items-center justify-between border-b px-4 py-3">
-          <p className="text-sm font-semibold">Notifications</p>
+          <p className="text-sm font-semibold">Notificações</p>
           {badge > 0 && (
             <span className="text-[10px] font-medium text-muted-foreground">
-              {badge} unread
+              {badge} não lida(s)
             </span>
           )}
         </div>
@@ -218,7 +218,7 @@ export function NavSecondary({
         <SidebarMenu>
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>
-              {item.title === "Notifications" ? (
+              {item.title === "Notificações" ? (
                 <NotificationDropdown icon={item.icon} badge={unreadCount} />
               ) : (
                 <SidebarMenuButton size="sm" render={<Link href={item.url} />}>

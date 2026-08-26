@@ -90,17 +90,17 @@ export function NavUser({
             <DropdownMenuGroup>
               <DropdownMenuItem render={<Link href="/settings" />}>
                 <BadgeCheckIcon />
-                Account
+                Conta
               </DropdownMenuItem>
               <DropdownMenuItem render={<Link href="/settings?tab=billing" />}>
                 <CreditCardIcon />
-                Billing
+                Cobrança
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => void logout()}>
               <LogOutIcon />
-              Log out
+              Sair
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

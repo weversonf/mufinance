@@ -35,33 +35,33 @@ import {
 
 const navigation = {
   navDaily: [
-    { title: "Overview", url: "/dashboard", icon: <LayoutDashboardIcon /> },
-    { title: "Accounts", url: "/accounts", icon: <WalletIcon /> },
-    { title: "Transactions", url: "/transactions", icon: <ArrowLeftRightIcon /> },
-    { title: "Cards", url: "/cards", icon: <CreditCardIcon /> },
+    { title: "Visão geral", url: "/dashboard", icon: <LayoutDashboardIcon /> },
+    { title: "Contas", url: "/accounts", icon: <WalletIcon /> },
+    { title: "Transações", url: "/transactions", icon: <ArrowLeftRightIcon /> },
+    { title: "Cartões", url: "/cards", icon: <CreditCardIcon /> },
   ],
   navMoney: [
-    { title: "Transfers", url: "/transfers", icon: <SendIcon /> },
-    { title: "Investimentoss", url: "/investments", icon: <TrendingUpIcon /> },
-    { title: "Cripto", url: "/crypto", icon: <BitcoinIcon /> },
+    { title: "Transferências", url: "/transfers", icon: <SendIcon /> },
+    { title: "Investimentos", url: "/investments", icon: <TrendingUpIcon /> },
+    { title: "Criptomoedas", url: "/crypto", icon: <BitcoinIcon /> },
   ],
   navInsights: [
-    { title: "Analytics", url: "/analytics", icon: <ChartAreaIcon /> },
-    { title: "Budgets", url: "/budgets", icon: <TargetIcon /> },
+    { title: "Análises", url: "/analytics", icon: <ChartAreaIcon /> },
+    { title: "Orçamentos", url: "/budgets", icon: <TargetIcon /> },
   ],
   navAuth: [
-    { title: "Sign In", url: "/sign-in", icon: <LogInIcon /> },
-    { title: "Sign Up", url: "/sign-up", icon: <UserPlusIcon /> },
+    { title: "Entrar", url: "/sign-in", icon: <LogInIcon /> },
+    { title: "Criar conta", url: "/sign-up", icon: <UserPlusIcon /> },
   ],
   navSecondary: [
-    { title: "Notifications", url: "/notifications", icon: <BellIcon /> },
-    { title: "Settings", url: "/settings", icon: <SettingsIcon /> },
+    { title: "Notificações", url: "/notifications", icon: <BellIcon /> },
+    { title: "Configurações", url: "/settings", icon: <SettingsIcon /> },
     { title: "Ajuda e suporte", url: "/support", icon: <LifeBuoyIcon /> },
   ],
 }
 
 function getProfile(user: ReturnType<typeof useAuth>["user"]) {
-  const name = user?.displayName?.trim() || user?.email?.split("@")[0] || "MuFinance user"
+  const name = user?.displayName?.trim() || user?.email?.split("@")[0] || "Usuário MuFinance"
   return {
     name,
     email: user?.email || "",
@@ -93,10 +93,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={navigation.navDaily} label="Daily" />
-        <NavMain items={navigation.navMoney} label="Money" />
-        <NavMain items={navigation.navInsights} label="Insights" />
-        {!user && <NavMain items={navigation.navAuth} label="Auth" />}
+        <NavMain items={navigation.navDaily} label="Dia a dia" />
+        <NavMain items={navigation.navMoney} label="Finanças" />
+        <NavMain items={navigation.navInsights} label="Análises" />
+        {!user && <NavMain items={navigation.navAuth} label="Acesso" />}
         <NavSecondary items={navigation.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
