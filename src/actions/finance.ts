@@ -102,14 +102,53 @@ async function findOwnedReference(collectionNames: string[], id: string, ownerId
   throw new Error("Registro não encontrado para este usuário.");
 }
 
+function numericAmount(value: unknown) {
+  if (typeof value === "number") return Number.isFinite(value) ? value : 0;
+  const raw = String(value ?? "").trim().replace(/[^0-9,.-]/g, "");
+  if (!raw) return 0;
+  const comma = raw.lastIndexOf(",");
+  const dot = raw.lastIndexOf(".");
+  const normalized = comma >= 0 && dot >= 0
+    ? comma > dot ? raw.replace(/\./g, "").replace(",", ".") : raw.replace(/,/g, "")
+    : comma >= 0 ? raw.replace(",", ".") : raw;
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
 export async function updateAccount(id: string, input: unknown) {
   const user = await requireSessionUser();
   const data = accountInputSchema.parse(input);
   const reference = await findOwnedReference(["accounts"], id, user.uid);
-  const payload = { ...data, ownerId: user.uid, updatedAt: timestamp() };
-  await reference.set(payload, { merge: true });
+  const currentSnapshot = await reference.get();
+  const currentBalance = numericAmount(currentSnapshot.data()?.balance);
+  const difference = Number((data.balance - currentBalance).toFixed(2));
+  const now = timestamp();
+  const accountPayload = { ...data, ownerId: user.uid, updatedAt: now };
+  const batch = getAdminFirestore().batch();
+  batch.set(reference, accountPayload, { merge: true });
+
+  if (difference !== 0) {
+    const adjustmentReference = getAdminFirestore().collection("transactions").doc();
+    batch.set(adjustmentReference, {
+      date: now.slice(0, 10),
+      payee: "Ajuste de saldo",
+      category: "Ajuste",
+      accountId: id,
+      amount: Math.abs(difference),
+      type: difference > 0 ? "income" : "expense",
+      status: "completed",
+      sourceType: "account",
+      sourceId: id,
+      notes: `Saldo ajustado de ${currentBalance.toFixed(2)} para ${data.balance.toFixed(2)}.`,
+      ownerId: user.uid,
+      createdAt: now,
+      updatedAt: now,
+    });
+  }
+
+  await batch.commit();
   revalidatePath("/");
-  return { id, ...payload };
+  return { id, ...accountPayload, adjustment: difference };
 }
 
 export async function createAccount(input: unknown) {

@@ -13,6 +13,10 @@ export function EditAccountDialog({ account, open, onOpenChange, onSaved }: { ac
   const [error, setError] = useState("")
   const [saving, setSaving] = useState(false)
 
+  const currentBalance = account?.balance ?? 0
+  const targetBalance = Number(balance.replace(",", "."))
+  const difference = Number.isFinite(targetBalance) ? targetBalance - currentBalance : 0
+
   useEffect(() => {
     if (!account) return
     setName(account.name)
@@ -45,7 +49,8 @@ export function EditAccountDialog({ account, open, onOpenChange, onSaved }: { ac
       <form onSubmit={handleSubmit} className="space-y-4">
         <label className="grid gap-1.5 text-sm font-medium">Nome<Input value={name} onChange={(event) => setName(event.target.value)} required minLength={2} /></label>
         <label className="grid gap-1.5 text-sm font-medium">Tipo<select value={type} onChange={(event) => setType(event.target.value as typeof type)} className="h-9 rounded-md border bg-background px-3 text-sm"><option value="checking">Conta corrente</option><option value="wallet">Carteira</option><option value="savings">Poupança</option></select></label>
-        <label className="grid gap-1.5 text-sm font-medium">Saldo<Input type="number" step="0.01" value={balance} onChange={(event) => setBalance(event.target.value)} required /></label>
+        <label className="grid gap-1.5 text-sm font-medium">Saldo atual<Input type="number" step="0.01" value={balance} onChange={(event) => setBalance(event.target.value)} required /></label>
+        {difference !== 0 && <p className="rounded-lg bg-muted px-3 py-2 text-xs text-muted-foreground">Este ajuste criará uma {difference < 0 ? "despesa" : "entrada"} de <strong className="text-foreground">R$ {Math.abs(difference).toFixed(2).replace(".", ",")}</strong>, categorizada como <strong className="text-foreground">Ajuste</strong>.</p>}
         {error && <p className="text-sm text-destructive">{error}</p>}
         <DialogFooter><Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button><Button type="submit" disabled={saving}>{saving ? "Salvando..." : "Salvar alterações"}</Button></DialogFooter>
       </form>
