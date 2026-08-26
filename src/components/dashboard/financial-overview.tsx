@@ -44,19 +44,29 @@ function SquareDot({ cx, cy, fill, opacity = 1, size = 6 }: DotProps & { size?: 
 
 const chartConfig = {
   currentYear: {
-    label: "Atual Year",
+    label: "Ano atual",
     color: "var(--color-primary)",
   },
   lastYear: {
-    label: "Last Year",
+    label: "Ano anterior",
     color: "var(--color-muted-foreground)",
   },
 } satisfies ChartConfig
 
 // Map month names to month indices (0-based)
 const monthIndex: Record<string, number> = {
-  Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
-  Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11,
+  jan: 0, january: 0, janeiro: 0,
+  feb: 1, february: 1, fevereiro: 1,
+  mar: 2, march: 2, março: 2, marco: 2,
+  apr: 3, april: 3, abril: 3,
+  may: 4, maio: 4,
+  jun: 5, june: 5, junho: 5,
+  jul: 6, july: 6, julho: 6,
+  aug: 7, august: 7, agosto: 7,
+  sep: 8, sept: 8, september: 8, setembro: 8,
+  oct: 9, october: 9, outubro: 9,
+  nov: 10, november: 10, novembro: 10,
+  dec: 11, december: 11, dezembro: 11,
 }
 
 export function FinancialOverview() {
@@ -76,8 +86,8 @@ export function FinancialOverview() {
       toMonth = Math.min(11, toMonth + 1)
     }
     return financialOverview.filter((d) => {
-      const m = monthIndex[d.month]
-      return m >= fromMonth && m <= toMonth
+      const m = monthIndex[d.month.trim().toLowerCase().replace(".", "")]
+      return m !== undefined && m >= fromMonth && m <= toMonth
     })
   }, [date, financialOverview])
 
@@ -92,21 +102,21 @@ export function FinancialOverview() {
       <CardHeader className="flex flex-col gap-3 space-y-0 pb-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-1">
           <CardTitle className="text-base font-semibold">
-            Financial Overview
+            Visão financeira
           </CardTitle>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
             <span className="flex items-center gap-1.5">
               <span className="size-2 rounded-full bg-primary" />
-              Atual Year{" "}
+              Ano atual {""}
               <span className="font-medium text-foreground">
-                ${totals.current.toLocaleString()}
+                {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(totals.current)}
               </span>
             </span>
             <span className="flex items-center gap-1.5">
               <span className="size-2 rounded-full bg-muted-foreground/40" />
-              Last Year{" "}
+              Ano anterior {""}
               <span className="font-medium text-foreground">
-                ${totals.last.toLocaleString()}
+                {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(totals.last)}
               </span>
             </span>
           </div>
@@ -127,13 +137,13 @@ export function FinancialOverview() {
             {date?.from ? (
               date.to ? (
                 <>
-                  {format(date.from, "MMM yyyy")} - {format(date.to, "MMM yyyy")}
+                  {format(date.from, "MMM/yyyy")} - {format(date.to, "MMM/yyyy")}
                 </>
               ) : (
-                format(date.from, "MMM yyyy")
+                format(date.from, "MMM/yyyy")
               )
             ) : (
-              "Pick a date range"
+              "Selecione um período"
             )}
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="end">
@@ -187,14 +197,14 @@ export function FinancialOverview() {
               fontSize={12}
               tickMargin={8}
               stroke="var(--color-muted-foreground)"
-              tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`}
+              tickFormatter={(v) => new Intl.NumberFormat("pt-BR", { notation: "compact", style: "currency", currency: "BRL" }).format(v)}
             />
             <ChartTooltip
               content={
                 <ChartTooltipContent
                   labelFormatter={(label) => label}
                   formatter={(value) =>
-                    `$${Number(value).toLocaleString()}`
+                    new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(Number(value))
                   }
                 />
               }
