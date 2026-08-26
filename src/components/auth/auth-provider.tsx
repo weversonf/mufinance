@@ -40,14 +40,11 @@ async function syncSession(user: User | null) {
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(firebaseConfigReady);
 
   useEffect(() => {
     const auth = getFirebaseAuth();
-    if (!auth) {
-      setLoading(false);
-      return;
-    }
+    if (!auth) return;
     return onAuthStateChanged(auth, (nextUser) => {
       setUser(nextUser);
       setLoading(false);

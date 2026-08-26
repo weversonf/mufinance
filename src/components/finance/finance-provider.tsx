@@ -14,7 +14,6 @@ import type {
   Transaction,
 } from "@/data/seed"
 import type { Contact, HealthFactor, Holding, Notification, RecurringCharge, TransferRecord, WatchlistItem, CryptoCoin, CryptoTransaction, PortfolioHistoryPoint, MonthComparison, AiInsight, FaqItem, SupportTicket } from "@/data/seed"
-import type { FinanceCategory } from "@/lib/financeData"
 
 // The reference UI reads stable data contracts. This provider keeps those contracts
 // while sourcing every value from the authenticated MuFinance snapshot.
@@ -68,13 +67,36 @@ type FinanceDataValue = {
 const FinanceDataContext = createContext<FinanceDataValue | null>(null)
 
 function numberValue(value: unknown) {
-  const parsed = typeof value === "number" ? value : Number(String(value ?? "").replace(/[^0-9,.-]/g, "").replace(/\./g, "").replace(",", "."))
+  if (typeof value === "number") return Number.isFinite(value) ? value : 0
+  const raw = String(value ?? "").trim().replace(/[^0-9,.-]/g, "")
+  if (!raw) return 0
+
+  const lastComma = raw.lastIndexOf(",")
+  const lastDot = raw.lastIndexOf(".")
+  let normalized = raw
+  if (lastComma >= 0 && lastDot >= 0) {
+    normalized = lastComma > lastDot
+      ? raw.replace(/\./g, "").replace(",", ".")
+      : raw.replace(/,/g, "")
+  } else if (lastComma >= 0) {
+    normalized = raw.replace(/,/g, ".")
+  }
+
+  const parsed = Number(normalized)
   return Number.isFinite(parsed) ? parsed : 0
 }
 
 function dateValue(value: unknown) {
-  const parsed = new Date(String(value ?? ""))
+  const text = String(value ?? "").trim()
+  const dateOnly = /^(\d{4})-(\d{2})-(\d{2})$/.exec(text)
+  const parsed = dateOnly
+    ? new Date(Number(dateOnly[1]), Number(dateOnly[2]) - 1, Number(dateOnly[3]))
+    : new Date(text)
   return Number.isNaN(parsed.valueOf()) ? null : parsed
+}
+
+function dateKey(date: Date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`
 }
 
 function brl(value: number) {
@@ -132,17 +154,20 @@ function buildData(snapshot: FinanceSnapshot | null): Omit<FinanceDataValue, "sn
     notes: typeof transaction.notes === "string" ? transaction.notes : undefined,
   }))
 
-  const monthly = new Map<string, { date: Date; currentYear: number; lastYear: number }>()
+  const monthly = new Map<number, { date: Date; currentYear: number; lastYear: number }>()
   for (const transaction of transactions) {
     const date = dateValue(transaction.date)
-    if (!date || transaction.type !== "income") continue
-    const key = monthKey(date)
-    const current = monthly.get(key) ?? { date, currentYear: 0, lastYear: 0 }
-    if (date.getFullYear() === now.getFullYear()) current.currentYear += Math.abs(numberValue(transaction.amount))
-    if (date.getFullYear() === now.getFullYear() - 1) current.lastYear += Math.abs(numberValue(transaction.amount))
-    monthly.set(key, current)
+    const year = date?.getFullYear()
+    if (!date || transaction.type !== "income" || (year !== now.getFullYear() && year !== now.getFullYear() - 1)) continue
+    const month = date.getMonth()
+    const current = monthly.get(month) ?? { date: new Date(now.getFullYear(), month, 1), currentYear: 0, lastYear: 0 }
+    if (year === now.getFullYear()) current.currentYear += Math.abs(numberValue(transaction.amount))
+    else current.lastYear += Math.abs(numberValue(transaction.amount))
+    monthly.set(month, current)
   }
-  const financialOverview = [...monthly.values()].sort((a, b) => a.date.valueOf() - b.date.valueOf()).map((item) => ({ month: monthLabel(item.date), currentYear: item.currentYear, lastYear: item.lastYear }))
+  const financialOverview = [...monthly.values()]
+    .sort((a, b) => a.date.valueOf() - b.date.valueOf())
+    .map((item) => ({ month: monthLabel(item.date), currentYear: item.currentYear, lastYear: item.lastYear }))
 
   function movement(days: number, bucket: "day" | "week" | "month") {
     const cutoff = new Date(now)
@@ -151,13 +176,23 @@ function buildData(snapshot: FinanceSnapshot | null): Omit<FinanceDataValue, "sn
     for (const transaction of transactions) {
       const date = dateValue(transaction.date)
       if (!date || date < cutoff) continue
-      const key = bucket === "day" ? date.toISOString().slice(0, 10) : bucket === "week" ? `W${Math.ceil(date.getDate() / 7)}` : monthKey(date)
-      const item = grouped.get(key) ?? { label: bucket === "day" ? new Intl.DateTimeFormat("en-US", { weekday: "short" }).format(date) : key, moneyIn: 0, moneyOut: 0 }
+      let key = dateKey(date)
+      let label = new Intl.DateTimeFormat("en-US", { weekday: "short" }).format(date)
+      if (bucket === "week") {
+        const weekStart = new Date(date)
+        weekStart.setDate(date.getDate() - date.getDay())
+        key = dateKey(weekStart)
+        label = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(weekStart)
+      } else if (bucket === "month") {
+        key = monthKey(date)
+        label = new Intl.DateTimeFormat("en-US", { month: "short" }).format(date)
+      }
+      const item = grouped.get(key) ?? { label, moneyIn: 0, moneyOut: 0 }
       if (transaction.type === "income") item.moneyIn += Math.abs(numberValue(transaction.amount))
       if (transaction.type === "expense") item.moneyOut += Math.abs(numberValue(transaction.amount))
       grouped.set(key, item)
     }
-    return [...grouped.values()]
+    return [...grouped.entries()].sort(([left], [right]) => left.localeCompare(right)).map(([, item]) => item)
   }
   const moneyMovementByPeriod = { "7d": movement(7, "day"), "30d": movement(30, "week"), "90d": movement(90, "month") }
 
@@ -168,6 +203,17 @@ function buildData(snapshot: FinanceSnapshot | null): Omit<FinanceDataValue, "sn
     expensesByCategory.set(category, (expensesByCategory.get(category) ?? 0) + Math.abs(numberValue(transaction.amount)))
   }
   const categoryBreakdowns: CategoryBreakdown[] = [...expensesByCategory.entries()].map(([category, amount], index) => ({ category, amount, color: `var(--color-chart-${(index % 5) + 1})`, subcategories: [] }))
+
+  const dailyAmounts = new Map<string, number>()
+  for (const transaction of transactions) {
+    const date = dateValue(transaction.date)
+    if (!date || date.getFullYear() !== now.getFullYear() || transaction.type !== "expense") continue
+    const key = dateKey(date)
+    dailyAmounts.set(key, (dailyAmounts.get(key) ?? 0) + Math.abs(numberValue(transaction.amount)))
+  }
+  const dailySpending = [...dailyAmounts.entries()]
+    .sort(([left], [right]) => left.localeCompare(right))
+    .map(([date, amount]) => ({ date, amount }))
 
   const monthBudgets = budgets.filter((budget) => String(budget.month ?? "") === currentMonth)
   const spentByCategory = new Map<string, number>()
@@ -214,8 +260,8 @@ function buildData(snapshot: FinanceSnapshot | null): Omit<FinanceDataValue, "sn
     recurringCharges: [],
     faqItems: [],
     supportTickets: [],
-    dailySpending: [],
-    spendingHeatmapData: [],
+    dailySpending,
+    spendingHeatmapData: dailySpending,
     cryptoPriceHistory: [],
     systemStatus: [],
   }

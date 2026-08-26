@@ -118,9 +118,9 @@ export default function SignInPage() {
   }
 
   return (
-    <div className="flex min-h-svh">
+    <div className="relative flex min-h-svh overflow-hidden bg-background">
       {/* Left panel - Globe */}
-      <div className="relative hidden w-1/2 flex-col justify-between bg-zinc-950 lg:flex">
+      <div className="relative hidden w-[46%] flex-col justify-between overflow-hidden bg-zinc-950 lg:flex">
         {/* Logo */}
         <Link href="/dashboard" className="relative z-20 flex items-center gap-2.5 p-8">
           <div className="flex size-8 items-center justify-center rounded-lg bg-white text-black">
@@ -151,9 +151,9 @@ export default function SignInPage() {
       </div>
 
       {/* Right panel - Form */}
-      <div className="flex flex-1 items-center justify-center bg-background px-6 py-12">
+      <div className="relative flex flex-1 items-center justify-center overflow-y-auto px-4 py-8 sm:px-8 lg:w-[54%] lg:px-12">
         <motion.div
-          className="w-full max-w-sm"
+          className="relative z-10 w-full max-w-[440px] rounded-[28px] border border-border/70 bg-card/85 p-6 shadow-[0_24px_80px_-28px_color-mix(in_oklch,var(--foreground)_35%,transparent)] backdrop-blur-xl sm:p-8"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
@@ -170,7 +170,7 @@ export default function SignInPage() {
 
           {/* Heading */}
           <motion.div className="text-center" variants={itemVariants}>
-            <h1 className="text-2xl font-semibold tracking-tight">
+            <h1               className="text-3xl font-semibold tracking-[-0.03em]">
               Welcome back
             </h1>
             <p className="mt-1.5 text-sm text-muted-foreground">
@@ -183,7 +183,7 @@ export default function SignInPage() {
             className="mt-8 grid grid-cols-2 gap-3"
             variants={itemVariants}
           >
-            <Button variant="outline" size="lg" className="gap-2" type="button" onClick={() => void handleGoogle()} disabled={isLoading || isSuccess}>
+            <Button variant="outline" size="lg" className="h-11 gap-2 rounded-xl bg-background/60" type="button" onClick={() => void handleGoogle()} disabled={isLoading || isSuccess}>
               <Image
                 src="/logos/google-com.png"
                 alt="Google"
@@ -193,7 +193,7 @@ export default function SignInPage() {
               />
               <span className="text-sm">Google</span>
             </Button>
-            <Button variant="outline" size="lg" className="gap-2" type="button" onClick={() => setError("Login com Apple ainda não está habilitado neste projeto.")} disabled={isLoading || isSuccess}>
+            <Button variant="outline" size="lg" className="h-11 gap-2 rounded-xl bg-background/60" type="button" onClick={() => setError("Login com Apple ainda não está habilitado neste projeto.")} disabled={isLoading || isSuccess}>
               <Image
                 src="/logos/apple-com.png"
                 alt="Apple"
@@ -286,7 +286,7 @@ export default function SignInPage() {
               <Button
                 type="submit"
                 size="lg"
-                className="w-full"
+                className="h-11 w-full rounded-xl text-sm font-semibold"
                 disabled={isLoading || isSuccess}
               >
                 {isLoading ? (

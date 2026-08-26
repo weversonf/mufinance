@@ -10,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Input } from "@/components/ui/input"
-import { contacts } from "@/data/seed"
+import { useFinanceData } from "@/components/finance/finance-provider"
 import {
   ChevronRightIcon,
   SendIcon,
@@ -22,14 +22,18 @@ import { motion, AnimatePresence } from "motion/react"
 type SendState = "idle" | "sending" | "success"
 
 export function QuickTransfer() {
-  const [selectedContact, setSelectedContact] = useState(contacts[0].id)
+  const { contacts } = useFinanceData()
+  const [selectedContact, setSelectedContact] = useState<string | null>(null)
   const [amount, setAmount] = useState("250.00")
   const [sendState, setSendState] = useState<SendState>("idle")
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>(null)
-  const selected = contacts.find((c) => c.id === selectedContact)
+  const selectedId = selectedContact ?? contacts[0]?.id ?? null
+  const selected = contacts.find((c) => c.id === selectedId)
+  const numericAmount = Number.parseFloat(amount)
+  const canSend = Boolean(selected) && Number.isFinite(numericAmount) && numericAmount > 0
 
   const handleSend = () => {
-    if (sendState !== "idle" || !amount || parseFloat(amount) <= 0) return
+    if (sendState !== "idle" || !canSend) return
     setSendState("sending")
 
     // simulate network delay
@@ -56,8 +60,10 @@ export function QuickTransfer() {
         {/* Contact avatars row */}
         <div className="flex items-center gap-2">
           <div className="flex items-center py-2">
-            {contacts.slice(0, 6).map((contact) => {
-              const isSelected = selectedContact === contact.id
+            {contacts.length === 0 ? (
+              <p className="px-1 py-2 text-xs text-muted-foreground">No contacts available yet.</p>
+            ) : contacts.slice(0, 6).map((contact) => {
+              const isSelected = selectedId === contact.id
               return (
                 <motion.button
                   key={contact.id}
@@ -103,7 +109,7 @@ export function QuickTransfer() {
         {/* Selected contact name */}
         <AnimatePresence mode="wait">
           <motion.p
-            key={selectedContact}
+            key={selectedId ?? "no-contact"}
             initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
@@ -112,7 +118,7 @@ export function QuickTransfer() {
           >
             Sending to{" "}
             <span className="font-medium text-foreground">
-              {selected?.name}
+              {selected?.name ?? "no recipient selected"}
             </span>
           </motion.p>
         </AnimatePresence>
@@ -135,7 +141,7 @@ export function QuickTransfer() {
                 <CheckCircle2Icon className="size-10 text-emerald-500" />
               </motion.div>
               <p className="text-sm font-semibold">
-                ${parseFloat(amount).toLocaleString("en-US", { minimumFractionDigits: 2 })} sent!
+                ${numericAmount.toLocaleString("en-US", { minimumFractionDigits: 2 })} sent!
               </p>
               <p className="text-xs text-muted-foreground">
                 To {selected?.name}
@@ -166,7 +172,7 @@ export function QuickTransfer() {
               </div>
               <Button
                 className="h-10 gap-2 px-6"
-                disabled={sendState === "sending"}
+                disabled={sendState === "sending" || !canSend}
                 onClick={handleSend}
               >
                 {sendState === "sending" ? (

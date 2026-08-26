@@ -2,7 +2,8 @@
 
 import { useMemo, useState } from "react"
 
-import { transferRecords, type TransferRecord } from "@/data/seed"
+import { useFinanceData } from "@/components/finance/finance-provider"
+import type { TransferRecord } from "@/data/seed"
 import { cn } from "@/lib/utils"
 import { TransferStats } from "@/components/transfers/transfer-stats"
 import { TransferList } from "@/components/transfers/transfer-list"
@@ -18,34 +19,35 @@ const tabs: { key: TabKey; label: string }[] = [
 ]
 
 export function TransfersPageClient() {
+  const { transferRecords } = useFinanceData()
   const [activeTab, setActiveTab] = useState<TabKey>("all")
-  const [transfers, setTransfers] = useState<TransferRecord[]>(transferRecords)
+  const [localTransfers, setLocalTransfers] = useState<TransferRecord[]>([])
+  const transfers = useMemo(() => [...localTransfers, ...transferRecords], [localTransfers, transferRecords])
 
   const filtered = useMemo(() => {
     if (activeTab === "all") return transfers
-    return transfers.filter((t) => t.type === activeTab)
+    return transfers.filter((transfer) => transfer.type === activeTab)
   }, [activeTab, transfers])
 
   function handleCancel(id: string) {
-    setTransfers((prev) => prev.filter((t) => t.id !== id))
+    setLocalTransfers((prev) => prev.filter((transfer) => transfer.id !== id))
   }
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Stats */}
       <TransferStats transfers={transfers} />
 
-      {/* Tab filter bar */}
       <div className="flex items-center gap-1 rounded-lg bg-muted p-1">
         {tabs.map((tab) => (
           <button
             key={tab.key}
+            type="button"
             onClick={() => setActiveTab(tab.key)}
             className={cn(
               "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
               activeTab === tab.key
                 ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
+                : "text-muted-foreground hover:text-foreground",
             )}
           >
             {tab.label}
@@ -53,14 +55,10 @@ export function TransfersPageClient() {
         ))}
       </div>
 
-      {/* Transfer list */}
       <TransferList transfers={filtered} onCancel={handleCancel} />
 
-      {/* Quick send */}
       <QuickSend
-        onSend={(record) =>
-          setTransfers((prev) => [record, ...prev])
-        }
+        onSend={(record) => setLocalTransfers((prev) => [record, ...prev])}
       />
     </div>
   )

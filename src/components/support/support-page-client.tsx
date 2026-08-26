@@ -54,7 +54,6 @@ import {
   WalletIcon,
   HelpCircleIcon,
   SendIcon,
-  XIcon,
   BotIcon,
   UserIcon,
 } from "lucide-react"

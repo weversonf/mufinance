@@ -10,7 +10,8 @@ import {
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Input } from "@/components/ui/input"
-import { contacts, type TransferRecord } from "@/data/seed"
+import type { TransferRecord } from "@/data/seed"
+import { useFinanceData } from "@/components/finance/finance-provider"
 import {
   SendIcon,
   LoaderCircleIcon,
@@ -21,15 +22,19 @@ import { motion, AnimatePresence } from "motion/react"
 type SendState = "idle" | "sending" | "success"
 
 export function QuickSend({ onSend }: { onSend?: (record: TransferRecord) => void }) {
-  const [selectedContact, setSelectedContact] = useState(contacts[0].id)
+  const { contacts } = useFinanceData()
+  const [selectedContact, setSelectedContact] = useState<string | null>(null)
   const [amount, setAmount] = useState("")
   const [note, setNote] = useState("")
   const [sendState, setSendState] = useState<SendState>("idle")
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>(null)
-  const selected = contacts.find((c) => c.id === selectedContact)
+  const selectedId = selectedContact ?? contacts[0]?.id ?? null
+  const selected = contacts.find((c) => c.id === selectedId)
+  const numericAmount = Number.parseFloat(amount)
+  const canSend = Boolean(selected) && Number.isFinite(numericAmount) && numericAmount > 0
 
   const handleSend = () => {
-    if (sendState !== "idle" || !amount || parseFloat(amount) <= 0) return
+    if (sendState !== "idle" || !canSend) return
     setSendState("sending")
 
     timeoutRef.current = setTimeout(() => {
@@ -78,10 +83,10 @@ export function QuickSend({ onSend }: { onSend?: (record: TransferRecord) => voi
                 <CheckCircle2Icon className="size-10 text-emerald-500" />
               </motion.div>
               <p className="text-sm font-semibold">
-                ${parseFloat(amount).toLocaleString("en-US", { minimumFractionDigits: 2 })} sent!
+                ${numericAmount.toLocaleString("en-US", { minimumFractionDigits: 2 })} sent!
               </p>
               <p className="text-xs text-muted-foreground">
-                To {selected?.name}
+                To {selected?.name ?? "no recipient selected"}
               </p>
             </motion.div>
           ) : (
@@ -96,8 +101,10 @@ export function QuickSend({ onSend }: { onSend?: (record: TransferRecord) => voi
               <div>
                 <label className="mb-1.5 block text-xs text-muted-foreground">To</label>
                 <div className="flex items-center gap-1 pt-1">
-                  {contacts.slice(0, 6).map((contact) => {
-                    const isSelected = selectedContact === contact.id
+                  {contacts.length === 0 ? (
+                    <p className="py-2 text-xs text-muted-foreground">No contacts available yet.</p>
+                  ) : contacts.slice(0, 6).map((contact) => {
+                    const isSelected = selectedId === contact.id
                     return (
                       <motion.button
                         key={contact.id}
@@ -130,7 +137,7 @@ export function QuickSend({ onSend }: { onSend?: (record: TransferRecord) => voi
                 </div>
                 <AnimatePresence mode="wait">
                   <motion.p
-                    key={selectedContact}
+                    key={selectedId ?? "no-contact"}
                     initial={{ opacity: 0, y: 2 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -2 }}
@@ -139,7 +146,7 @@ export function QuickSend({ onSend }: { onSend?: (record: TransferRecord) => voi
                   >
                     Sending to{" "}
                     <span className="font-medium text-foreground">
-                      {selected?.name}
+                      {selected?.name ?? "no recipient selected"}
                     </span>
                   </motion.p>
                 </AnimatePresence>
@@ -181,7 +188,7 @@ export function QuickSend({ onSend }: { onSend?: (record: TransferRecord) => voi
               {/* Send button */}
               <Button
                 className="h-9 gap-2 px-6"
-                disabled={sendState === "sending" || !amount || parseFloat(amount) <= 0}
+                disabled={sendState === "sending" || !canSend}
                 onClick={handleSend}
               >
                 {sendState === "sending" ? (

@@ -24,7 +24,10 @@ export const moneyMovement30d: MoneyMovementPoint[] = []
 export const moneyMovement90d: MoneyMovementPoint[] = []
 export const moneyMovementByPeriod = { "7d": moneyMovement7d, "30d": moneyMovement30d, "90d": moneyMovement90d } as const
 
-export const logo = (_domain: string) => "/icon.svg"
+export const logo = (domain: string) => {
+  void domain
+  return "/icon.svg"
+}
 
 export type Transaction = {
   id: string

@@ -150,9 +150,15 @@ export function DashboardCustomizer() {
   const activeBlock = blocks.find((b) => b.id === activeId)
 
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-      {/* Edit toggle */}
-      <div className="flex items-center justify-end gap-2">
+    <div className="flex flex-1 flex-col gap-6 py-6">
+      <div className="flex flex-col gap-4 border-b border-border/60 pb-5 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">Personal workspace</p>
+          <h1 className="mt-1 text-2xl font-semibold tracking-[-0.03em] sm:text-3xl">Financial overview</h1>
+          <p className="mt-1 text-sm text-muted-foreground">A clear view of your money, habits, and next moves.</p>
+        </div>
+        {/* Edit toggle */}
+        <div className="flex items-center gap-2">
         {editing && (
           <Button
             variant="ghost"
@@ -166,7 +172,7 @@ export function DashboardCustomizer() {
         <Button
           variant={editing ? "default" : "outline"}
           size="sm"
-          className="h-7 gap-1.5 text-xs"
+          className="h-9 gap-1.5 rounded-xl px-3 text-xs"
           onClick={() => setEditing(!editing)}
         >
           {editing ? (
@@ -181,6 +187,7 @@ export function DashboardCustomizer() {
             </>
           )}
         </Button>
+        </div>
       </div>
 
       <DndContext

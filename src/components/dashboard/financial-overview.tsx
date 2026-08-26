@@ -79,7 +79,7 @@ export function FinancialOverview() {
       const m = monthIndex[d.month]
       return m >= fromMonth && m <= toMonth
     })
-  }, [date])
+  }, [date, financialOverview])
 
   const totals = useMemo(() => {
     const current = filteredData.reduce((s, d) => s + d.currentYear, 0)

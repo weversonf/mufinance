@@ -24,7 +24,6 @@ export async function getFinanceSnapshot() {
   const user = await getSessionUser();
   if (!user) return null;
 
-  const db = getAdminFirestore();
   const [accounts, creditCards, transactions, categories, goals, budgets] = await Promise.all([
     ownerQuery("accounts", user.uid).get(),
     ownerQuery("creditCards", user.uid).get(),

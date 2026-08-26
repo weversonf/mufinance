@@ -2,13 +2,15 @@
 
 import { useMemo, useState } from "react"
 
-import { fullTransactions, type FullTransaction } from "@/data/seed"
+import { useFinanceData } from "@/components/finance/finance-provider"
+import type { FullTransaction } from "@/data/seed"
 import { TransactionSummary } from "@/components/transactions/transaction-summary"
 import { TransactionFilters } from "@/components/transactions/transaction-filters"
 import { TransactionTable } from "@/components/transactions/transaction-table"
 import { TransactionActions } from "@/components/transactions/transaction-actions"
 
 export function TransactionsPageClient() {
+  const { fullTransactions } = useFinanceData()
   const [search, setSearch] = useState("")
   const [categoryFilter, setCategoryFilter] = useState("all")
   const [statusFilter, setStatusFilter] = useState("all")
@@ -17,52 +19,52 @@ export function TransactionsPageClient() {
   const [expandedId, setExpandedId] = useState<string | null>(null)
 
   const categories = useMemo(() => {
-    const cats = new Set(fullTransactions.map((t) => t.category))
-    return Array.from(cats).sort()
-  }, [])
+    const categoryNames = new Set(fullTransactions.map((transaction) => transaction.category))
+    return Array.from(categoryNames).sort()
+  }, [fullTransactions])
 
   const filteredData = useMemo(() => {
     let data: FullTransaction[] = fullTransactions
 
     if (search) {
-      const q = search.toLowerCase()
+      const query = search.toLowerCase()
       data = data.filter(
-        (t) =>
-          t.merchant.toLowerCase().includes(q) ||
-          t.transactionId.toLowerCase().includes(q) ||
-          t.category.toLowerCase().includes(q)
+        (transaction) =>
+          transaction.merchant.toLowerCase().includes(query) ||
+          transaction.transactionId.toLowerCase().includes(query) ||
+          transaction.category.toLowerCase().includes(query),
       )
     }
 
     if (categoryFilter !== "all") {
-      data = data.filter((t) => t.category === categoryFilter)
+      data = data.filter((transaction) => transaction.category === categoryFilter)
     }
 
     if (statusFilter !== "all") {
-      data = data.filter((t) => t.status === statusFilter)
+      data = data.filter((transaction) => transaction.status === statusFilter)
     }
 
     if (typeFilter !== "all") {
-      data = data.filter((t) => t.type === typeFilter)
+      data = data.filter((transaction) => transaction.type === typeFilter)
     }
 
     return data
-  }, [search, categoryFilter, statusFilter, typeFilter])
+  }, [categoryFilter, fullTransactions, search, statusFilter, typeFilter])
 
   function handleExport() {
-    const selected = fullTransactions.filter((t) => selectedIds.has(t.id))
+    const selected = fullTransactions.filter((transaction) => selectedIds.has(transaction.id))
     const header = "Merchant,Transaction ID,Amount,Date,Status,Type"
     const rows = selected.map(
-      (t) =>
-        `"${t.merchant}","${t.transactionId}",${t.amount},"${t.date}","${t.status}","${t.type}"`
+      (transaction) =>
+        `"${transaction.merchant}","${transaction.transactionId}",${transaction.amount},"${transaction.date}","${transaction.status}","${transaction.type}"`,
     )
     const csv = [header, ...rows].join("\n")
     const blob = new Blob([csv], { type: "text/csv" })
     const url = URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = "transactions.csv"
-    a.click()
+    const anchor = document.createElement("a")
+    anchor.href = url
+    anchor.download = "transactions.csv"
+    anchor.click()
     URL.revokeObjectURL(url)
   }
 

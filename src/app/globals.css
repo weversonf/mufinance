@@ -141,3 +141,71 @@
 @utility animate-marquee {
   animation: marquee 40s linear infinite;
 }
+
+
+/* MuFinance visual system */
+:root {
+  --primary: oklch(0.52 0.14 172);
+  --primary-foreground: oklch(0.99 0.01 172);
+  --accent: oklch(0.96 0.035 172);
+  --accent-foreground: oklch(0.28 0.08 172);
+  --ring: oklch(0.62 0.14 172);
+  --radius: 0.875rem;
+  --card: oklch(0.995 0.004 95);
+  --background: oklch(0.975 0.008 95);
+  --muted: oklch(0.95 0.012 95);
+  --border: oklch(0.89 0.018 95);
+  --input: oklch(0.89 0.018 95);
+}
+
+.dark {
+  --primary: oklch(0.72 0.14 172);
+  --primary-foreground: oklch(0.18 0.035 172);
+  --accent: oklch(0.24 0.045 172);
+  --accent-foreground: oklch(0.9 0.06 172);
+  --ring: oklch(0.72 0.14 172);
+  --card: oklch(0.205 0.012 260);
+  --background: oklch(0.145 0.014 260);
+  --muted: oklch(0.235 0.016 260);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 14%);
+}
+
+@layer base {
+  body {
+    background-image: radial-gradient(circle at 18% 0%, color-mix(in oklch, var(--primary) 7%, transparent), transparent 30rem);
+  }
+
+  ::selection {
+    background: color-mix(in oklch, var(--primary) 28%, transparent);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  button,
+  a,
+  input,
+  textarea,
+  select {
+    transition-duration: 160ms;
+    transition-timing-function: cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  button:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}

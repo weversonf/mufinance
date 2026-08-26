@@ -27,18 +27,22 @@ export function NavMain({
     <SidebarGroup>
       {label && <SidebarGroupLabel>{label}</SidebarGroupLabel>}
       <SidebarMenu>
-        {items.map((item) => (
+        {items.map((item) => {
+          const isActive = pathname === item.url || pathname.startsWith(`${item.url}/`)
+          return (
           <SidebarMenuItem key={item.title}>
             <SidebarMenuButton
-              isActive={pathname === item.url}
+              isActive={isActive}
               tooltip={item.title}
+              aria-current={isActive ? "page" : undefined}
               render={<Link href={item.url} />}
             >
               {item.icon}
               <span>{item.title}</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
-        ))}
+          )
+        })}
       </SidebarMenu>
     </SidebarGroup>
   )

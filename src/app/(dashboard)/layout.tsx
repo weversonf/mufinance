@@ -22,9 +22,9 @@ export default function DashboardLayout({
         <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2">
+        <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-2 border-b border-border/60 bg-background/80 backdrop-blur-xl">
           <div className="flex items-center gap-2 px-4">
-            <SidebarTrigger className="-ml-1" />
+            <SidebarTrigger aria-label="Toggle navigation" className="-ml-1 rounded-lg" />
             <Separator
               orientation="vertical"
               className="mr-2 data-vertical:h-4 data-vertical:self-auto"
@@ -39,7 +39,7 @@ export default function DashboardLayout({
           </div>
         </header>
         <CommandPalette />
-        <main className="flex flex-1 flex-col">{children}</main>
+        <main className="flex flex-1 flex-col px-3 pb-8 sm:px-5 lg:px-8">{children}</main>
       </SidebarInset>
         </SidebarProvider>
       </FinanceProvider>

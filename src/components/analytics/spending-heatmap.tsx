@@ -14,7 +14,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { spendingHeatmapData } from "@/data/seed"
+import { useFinanceData } from "@/components/finance/finance-provider"
+import { EmptyState } from "@/components/empty-state"
 
 const DAY_LABELS = ["", "Mon", "", "Wed", "", "Fri", ""]
 const CELL_SIZE = 13
@@ -31,8 +32,10 @@ function intensityClass(amount: number, max: number): string {
 }
 
 export function SpendingHeatmap() {
+  const { spendingHeatmapData } = useFinanceData()
   const { grid, monthLabels, yearTotal, max } = useMemo(() => {
     const data = spendingHeatmapData
+    if (data.length === 0) return { grid: [], monthLabels: [], yearTotal: 0, max: 0 }
     const max = Math.max(...data.map((d) => d.amount))
     const yearTotal = data.reduce((s, d) => s + d.amount, 0)
 
@@ -71,7 +74,7 @@ export function SpendingHeatmap() {
     }
 
     return { grid: weeks, monthLabels: months, yearTotal, max }
-  }, [])
+  }, [spendingHeatmapData])
 
   return (
     <Card>
@@ -98,9 +101,17 @@ export function SpendingHeatmap() {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="overflow-x-auto">
-          <TooltipProvider delay={0}>
-            <svg
+        {spendingHeatmapData.length === 0 ? (
+          <EmptyState
+            variant="analytics"
+            title="No spending data yet"
+            description="Your spending activity will appear here after you add transactions."
+            className="py-8"
+          />
+        ) : (
+          <div className="overflow-x-auto">
+            <TooltipProvider delay={0}>
+              <svg
               width={53 * TOTAL + 32}
               height={7 * TOTAL + 24}
               className="text-muted-foreground"
@@ -163,9 +174,10 @@ export function SpendingHeatmap() {
                   </TooltipContent>
                 </Tooltip>
               ))}
-            </svg>
-          </TooltipProvider>
-        </div>
+              </svg>
+            </TooltipProvider>
+          </div>
+        )}
       </CardContent>
     </Card>
   )

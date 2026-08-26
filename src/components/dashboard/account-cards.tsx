@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useEffect, useMemo, useState, useCallback } from "react"
 import { useFinanceData } from "@/components/finance/finance-provider"
 import type { AccountCard } from "@/data/seed"
 import {
@@ -29,8 +29,14 @@ import { motion, AnimatePresence } from "motion/react"
 import { cn } from "@/lib/utils"
 
 type AddState = "idle" | "form" | "adding" | "success"
+type DisplayCard = AccountCard & {
+  style: string
+  icon: React.ReactNode
+  chipColor: string
+  last4: string
+}
 
-function buildInitialCards(accountCards: AccountCard[]) {
+function buildInitialCards(accountCards: AccountCard[]): DisplayCard[] {
   const styles = [
     { style: "bg-muted text-foreground", icon: <EuroIcon className="size-5 opacity-30" />, chipColor: "bg-foreground/10" },
     { style: "bg-primary text-primary-foreground", icon: <BitcoinIcon className="size-5 opacity-30" />, chipColor: "bg-primary-foreground/20" },
@@ -47,27 +53,36 @@ const newCardOptions = [
 
 export function AccountCards() {
   const { accountCards, walletBalance } = useFinanceData()
-  const initialCards = buildInitialCards(accountCards)
-  const [cards, setCards] = useState(initialCards)
-  const [order, setOrder] = useState(() => initialCards.map((_, i) => i))
+  const initialCards = useMemo(() => buildInitialCards(accountCards), [accountCards])
+  const [addedCards, setAddedCards] = useState<DisplayCard[]>([])
+  const [order, setOrder] = useState<string[]>([])
   const [addState, setAddState] = useState<AddState>("idle")
+  const cards = useMemo(() => [...initialCards, ...addedCards], [initialCards, addedCards])
+  const orderedIds = useMemo(() => {
+    const cardIds = new Set(cards.map((card) => card.id))
+    const knownIds = order.filter((id) => cardIds.has(id))
+    const missingIds = cards.map((card) => card.id).filter((id) => !order.includes(id))
+    return [...knownIds, ...missingIds]
+  }, [cards, order])
+  const orderedCards = useMemo(
+    () => orderedIds.flatMap((id) => {
+      const card = cards.find((item) => item.id === id)
+      return card ? [card] : []
+    }),
+    [cards, orderedIds],
+  )
   const [newCardType, setNewCardType] = useState("savings")
   const [newCardName, setNewCardName] = useState("")
 
   const cycle = useCallback(() => {
-    setOrder((prev) => {
-      const next = [...prev]
-      const front = next.pop()!
-      next.unshift(front)
+    setOrder(() => {
+      if (orderedIds.length < 2) return orderedIds
+      const next = [...orderedIds]
+      const front = next.pop()
+      if (front) next.unshift(front)
       return next
     })
-  }, [])
-
-  useEffect(() => {
-    if (addState !== "idle") return
-    setCards(initialCards)
-    setOrder(initialCards.map((_, i) => i))
-  }, [accountCards, addState])
+  }, [orderedIds])
 
   useEffect(() => {
     if (addState !== "idle") return
@@ -78,9 +93,9 @@ export function AccountCards() {
   const handleAdd = () => {
     setAddState("adding")
     setTimeout(() => {
-      const option = newCardOptions.find((o) => o.value === newCardType)!
-      const newCard = {
-        id: String(cards.length + 1),
+      const option = newCardOptions.find((o) => o.value === newCardType) ?? newCardOptions[0]
+      const newCard: DisplayCard = {
+        id: `local-card-${Date.now()}`,
         label: newCardName || option.label,
         balance: "0",
         currency: option.currency,
@@ -90,8 +105,7 @@ export function AccountCards() {
         chipColor: option.chipColor,
         last4: String(Math.floor(1000 + Math.random() * 9000)),
       }
-      setCards((prev) => [...prev, newCard])
-      setOrder((prev) => [...prev, prev.length])
+      setAddedCards((prev) => [...prev, newCard])
       setAddState("success")
       setTimeout(() => {
         setAddState("idle")
@@ -113,11 +127,9 @@ export function AccountCards() {
             >
               {/* Stacked cards */}
               <div className="relative h-[200px]">
-                {order.map((cardIndex, stackPos) => {
-                  const c = cards[cardIndex]
-                  if (!c) return null
-                  const isFront = stackPos === order.length - 1
-                  const maxOffset = 48 / Math.max(order.length - 1, 1)
+                {orderedCards.map((c, stackPos) => {
+                  const isFront = stackPos === orderedCards.length - 1
+                  const maxOffset = 48 / Math.max(orderedCards.length - 1, 1)
                   return (
                     <motion.button
                       key={c.id}
@@ -148,9 +160,11 @@ export function AccountCards() {
                           **** {c.last4}
                         </span>
                         <p className="text-xl font-bold tabular-nums tracking-tight">
-                          {c.currency === "BTC"
-                            ? `${c.balance} ${c.currency}`
-                            : `${c.currency}${c.balance}`}
+                          {c.last4
+                            ? c.currency === "BTC"
+                              ? `${c.balance} ${c.currency}`
+                              : `${c.currency}${c.balance}`
+                            : c.balance}
                         </p>
                       </div>
                     </motion.button>
