@@ -5,6 +5,7 @@ import Link from "next/link"
 import { NavMain } from "@/components/nav-main"
 import { NavSecondary } from "@/components/nav-secondary"
 import { NavUser } from "@/components/nav-user"
+import { useAuth } from "@/components/auth/auth-provider"
 import {
   Sidebar,
   SidebarContent,
@@ -32,12 +33,7 @@ import {
   UserPlusIcon,
 } from "lucide-react"
 
-const data = {
-  user: {
-    name: "Abderrahim G.",
-    email: "abderrahim@fintech.com",
-    avatar: "/avatars/user.jpg",
-  },
+const navigation = {
   navDaily: [
     { title: "Overview", url: "/dashboard", icon: <LayoutDashboardIcon /> },
     { title: "Accounts", url: "/accounts", icon: <WalletIcon /> },
@@ -64,7 +60,19 @@ const data = {
   ],
 }
 
+function getProfile(user: ReturnType<typeof useAuth>["user"]) {
+  const name = user?.displayName?.trim() || user?.email?.split("@")[0] || "MuFinance user"
+  return {
+    name,
+    email: user?.email || "",
+    avatar: user?.photoURL || "",
+  }
+}
+
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { user } = useAuth()
+  const profile = getProfile(user)
+
   return (
     <Sidebar variant="inset" {...props}>
       <SidebarHeader>
@@ -75,9 +83,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <LandmarkIcon className="size-4" />
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">Shadcn Fintech</span>
+                <span className="truncate font-semibold">MuFinance</span>
                 <span className="truncate text-xs text-muted-foreground">
-                  Finance Dashboard
+                  Controle financeiro pessoal
                 </span>
               </div>
             </SidebarMenuButton>
@@ -85,14 +93,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navDaily} label="Daily" />
-        <NavMain items={data.navMoney} label="Money" />
-        <NavMain items={data.navInsights} label="Insights" />
-        <NavMain items={data.navAuth} label="Auth" />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        <NavMain items={navigation.navDaily} label="Daily" />
+        <NavMain items={navigation.navMoney} label="Money" />
+        <NavMain items={navigation.navInsights} label="Insights" />
+        {!user && <NavMain items={navigation.navAuth} label="Auth" />}
+        <NavSecondary items={navigation.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={profile} />
       </SidebarFooter>
     </Sidebar>
   )

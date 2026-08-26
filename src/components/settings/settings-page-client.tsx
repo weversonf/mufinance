@@ -4,6 +4,7 @@ import * as React from "react"
 import { useSearchParams } from "next/navigation"
 import { useTheme } from "next-themes"
 import { cn } from "@/lib/utils"
+import { useAuth } from "@/components/auth/auth-provider"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
@@ -59,9 +60,16 @@ const tabs: { id: TabId; label: string; icon: React.ReactNode }[] = [
 // ── Profile Tab ──────────────────────────────────────────────────────────────
 
 function ProfileTab() {
+  const { user } = useAuth()
   const [saving, setSaving] = React.useState(false)
-  const [name, setName] = React.useState("Abderrahim G.")
-  const [email, setEmail] = React.useState("abderrahim@fintech.com")
+  const [name, setName] = React.useState("")
+  const [email, setEmail] = React.useState("")
+
+  React.useEffect(() => {
+    if (!user) return
+    setName(user.displayName?.trim() || user.email?.split("@")[0] || "")
+    setEmail(user.email || "")
+  }, [user])
 
   function handleSave() {
     setSaving(true)
@@ -77,8 +85,8 @@ function ProfileTab() {
       <CardContent className="space-y-6">
         <div className="flex items-center gap-4">
           <Avatar className="size-16">
-            <AvatarImage src="/avatars/user.jpg" alt="User avatar" />
-            <AvatarFallback className="text-lg">AG</AvatarFallback>
+            <AvatarImage src={user?.photoURL || ""} alt={name || "User avatar"} />
+            <AvatarFallback className="text-lg">{name.trim().split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "M"}</AvatarFallback>
           </Avatar>
           <div>
             <p className="font-medium">{name}</p>
@@ -106,6 +114,7 @@ function ProfileTab() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              readOnly
             />
           </div>
         </div>

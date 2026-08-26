@@ -3,6 +3,7 @@
 import * as React from "react"
 import { AnimatePresence, motion } from "motion/react"
 import { cn } from "@/lib/utils"
+import { useAuth } from "@/components/auth/auth-provider"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
@@ -471,6 +472,7 @@ function ContactChannels() {
 }
 
 function TicketForm() {
+  const { user } = useAuth()
   const [sending, setSending] = React.useState(false)
   const [sent, setSent] = React.useState(false)
 
@@ -528,7 +530,7 @@ function TicketForm() {
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium" htmlFor="t-email">Email</label>
-              <Input id="t-email" type="email" defaultValue="abderrahim@fintech.com" />
+              <Input id="t-email" type="email" value={user?.email || ""} readOnly />
             </div>
           </div>
           <div className="space-y-2">
