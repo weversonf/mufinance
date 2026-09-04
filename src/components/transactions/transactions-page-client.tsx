@@ -4,11 +4,13 @@ import { useMemo, useState } from "react"
 
 import { useFinanceData } from "@/components/finance/finance-provider"
 import { EditTransactionDialog } from "@/components/transactions/edit-transaction-dialog"
+import { AddTransactionDialog } from "@/components/transactions/add-transaction-dialog"
 import type { FullTransaction } from "@/data/seed"
 import { TransactionSummary } from "@/components/transactions/transaction-summary"
 import { TransactionFilters } from "@/components/transactions/transaction-filters"
 import { TransactionTable } from "@/components/transactions/transaction-table"
 import { TransactionActions } from "@/components/transactions/transaction-actions"
+import { Button } from "@/components/ui/button"
 
 export function TransactionsPageClient() {
   const { fullTransactions, snapshot, bankAccounts, refresh } = useFinanceData()
@@ -52,6 +54,9 @@ export function TransactionsPageClient() {
     return data
   }, [categoryFilter, fullTransactions, search, statusFilter, typeFilter])
 
+  const [addDialogOpen, setAddDialogOpen] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+
   function handleExport() {
     const selected = fullTransactions.filter((transaction) => selectedIds.has(transaction.id))
     const header = "Merchant,ID da transação,Valor,Date,Status,Type"
@@ -69,27 +74,57 @@ export function TransactionsPageClient() {
     URL.revokeObjectURL(url)
   }
 
+  async function handleDeleteSelected() {
+    if (!window.confirm(`Tem certeza que deseja excluir ${selectedIds.size} transações selecionadas?\nOs saldos das contas também serão revertidos.`)) return
+    
+    setIsDeleting(true)
+    try {
+      const promises = Array.from(selectedIds).map((id) =>
+        fetch(`/api/finance/transactions/${id}`, { method: "DELETE" })
+      )
+      await Promise.all(promises)
+      setSelectedIds(new Set())
+      await refresh()
+    } catch (err) {
+      alert("Erro ao excluir transações. Verifique o console.")
+      console.error(err)
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
   return (
     <div className="flex flex-col gap-4">
       <TransactionSummary transactions={filteredData} />
 
-      <TransactionFilters
-        search={search}
-        setSearch={setSearch}
-        categoryFilter={categoryFilter}
-        setCategoryFilter={setCategoryFilter}
-        statusFilter={statusFilter}
-        setStatusFilter={setStatusFilter}
-        typeFilter={typeFilter}
-        setTypeFilter={setTypeFilter}
-        categories={categories}
-      />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <TransactionFilters
+          search={search}
+          setSearch={setSearch}
+          categoryFilter={categoryFilter}
+          setCategoryFilter={setCategoryFilter}
+          statusFilter={statusFilter}
+          setStatusFilter={setStatusFilter}
+          typeFilter={typeFilter}
+          setTypeFilter={setTypeFilter}
+          categories={categories}
+        />
+        <Button onClick={() => setAddDialogOpen(true)} className="shrink-0 gap-2">
+          Nova Transação
+        </Button>
+      </div>
 
       <TransactionTable
         transactions={filteredData}
         selectedIds={selectedIds}
         setSelectedIds={setSelectedIds}
         onEdit={setSelectedTransaction}
+      />
+
+      <AddTransactionDialog 
+        open={addDialogOpen} 
+        onOpenChange={setAddDialogOpen} 
+        onSaved={refresh} 
       />
 
       <EditTransactionDialog
@@ -103,6 +138,8 @@ export function TransactionsPageClient() {
       <TransactionActions
         selectedCount={selectedIds.size}
         onExport={handleExport}
+        onDelete={handleDeleteSelected}
+        isDeleting={isDeleting}
         onClear={() => setSelectedIds(new Set())}
       />
     </div>

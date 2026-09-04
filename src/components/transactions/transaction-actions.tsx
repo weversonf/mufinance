@@ -1,19 +1,23 @@
 "use client"
 
 import { AnimatePresence, motion } from "motion/react"
-import { DownloadIcon, XIcon } from "lucide-react"
+import { DownloadIcon, XIcon, Trash2Icon, LoaderCircleIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 
 interface TransactionActionsProps {
   selectedCount: number
   onExport: () => void
+  onDelete: () => void
+  isDeleting: boolean
   onClear: () => void
 }
 
 export function TransactionActions({
   selectedCount,
   onExport,
+  onDelete,
+  isDeleting,
   onClear,
 }: TransactionActionsProps) {
   return (
@@ -28,19 +32,24 @@ export function TransactionActions({
         >
           <div className="flex items-center gap-3 rounded-xl bg-card px-4 py-2.5 shadow-lg ring-1 ring-foreground/10">
             <span className="tabular-nums text-sm font-medium">
-              {selectedCount} selected
+              {selectedCount} selecionada(s)
             </span>
 
             <div className="h-4 w-px bg-border" />
 
             <Button variant="outline" size="sm" onClick={onExport}>
               <DownloadIcon className="size-3.5" />
-              Export CSV
+              Exportar CSV
+            </Button>
+            
+            <Button variant="destructive" size="sm" onClick={onDelete} disabled={isDeleting}>
+              {isDeleting ? <LoaderCircleIcon className="size-3.5 animate-spin" /> : <Trash2Icon className="size-3.5" />}
+              Excluir
             </Button>
 
             <Button variant="ghost" size="sm" onClick={onClear}>
               <XIcon className="size-3.5" />
-              Clear
+              Limpar Seleção
             </Button>
           </div>
         </motion.div>
