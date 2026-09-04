@@ -93,6 +93,22 @@ export function TransactionsPageClient() {
     }
   }
 
+  async function handleDeleteAll() {
+    if (!window.confirm("ATENÇÃO: Você tem certeza que deseja EXCLUIR TODAS as transações e zerar todos os saldos? Esta ação não pode ser desfeita.")) return
+    setIsDeleting(true)
+    try {
+      await fetch(`/api/finance/transactions/delete-all`, { method: "POST" })
+      setSelectedIds(new Set())
+      await refresh()
+      alert("Todas as transações foram apagadas e os saldos zerados.")
+    } catch (err) {
+      alert("Erro ao excluir transações.")
+      console.error(err)
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
   return (
     <div className="flex flex-col gap-4">
       <TransactionSummary transactions={filteredData} />
@@ -109,9 +125,14 @@ export function TransactionsPageClient() {
           setTypeFilter={setTypeFilter}
           categories={categories}
         />
-        <Button onClick={() => setAddDialogOpen(true)} className="shrink-0 gap-2">
-          Nova Transação
-        </Button>
+        <div className="flex shrink-0 items-center gap-2">
+          <Button variant="destructive" onClick={handleDeleteAll} disabled={isDeleting} className="gap-2">
+            Zerar Tudo
+          </Button>
+          <Button onClick={() => setAddDialogOpen(true)} className="gap-2">
+            Nova Transação
+          </Button>
+        </div>
       </div>
 
       <TransactionTable

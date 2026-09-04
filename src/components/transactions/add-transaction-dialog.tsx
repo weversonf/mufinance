@@ -20,6 +20,10 @@ export function AddTransactionDialog({ open, onOpenChange, onSaved }: { open: bo
   const [error, setError] = useState("")
   const [saving, setSaving] = useState(false)
 
+  const [recurrence, setRecurrence] = useState<"unica" | "parcelada" | "fixa">("unica")
+  const [installments, setInstallments] = useState(2)
+  const [months, setMonths] = useState(12)
+
   useEffect(() => {
     if (open) {
       setPayee("")
@@ -32,6 +36,9 @@ export function AddTransactionDialog({ open, onOpenChange, onSaved }: { open: bo
       setStatus("completed")
       setNotes("")
       setError("")
+      setRecurrence("unica")
+      setInstallments(2)
+      setMonths(12)
     }
   }, [open, bankAccounts])
 
@@ -45,27 +52,55 @@ export function AddTransactionDialog({ open, onOpenChange, onSaved }: { open: bo
       if (!accountId) throw new Error("Selecione uma conta.")
       if (type === "transfer" && (!destinationAccountId || accountId === destinationAccountId)) throw new Error("Selecione uma conta de destino diferente da origem.")
 
-      const payload = {
-        date,
-        payee,
-        category,
-        accountId,
-        destinationAccountId: type === "transfer" ? destinationAccountId : undefined,
-        amount: numericAmount,
-        type,
-        status,
-        sourceType: "account",
-        notes: notes || undefined
+      const isInstallment = recurrence === "parcelada"
+      const isFixed = recurrence === "fixa"
+      const count = isInstallment ? installments : isFixed ? months : 1
+      
+      const promises = []
+      let currentDate = new Date(date)
+
+      for (let i = 0; i < count; i++) {
+        // Formata data YYYY-MM-DD
+        const year = currentDate.getUTCFullYear()
+        const month = String(currentDate.getUTCMonth() + 1).padStart(2, '0')
+        const day = String(currentDate.getUTCDate()).padStart(2, '0')
+        const formattedDate = `${year}-${month}-${day}`
+
+        const title = isInstallment ? `${payee} (${i + 1}/${count})` : payee
+
+        const payload = {
+          date: formattedDate,
+          payee: title,
+          category,
+          accountId,
+          destinationAccountId: type === "transfer" ? destinationAccountId : undefined,
+          amount: numericAmount, // Assume que o valor digitado é o valor da parcela ou valor fixo
+          type,
+          status: i === 0 ? status : "planned", // As próximas sempre caem como planejadas
+          sourceType: "account",
+          notes: notes || undefined
+        }
+
+        promises.push(
+          fetch(`/api/finance/transactions`, { 
+            method: "POST", 
+            headers: { "Content-Type": "application/json" }, 
+            body: JSON.stringify(payload) 
+          })
+        )
+
+        // Adiciona 1 mês para a próxima
+        currentDate.setUTCMonth(currentDate.getUTCMonth() + 1)
+      }
+      
+      const responses = await Promise.all(promises)
+      for (const res of responses) {
+        if (!res.ok) {
+          const data = await res.json()
+          throw new Error(data.error || "Não foi possível salvar todas as transações.")
+        }
       }
 
-      const response = await fetch(`/api/finance/transactions`, { 
-        method: "POST", 
-        headers: { "Content-Type": "application/json" }, 
-        body: JSON.stringify(payload) 
-      })
-      
-      const data = await response.json()
-      if (!response.ok) throw new Error(data.error || "Não foi possível salvar a transação.")
       await onSaved()
       onOpenChange(false)
     } catch (nextError) {
@@ -146,6 +181,40 @@ export function AddTransactionDialog({ open, onOpenChange, onSaved }: { open: bo
             Observações
             <Input value={notes} onChange={(event) => setNotes(event.target.value)} />
           </label>
+
+          <div className="grid gap-2 sm:col-span-2 rounded-lg border p-3">
+            <p className="text-sm font-medium">Repetição / Recorrência</p>
+            <div className="flex flex-wrap gap-4 mt-1">
+              <label className="flex items-center gap-2 text-sm">
+                <input type="radio" name="recurrence" checked={recurrence === "unica"} onChange={() => setRecurrence("unica")} className="accent-primary" />
+                <span>Única</span>
+              </label>
+              <label className="flex items-center gap-2 text-sm">
+                <input type="radio" name="recurrence" checked={recurrence === "fixa"} onChange={() => setRecurrence("fixa")} className="accent-primary" />
+                <span>Fixa (Mensal)</span>
+              </label>
+              <label className="flex items-center gap-2 text-sm">
+                <input type="radio" name="recurrence" checked={recurrence === "parcelada"} onChange={() => setRecurrence("parcelada")} className="accent-primary" />
+                <span>Parcelada</span>
+              </label>
+            </div>
+            
+            {recurrence === "fixa" && (
+              <label className="grid gap-1.5 text-sm font-medium mt-2">
+                Gerar para quantos meses?
+                <Input type="number" min="2" max="120" value={months} onChange={(e) => setMonths(Number(e.target.value))} />
+              </label>
+            )}
+            {recurrence === "parcelada" && (
+              <label className="grid gap-1.5 text-sm font-medium mt-2">
+                Quantidade de parcelas
+                <Input type="number" min="2" max="120" value={installments} onChange={(e) => setInstallments(Number(e.target.value))} />
+                <span className="text-xs text-muted-foreground mt-1">
+                  O valor digitado lá em cima será o valor de CADA parcela (ex: se digitar R$ 100 e 5 parcelas, serão geradas 5 transações de R$ 100).
+                </span>
+              </label>
+            )}
+          </div>
 
           {error && <p className="text-sm text-destructive sm:col-span-2">{error}</p>}
           <DialogFooter className="sm:col-span-2">

@@ -365,3 +365,32 @@ export async function upsertBudget(input: unknown) {
   revalidatePath("/");
   return { id: reference.id, ...payload };
 }
+
+export async function deleteAllTransactions() {
+  const user = await requireSessionUser();
+  const db = getAdminFirestore();
+  
+  const txnsSnap = await db.collection("transactions").where("ownerId", "==", user.uid).get();
+  const accsSnap = await db.collection("accounts").where("ownerId", "==", user.uid).get();
+
+  const operations: { ref: any, data?: any, type: "update" | "delete" }[] = [];
+  
+  // Zera os saldos
+  accsSnap.docs.forEach(doc => operations.push({ ref: doc.ref, data: { balance: 0, updatedAt: timestamp() }, type: "update" }));
+  // Deleta transações
+  txnsSnap.docs.forEach(doc => operations.push({ ref: doc.ref, type: "delete" }));
+  
+  const BATCH_SIZE = 400;
+  for (let i = 0; i < operations.length; i += BATCH_SIZE) {
+    const batch = db.batch();
+    const chunk = operations.slice(i, i + BATCH_SIZE);
+    for (const op of chunk) {
+      if (op.type === "update") batch.update(op.ref, op.data);
+      else batch.delete(op.ref);
+    }
+    await batch.commit();
+  }
+  
+  revalidatePath("/");
+  return { success: true, count: txnsSnap.size };
+}
