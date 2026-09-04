@@ -77,56 +77,135 @@ function ProfileTab() {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Informações do perfil</CardTitle>
-        <CardDescription>Atualize os dados do seu perfil</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="flex items-center gap-4">
-          <Avatar className="size-16">
-            <AvatarImage src={user?.photoURL || ""} alt={name || "User avatar"} />
-            <AvatarFallback className="text-lg">{name.trim().split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "M"}</AvatarFallback>
-          </Avatar>
-          <div>
-            <p className="font-medium">{name}</p>
-            <p className="text-sm text-muted-foreground">{email}</p>
+    <>
+      <Card>
+        <CardHeader>
+          <CardTitle>Informações do perfil</CardTitle>
+          <CardDescription>Atualize os dados do seu perfil</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="flex items-center gap-4">
+            <Avatar className="size-16">
+              <AvatarImage src={user?.photoURL || ""} alt={name || "User avatar"} />
+              <AvatarFallback className="text-lg">{name.trim().split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "M"}</AvatarFallback>
+            </Avatar>
+            <div>
+              <p className="font-medium">{name}</p>
+              <p className="text-sm text-muted-foreground">{email}</p>
+            </div>
           </div>
-        </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <label className="text-sm font-medium" htmlFor="name">
-              Full Name
-            </label>
-            <Input
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <label className="text-sm font-medium" htmlFor="name">
+                Full Name
+              </label>
+              <Input
+                id="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium" htmlFor="email">
+                Email Address
+              </label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                readOnly
+              />
+            </div>
           </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium" htmlFor="email">
-              Email Address
-            </label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              readOnly
-            />
-          </div>
-        </div>
 
-        <div className="flex justify-end">
-          <Button onClick={handleSave} disabled={saving}>
-            {saving && <LoaderIcon className="size-4 animate-spin" />}
-            {saving ? "Saving..." : "Save Changes"}
-          </Button>
+          <div className="flex justify-end">
+            <Button onClick={handleSave} disabled={saving}>
+              {saving && <LoaderIcon className="mr-2 size-4 animate-spin" />}
+              {saving ? "Salvando..." : "Save Changes"}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="border-destructive/50 mt-6">
+        <CardHeader>
+          <CardTitle className="text-destructive">Zona de Perigo</CardTitle>
+          <CardDescription>Ações irreversíveis para sua conta</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <h4 className="font-medium">Zerar todas as transações</h4>
+              <p className="text-sm text-muted-foreground">Isso apagará permanentemente todo o histórico e zerará o saldo das contas.</p>
+            </div>
+            <DangerZoneDialog />
+          </div>
+        </CardContent>
+      </Card>
+    </>
+  )
+}
+
+function DangerZoneDialog() {
+  const [open, setOpen] = React.useState(false)
+  const [confirmText, setConfirmText] = React.useState("")
+  const [isDeleting, setIsDeleting] = React.useState(false)
+
+  async function handleDeleteAll() {
+    setIsDeleting(true)
+    try {
+      await fetch(`/api/finance/transactions/delete-all`, { method: "POST" })
+      alert("Todas as transações foram apagadas e os saldos zerados.")
+      setOpen(false)
+      window.location.reload()
+    } catch (err) {
+      alert("Erro ao excluir transações.")
+      console.error(err)
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
+  return (
+    <>
+      <Button variant="destructive" onClick={() => setOpen(true)}>Zerar Tudo</Button>
+      
+      {open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 animate-in fade-in">
+          <Card className="w-full max-w-md shadow-2xl animate-in zoom-in-95">
+            <CardHeader>
+              <CardTitle className="text-destructive">Atenção Absoluta</CardTitle>
+              <CardDescription>
+                Você está prestes a apagar permanentemente todas as suas transações e zerar todos os saldos de contas.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm font-medium">
+                Para confirmar, digite <span className="select-all font-mono font-bold text-destructive bg-destructive/10 px-1.5 py-0.5 rounded">zerar tudo</span> abaixo:
+              </p>
+              <Input 
+                value={confirmText} 
+                onChange={e => setConfirmText(e.target.value)} 
+                placeholder="zerar tudo"
+                className="font-mono border-destructive/50 focus-visible:ring-destructive"
+              />
+            </CardContent>
+            <div className="flex justify-end gap-3 p-6 pt-0">
+              <Button variant="outline" onClick={() => { setOpen(false); setConfirmText("") }}>Cancelar</Button>
+              <Button 
+                variant="destructive" 
+                disabled={confirmText.trim().toLowerCase() !== "zerar tudo" || isDeleting}
+                onClick={handleDeleteAll}
+              >
+                {isDeleting ? "Apagando..." : "Sim, excluir tudo"}
+              </Button>
+            </div>
+          </Card>
         </div>
-      </CardContent>
-    </Card>
+      )}
+    </>
   )
 }
 

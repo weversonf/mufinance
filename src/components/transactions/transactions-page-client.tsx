@@ -126,9 +126,6 @@ export function TransactionsPageClient() {
           categories={categories}
         />
         <div className="flex shrink-0 items-center gap-2">
-          <Button variant="destructive" onClick={handleDeleteAll} disabled={isDeleting} className="gap-2">
-            Zerar Tudo
-          </Button>
           <Button onClick={() => setAddDialogOpen(true)} className="gap-2">
             Nova Transação
           </Button>
