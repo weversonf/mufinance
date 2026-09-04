@@ -403,5 +403,5 @@ export async function deleteAllTransactions() {
   }
   
   revalidatePath("/");
-  return { success: true, count: txnsSnap.size };
+  return { success: true, count: uniqueTransactions.size };
 }
