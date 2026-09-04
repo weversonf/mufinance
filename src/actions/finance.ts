@@ -370,15 +370,26 @@ export async function deleteAllTransactions() {
   const user = await requireSessionUser();
   const db = getAdminFirestore();
   
-  const txnsSnap = await db.collection("transactions").where("ownerId", "==", user.uid).get();
-  const accsSnap = await db.collection("accounts").where("ownerId", "==", user.uid).get();
+  const txnsByOwnerId = await db.collection("transactions").where("ownerId", "==", user.uid).get();
+  const txnsByUid = await db.collection("transactions").where("uid", "==", user.uid).get();
+  
+  const accsByOwnerId = await db.collection("accounts").where("ownerId", "==", user.uid).get();
+  const accsByUid = await db.collection("accounts").where("uid", "==", user.uid).get();
 
   const operations: { ref: any, data?: any, type: "update" | "delete" }[] = [];
   
-  // Zera os saldos
-  accsSnap.docs.forEach(doc => operations.push({ ref: doc.ref, data: { balance: 0, updatedAt: timestamp() }, type: "update" }));
-  // Deleta transações
-  txnsSnap.docs.forEach(doc => operations.push({ ref: doc.ref, type: "delete" }));
+  const allAccounts = [...accsByOwnerId.docs, ...accsByUid.docs];
+  const allTransactions = [...txnsByOwnerId.docs, ...txnsByUid.docs];
+  
+  // Zera os saldos - use um Map para evitar duplicatas (se o documento tiver ambos)
+  const uniqueAccounts = new Map();
+  allAccounts.forEach(doc => uniqueAccounts.set(doc.id, doc));
+  
+  const uniqueTransactions = new Map();
+  allTransactions.forEach(doc => uniqueTransactions.set(doc.id, doc));
+
+  uniqueAccounts.forEach(doc => operations.push({ ref: doc.ref, data: { balance: 0, updatedAt: timestamp() }, type: "update" }));
+  uniqueTransactions.forEach(doc => operations.push({ ref: doc.ref, type: "delete" }));
   
   const BATCH_SIZE = 400;
   for (let i = 0; i < operations.length; i += BATCH_SIZE) {
