@@ -12,11 +12,12 @@ import { AddAccount } from "@/components/accounts/add-account"
 import { EmptyState } from "@/components/empty-state"
 
 const filterTabs = [
-  { value: "all", label: "All" },
-  { value: "checking", label: "Conta corrente" },
+  { value: "all", label: "Todas" },
+  { value: "checking", label: "Conta Corrente" },
   { value: "savings", label: "Poupança" },
-  { value: "crypto", label: "Cripto" },
+  { value: "digital", label: "Digital" },
   { value: "investment", label: "Investimentos" },
+  { value: "crypto", label: "Criptomoedas" },
 ] as const
 
 type AccountType = (typeof filterTabs)[number]["value"]

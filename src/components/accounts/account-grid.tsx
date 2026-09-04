@@ -21,8 +21,18 @@ const fmt = (n: number) => new Intl.NumberFormat("pt-BR", {
   maximumFractionDigits: 2,
 }).format(Math.abs(n))
 
+const ACCOUNT_TYPE_LABELS: Record<string, string> = {
+  checking: "Conta Corrente",
+  savings: "Poupança",
+  digital: "Digital",
+  investment: "Investimentos",
+  crypto: "Criptomoedas",
+  wallet: "Carteira",
+}
+
 export function AccountCard({ account, index, onSelect }: AccountCardProps) {
   const [imgError, setImgError] = useState(false)
+  const typeLabel = ACCOUNT_TYPE_LABELS[account.type] ?? account.type
 
   return (
     <motion.div
@@ -31,7 +41,6 @@ export function AccountCard({ account, index, onSelect }: AccountCardProps) {
       transition={{ duration: 0.3, delay: index * 0.05 }}
       onClick={() => {
         onSelect?.(account)
-        console.log("Selected account:", account.name)
       }}
       className="group relative cursor-pointer overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10 transition-shadow hover:shadow-md"
     >
@@ -45,24 +54,29 @@ export function AccountCard({ account, index, onSelect }: AccountCardProps) {
 
       <div className="p-4 pl-5">
         {/* Institution row */}
-        <div className="flex items-center gap-2">
-          {imgError ? (
-            <div className="flex size-8 items-center justify-center rounded-full bg-muted">
-              <BuildingIcon className="size-4 text-muted-foreground" />
-            </div>
-          ) : (
-            <Image
-              src={account.institutionLogo}
-              alt={account.institution}
-              width={32}
-              height={32}
-              unoptimized
-              className="size-8 rounded-full bg-muted object-cover"
-              onError={() => setImgError(true)}
-            />
-          )}
-          <span className="text-xs text-muted-foreground">
-            {account.institution}
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            {imgError ? (
+              <div className="flex size-8 items-center justify-center rounded-full bg-muted">
+                <BuildingIcon className="size-4 text-muted-foreground" />
+              </div>
+            ) : (
+              <Image
+                src={account.institutionLogo}
+                alt={account.institution}
+                width={32}
+                height={32}
+                unoptimized
+                className="size-8 rounded-full bg-muted object-cover"
+                onError={() => setImgError(true)}
+              />
+            )}
+            <span className="text-xs text-muted-foreground">
+              {account.institution}
+            </span>
+          </div>
+          <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+            {typeLabel}
           </span>
         </div>
 

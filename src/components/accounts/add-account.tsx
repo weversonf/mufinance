@@ -25,17 +25,19 @@ interface AddAccountProps {
 type Step = "idle" | "form" | "loading" | "success"
 
 const accountTypes = [
-  { value: "checking", label: "Conta corrente" },
+  { value: "checking", label: "Conta Corrente" },
   { value: "savings", label: "Poupança" },
-  { value: "crypto", label: "Cripto" },
+  { value: "digital", label: "Digital" },
   { value: "investment", label: "Investimentos" },
+  { value: "crypto", label: "Criptomoedas" },
 ] as const
 
 const typeColors: Record<string, string> = {
   checking: "bg-blue-500",
   savings: "bg-emerald-500",
+  digital: "bg-violet-500",
+  investment: "bg-indigo-500",
   crypto: "bg-orange-500",
-  investment: "bg-violet-500",
 }
 
 export function AddAccount({ onAdd }: AddAccountProps) {
@@ -96,7 +98,7 @@ export function AddAccount({ onAdd }: AddAccountProps) {
               <div className="flex size-10 items-center justify-center rounded-full bg-muted">
                 <PlusIcon className="size-5" />
               </div>
-              <span className="text-sm font-medium">Link New Account</span>
+              <span className="text-sm font-medium">Adicionar conta</span>
             </motion.div>
           )}
 
@@ -110,7 +112,7 @@ export function AddAccount({ onAdd }: AddAccountProps) {
               onClick={(e) => e.stopPropagation()}
             >
               <Input
-                placeholder="Institution name"
+                placeholder="Nome da conta (ex: Nubank, Itaú...)"
                 value={institution}
                 onChange={(e) => setInstitution(e.target.value)}
               />
@@ -119,7 +121,7 @@ export function AddAccount({ onAdd }: AddAccountProps) {
                 onValueChange={(v) => v && setAccountType(v)}
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Account type" />
+                  <SelectValue placeholder="Tipo de conta" />
                 </SelectTrigger>
                 <SelectContent>
                   {accountTypes.map((t) => (
@@ -130,7 +132,7 @@ export function AddAccount({ onAdd }: AddAccountProps) {
                 </SelectContent>
               </Select>
               <Input
-                placeholder="Account number"
+                placeholder="Número/identificador da conta"
                 value={accountNumber}
                 onChange={(e) => setAccountNumber(e.target.value)}
               />
@@ -146,7 +148,7 @@ export function AddAccount({ onAdd }: AddAccountProps) {
                     setAccountNumber("")
                   }}
                 >
-                  Cancel
+                  Cancelar
                 </Button>
                 <Button
                   size="sm"
@@ -154,7 +156,7 @@ export function AddAccount({ onAdd }: AddAccountProps) {
                   disabled={!institution || !accountType || !accountNumber}
                   onClick={handleConnect}
                 >
-                  Connect
+                  Adicionar
                 </Button>
               </div>
             </motion.div>
