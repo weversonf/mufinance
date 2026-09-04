@@ -89,8 +89,10 @@ function numberValue(value: unknown) {
 function dateValue(value: unknown) {
   const text = String(value ?? "").trim()
   const dateOnly = /^(\d{4})-(\d{2})-(\d{2})$/.exec(text)
+  // Parse como UTC puro para evitar que datas próximas à meia-noite
+  // caiam no mês errado por causa do timezone local do navegador.
   const parsed = dateOnly
-    ? new Date(Number(dateOnly[1]), Number(dateOnly[2]) - 1, Number(dateOnly[3]))
+    ? new Date(Date.UTC(Number(dateOnly[1]), Number(dateOnly[2]) - 1, Number(dateOnly[3])))
     : new Date(text)
   return Number.isNaN(parsed.valueOf()) ? null : parsed
 }
@@ -127,7 +129,11 @@ function buildData(snapshot: FinanceSnapshot | null): Omit<FinanceDataValue, "sn
   const goals = snapshot?.goals ?? []
   const visibleAccounts = accounts.filter((account) => account.locked !== true && account.blindage !== true && account.blind !== true)
   const balance = visibleAccounts.reduce((sum, account) => sum + numberValue(account.balance), 0)
+  // Exclui lançamentos automáticos do sistema (ex: ajustes de saldo) dos cálculos de analytics.
+  // Eles continuam visíveis na lista completa de transações mas não distorcem gráficos e orçamentos.
+  const analyticsTransactions = transactions.filter((t) => t.isSystemEntry !== true)
   const sortedTransactions = [...transactions].sort((a, b) => String(b.date ?? "").localeCompare(String(a.date ?? "")))
+
   const now = new Date()
   const currentMonth = monthKey(now)
 
@@ -155,11 +161,11 @@ function buildData(snapshot: FinanceSnapshot | null): Omit<FinanceDataValue, "sn
   }))
 
   const monthly = new Map<number, { date: Date; currentYear: number; lastYear: number }>()
-  for (const transaction of transactions) {
+  for (const transaction of analyticsTransactions) {
     const date = dateValue(transaction.date)
-    const year = date?.getFullYear()
+    const year = date?.getUTCFullYear()
     if (!date || transaction.type !== "income" || (year !== now.getFullYear() && year !== now.getFullYear() - 1)) continue
-    const month = date.getMonth()
+    const month = date.getUTCMonth()
     const current = monthly.get(month) ?? { date: new Date(now.getFullYear(), month, 1), currentYear: 0, lastYear: 0 }
     if (year === now.getFullYear()) current.currentYear += Math.abs(numberValue(transaction.amount))
     else current.lastYear += Math.abs(numberValue(transaction.amount))
@@ -173,7 +179,7 @@ function buildData(snapshot: FinanceSnapshot | null): Omit<FinanceDataValue, "sn
     const cutoff = new Date(now)
     cutoff.setDate(now.getDate() - days)
     const grouped = new Map<string, MoneyMovementPoint>()
-    for (const transaction of transactions) {
+    for (const transaction of analyticsTransactions) {
       const date = dateValue(transaction.date)
       if (!date || date < cutoff) continue
       let key = dateKey(date)
@@ -197,7 +203,7 @@ function buildData(snapshot: FinanceSnapshot | null): Omit<FinanceDataValue, "sn
   const moneyMovementByPeriod = { "7d": movement(7, "day"), "30d": movement(30, "week"), "90d": movement(90, "month") }
 
   const expensesByCategory = new Map<string, number>()
-  for (const transaction of transactions) {
+  for (const transaction of analyticsTransactions) {
     if (transaction.type !== "expense") continue
     const category = String(transaction.category ?? "Sem categoria")
     expensesByCategory.set(category, (expensesByCategory.get(category) ?? 0) + Math.abs(numberValue(transaction.amount)))
@@ -205,9 +211,9 @@ function buildData(snapshot: FinanceSnapshot | null): Omit<FinanceDataValue, "sn
   const categoryBreakdowns: CategoryBreakdown[] = [...expensesByCategory.entries()].map(([category, amount], index) => ({ category, amount, color: `var(--color-chart-${(index % 5) + 1})`, subcategories: [] }))
 
   const dailyValors = new Map<string, number>()
-  for (const transaction of transactions) {
+  for (const transaction of analyticsTransactions) {
     const date = dateValue(transaction.date)
-    if (!date || date.getFullYear() !== now.getFullYear() || transaction.type !== "expense") continue
+    if (!date || date.getUTCFullYear() !== now.getFullYear() || transaction.type !== "expense") continue
     const key = dateKey(date)
     dailyValors.set(key, (dailyValors.get(key) ?? 0) + Math.abs(numberValue(transaction.amount)))
   }
@@ -217,14 +223,15 @@ function buildData(snapshot: FinanceSnapshot | null): Omit<FinanceDataValue, "sn
 
   const monthBudgets = budgets.filter((budget) => String(budget.month ?? "") === currentMonth)
   const spentByCategory = new Map<string, number>()
-  for (const transaction of transactions) {
+  for (const transaction of analyticsTransactions) {
     if (transaction.type === "expense" && String(transaction.date ?? "").startsWith(currentMonth)) {
       const key = String(transaction.categoryId ?? transaction.category ?? "")
       spentByCategory.set(key, (spentByCategory.get(key) ?? 0) + Math.abs(numberValue(transaction.amount)))
     }
   }
+
   const categoryMap = new Map(categories.map((category) => [category.id, String(category.name ?? category.id)]))
-  const budgetCategories: BudgetCategory[] = monthBudgets.map((budget, index) => ({ id: budget.id, category: categoryMap.get(String(budget.categoryId)) ?? String(budget.categoryId ?? "Orçamento"), iconName: "wallet", budget: numberValue(budget.limitValor), spent: spentByCategory.get(String(budget.categoryId)) ?? 0, color: `text-chart-${(index % 5) + 1}` }))
+  const budgetCategories: BudgetCategory[] = monthBudgets.map((budget, index) => ({ id: budget.id, category: categoryMap.get(String(budget.categoryId)) ?? String(budget.categoryId ?? "Orçamento"), iconName: "wallet", budget: numberValue(budget.limitAmount), spent: spentByCategory.get(String(budget.categoryId)) ?? 0, color: `text-chart-${(index % 5) + 1}` }))
   const budget = budgetCategories.reduce((sum, item) => sum + item.budget, 0)
   const spent = budgetCategories.reduce((sum, item) => sum + item.spent, 0)
 

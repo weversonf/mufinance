@@ -140,6 +140,7 @@ export async function updateAccount(id: string, input: unknown) {
       sourceType: "account",
       sourceId: id,
       notes: `Saldo ajustado de ${currentBalance.toFixed(2)} para ${data.balance.toFixed(2)}.`,
+      isSystemEntry: true,
       ownerId: user.uid,
       createdAt: now,
       updatedAt: now,
@@ -176,11 +177,44 @@ export async function createCreditCard(input: unknown) {
 export async function updateTransaction(id: string, input: unknown) {
   const user = await requireSessionUser();
   const data = transactionInputSchema.parse(input);
+  const db = getAdminFirestore();
   const reference = await findOwnedReference(["transactions"], id, user.uid);
-  const payload = { ...data, ownerId: user.uid, updatedAt: timestamp() };
-  await reference.set(payload, { merge: true });
+
+  await db.runTransaction(async (txn) => {
+    const current = await txn.get(reference);
+    if (!current.exists) throw new Error("Transação não encontrada.");
+
+    const oldType = String(current.data()?.type ?? "");
+    const oldAmount = numericAmount(current.data()?.amount);
+    const oldAccountId = String(current.data()?.accountId ?? "");
+
+    // Reverte o efeito da transação anterior no saldo da conta antiga
+    if (oldAccountId && (oldType === "income" || oldType === "expense")) {
+      const oldAccountRef = db.collection("accounts").doc(oldAccountId);
+      const oldAccountSnap = await txn.get(oldAccountRef);
+      if (oldAccountSnap.exists && (oldAccountSnap.data()?.ownerId === user.uid || oldAccountSnap.data()?.uid === user.uid)) {
+        const oldBalance = numericAmount(oldAccountSnap.data()?.balance);
+        const revert = oldType === "income" ? -oldAmount : oldAmount;
+        txn.update(oldAccountRef, { balance: Number((oldBalance + revert).toFixed(2)), updatedAt: timestamp() });
+      }
+    }
+
+    // Aplica o efeito da nova transação no saldo da nova conta
+    if (data.accountId && (data.type === "income" || data.type === "expense")) {
+      const newAccountRef = db.collection("accounts").doc(data.accountId);
+      const newAccountSnap = await txn.get(newAccountRef);
+      if (newAccountSnap.exists && (newAccountSnap.data()?.ownerId === user.uid || newAccountSnap.data()?.uid === user.uid)) {
+        const newBalance = numericAmount(newAccountSnap.data()?.balance);
+        const delta = data.type === "income" ? data.amount : -data.amount;
+        txn.update(newAccountRef, { balance: Number((newBalance + delta).toFixed(2)), updatedAt: timestamp() });
+      }
+    }
+
+    txn.set(reference, { ...data, ownerId: user.uid, updatedAt: timestamp() }, { merge: true });
+  });
+
   revalidatePath("/");
-  return { id, ...payload };
+  return { id, ...data };
 }
 
 export async function createTransaction(input: unknown) {
@@ -189,9 +223,78 @@ export async function createTransaction(input: unknown) {
   const db = getAdminFirestore();
   const reference = db.collection("transactions").doc();
   const payload = { ...data, ownerId: user.uid, createdAt: timestamp(), updatedAt: timestamp() };
-  await reference.set(payload);
+
+  if (data.type === "transfer" && data.destinationAccountId) {
+    // Transferência: debita conta origem e credita conta destino atomicamente
+    await db.runTransaction(async (txn) => {
+      const [originSnap, destSnap] = await Promise.all([
+        txn.get(db.collection("accounts").doc(data.accountId)),
+        txn.get(db.collection("accounts").doc(data.destinationAccountId!)),
+      ]);
+      if (!originSnap.exists || (originSnap.data()?.ownerId !== user.uid && originSnap.data()?.uid !== user.uid)) {
+        throw new Error("Conta de origem não encontrada ou sem permissão.");
+      }
+      if (!destSnap.exists || (destSnap.data()?.ownerId !== user.uid && destSnap.data()?.uid !== user.uid)) {
+        throw new Error("Conta de destino não encontrada ou sem permissão.");
+      }
+      const originBalance = numericAmount(originSnap.data()?.balance);
+      const destBalance = numericAmount(destSnap.data()?.balance);
+      txn.update(originSnap.ref, { balance: Number((originBalance - data.amount).toFixed(2)), updatedAt: timestamp() });
+      txn.update(destSnap.ref, { balance: Number((destBalance + data.amount).toFixed(2)), updatedAt: timestamp() });
+      // Salva dois registros espelhados: saída na origem e entrada no destino
+      const destTxnRef = db.collection("transactions").doc();
+      txn.set(reference, { ...payload, type: "expense" });
+      txn.set(destTxnRef, { ...payload, id: destTxnRef.id, accountId: data.destinationAccountId, destinationAccountId: data.accountId, type: "income" });
+    });
+  } else if (data.type === "income" || data.type === "expense") {
+    // Receita ou despesa: atualiza saldo da conta atomicamente
+    await db.runTransaction(async (txn) => {
+      const accountRef = db.collection("accounts").doc(data.accountId);
+      const accountSnap = await txn.get(accountRef);
+      if (accountSnap.exists && (accountSnap.data()?.ownerId === user.uid || accountSnap.data()?.uid === user.uid)) {
+        const currentBalance = numericAmount(accountSnap.data()?.balance);
+        const delta = data.type === "income" ? data.amount : -data.amount;
+        txn.update(accountRef, { balance: Number((currentBalance + delta).toFixed(2)), updatedAt: timestamp() });
+      }
+      txn.set(reference, payload);
+    });
+  } else {
+    await reference.set(payload);
+  }
+
   revalidatePath("/");
   return { id: reference.id, ...payload };
+}
+
+export async function deleteTransaction(id: string) {
+  const user = await requireSessionUser();
+  const db = getAdminFirestore();
+  const reference = await findOwnedReference(["transactions"], id, user.uid);
+
+  await db.runTransaction(async (txn) => {
+    const snap = await txn.get(reference);
+    if (!snap.exists) throw new Error("Transação não encontrada.");
+
+    const type = String(snap.data()?.type ?? "");
+    const amount = numericAmount(snap.data()?.amount);
+    const accountId = String(snap.data()?.accountId ?? "");
+
+    // Reverte o efeito da transação no saldo da conta
+    if (accountId && (type === "income" || type === "expense")) {
+      const accountRef = db.collection("accounts").doc(accountId);
+      const accountSnap = await txn.get(accountRef);
+      if (accountSnap.exists && (accountSnap.data()?.ownerId === user.uid || accountSnap.data()?.uid === user.uid)) {
+        const currentBalance = numericAmount(accountSnap.data()?.balance);
+        const revert = type === "income" ? -amount : amount;
+        txn.update(accountRef, { balance: Number((currentBalance + revert).toFixed(2)), updatedAt: timestamp() });
+      }
+    }
+
+    txn.delete(reference);
+  });
+
+  revalidatePath("/");
+  return { id, deleted: true };
 }
 
 export async function createCategory(input: unknown) {

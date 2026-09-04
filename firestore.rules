@@ -32,8 +32,10 @@ service cloud.firestore {
 
     match /transactions/{docId} {
       allow read, delete: if ownsExisting();
-      allow create: if ownsIncoming();
-      allow update: if ownsExisting() && ownsIncoming();
+      allow create: if ownsIncoming()
+        && get(/databases/$(database)/documents/accounts/$(request.resource.data.accountId)).data.ownerId == request.auth.uid;
+      allow update: if ownsExisting() && ownsIncoming()
+        && get(/databases/$(database)/documents/accounts/$(request.resource.data.accountId)).data.ownerId == request.auth.uid;
     }
 
     match /categories/{docId} {

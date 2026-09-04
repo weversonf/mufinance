@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { getAdminFirestore } from "../lib/firebase/admin";
 import { requireSessionUser } from "../lib/auth/session";
 import { transactionInputSchema, type TransactionInput } from "../lib/finance/schemas";
+import { createHash } from "crypto";
 
 export type ImportTransactionRow = {
   date?: string;
@@ -43,6 +44,15 @@ function normalizeDate(value: unknown) {
   return new Date().toISOString().slice(0, 10);
 }
 
+/**
+ * Gera um ID determinístico para a transação com base nos campos que a identificam unicamente.
+ * Isso torna a importação idempotente: reimportar o mesmo extrato não cria duplicatas.
+ */
+function importHash(ownerId: string, date: string, payee: string, amount: number, accountId: string): string {
+  const raw = `${ownerId}|${date}|${payee.toLowerCase().trim()}|${amount.toFixed(2)}|${accountId}`;
+  return createHash("sha256").update(raw).digest("hex").slice(0, 40);
+}
+
 export async function importTransactions(rows: ImportTransactionRow[]) {
   const user = await requireSessionUser();
   if (!Array.isArray(rows) || rows.length === 0) return { imported: 0, errors: ["Nenhum lançamento encontrado."] };
@@ -55,11 +65,14 @@ export async function importTransactions(rows: ImportTransactionRow[]) {
 
   rows.forEach((row, index) => {
     const amount = normalizeAmount(row.amount);
+    const date = normalizeDate(row.date);
+    const payee = String(row.payee ?? row.description ?? "Lançamento importado").trim().slice(0, 120);
+    const accountId = String(row.accountId ?? row.account ?? "Conta principal").trim().slice(0, 120);
     const candidate = {
-      date: normalizeDate(row.date),
-      payee: String(row.payee ?? row.description ?? "Lançamento importado").trim().slice(0, 120),
+      date,
+      payee,
       category: String(row.category ?? "Outros").trim().slice(0, 80),
-      accountId: String(row.accountId ?? row.account ?? "Conta principal").trim().slice(0, 120),
+      accountId,
       amount,
       type: normalizeType(row.type, amount),
       status: "completed" as const,
@@ -71,8 +84,10 @@ export async function importTransactions(rows: ImportTransactionRow[]) {
       errors.push(`Linha ${index + 1}: dados incompletos ou inválidos.`);
       return;
     }
-    const reference = db.collection("transactions").doc();
-    batch.set(reference, { ...parsed.data, ownerId: user.uid, importSource: "csv-or-ofx", createdAt: timestamp(), updatedAt: timestamp() });
+    // Usa hash determinístico como ID: reimportar o mesmo extrato é idempotente.
+    const docId = importHash(user.uid, date, payee, amount, accountId);
+    const reference = db.collection("transactions").doc(docId);
+    batch.set(reference, { ...parsed.data, ownerId: user.uid, importSource: "csv-or-ofx", createdAt: timestamp(), updatedAt: timestamp() }, { merge: false });
     imported += 1;
   });
 
