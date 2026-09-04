@@ -118,16 +118,17 @@ function numericAmount(value: unknown) {
 export async function updateAccount(id: string, input: unknown) {
   const user = await requireSessionUser();
   const data = accountInputSchema.parse(input);
+  const { createAdjustment, ...cleanData } = data;
   const reference = await findOwnedReference(["accounts"], id, user.uid);
   const currentSnapshot = await reference.get();
   const currentBalance = numericAmount(currentSnapshot.data()?.balance);
-  const difference = Number((data.balance - currentBalance).toFixed(2));
+  const difference = Number((cleanData.balance - currentBalance).toFixed(2));
   const now = timestamp();
-  const accountPayload = { ...data, ownerId: user.uid, updatedAt: now };
+  const accountPayload = { ...cleanData, ownerId: user.uid, updatedAt: now };
   const batch = getAdminFirestore().batch();
   batch.set(reference, accountPayload, { merge: true });
 
-  if (difference !== 0) {
+  if (difference !== 0 && createAdjustment !== false) {
     const adjustmentReference = getAdminFirestore().collection("transactions").doc();
     batch.set(adjustmentReference, {
       date: now.slice(0, 10),
@@ -139,7 +140,7 @@ export async function updateAccount(id: string, input: unknown) {
       status: "completed",
       sourceType: "account",
       sourceId: id,
-      notes: `Saldo ajustado de ${currentBalance.toFixed(2)} para ${data.balance.toFixed(2)}.`,
+      notes: `Saldo ajustado de ${currentBalance.toFixed(2)} para ${cleanData.balance.toFixed(2)}.`,
       isSystemEntry: true,
       ownerId: user.uid,
       createdAt: now,
@@ -181,32 +182,43 @@ export async function updateTransaction(id: string, input: unknown) {
   const reference = await findOwnedReference(["transactions"], id, user.uid);
 
   await db.runTransaction(async (txn) => {
+    // ── FASE 1: todas as leituras (Firestore exige get antes de write) ──
     const current = await txn.get(reference);
     if (!current.exists) throw new Error("Transação não encontrada.");
 
     const oldType = String(current.data()?.type ?? "");
     const oldAmount = numericAmount(current.data()?.amount);
     const oldAccountId = String(current.data()?.accountId ?? "");
+    const sameAccount = oldAccountId === data.accountId;
 
-    // Reverte o efeito da transação anterior no saldo da conta antiga
-    if (oldAccountId && (oldType === "income" || oldType === "expense")) {
-      const oldAccountRef = db.collection("accounts").doc(oldAccountId);
-      const oldAccountSnap = await txn.get(oldAccountRef);
-      if (oldAccountSnap.exists && (oldAccountSnap.data()?.ownerId === user.uid || oldAccountSnap.data()?.uid === user.uid)) {
+    const oldAccountRef = oldAccountId ? db.collection("accounts").doc(oldAccountId) : null;
+    const newAccountRef = (data.accountId && !sameAccount) ? db.collection("accounts").doc(data.accountId) : null;
+
+    const oldAccountSnap = oldAccountRef ? await txn.get(oldAccountRef) : null;
+    const newAccountSnap = newAccountRef ? await txn.get(newAccountRef) : null;
+    // Se mesma conta, reutilizar o snapshot já lido
+    const sameAccountSnap = sameAccount && oldAccountSnap ? oldAccountSnap : null;
+
+    // ── FASE 2: todas as escritas ──
+
+    // Reverte efeito antigo e aplica novo (mesma conta)
+    if (sameAccount && sameAccountSnap?.exists && (sameAccountSnap.data()?.ownerId === user.uid || sameAccountSnap.data()?.uid === user.uid)) {
+      const balance = numericAmount(sameAccountSnap.data()?.balance);
+      const revert = oldType === "income" ? -oldAmount : oldType === "expense" ? oldAmount : 0;
+      const apply = data.type === "income" ? data.amount : data.type === "expense" ? -data.amount : 0;
+      txn.update(oldAccountRef!, { balance: Number((balance + revert + apply).toFixed(2)), updatedAt: timestamp() });
+    } else {
+      // Reverte efeito antigo na conta antiga
+      if (oldAccountSnap?.exists && (oldAccountSnap.data()?.ownerId === user.uid || oldAccountSnap.data()?.uid === user.uid) && (oldType === "income" || oldType === "expense")) {
         const oldBalance = numericAmount(oldAccountSnap.data()?.balance);
         const revert = oldType === "income" ? -oldAmount : oldAmount;
-        txn.update(oldAccountRef, { balance: Number((oldBalance + revert).toFixed(2)), updatedAt: timestamp() });
+        txn.update(oldAccountRef!, { balance: Number((oldBalance + revert).toFixed(2)), updatedAt: timestamp() });
       }
-    }
-
-    // Aplica o efeito da nova transação no saldo da nova conta
-    if (data.accountId && (data.type === "income" || data.type === "expense")) {
-      const newAccountRef = db.collection("accounts").doc(data.accountId);
-      const newAccountSnap = await txn.get(newAccountRef);
-      if (newAccountSnap.exists && (newAccountSnap.data()?.ownerId === user.uid || newAccountSnap.data()?.uid === user.uid)) {
+      // Aplica efeito novo na conta nova
+      if (newAccountSnap?.exists && (newAccountSnap.data()?.ownerId === user.uid || newAccountSnap.data()?.uid === user.uid) && (data.type === "income" || data.type === "expense")) {
         const newBalance = numericAmount(newAccountSnap.data()?.balance);
         const delta = data.type === "income" ? data.amount : -data.amount;
-        txn.update(newAccountRef, { balance: Number((newBalance + delta).toFixed(2)), updatedAt: timestamp() });
+        txn.update(newAccountRef!, { balance: Number((newBalance + delta).toFixed(2)), updatedAt: timestamp() });
       }
     }
 

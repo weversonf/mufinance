@@ -49,10 +49,10 @@ export function QuickTransfer() {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
         <CardTitle className="text-base font-semibold">
-          Quick Transfer
+          Transferência Rápida
         </CardTitle>
         <Button variant="ghost" size="sm" className="h-auto gap-1 px-0 text-xs text-muted-foreground">
-          Ver todas Contacts
+          Ver todos os contatos
           <ChevronRightIcon className="size-3" />
         </Button>
       </CardHeader>
@@ -116,9 +116,9 @@ export function QuickTransfer() {
             transition={{ duration: 0.15 }}
             className="text-xs text-muted-foreground"
           >
-            Sending to{" "}
+            Enviando para{" "}
             <span className="font-medium text-foreground">
-              {selected?.name ?? "no recipient selected"}
+              {selected?.name ?? "nenhum destinatário selecionado"}
             </span>
           </motion.p>
         </AnimatePresence>
@@ -141,10 +141,10 @@ export function QuickTransfer() {
                 <CheckCircle2Icon className="size-10 text-emerald-500" />
               </motion.div>
               <p className="text-sm font-semibold">
-                ${numericValor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })} sent!
+                {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(numericValor)} enviado!
               </p>
               <p className="text-xs text-muted-foreground">
-                To {selected?.name}
+                Para {selected?.name}
               </p>
             </motion.div>
           ) : (
@@ -159,14 +159,14 @@ export function QuickTransfer() {
                 <label className="text-xs text-muted-foreground">Valor</label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-muted-foreground">
-                    $
+                    R$
                   </span>
                   <Input
                     type="text"
                     value={amount}
                     onChange={(e) => setValor(e.target.value)}
                     disabled={sendState === "sending"}
-                    className="h-10 pl-7 text-lg font-semibold tabular-nums"
+                    className="h-10 pl-9 text-lg font-semibold tabular-nums"
                   />
                 </div>
               </div>
@@ -180,7 +180,7 @@ export function QuickTransfer() {
                 ) : (
                   <SendIcon className="size-4" />
                 )}
-                {sendState === "sending" ? "Sending..." : "Send"}
+                {sendState === "sending" ? "Enviando..." : "Enviar"}
               </Button>
             </motion.div>
           )}

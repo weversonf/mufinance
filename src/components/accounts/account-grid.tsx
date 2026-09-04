@@ -14,12 +14,13 @@ interface AccountCardProps {
   onSelect?: (account: BankAccount) => void
 }
 
-const fmt = (n: number) => new Intl.NumberFormat("pt-BR", {
-  style: "currency",
-  currency: "BRL",
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-}).format(Math.abs(n))
+const fmt = (n: number) =>
+  new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(n)
 
 const ACCOUNT_TYPE_LABELS: Record<string, string> = {
   checking: "Conta Corrente",
@@ -89,7 +90,7 @@ export function AccountCard({ account, index, onSelect }: AccountCardProps) {
         </div>
 
         {/* Balance */}
-        <p className="mt-3 tabular-nums text-xl font-bold tracking-tight">
+        <p className={cn("mt-3 tabular-nums text-xl font-bold tracking-tight", account.balance < 0 && "text-rose-600 dark:text-rose-400")}>
           {fmt(account.balance)}
         </p>
 

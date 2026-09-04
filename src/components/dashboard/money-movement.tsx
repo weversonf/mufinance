@@ -26,16 +26,19 @@ import { ArrowDownLeftIcon, ArrowUpRightIcon } from "lucide-react"
 
 const chartConfig = {
   moneyIn: {
-    label: "Money In",
+    label: "Entradas",
     color: "var(--color-primary)",
   },
   moneyOut: {
-    label: "Money Out",
+    label: "Saídas",
     color: "var(--color-muted-foreground)",
   },
 } satisfies ChartConfig
 
 type Period = "7d" | "30d" | "90d"
+
+const brl = (n: number) =>
+  new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", minimumFractionDigits: 2 }).format(n)
 
 export function MoneyMovement() {
   const { moneyMovementByPeriod } = useFinanceData()
@@ -52,16 +55,16 @@ export function MoneyMovement() {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
         <CardTitle className="text-base font-semibold">
-          Money Movement
+          Movimentação Financeira
         </CardTitle>
         <Select value={period} onValueChange={(v) => setPeriod(v as Period)}>
           <SelectTrigger className="h-8 w-[110px] text-xs">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="7d">7 days</SelectItem>
-            <SelectItem value="30d">30 days</SelectItem>
-            <SelectItem value="90d">90 days</SelectItem>
+            <SelectItem value="7d">7 dias</SelectItem>
+            <SelectItem value="30d">30 dias</SelectItem>
+            <SelectItem value="90d">90 dias</SelectItem>
           </SelectContent>
         </Select>
       </CardHeader>
@@ -73,9 +76,9 @@ export function MoneyMovement() {
               <ArrowDownLeftIcon className="size-4 text-emerald-600 dark:text-emerald-400" />
             </div>
             <div>
-              <p className="text-[10px] font-medium text-emerald-600/70 dark:text-emerald-400/70">Money In</p>
+              <p className="text-[10px] font-medium text-emerald-600/70 dark:text-emerald-400/70">Entradas</p>
               <p className="text-sm font-bold tabular-nums text-emerald-700 dark:text-emerald-300">
-                ${totals.in.toLocaleString()}
+                {brl(totals.in)}
               </p>
             </div>
           </div>
@@ -84,9 +87,9 @@ export function MoneyMovement() {
               <ArrowUpRightIcon className="size-4 text-rose-600 dark:text-rose-400" />
             </div>
             <div>
-              <p className="text-[10px] font-medium text-rose-600/70 dark:text-rose-400/70">Money Out</p>
+              <p className="text-[10px] font-medium text-rose-600/70 dark:text-rose-400/70">Saídas</p>
               <p className="text-sm font-bold tabular-nums text-rose-700 dark:text-rose-300">
-                ${totals.out.toLocaleString()}
+                {brl(totals.out)}
               </p>
             </div>
           </div>
@@ -94,9 +97,9 @@ export function MoneyMovement() {
 
         {/* Net flow */}
         <div className="flex items-center justify-between rounded-lg border px-3 py-2">
-          <span className="text-xs text-muted-foreground">Net Flow</span>
-          <span className="text-sm font-bold tabular-nums text-emerald-600 dark:text-emerald-400">
-            +${totals.net.toLocaleString()}
+          <span className="text-xs text-muted-foreground">Fluxo Líquido</span>
+          <span className={`text-sm font-bold tabular-nums ${totals.net >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
+            {totals.net >= 0 ? "+" : ""}{brl(totals.net)}
           </span>
         </div>
 
@@ -127,7 +130,7 @@ export function MoneyMovement() {
               fontSize={11}
               tickMargin={4}
               stroke="var(--color-muted-foreground)"
-              tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`}
+              tickFormatter={(v) => `R$${(v / 1000).toFixed(0)}k`}
             />
             <ChartTooltip
               content={

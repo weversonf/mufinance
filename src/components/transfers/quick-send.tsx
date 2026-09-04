@@ -63,7 +63,7 @@ export function QuickSend({ onSend }: { onSend?: (record: TransferRecord) => voi
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base font-semibold">Quick Send</CardTitle>
+        <CardTitle className="text-base font-semibold">Envio Rápido</CardTitle>
       </CardHeader>
       <CardContent>
         <AnimatePresence mode="wait">
@@ -83,10 +83,10 @@ export function QuickSend({ onSend }: { onSend?: (record: TransferRecord) => voi
                 <CheckCircle2Icon className="size-10 text-emerald-500" />
               </motion.div>
               <p className="text-sm font-semibold">
-                ${numericValor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })} sent!
+                {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(numericValor)} enviado!
               </p>
               <p className="text-xs text-muted-foreground">
-                To {selected?.name ?? "no recipient selected"}
+                Para {selected?.name ?? "nenhum destinatário selecionado"}
               </p>
             </motion.div>
           ) : (
@@ -99,7 +99,7 @@ export function QuickSend({ onSend }: { onSend?: (record: TransferRecord) => voi
             >
               {/* Contact selector */}
               <div>
-                <label className="mb-1.5 block text-xs text-muted-foreground">To</label>
+                <label className="mb-1.5 block text-xs text-muted-foreground">Para</label>
                 <div className="flex items-center gap-1 pt-1">
                   {contacts.length === 0 ? (
                     <p className="py-2 text-xs text-muted-foreground">Nenhum contato disponível ainda.</p>
@@ -144,9 +144,9 @@ export function QuickSend({ onSend }: { onSend?: (record: TransferRecord) => voi
                     transition={{ duration: 0.12 }}
                     className="text-xs text-muted-foreground"
                   >
-                    Sending to{" "}
+                    Enviando para{" "}
                     <span className="font-medium text-foreground">
-                      {selected?.name ?? "no recipient selected"}
+                      {selected?.name ?? "nenhum destinatário selecionado"}
                     </span>
                   </motion.p>
                 </AnimatePresence>
@@ -157,15 +157,15 @@ export function QuickSend({ onSend }: { onSend?: (record: TransferRecord) => voi
                 <label className="text-xs text-muted-foreground">Valor</label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-muted-foreground">
-                    $
+                    R$
                   </span>
                   <Input
                     type="text"
-                    placeholder="0.00"
+                    placeholder="0,00"
                     value={amount}
                     onChange={(e) => setValor(e.target.value)}
                     disabled={sendState === "sending"}
-                    className="h-9 pl-7 tabular-nums"
+                    className="h-9 pl-9 tabular-nums"
                   />
                 </div>
               </div>
@@ -173,7 +173,7 @@ export function QuickSend({ onSend }: { onSend?: (record: TransferRecord) => voi
               {/* Note input */}
               <div className="flex-1 space-y-1.5 lg:max-w-[200px]">
                 <label className="text-xs text-muted-foreground">
-                  Note <span className="text-muted-foreground/60">(optional)</span>
+                  Observação <span className="text-muted-foreground/60">(opcional)</span>
                 </label>
                 <Input
                   type="text"
@@ -196,7 +196,7 @@ export function QuickSend({ onSend }: { onSend?: (record: TransferRecord) => voi
                 ) : (
                   <SendIcon className="size-4" />
                 )}
-                {sendState === "sending" ? "Sending..." : "Send"}
+                {sendState === "sending" ? "Enviando..." : "Enviar"}
               </Button>
             </motion.div>
           )}

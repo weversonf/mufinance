@@ -10,6 +10,9 @@ import { Progress } from "@/components/ui/progress"
 import { useFinanceData } from "@/components/finance/finance-provider"
 import { ShieldCheckIcon } from "lucide-react"
 
+const brl = (n: number) =>
+  new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", minimumFractionDigits: 2 }).format(n)
+
 export function SpendingLimit() {
   const { spendingLimit } = useFinanceData()
   const percentUsed = spendingLimit.budget > 0 ? Math.round((spendingLimit.spent / spendingLimit.budget) * 100) : 0
@@ -18,7 +21,7 @@ export function SpendingLimit() {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-base font-semibold">
-          Monthly Spending Limit
+          Limite Mensal de Gastos
         </CardTitle>
         <div className="flex size-8 items-center justify-center rounded-lg bg-muted">
           <ShieldCheckIcon className="size-4 text-muted-foreground" />
@@ -26,12 +29,9 @@ export function SpendingLimit() {
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
-          <p className="text-xs text-muted-foreground">Budget</p>
+          <p className="text-xs text-muted-foreground">Orçamento</p>
           <p className="text-2xl font-bold tabular-nums tracking-tight">
-            ${spendingLimit.budget.toLocaleString()}{" "}
-            <span className="text-sm font-normal text-muted-foreground">
-              {spendingLimit.currency}
-            </span>
+            {brl(spendingLimit.budget)}
           </p>
         </div>
 
@@ -39,15 +39,15 @@ export function SpendingLimit() {
 
         <div className="flex items-center justify-between text-sm">
           <div>
-            <p className="text-xs text-muted-foreground">Spend</p>
+            <p className="text-xs text-muted-foreground">Gasto</p>
             <p className="font-semibold tabular-nums">
-              ${spendingLimit.spent.toLocaleString()}
+              {brl(spendingLimit.spent)}
             </p>
           </div>
           <div className="text-right">
-            <p className="text-xs text-muted-foreground">Remaining</p>
+            <p className="text-xs text-muted-foreground">Disponível</p>
             <p className="font-semibold tabular-nums text-emerald-600 dark:text-emerald-400">
-              ${spendingLimit.remaining.toLocaleString()}
+              {brl(spendingLimit.remaining)}
             </p>
           </div>
         </div>

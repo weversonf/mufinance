@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import Image from "next/image"
 import { AnimatePresence, motion } from "motion/react"
 import { EmptyState } from "@/components/empty-state"
@@ -59,6 +60,8 @@ export function TransactionTable({
   setSelectedIds,
   onEdit,
 }: TransactionTableProps) {
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
+
   const allSelected =
     transactions.length > 0 && transactions.every((t) => selectedIds.has(t.id))
 
@@ -81,6 +84,15 @@ export function TransactionTable({
       next.add(id)
     }
     setSelectedIds(next)
+  }
+
+  function toggleExpand(id: string) {
+    setExpandedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
   }
 
   return (
@@ -119,7 +131,7 @@ export function TransactionTable({
           )}
 
           {transactions.map((tx) => {
-            const isExpanded = false
+            const isExpanded = expandedIds.has(tx.id)
             return (
               <TransactionRow
                 key={tx.id}
@@ -127,6 +139,7 @@ export function TransactionTable({
                 isSelected={selectedIds.has(tx.id)}
                 isExpanded={isExpanded}
                 onToggleSelect={() => toggleOne(tx.id)}
+                onToggleExpand={() => toggleExpand(tx.id)}
                 onEdit={() => onEdit(tx)}
               />
             )
@@ -143,12 +156,14 @@ function TransactionRow({
   isSelected,
   isExpanded,
   onToggleSelect,
+  onToggleExpand,
   onEdit,
 }: {
   tx: FullTransaction
   isSelected: boolean
   isExpanded: boolean
   onToggleSelect: () => void
+  onToggleExpand: () => void
   onEdit: () => void
 }) {
   return (
@@ -223,7 +238,7 @@ function TransactionRow({
             className="opacity-0 transition-opacity group-hover:opacity-100"
             onClick={(e) => {
               e.stopPropagation()
-              onEdit()
+              onToggleExpand()
             }}
           >
             <MoreHorizontalIcon className="size-4" />
@@ -255,7 +270,7 @@ function TransactionRow({
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <CreditCardIcon className="size-3.5 shrink-0" />
                       <span className="tabular-nums">
-                        Paid with card ending ****{tx.cardLast4}
+                        Cartão final ****{tx.cardLast4}
                       </span>
                     </div>
                   )}
@@ -269,7 +284,7 @@ function TransactionRow({
 
                   <Button variant="ghost" size="xs" className="ml-auto">
                     <FileTextIcon className="size-3.5" />
-                    View Receipt
+                    Ver comprovante
                   </Button>
                 </div>
               </motion.div>

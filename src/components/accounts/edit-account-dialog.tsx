@@ -21,6 +21,7 @@ export function EditAccountDialog({ account, open, onOpenChange, onSaved }: { ac
   const [name, setName] = useState("")
   const [type, setType] = useState<AccountType>("checking")
   const [balance, setBalance] = useState("0")
+  const [adjustmentMode, setAdjustmentMode] = useState<"transaction" | "initial">("transaction")
   const [error, setError] = useState("")
   const [saving, setSaving] = useState(false)
 
@@ -34,6 +35,7 @@ export function EditAccountDialog({ account, open, onOpenChange, onSaved }: { ac
     const t = account.type as AccountType
     setType(Object.keys(ACCOUNT_TYPE_LABELS).includes(t) ? t : "checking")
     setBalance(String(account.balance ?? 0).replace(",", "."))
+    setAdjustmentMode("transaction")
     setError("")
   }, [account])
 
@@ -43,9 +45,18 @@ export function EditAccountDialog({ account, open, onOpenChange, onSaved }: { ac
     setSaving(true)
     setError("")
     try {
-      const response = await fetch(`/api/finance/accounts/${account.id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, type, balance: Number(balance), color: account.color || "mint", icon: "bank", currency: "BRL" }) })
-      const payload = await response.json()
-      if (!response.ok) throw new Error(payload.error || "Não foi possível salvar a conta.")
+      const payload = {
+        name,
+        type,
+        balance: targetBalance,
+        color: account.color || "mint",
+        icon: "bank",
+        currency: "BRL",
+        createAdjustment: difference !== 0 && adjustmentMode === "transaction"
+      }
+      const response = await fetch(`/api/finance/accounts/${account.id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || "Não foi possível salvar a conta.")
       await onSaved()
       onOpenChange(false)
     } catch (nextError) {
@@ -68,7 +79,29 @@ export function EditAccountDialog({ account, open, onOpenChange, onSaved }: { ac
           </select>
         </label>
         <label className="grid gap-1.5 text-sm font-medium">Saldo atual<Input type="number" step="0.01" value={balance} onChange={(event) => setBalance(event.target.value)} required /></label>
-        {difference !== 0 && <p className="rounded-lg bg-muted px-3 py-2 text-xs text-muted-foreground">Este ajuste criará uma {difference < 0 ? "despesa" : "entrada"} de <strong className="text-foreground">R$ {Math.abs(difference).toFixed(2).replace(".", ",")}</strong>, categorizada como <strong className="text-foreground">Ajuste</strong>.</p>}
+        
+        {difference !== 0 && (
+          <div className="space-y-2 rounded-lg border p-3">
+            <p className="text-sm font-medium">Como registrar essa alteração de saldo?</p>
+            <div className="flex flex-col gap-2">
+              <label className="flex items-center gap-2 text-sm">
+                <input type="radio" name="adjustmentMode" checked={adjustmentMode === "transaction"} onChange={() => setAdjustmentMode("transaction")} className="accent-primary" />
+                <span>Lançar como transação de ajuste</span>
+              </label>
+              {adjustmentMode === "transaction" && (
+                <p className="ml-6 text-xs text-muted-foreground">Será criada uma {difference < 0 ? "despesa" : "entrada"} de <strong className="text-foreground">R$ {Math.abs(difference).toFixed(2).replace(".", ",")}</strong>.</p>
+              )}
+              <label className="flex items-center gap-2 text-sm">
+                <input type="radio" name="adjustmentMode" checked={adjustmentMode === "initial"} onChange={() => setAdjustmentMode("initial")} className="accent-primary" />
+                <span>Apenas alterar saldo (sem transação)</span>
+              </label>
+              {adjustmentMode === "initial" && (
+                <p className="ml-6 text-xs text-muted-foreground">O saldo será alterado para <strong className="text-foreground">R$ {targetBalance.toFixed(2).replace(".", ",")}</strong> silenciosamente.</p>
+              )}
+            </div>
+          </div>
+        )}
+
         {error && <p className="text-sm text-destructive">{error}</p>}
         <DialogFooter><Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button><Button type="submit" disabled={saving}>{saving ? "Salvando..." : "Salvar alterações"}</Button></DialogFooter>
       </form>

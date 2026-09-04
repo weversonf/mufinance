@@ -30,12 +30,25 @@ service cloud.firestore {
       allow update: if ownsExisting() && ownsIncoming();
     }
 
+    // Retorna true se a conta (por ID) pertence ao usuário autenticado
+    function ownsAccount(accountId) {
+      return get(/databases/$(database)/documents/accounts/$(accountId)).data.ownerId == request.auth.uid;
+    }
+
     match /transactions/{docId} {
       allow read, delete: if ownsExisting();
       allow create: if ownsIncoming()
-        && get(/databases/$(database)/documents/accounts/$(request.resource.data.accountId)).data.ownerId == request.auth.uid;
+        && ownsAccount(request.resource.data.accountId)
+        && (!("destinationAccountId" in request.resource.data)
+            || request.resource.data.destinationAccountId == null
+            || request.resource.data.destinationAccountId == ""
+            || ownsAccount(request.resource.data.destinationAccountId));
       allow update: if ownsExisting() && ownsIncoming()
-        && get(/databases/$(database)/documents/accounts/$(request.resource.data.accountId)).data.ownerId == request.auth.uid;
+        && ownsAccount(request.resource.data.accountId)
+        && (!("destinationAccountId" in request.resource.data)
+            || request.resource.data.destinationAccountId == null
+            || request.resource.data.destinationAccountId == ""
+            || ownsAccount(request.resource.data.destinationAccountId));
     }
 
     match /categories/{docId} {

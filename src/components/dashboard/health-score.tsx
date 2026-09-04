@@ -36,10 +36,10 @@ function getScoreGradient(score: number) {
 }
 
 function getScoreLabel(score: number) {
-  if (score >= 80) return "Excellent"
-  if (score >= 60) return "Good"
-  if (score >= 40) return "Fair"
-  return "Needs Work"
+  if (score >= 80) return "Excelente"
+  if (score >= 60) return "Bom"
+  if (score >= 40) return "Regular"
+  return "Precisa melhorar"
 }
 
 // ── Factor icons ─────────────────────────────────────────────────────────────

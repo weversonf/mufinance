@@ -20,6 +20,7 @@ export const accountInputSchema = z.object({
   color: z.string().trim().max(30).default("mint"),
   icon: z.string().trim().max(30).default("bank"),
   currency: z.literal("BRL").default("BRL"),
+  createAdjustment: z.boolean().default(true).optional(),
 });
 
 export const transactionInputSchema = z.object({
