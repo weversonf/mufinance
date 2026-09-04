@@ -260,11 +260,11 @@ export function AccountCards() {
         <div className="space-y-1.5 border-t pt-5">
           <p className="text-xs font-medium text-muted-foreground">Saldo da carteira</p>
           <p className="text-3xl font-bold tabular-nums tracking-tight">
-            ${walletBalance.amount.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+            R$ {walletBalance.amount.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
           </p>
           <div className="flex items-center gap-1.5 text-sm font-medium text-emerald-600 dark:text-emerald-400">
             <TrendingUpIcon className="size-4" />
-            <span>+{walletBalance.changePercent}% this month</span>
+            <span>+{walletBalance.changePercent}% este mês</span>
           </div>
         </div>
       </CardContent>

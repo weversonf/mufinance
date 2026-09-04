@@ -130,13 +130,17 @@ export function MoneyMovement() {
               fontSize={11}
               tickMargin={4}
               stroke="var(--color-muted-foreground)"
-              tickFormatter={(v) => `R$${(v / 1000).toFixed(0)}k`}
+              tickFormatter={(v) => {
+                if (v === 0) return "R$ 0"
+                if (v >= 1000 || v <= -1000) return `R$ ${(v / 1000).toFixed(1).replace(".0", "")}k`
+                return `R$ ${v}`
+              }}
             />
             <ChartTooltip
               content={
                 <ChartTooltipContent
                   formatter={(value) =>
-                    `$${Number(value).toLocaleString()}`
+                    new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(Number(value))
                   }
                 />
               }

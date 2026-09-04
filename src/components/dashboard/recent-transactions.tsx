@@ -40,9 +40,9 @@ export function RecentTransactions() {
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">
-          <div className="min-w-[600px] space-y-1">
+          <div className="min-w-[400px] sm:min-w-[600px] md:min-w-[800px] space-y-1">
             {/* Header */}
-            <div className="grid grid-cols-[1fr_140px_100px_120px_32px] gap-4 border-b pb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            <div className="grid grid-cols-[1fr_100px_32px] sm:grid-cols-[1fr_140px_100px_32px] md:grid-cols-[1fr_140px_100px_120px_32px] gap-4 border-b pb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
               <span>Descrição</span>
               <span className="hidden sm:inline">ID da transação</span>
               <span className="text-right">Valor</span>
@@ -54,7 +54,7 @@ export function RecentTransactions() {
             {recentTransactions.map((tx) => (
               <div
                 key={tx.id}
-                className="group grid grid-cols-[1fr_140px_100px_120px_32px] items-center gap-4 rounded-lg py-2.5 transition-colors hover:bg-muted/50"
+                className="group grid grid-cols-[1fr_100px_32px] sm:grid-cols-[1fr_140px_100px_32px] md:grid-cols-[1fr_140px_100px_120px_32px] items-center gap-4 rounded-lg py-2.5 transition-colors hover:bg-muted/50"
               >
                 {/* Merchant */}
                 <div className="flex items-center gap-3">
@@ -81,14 +81,14 @@ export function RecentTransactions() {
                 </div>
 
                 {/* ID da transação */}
-                <span className="hidden font-mono text-xs text-muted-foreground sm:inline">
+                <span className="hidden font-mono text-xs text-muted-foreground sm:inline truncate">
                   {tx.transactionId}
                 </span>
 
                 {/* Valor */}
                 <span
                   className={cn(
-                    "text-right text-sm font-semibold tabular-nums",
+                    "text-right text-sm font-semibold tabular-nums truncate",
                     tx.amount > 0
                       ? "text-emerald-600 dark:text-emerald-400"
                       : "text-foreground"
@@ -98,7 +98,7 @@ export function RecentTransactions() {
                 </span>
 
                 {/* Date */}
-                <span className="hidden text-xs text-muted-foreground md:inline">{tx.date}</span>
+                <span className="hidden text-xs text-muted-foreground md:inline truncate">{tx.date}</span>
 
                 {/* Actions */}
                 <Button
