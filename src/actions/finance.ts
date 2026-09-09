@@ -392,6 +392,48 @@ export async function deleteAccount(id: string) {
   return { id, deleted: true };
 }
 
+export async function keepOnlyOneCheckingAccount() {
+  const user = await requireSessionUser();
+  const db = getAdminFirestore();
+  const uid = user.uid;
+  const [byOwner, byUid] = await Promise.all([
+    db.collection("accounts").where("ownerId", "==", uid).get(),
+    db.collection("accounts").where("uid", "==", uid).get(),
+  ]);
+  const map = new Map<string, FirebaseFirestore.QueryDocumentSnapshot>();
+  for (const d of [...byOwner.docs, ...byUid.docs]) map.set(d.id, d);
+  const all = [...map.values()];
+  // Carteira sempre permanece (wallet)
+  const carteira = all.find((d) => String(d.data()?.name ?? "").trim().toLowerCase() === "carteira" || String(d.data()?.type ?? "") === "wallet");
+  const checking = all.filter((d) => String(d.data()?.type ?? "") === "checking" || String(d.data()?.type ?? "").toLowerCase().includes("corrente"));
+  // Se não houver checking com type exato, trata qualquer não-Carteira como corrente
+  const candidates = checking.length > 0 ? checking : all.filter((d) => d.id !== carteira?.id);
+  if (candidates.length <= 1) return { success: true, kept: candidates[0]?.id ?? carteira?.id ?? null, deleted: 0, message: "Já há apenas 1 conta corrente." };
+
+  // Mantém a mais antiga (createdAt) como padrão
+  const sorted = [...candidates].sort((a, b) => String(a.data()?.createdAt ?? a.id).localeCompare(String(b.data()?.createdAt ?? b.id)));
+  const keep = sorted[0];
+  const toDelete = sorted.slice(1);
+
+  // Verifica se alguma das que serão excluídas tem transações — move para a mantida
+  for (const doc of toDelete) {
+    const txByOwner = await db.collection("transactions").where("ownerId", "==", uid).where("accountId", "==", doc.id).get().catch(() => ({ docs: [] as any[] }));
+    const txByUid = await db.collection("transactions").where("uid", "==", uid).where("accountId", "==", doc.id).get().catch(() => ({ docs: [] as any[] }));
+    const txs = [...(txByOwner as any).docs, ...(txByUid as any).docs];
+    if (txs.length > 0) {
+      const batch = db.batch();
+      for (const tx of txs.slice(0, 400)) batch.update(tx.ref, { accountId: keep.id, updatedAt: timestamp() });
+      await batch.commit();
+    }
+  }
+
+  const batch = db.batch();
+  for (const doc of toDelete) batch.delete(doc.ref);
+  await batch.commit();
+  revalidatePath("/");
+  return { success: true, kept: keep.id, keptName: String(keep.data()?.name ?? ""), deleted: toDelete.length, deletedIds: toDelete.map((d) => d.id) };
+}
+
 export async function deleteAllTransactions() {
   const user = await requireSessionUser();
   const db = getAdminFirestore();
