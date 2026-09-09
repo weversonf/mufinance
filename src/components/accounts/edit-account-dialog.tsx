@@ -66,6 +66,28 @@ export function EditAccountDialog({ account, open, onOpenChange, onSaved }: { ac
     }
   }
 
+  async function handleDelete() {
+    if (!account) return
+    if (account.name.trim().toLowerCase() === "carteira") {
+      setError("A conta Carteira não pode ser excluída.")
+      return
+    }
+    if (!window.confirm(`Excluir a conta "${account.name}"? Esta ação não pode ser desfeita.`)) return
+    setSaving(true)
+    setError("")
+    try {
+      const response = await fetch(`/api/finance/accounts/${account.id}`, { method: "DELETE" })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || "Não foi possível excluir a conta.")
+      await onSaved()
+      onOpenChange(false)
+    } catch (nextError) {
+      setError(nextError instanceof Error ? nextError.message : "Não foi possível excluir a conta.")
+    } finally {
+      setSaving(false)
+    }
+  }
+
   return <Dialog open={open} onOpenChange={onOpenChange}>
     <DialogContent>
       <DialogHeader><DialogTitle>Editar conta</DialogTitle><DialogDescription>Atualize os dados desta conta. A alteração será salva no Firestore.</DialogDescription></DialogHeader>
@@ -103,7 +125,12 @@ export function EditAccountDialog({ account, open, onOpenChange, onSaved }: { ac
         )}
 
         {error && <p className="text-sm text-destructive">{error}</p>}
-        <DialogFooter><Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button><Button type="submit" disabled={saving}>{saving ? "Salvando..." : "Salvar alterações"}</Button></DialogFooter>
+        <DialogFooter className="flex-col sm:flex-row gap-2">
+          {account && account.name.trim().toLowerCase() !== "carteira" && (
+            <Button type="button" variant="destructive" onClick={handleDelete} disabled={saving} className="mr-auto">Excluir conta</Button>
+          )}
+          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button><Button type="submit" disabled={saving}>{saving ? "Salvando..." : "Salvar alterações"}</Button>
+        </DialogFooter>
       </form>
     </DialogContent>
   </Dialog>

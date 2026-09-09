@@ -366,6 +366,32 @@ export async function upsertBudget(input: unknown) {
   return { id: reference.id, ...payload };
 }
 
+export async function deleteAccount(id: string) {
+  const user = await requireSessionUser();
+  const db = getAdminFirestore();
+  const ref = await findOwnedReference(["accounts"], id, user.uid);
+  const snap = await ref.get();
+  const data = snap.data() as any;
+  const name = String(data?.name ?? "").trim().toLowerCase();
+  if (name === "carteira") throw new Error("A conta Carteira não pode ser excluída. Ela é obrigatória.");
+  // Impede deixar zero contas — deve restar ao menos 1 (Carteira)
+  const [byOwner, byUid] = await Promise.all([
+    db.collection("accounts").where("ownerId", "==", user.uid).get(),
+    db.collection("accounts").where("uid", "==", user.uid).get(),
+  ]);
+  const unique = new Set([...byOwner.docs, ...byUid.docs].map((d) => d.id));
+  if (unique.size <= 1) throw new Error("Não é possível excluir a última conta. Mantenha ao menos a Carteira.");
+
+  // Se houver transações vinculadas, impede exclusão (ou move para Carteira)
+  const txSnap = await db.collection("transactions").where("ownerId", "==", user.uid).where("accountId", "==", id).limit(1).get()
+    .catch(async () => db.collection("transactions").where("accountId", "==", id).limit(1).get());
+  if (!txSnap.empty) throw new Error("Esta conta possui transações. Apague ou mova as transações antes de excluir.");
+
+  await ref.delete();
+  revalidatePath("/");
+  return { id, deleted: true };
+}
+
 export async function deleteAllTransactions() {
   const user = await requireSessionUser();
   const db = getAdminFirestore();

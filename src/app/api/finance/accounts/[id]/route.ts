@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { updateAccount } from "@/actions/finance";
+import { updateAccount, deleteAccount } from "@/actions/finance";
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -7,8 +7,20 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     const result = await updateAccount(id, await request.json());
     return NextResponse.json(result);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "NÃ£o foi possÃ­vel atualizar a conta.";
-    const status = message === "NÃ£o autenticado." ? 401 : message.includes("nÃ£o encontrado") ? 404 : 400;
+    const message = error instanceof Error ? error.message : "Não foi possível atualizar a conta.";
+    const status = message === "Não autenticado." ? 401 : message.includes("não encontrado") ? 404 : 400;
+    return NextResponse.json({ error: message }, { status });
+  }
+}
+
+export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const { id } = await params;
+    const result = await deleteAccount(id);
+    return NextResponse.json(result);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Não foi possível excluir a conta.";
+    const status = message === "Não autenticado." ? 401 : message.includes("não encontrado") ? 404 : 400;
     return NextResponse.json({ error: message }, { status });
   }
 }
