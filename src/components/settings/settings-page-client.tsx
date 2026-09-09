@@ -156,16 +156,17 @@ function DangerZoneDialog() {
   async function handleDeleteAll() {
     setIsDeleting(true)
     try {
-      const res = await fetch(`/api/finance/transactions/delete-all`, { method: "POST" })
+      const res = await fetch(`/api/finance/delete-all-data`, { method: "POST" })
       if (!res.ok) {
         const errData = await res.json()
         throw new Error(errData.error || "Erro na API")
       }
-      alert("Todas as transações foram apagadas e os saldos zerados.")
+      const data = await res.json()
+      alert(`Tudo apagado com sucesso. ${data.deleted ?? 0} documentos removidos (transações, contas, cartões, categorias, metas, orçamentos).`)
       setOpen(false)
       window.location.reload()
     } catch (err) {
-      alert("Erro ao excluir transações. " + (err instanceof Error ? err.message : ""))
+      alert("Erro ao excluir dados. " + (err instanceof Error ? err.message : ""))
       console.error(err)
     } finally {
       setIsDeleting(false)

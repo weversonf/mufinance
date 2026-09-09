@@ -405,3 +405,58 @@ export async function deleteAllTransactions() {
   revalidatePath("/");
   return { success: true, count: uniqueTransactions.size };
 }
+
+export async function deleteAllData() {
+  const user = await requireSessionUser();
+  const db = getAdminFirestore();
+  const uid = user.uid;
+
+  // Coleções normalizadas + legadas (ownerId e uid) + cards variantes
+  const collections = [
+    "transactions",
+    "accounts",
+    "creditCards",
+    "cards",
+    "categories",
+    "goals",
+    "budgets",
+    "budget",
+  ];
+
+  const allDocs: Array<{ ref: FirebaseFirestore.DocumentReference }> = [];
+  const seen = new Set<string>();
+
+  for (const col of collections) {
+    const [byOwner, byUid] = await Promise.all([
+      db.collection(col).where("ownerId", "==", uid).get().catch(() => ({ docs: [] as any[] })),
+      db.collection(col).where("uid", "==", uid).get().catch(() => ({ docs: [] as any[] })),
+    ]);
+    for (const doc of [...(byOwner as any).docs, ...(byUid as any).docs]) {
+      const key = `${col}/${doc.id}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        allDocs.push({ ref: doc.ref });
+      }
+    }
+  }
+
+  // Estado legado em users/{uid}/finance/*
+  const legacyRefs = [
+    db.doc(`users/${uid}/finance/state`),
+    db.doc(`users/${uid}/finance/meta`),
+  ];
+  for (const ref of legacyRefs) {
+    const snap = await ref.get().catch(() => null);
+    if (snap?.exists) allDocs.push({ ref });
+  }
+
+  const BATCH_SIZE = 400;
+  for (let i = 0; i < allDocs.length; i += BATCH_SIZE) {
+    const batch = db.batch();
+    for (const doc of allDocs.slice(i, i + BATCH_SIZE)) batch.delete(doc.ref);
+    await batch.commit();
+  }
+
+  revalidatePath("/");
+  return { success: true, deleted: allDocs.length };
+}
