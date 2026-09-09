@@ -411,22 +411,12 @@ export async function deleteAllData() {
   const db = getAdminFirestore();
   const uid = user.uid;
 
-  // Coleções normalizadas + legadas (ownerId e uid) + cards variantes
-  const collections = [
-    "transactions",
-    "accounts",
-    "creditCards",
-    "cards",
-    "categories",
-    "goals",
-    "budgets",
-    "budget",
-  ];
-
+  // Coleções que podem ser apagadas totalmente
+  const wipeCollections = ["transactions", "creditCards", "cards", "categories", "goals", "budgets", "budget"];
   const allDocs: Array<{ ref: FirebaseFirestore.DocumentReference }> = [];
   const seen = new Set<string>();
 
-  for (const col of collections) {
+  for (const col of wipeCollections) {
     const [byOwner, byUid] = await Promise.all([
       db.collection(col).where("ownerId", "==", uid).get().catch(() => ({ docs: [] as any[] })),
       db.collection(col).where("uid", "==", uid).get().catch(() => ({ docs: [] as any[] })),
@@ -436,6 +426,32 @@ export async function deleteAllData() {
       if (!seen.has(key)) {
         seen.add(key);
         allDocs.push({ ref: doc.ref });
+      }
+    }
+  }
+
+  // Contas: regra de negócio — deve permanecer exatamente 1 conta padrão "Carteira" com saldo 0
+  // As demais são excluídas. A padrão é escolhida por nome "Carteira" (case-insensitive) ou a mais antiga.
+  const [accByOwner, accByUid] = await Promise.all([
+    db.collection("accounts").where("ownerId", "==", uid).get().catch(() => ({ docs: [] as any[] })),
+    db.collection("accounts").where("uid", "==", uid).get().catch(() => ({ docs: [] as any[] })),
+  ]);
+  const accMap = new Map<string, FirebaseFirestore.QueryDocumentSnapshot>();
+  for (const doc of [...(accByOwner as any).docs, ...(accByUid as any).docs]) accMap.set(doc.id, doc);
+  const accounts = [...accMap.values()];
+
+  let keepRef: FirebaseFirestore.DocumentReference | null = null;
+  if (accounts.length > 0) {
+    const carteira = accounts.find((d) => String(d.data()?.name ?? "").trim().toLowerCase() === "carteira");
+    const chosen = carteira ?? [...accounts].sort((a, b) => String(a.data()?.createdAt ?? "").localeCompare(String(b.data()?.createdAt ?? "")))[0];
+    keepRef = chosen.ref;
+    for (const doc of accounts) {
+      if (doc.id !== chosen.id) {
+        const key = `accounts/${doc.id}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          allDocs.push({ ref: doc.ref });
+        }
       }
     }
   }
@@ -457,6 +473,14 @@ export async function deleteAllData() {
     await batch.commit();
   }
 
+  // Garante que a Carteira exista e esteja zerada
+  if (keepRef) {
+    await keepRef.set({ name: "Carteira", type: "wallet", balance: 0, currency: "BRL", ownerId: uid, updatedAt: timestamp() }, { merge: true });
+  } else {
+    const ref = db.collection("accounts").doc();
+    await ref.set({ name: "Carteira", type: "wallet", balance: 0, currency: "BRL", color: "mint", icon: "wallet", ownerId: uid, createdAt: timestamp(), updatedAt: timestamp() });
+  }
+
   revalidatePath("/");
-  return { success: true, deleted: allDocs.length };
+  return { success: true, deleted: allDocs.length, keptAccount: keepRef?.id ?? "created" };
 }
