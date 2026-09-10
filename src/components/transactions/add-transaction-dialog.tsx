@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { useFinanceData } from "@/components/finance/finance-provider"
 
 export function AddTransactionDialog({ open, onOpenChange, onSaved }: { open: boolean; onOpenChange: (open: boolean) => void; onSaved: () => Promise<void> | void }) {
-  const { bankAccounts, cardsData } = useFinanceData()
+  const { bankAccounts, cardsData, snapshot } = useFinanceData()
   const [payee, setPayee] = useState("")
   const [category, setCategory] = useState("Geral")
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10))
@@ -21,13 +21,21 @@ export function AddTransactionDialog({ open, onOpenChange, onSaved }: { open: bo
   const [saving, setSaving] = useState(false)
 
   const [recurrence, setRecurrence] = useState<"unica" | "parcelada" | "fixa">("unica")
-  const [installments, setInstallments] = useState(2)
+  const [installments, setInstallments] = useState(4)
+  const [currentInstallment, setCurrentInstallment] = useState(1)
+  const [pastEffective, setPastEffective] = useState(true)
   const [months, setMonths] = useState(12)
+
+  const availableCategories = (snapshot?.categories ?? []).filter((c) => String(c.type) === type) as Array<Record<string, unknown> & { id: string; name: string }>
+  // Se ainda não houver categorias carregadas, mostra fallback Mobills-like mínimo
+  const fallbackCategories = type === "income"
+    ? ["Salário","Freelance","Investimentos","Reembolso","Vendas","Bônus","Presente","Aluguel Recebido","Outras receitas"]
+    : ["Alimentação","Casa","Mercado","Transporte","Saúde","Educação","Lazer","Compras","Serviços","Assinaturas","Impostos e Taxas","Dívidas e Empréstimos","Roupas","Cuidados Pessoais","Família e Filhos","Presentes e Doações","Viagem","Bares e Restaurantes","Outros"]
 
   useEffect(() => {
     if (open) {
       setPayee("")
-      setCategory("Geral")
+      setCategory(type === "income" ? "Salário" : "Casa")
       setDate(new Date().toISOString().slice(0, 10))
       setValor("")
       setType("expense")
@@ -37,7 +45,9 @@ export function AddTransactionDialog({ open, onOpenChange, onSaved }: { open: bo
       setNotes("")
       setError("")
       setRecurrence("unica")
-      setInstallments(2)
+      setInstallments(4)
+      setCurrentInstallment(1)
+      setPastEffective(true)
       setMonths(12)
     }
   }, [open, bankAccounts])
@@ -57,42 +67,63 @@ export function AddTransactionDialog({ open, onOpenChange, onSaved }: { open: bo
       const count = isInstallment ? installments : isFixed ? months : 1
       
       const promises = []
-      let currentDate = new Date(date)
-
       const isCreditCard = cardsData.some(c => c.id === accountId)
+      const installmentGroupId = isInstallment ? `inst_${Date.now()}_${Math.random().toString(36).slice(2,8)}` : undefined
 
-      for (let i = 0; i < count; i++) {
-        // Formata data YYYY-MM-DD
-        const year = currentDate.getUTCFullYear()
-        const month = String(currentDate.getUTCMonth() + 1).padStart(2, '0')
-        const day = String(currentDate.getUTCDate()).padStart(2, '0')
-        const formattedDate = `${year}-${month}-${day}`
+      if (isInstallment) {
+        if (currentInstallment < 1 || currentInstallment > installments) throw new Error(`Parcela atual deve ser entre 1 e ${installments}.`)
+        const baseDate = new Date(date + "T00:00:00")
+        for (let i = 0; i < count; i++) {
+          const offset = i - (currentInstallment - 1)
+          const d = new Date(baseDate)
+          d.setMonth(d.getMonth() + offset)
+          const formattedDate = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
+          const title = `${payee} (${i + 1}/${count})`
+          let parcelStatus: "planned" | "completed"
+          if (i < currentInstallment - 1) parcelStatus = pastEffective ? "completed" : "planned"
+          else if (i === currentInstallment - 1) parcelStatus = status
+          else parcelStatus = "planned"
 
-        const title = isInstallment ? `${payee} (${i + 1}/${count})` : payee
-
-        const payload = {
-          date: formattedDate,
-          payee: title,
-          category,
-          accountId,
-          destinationAccountId: type === "transfer" ? destinationAccountId : undefined,
-          amount: numericAmount, // Assume que o valor digitado é o valor da parcela ou valor fixo
-          type,
-          status: i === 0 ? status : "planned", // As próximas sempre caem como planejadas
-          sourceType: isCreditCard ? "credit-card" : "account",
-          notes: notes || undefined
+          const payload = {
+            date: formattedDate,
+            payee: title,
+            category,
+            accountId,
+            destinationAccountId: type === "transfer" ? destinationAccountId : undefined,
+            amount: numericAmount,
+            type,
+            status: parcelStatus,
+            sourceType: isCreditCard ? "credit-card" : "account",
+            notes: notes || undefined,
+            installmentNumber: i + 1,
+            installmentTotal: count,
+            installmentGroupId,
+          }
+          promises.push(fetch(`/api/finance/transactions`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }))
         }
-
-        promises.push(
-          fetch(`/api/finance/transactions`, { 
-            method: "POST", 
-            headers: { "Content-Type": "application/json" }, 
-            body: JSON.stringify(payload) 
-          })
-        )
-
-        // Adiciona 1 mês para a próxima
-        currentDate.setUTCMonth(currentDate.getUTCMonth() + 1)
+      } else {
+        let currentDate = new Date(date)
+        for (let i = 0; i < count; i++) {
+          const year = currentDate.getUTCFullYear()
+          const month = String(currentDate.getUTCMonth() + 1).padStart(2, '0')
+          const day = String(currentDate.getUTCDate()).padStart(2, '0')
+          const formattedDate = `${year}-${month}-${day}`
+          const title = payee
+          const payload = {
+            date: formattedDate,
+            payee: title,
+            category,
+            accountId,
+            destinationAccountId: type === "transfer" ? destinationAccountId : undefined,
+            amount: numericAmount,
+            type,
+            status: i === 0 ? status : "planned",
+            sourceType: isCreditCard ? "credit-card" : "account",
+            notes: notes || undefined
+          }
+          promises.push(fetch(`/api/finance/transactions`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }))
+          currentDate.setUTCMonth(currentDate.getUTCMonth() + 1)
+        }
       }
       
       const responses = await Promise.all(promises)
@@ -170,8 +201,15 @@ export function AddTransactionDialog({ open, onOpenChange, onSaved }: { open: bo
             </label>
           ) : (
             <label className="grid gap-1.5 text-sm font-medium">
-              Categoria
-              <Input value={category} onChange={(event) => setCategory(event.target.value)} required />
+              Categoria <span className="text-xs text-muted-foreground font-normal">(lista)</span>
+              <select value={category} onChange={(event) => setCategory(event.target.value)} required className="h-9 rounded-md border bg-background px-3 text-sm">
+                {availableCategories.length > 0 ? availableCategories.map((cat) => (
+                  <option key={String(cat.id)} value={String(cat.name)}>{String(cat.name)}{cat.isDefault ? " • padrão" : ""}</option>
+                )) : fallbackCategories.map((name) => (
+                  <option key={name} value={name}>{name}</option>
+                ))}
+              </select>
+              <span className="text-xs text-muted-foreground">Padrões podem ser renomeadas mas não excluídas. Novas categorias você pode editar/excluir em Configurações.</span>
             </label>
           )}
 
@@ -217,13 +255,31 @@ export function AddTransactionDialog({ open, onOpenChange, onSaved }: { open: bo
               </label>
             )}
             {recurrence === "parcelada" && (
-              <label className="grid gap-1.5 text-sm font-medium mt-2">
-                Quantidade de parcelas
-                <Input type="number" min="2" max="120" value={installments} onChange={(e) => setInstallments(Number(e.target.value))} />
-                <span className="text-xs text-muted-foreground mt-1">
-                  O valor digitado lá em cima será o valor de CADA parcela (ex: se digitar R$ 100 e 5 parcelas, serão geradas 5 transações de R$ 100).
+              <div className="grid gap-3 mt-2">
+                <div className="grid grid-cols-2 gap-3">
+                  <label className="grid gap-1.5 text-sm font-medium">
+                    Total de parcelas
+                    <Input type="number" min="2" max="120" value={installments} onChange={(e) => {
+                      const v = Number(e.target.value)
+                      setInstallments(v)
+                      if (currentInstallment > v) setCurrentInstallment(v)
+                    }} />
+                  </label>
+                  <label className="grid gap-1.5 text-sm font-medium">
+                    Estou na parcela
+                    <Input type="number" min="1" max={installments} value={currentInstallment} onChange={(e) => setCurrentInstallment(Number(e.target.value))} />
+                  </label>
+                </div>
+                {currentInstallment > 1 && (
+                  <label className="flex items-center gap-2 text-sm rounded-md border p-2">
+                    <input type="checkbox" checked={pastEffective} onChange={(e) => setPastEffective(e.target.checked)} className="accent-primary" />
+                    <span>Parcelas anteriores ({currentInstallment - 1}) já estão efetivadas?</span>
+                  </label>
+                )}
+                <span className="text-xs text-muted-foreground">
+                  Ex: valor R$ 100, 4 parcelas, estou na 3 → cria 1: 07/07 {pastEffective ? "efetivada" : "pendente"}, 2: 07/08 {pastEffective ? "efetivada" : "pendente"}, 3: 07/09 (status acima), 4: 07/10 pendente. Valor é sempre da parcela.
                 </span>
-              </label>
+              </div>
             )}
           </div>
 

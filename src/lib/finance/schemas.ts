@@ -36,6 +36,10 @@ export const transactionInputSchema = z.object({
   sourceId: z.string().trim().max(120).optional(),
   invoiceId: z.string().trim().max(120).optional(),
   notes: z.string().trim().max(1000).optional(),
+  // Parcelamento
+  installmentNumber: z.number().int().min(1).max(120).optional(),
+  installmentTotal: z.number().int().min(1).max(120).optional(),
+  installmentGroupId: z.string().trim().max(120).optional(),
 });
 
 export const categoryInputSchema = z.object({
@@ -43,6 +47,7 @@ export const categoryInputSchema = z.object({
   type: z.enum(["income", "expense"]),
   tone: z.enum(["mint", "blue", "lavender", "peach", "coral"]).default("blue"),
   active: z.boolean().default(true),
+  isDefault: z.boolean().default(false).optional(),
 });
 
 export const goalInputSchema = z.object({

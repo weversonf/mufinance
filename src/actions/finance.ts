@@ -314,7 +314,7 @@ export async function createCategory(input: unknown) {
   const data = categoryInputSchema.parse(input);
   const db = getAdminFirestore();
   const reference = db.collection("categories").doc();
-  const payload = { ...data, ownerId: user.uid, usage: 0, createdAt: timestamp(), updatedAt: timestamp() };
+  const payload = { ...data, isDefault: false, ownerId: user.uid, usage: 0, createdAt: timestamp(), updatedAt: timestamp() };
   await reference.set(payload);
   revalidatePath("/");
   return { id: reference.id, ...payload };
@@ -327,9 +327,12 @@ export async function updateCategory(id: string, input: unknown) {
   const reference = db.collection("categories").doc(id);
   const snapshot = await reference.get();
   if (!snapshot.exists || snapshot.data()?.ownerId !== user.uid) throw new Error("Categoria não encontrada.");
-  await reference.set({ ...data, updatedAt: timestamp() }, { merge: true });
+  // Categorias padrão podem ser renomeadas mas nunca virar não-padrão
+  const existing = snapshot.data() as any;
+  const merged = { ...data, isDefault: existing.isDefault ?? false, updatedAt: timestamp() };
+  await reference.set(merged, { merge: true });
   revalidatePath("/");
-  return { id, ...data };
+  return { id, ...merged };
 }
 
 export async function deleteCategory(id: string) {
@@ -338,9 +341,31 @@ export async function deleteCategory(id: string) {
   const reference = db.collection("categories").doc(id);
   const snapshot = await reference.get();
   if (!snapshot.exists || snapshot.data()?.ownerId !== user.uid) throw new Error("Categoria não encontrada.");
+  if (snapshot.data()?.isDefault === true) throw new Error("Categorias padrão não podem ser excluídas. Você pode apenas renomeá-las (ex: Casa → Aluguel).");
   await reference.delete();
   revalidatePath("/");
   return { id, deleted: true };
+}
+
+export async function seedDefaultCategories() {
+  const user = await requireSessionUser();
+  const db = getAdminFirestore();
+  const { defaultFinanceCategories } = await import("@/lib/financeData");
+  const existing = await db.collection("categories").where("ownerId", "==", user.uid).get();
+  const existingNames = new Set(existing.docs.map((d) => `${String(d.data().type)}:${String(d.data().name).trim().toLowerCase()}`));
+  let created = 0;
+  const batch = db.batch();
+  for (const cat of defaultFinanceCategories) {
+    const key = `${cat.type}:${cat.name.trim().toLowerCase()}`;
+    if (!existingNames.has(key)) {
+      const ref = db.collection("categories").doc();
+      batch.set(ref, { ...cat, isDefault: true, ownerId: user.uid, createdAt: timestamp(), updatedAt: timestamp() });
+      created++;
+    }
+  }
+  if (created > 0) await batch.commit();
+  revalidatePath("/");
+  return { created };
 }
 
 export async function createGoal(input: unknown) {

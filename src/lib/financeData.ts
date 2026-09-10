@@ -60,27 +60,41 @@ export type FinanceCategory = {
   tone: "mint" | "blue" | "lavender" | "peach" | "coral";
   active: boolean;
   usage: number;
+  isDefault?: boolean;
 };
 
 export const defaultFinanceCategories: FinanceCategory[] = [
-  { id: "expense-alimentacao", name: "Alimentação", type: "expense", tone: "peach", active: true, usage: 0 },
-  { id: "expense-moradia", name: "Moradia", type: "expense", tone: "blue", active: true, usage: 0 },
-  { id: "expense-transporte", name: "Transporte", type: "expense", tone: "lavender", active: true, usage: 0 },
-  { id: "expense-saude", name: "Saúde", type: "expense", tone: "mint", active: true, usage: 0 },
-  { id: "expense-educacao", name: "Educação", type: "expense", tone: "blue", active: true, usage: 0 },
-  { id: "expense-lazer", name: "Lazer", type: "expense", tone: "coral", active: true, usage: 0 },
-  { id: "expense-compras", name: "Compras", type: "expense", tone: "lavender", active: true, usage: 0 },
-  { id: "expense-servicos", name: "Serviços", type: "expense", tone: "mint", active: true, usage: 0 },
-  { id: "expense-assinaturas", name: "Assinaturas", type: "expense", tone: "blue", active: true, usage: 0 },
-  { id: "expense-impostos", name: "Impostos", type: "expense", tone: "coral", active: true, usage: 0 },
-  { id: "income-salario", name: "Salário", type: "income", tone: "mint", active: true, usage: 0 },
-  { id: "income-freelance", name: "Freelance", type: "income", tone: "blue", active: true, usage: 0 },
-  { id: "income-investimentos", name: "Investimentos", type: "income", tone: "lavender", active: true, usage: 0 },
-  { id: "income-reembolso", name: "Reembolso", type: "income", tone: "peach", active: true, usage: 0 },
-  { id: "income-vendas", name: "Vendas", type: "income", tone: "mint", active: true, usage: 0 },
-  { id: "income-bonus", name: "Bônus", type: "income", tone: "blue", active: true, usage: 0 },
-  { id: "income-presente", name: "Presente", type: "income", tone: "lavender", active: true, usage: 0 },
-  { id: "income-outras", name: "Outras receitas", type: "income", tone: "coral", active: true, usage: 0 },
+  // Despesas — estilo Mobills (18)
+  { id: "expense-alimentacao", name: "Alimentação", type: "expense", tone: "peach", active: true, usage: 0, isDefault: true },
+  { id: "expense-casa", name: "Casa", type: "expense", tone: "blue", active: true, usage: 0, isDefault: true },
+  { id: "expense-moradia", name: "Moradia", type: "expense", tone: "blue", active: true, usage: 0, isDefault: true },
+  { id: "expense-mercado", name: "Mercado", type: "expense", tone: "peach", active: true, usage: 0, isDefault: true },
+  { id: "expense-transporte", name: "Transporte", type: "expense", tone: "lavender", active: true, usage: 0, isDefault: true },
+  { id: "expense-saude", name: "Saúde", type: "expense", tone: "mint", active: true, usage: 0, isDefault: true },
+  { id: "expense-educacao", name: "Educação", type: "expense", tone: "blue", active: true, usage: 0, isDefault: true },
+  { id: "expense-lazer", name: "Lazer", type: "expense", tone: "coral", active: true, usage: 0, isDefault: true },
+  { id: "expense-compras", name: "Compras", type: "expense", tone: "lavender", active: true, usage: 0, isDefault: true },
+  { id: "expense-servicos", name: "Serviços", type: "expense", tone: "mint", active: true, usage: 0, isDefault: true },
+  { id: "expense-assinaturas", name: "Assinaturas", type: "expense", tone: "blue", active: true, usage: 0, isDefault: true },
+  { id: "expense-impostos", name: "Impostos e Taxas", type: "expense", tone: "coral", active: true, usage: 0, isDefault: true },
+  { id: "expense-dividas", name: "Dívidas e Empréstimos", type: "expense", tone: "coral", active: true, usage: 0, isDefault: true },
+  { id: "expense-roupas", name: "Roupas", type: "expense", tone: "lavender", active: true, usage: 0, isDefault: true },
+  { id: "expense-cuidados", name: "Cuidados Pessoais", type: "expense", tone: "mint", active: true, usage: 0, isDefault: true },
+  { id: "expense-familia", name: "Família e Filhos", type: "expense", tone: "peach", active: true, usage: 0, isDefault: true },
+  { id: "expense-presentes", name: "Presentes e Doações", type: "expense", tone: "coral", active: true, usage: 0, isDefault: true },
+  { id: "expense-viagem", name: "Viagem", type: "expense", tone: "blue", active: true, usage: 0, isDefault: true },
+  { id: "expense-bares", name: "Bares e Restaurantes", type: "expense", tone: "peach", active: true, usage: 0, isDefault: true },
+  { id: "expense-outros", name: "Outros", type: "expense", tone: "lavender", active: true, usage: 0, isDefault: true },
+  // Receitas — estilo Mobills (8)
+  { id: "income-salario", name: "Salário", type: "income", tone: "mint", active: true, usage: 0, isDefault: true },
+  { id: "income-freelance", name: "Freelance", type: "income", tone: "blue", active: true, usage: 0, isDefault: true },
+  { id: "income-investimentos", name: "Investimentos", type: "income", tone: "lavender", active: true, usage: 0, isDefault: true },
+  { id: "income-reembolso", name: "Reembolso", type: "income", tone: "peach", active: true, usage: 0, isDefault: true },
+  { id: "income-vendas", name: "Vendas", type: "income", tone: "mint", active: true, usage: 0, isDefault: true },
+  { id: "income-bonus", name: "Bônus", type: "income", tone: "blue", active: true, usage: 0, isDefault: true },
+  { id: "income-presente", name: "Presente", type: "income", tone: "lavender", active: true, usage: 0, isDefault: true },
+  { id: "income-aluguel-recebido", name: "Aluguel Recebido", type: "income", tone: "mint", active: true, usage: 0, isDefault: true },
+  { id: "income-outras", name: "Outras receitas", type: "income", tone: "coral", active: true, usage: 0, isDefault: true },
 ];
 
 export function formatBRL(value: number) {
