@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { deleteAllData } from "../../../../../actions/finance";
+import { deleteAllData } from "@/actions/finance";
 
 export async function POST() {
   try {
@@ -10,3 +10,4 @@ export async function POST() {
     return NextResponse.json({ error: error instanceof Error ? error.message : "Erro desconhecido" }, { status: 400 });
   }
 }
+

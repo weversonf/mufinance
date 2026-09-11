@@ -6,7 +6,8 @@ export async function POST() {
     const result = await keepOnlyOneCheckingAccount();
     return NextResponse.json(result);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Não foi possível limpar contas.";
+    const message = error instanceof Error ? error.message : "NÃ£o foi possÃ­vel limpar contas.";
     return NextResponse.json({ error: message }, { status: 400 });
   }
 }
+
