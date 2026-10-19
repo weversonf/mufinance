@@ -82,27 +82,14 @@ export function TransactionsPageClient() {
       const promises = Array.from(selectedIds).map((id) =>
         fetch(`/api/finance/transactions/${id}`, { method: "DELETE" })
       )
-      await Promise.all(promises)
+      const responses = await Promise.all(promises)
+      if (responses.some((response) => !response.ok)) {
+        throw new Error("Uma ou mais transações não puderam ser excluídas.")
+      }
       setSelectedIds(new Set())
       await refresh()
     } catch (err) {
       alert("Erro ao excluir transações. Verifique o console.")
-      console.error(err)
-    } finally {
-      setIsDeleting(false)
-    }
-  }
-
-  async function handleDeleteAll() {
-    if (!window.confirm("ATENÇÃO: Você tem certeza que deseja EXCLUIR TODAS as transações e zerar todos os saldos? Esta ação não pode ser desfeita.")) return
-    setIsDeleting(true)
-    try {
-      await fetch(`/api/finance/transactions/delete-all`, { method: "POST" })
-      setSelectedIds(new Set())
-      await refresh()
-      alert("Todas as transações foram apagadas e os saldos zerados.")
-    } catch (err) {
-      alert("Erro ao excluir transações.")
       console.error(err)
     } finally {
       setIsDeleting(false)

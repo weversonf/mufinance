@@ -35,7 +35,7 @@ export function AddTransactionDialog({ open, onOpenChange, onSaved }: { open: bo
   useEffect(() => {
     if (open) {
       setPayee("")
-      setCategory(type === "income" ? "Salário" : "Casa")
+      setCategory("Casa")
       setDate(new Date().toISOString().slice(0, 10))
       setValor("")
       setType("expense")
@@ -102,7 +102,7 @@ export function AddTransactionDialog({ open, onOpenChange, onSaved }: { open: bo
           promises.push(fetch(`/api/finance/transactions`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }))
         }
       } else {
-        let currentDate = new Date(date)
+        const currentDate = new Date(date)
         for (let i = 0; i < count; i++) {
           const year = currentDate.getUTCFullYear()
           const month = String(currentDate.getUTCMonth() + 1).padStart(2, '0')

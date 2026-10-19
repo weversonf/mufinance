@@ -328,7 +328,7 @@ export async function updateCategory(id: string, input: unknown) {
   const snapshot = await reference.get();
   if (!snapshot.exists || snapshot.data()?.ownerId !== user.uid) throw new Error("Categoria não encontrada.");
   // Categorias padrão podem ser renomeadas mas nunca virar não-padrão
-  const existing = snapshot.data() as any;
+  const existing = snapshot.data() ?? {};
   const merged = { ...data, isDefault: existing.isDefault ?? false, updatedAt: timestamp() };
   await reference.set(merged, { merge: true });
   revalidatePath("/");
@@ -396,7 +396,7 @@ export async function deleteAccount(id: string) {
   const db = getAdminFirestore();
   const ref = await findOwnedReference(["accounts"], id, user.uid);
   const snap = await ref.get();
-  const data = snap.data() as any;
+  const data = snap.data() ?? {};
   const name = String(data?.name ?? "").trim().toLowerCase();
   if (name === "carteira") throw new Error("A conta Carteira não pode ser excluída. Ela é obrigatória.");
   // Impede deixar zero contas — deve restar ao menos 1 (Carteira)
@@ -442,9 +442,9 @@ export async function keepOnlyOneCheckingAccount() {
 
   // Verifica se alguma das que serão excluídas tem transações — move para a mantida
   for (const doc of toDelete) {
-    const txByOwner = await db.collection("transactions").where("ownerId", "==", uid).where("accountId", "==", doc.id).get().catch(() => ({ docs: [] as any[] }));
-    const txByUid = await db.collection("transactions").where("uid", "==", uid).where("accountId", "==", doc.id).get().catch(() => ({ docs: [] as any[] }));
-    const txs = [...(txByOwner as any).docs, ...(txByUid as any).docs];
+    const txByOwner = await db.collection("transactions").where("ownerId", "==", uid).where("accountId", "==", doc.id).get().catch(() => null);
+    const txByUid = await db.collection("transactions").where("uid", "==", uid).where("accountId", "==", doc.id).get().catch(() => null);
+    const txs = [...(txByOwner?.docs ?? []), ...(txByUid?.docs ?? [])];
     if (txs.length > 0) {
       const batch = db.batch();
       for (const tx of txs.slice(0, 400)) batch.update(tx.ref, { accountId: keep.id, updatedAt: timestamp() });
@@ -469,16 +469,16 @@ export async function deleteAllTransactions() {
   const accsByOwnerId = await db.collection("accounts").where("ownerId", "==", user.uid).get();
   const accsByUid = await db.collection("accounts").where("uid", "==", user.uid).get();
 
-  const operations: { ref: any, data?: any, type: "update" | "delete" }[] = [];
+  const operations: Array<{ ref: FirebaseFirestore.DocumentReference, data?: Record<string, unknown>, type: "update" | "delete" }> = [];
   
   const allAccounts = [...accsByOwnerId.docs, ...accsByUid.docs];
   const allTransactions = [...txnsByOwnerId.docs, ...txnsByUid.docs];
   
   // Zera os saldos - use um Map para evitar duplicatas (se o documento tiver ambos)
-  const uniqueAccounts = new Map();
+  const uniqueAccounts = new Map<string, FirebaseFirestore.QueryDocumentSnapshot>();
   allAccounts.forEach(doc => uniqueAccounts.set(doc.id, doc));
   
-  const uniqueTransactions = new Map();
+  const uniqueTransactions = new Map<string, FirebaseFirestore.QueryDocumentSnapshot>();
   allTransactions.forEach(doc => uniqueTransactions.set(doc.id, doc));
 
   uniqueAccounts.forEach(doc => operations.push({ ref: doc.ref, data: { balance: 0, updatedAt: timestamp() }, type: "update" }));
@@ -489,7 +489,7 @@ export async function deleteAllTransactions() {
     const batch = db.batch();
     const chunk = operations.slice(i, i + BATCH_SIZE);
     for (const op of chunk) {
-      if (op.type === "update") batch.update(op.ref, op.data);
+      if (op.type === "update") batch.update(op.ref, op.data ?? {});
       else batch.delete(op.ref);
     }
     await batch.commit();
@@ -511,10 +511,10 @@ export async function deleteAllData() {
 
   for (const col of wipeCollections) {
     const [byOwner, byUid] = await Promise.all([
-      db.collection(col).where("ownerId", "==", uid).get().catch(() => ({ docs: [] as any[] })),
-      db.collection(col).where("uid", "==", uid).get().catch(() => ({ docs: [] as any[] })),
+      db.collection(col).where("ownerId", "==", uid).get().catch(() => null),
+      db.collection(col).where("uid", "==", uid).get().catch(() => null),
     ]);
-    for (const doc of [...(byOwner as any).docs, ...(byUid as any).docs]) {
+    for (const doc of [...(byOwner?.docs ?? []), ...(byUid?.docs ?? [])]) {
       const key = `${col}/${doc.id}`;
       if (!seen.has(key)) {
         seen.add(key);
@@ -526,11 +526,11 @@ export async function deleteAllData() {
   // Contas: regra de negócio — deve permanecer exatamente 1 conta padrão "Carteira" com saldo 0
   // As demais são excluídas. A padrão é escolhida por nome "Carteira" (case-insensitive) ou a mais antiga.
   const [accByOwner, accByUid] = await Promise.all([
-    db.collection("accounts").where("ownerId", "==", uid).get().catch(() => ({ docs: [] as any[] })),
-    db.collection("accounts").where("uid", "==", uid).get().catch(() => ({ docs: [] as any[] })),
+    db.collection("accounts").where("ownerId", "==", uid).get().catch(() => null),
+    db.collection("accounts").where("uid", "==", uid).get().catch(() => null),
   ]);
   const accMap = new Map<string, FirebaseFirestore.QueryDocumentSnapshot>();
-  for (const doc of [...(accByOwner as any).docs, ...(accByUid as any).docs]) accMap.set(doc.id, doc);
+  for (const doc of [...(accByOwner?.docs ?? []), ...(accByUid?.docs ?? [])]) accMap.set(doc.id, doc);
   const accounts = [...accMap.values()];
 
   let keepRef: FirebaseFirestore.DocumentReference | null = null;
