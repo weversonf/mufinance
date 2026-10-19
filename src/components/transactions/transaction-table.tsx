@@ -96,9 +96,28 @@ export function TransactionTable({
   }
 
   return (
-    <div className="overflow-hidden rounded-xl ring-1 ring-foreground/10">
-      <div className="overflow-x-auto">
-      <Table>
+    <div>
+      <div className="space-y-2 md:hidden">
+        {transactions.length === 0 ? (
+          <div className="rounded-xl ring-1 ring-foreground/10">
+            <EmptyState variant="filter" className="py-12" />
+          </div>
+        ) : (
+          transactions.map((tx) => (
+            <TransactionCard
+              key={tx.id}
+              tx={tx}
+              isSelected={selectedIds.has(tx.id)}
+              onToggleSelect={() => toggleOne(tx.id)}
+              onEdit={() => onEdit(tx)}
+            />
+          ))
+        )}
+      </div>
+
+      <div className="hidden overflow-hidden rounded-xl ring-1 ring-foreground/10 md:block">
+        <div className="overflow-x-auto">
+        <Table>
         <TableHeader>
           <TableRow>
             <TableHead className="w-10 pl-3">
@@ -145,9 +164,71 @@ export function TransactionTable({
             )
           })}
         </TableBody>
-      </Table>
+        </Table>
+        </div>
       </div>
     </div>
+  )
+}
+
+function TransactionCard({
+  tx,
+  isSelected,
+  onToggleSelect,
+  onEdit,
+}: {
+  tx: FullTransaction
+  isSelected: boolean
+  onToggleSelect: () => void
+  onEdit: () => void
+}) {
+  return (
+    <article
+      className={cn(
+        "rounded-xl bg-card p-3.5 ring-1 ring-foreground/10 transition-colors",
+        isSelected && "bg-muted/60 ring-primary/30",
+      )}
+    >
+      <div className="flex items-start gap-3">
+        <input
+          type="checkbox"
+          checked={isSelected}
+          onChange={onToggleSelect}
+          className="mt-1 size-4 shrink-0 cursor-pointer rounded accent-primary"
+          aria-label={`Selecionar ${tx.merchant}`}
+        />
+        <button type="button" onClick={onEdit} className="min-w-0 flex-1 text-left">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-2.5">
+              <Image
+                src={tx.logo}
+                alt=""
+                width={36}
+                height={36}
+                className="size-9 shrink-0 rounded-lg object-cover"
+                unoptimized
+              />
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold">{tx.merchant}</p>
+                <p className="mt-0.5 truncate text-xs text-muted-foreground">{tx.category}</p>
+              </div>
+            </div>
+            <span
+              className={cn(
+                "shrink-0 tabular-nums text-sm font-semibold",
+                tx.type === "income" ? "text-emerald-500" : "text-foreground",
+              )}
+            >
+              {tx.type === "income" ? "+" : "-"}{fmt(tx.amount)}
+            </span>
+          </div>
+          <div className="mt-3 flex items-center justify-between gap-2 border-t pt-2.5 text-xs text-muted-foreground">
+            <span>{tx.date}</span>
+            <span>{statusBadge(tx.status)}</span>
+          </div>
+        </button>
+      </div>
+    </article>
   )
 }
 

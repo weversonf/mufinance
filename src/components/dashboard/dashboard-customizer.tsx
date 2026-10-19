@@ -150,7 +150,7 @@ export function DashboardCustomizer() {
   const activeBlock = blocks.find((b) => b.id === activeId)
 
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+    <div className="flex min-w-0 flex-1 flex-col gap-3 p-3 pt-0 sm:gap-4 sm:p-4 sm:pt-0">
       {/* Edit toggle */}
       <div className="flex items-center justify-end gap-2">
         {editing && (
@@ -194,7 +194,7 @@ export function DashboardCustomizer() {
           items={blocks.map((b) => b.id)}
           strategy={nullStrategy}
         >
-          <div className="grid grid-cols-12 gap-4">
+          <div className="grid min-w-0 grid-cols-12 gap-3 sm:gap-4">
             {blocks.map((block) => (
               <SortableWidget
                 key={block.id}

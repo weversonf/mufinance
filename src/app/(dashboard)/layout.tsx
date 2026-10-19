@@ -4,6 +4,7 @@ import { FinanceProvider } from "@/components/finance/finance-provider"
 import { CommandPalette } from "@/components/command-palette"
 import { DynamicBreadcrumb } from "@/components/dynamic-breadcrumb"
 import { GlobalAddTransaction } from "@/components/global-add-transaction"
+import { MobileBottomNav } from "@/components/mobile-bottom-nav"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { Separator } from "@/components/ui/separator"
 import {
@@ -23,16 +24,18 @@ export default function DashboardLayout({
         <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2">
-          <div className="flex items-center gap-2 px-4">
+        <header className="flex h-14 shrink-0 items-center gap-2 sm:h-16">
+          <div className="flex min-w-0 items-center gap-2 px-3 sm:px-4">
             <SidebarTrigger className="-ml-1" />
             <Separator
               orientation="vertical"
               className="mr-2 data-vertical:h-4 data-vertical:self-auto"
             />
-            <DynamicBreadcrumb />
+            <div className="min-w-0 truncate">
+              <DynamicBreadcrumb />
+            </div>
           </div>
-          <div className="ml-auto flex items-center gap-3 pr-4">
+          <div className="ml-auto flex items-center gap-1.5 pr-3 sm:gap-3 sm:pr-4">
             <kbd className="pointer-events-none hidden h-6 select-none items-center gap-1 rounded border bg-muted px-2 font-mono text-[10px] font-medium text-muted-foreground sm:flex">
               <span className="text-xs">⌘</span>K
             </kbd>
@@ -41,8 +44,9 @@ export default function DashboardLayout({
           </div>
         </header>
         <CommandPalette />
-        <main className="flex flex-1 flex-col">{children}</main>
+        <main className="flex min-w-0 flex-1 flex-col pb-20 md:pb-0">{children}</main>
       </SidebarInset>
+      <MobileBottomNav />
         </SidebarProvider>
       </FinanceProvider>
     </AuthGuard>
