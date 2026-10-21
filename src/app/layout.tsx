@@ -32,6 +32,11 @@ export const metadata: Metadata = {
     description: "MuFinance — clareza para cuidar melhor do seu dinheiro.",
     images: ["/screenshots/shadcn-fintech.png"],
   },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "MuFinance",
+  },
 };
 
 export default function RootLayout({
@@ -45,7 +50,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased font-sans`}
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full flex flex-col" suppressHydrationWarning>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <TooltipProvider><AuthProvider>{children}</AuthProvider></TooltipProvider>
         </ThemeProvider>
