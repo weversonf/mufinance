@@ -1,6 +1,9 @@
 // ---------------------------------------------------------------------------
-// Seed data – Dados financeiros zerados para conta limpa
+// Seed data – Dados financeiros padronizados (Conta Limpa / Zero State)
 // ---------------------------------------------------------------------------
+
+// Avatar URLs (local)
+const avatar = (id: number) => `/avatars/${id}.jpg`
 
 // ── Contacts (Quick Transfer) ──────────────────────────────────────────────
 export type Contact = { id: string; name: string; avatar: string }
@@ -87,8 +90,10 @@ export type FullTransaction = {
   logo: string
   category: string
   status: "completed" | "pending" | "failed"
-  type: "income" | "expense"
+  type: "expense" | "income"
   notes?: string
+  merchantInfo?: string
+  cardLast4?: string
 }
 export const fullTransactions: FullTransaction[] = []
 
@@ -127,13 +132,13 @@ export const categoryBreakdowns: CategoryBreakdown[] = []
 // ── Recurring Charges ──────────────────────────────────────────────────────
 export type RecurringCharge = {
   id: string
-  name: string
+  merchant: string
+  logo: string
   amount: number
   frequency: "monthly" | "yearly"
-  category: string
-  logo: string
   nextDate: string
-  status: "unset" | "wanted" | "review"
+  status: "wanted" | "review" | "unset"
+  category: string
 }
 export const recurringCharges: RecurringCharge[] = []
 
@@ -144,10 +149,9 @@ export const monthComparisons: MonthComparison[] = []
 // ── AI Insights ────────────────────────────────────────────────────────────
 export type AiInsight = {
   id: string
-  title: string
-  description: string
-  impact: "high" | "medium" | "low"
+  text: string
   trend: "up" | "down" | "neutral"
+  percentChange: number
   category: string
 }
 export const aiInsights: AiInsight[] = []
@@ -213,7 +217,7 @@ export const dailySpending: DailySpending[] = []
 export type BankAccount = {
   id: string
   name: string
-  type: "checking" | "savings" | "digital" | "investment" | "crypto" | "wallet"
+  type: "checking" | "savings" | "crypto" | "investment" | "digital" | "wallet"
   institution: string
   institutionLogo: string
   accountNumber: string
@@ -226,29 +230,35 @@ export type BankAccount = {
 }
 export const bankAccounts: BankAccount[] = []
 
-// ── Transfer Records ───────────────────────────────────────────────────────
+// ── Transfers ──────────────────────────────────────────────────────────────
 export type TransferRecord = {
   id: string
-  recipientName: string
-  recipientAvatar: string
+  type: "sent" | "received" | "scheduled"
+  contactName: string
+  contactAvatar: string
   amount: number
-  currency: string
   date: string
-  status: "completed" | "pending" | "failed"
-  type: "sent" | "received"
-  method: string
+  status: "completed" | "pending" | "scheduled"
+  note?: string
 }
 export const transferRecords: TransferRecord[] = []
 
 // ── Notifications ──────────────────────────────────────────────────────────
 export type Notification = {
   id: string
+  type: "transaction" | "security" | "system" | "promotion" | "request"
   title: string
   description: string
   time: string
   read: boolean
-  type: "transaction" | "security" | "system" | "budget"
-  link?: string
+  icon: string
+  actionable?: {
+    accept: string
+    decline: string
+    amount?: string
+    from?: string
+    fromAvatar?: string
+  }
 }
 export const notifications: Notification[] = []
 
@@ -257,26 +267,26 @@ export type CryptoCoin = {
   id: string
   symbol: string
   name: string
+  logo: string
   price: number
   change24h: number
   change7d: number
-  marketCap: string
-  volume24h: string
+  marketCap: number
+  volume24h: number
   holdings: number
-  holdingsValue: number
-  icon: string
-  sparkline: number[]
+  sparklineData: number[]
 }
 export const cryptoCoins: CryptoCoin[] = []
 
 // ── Crypto Transactions ────────────────────────────────────────────────────
 export type CryptoTransaction = {
   id: string
-  coinId: string
-  type: "buy" | "sell" | "transfer"
+  type: "buy" | "sell" | "swap" | "receive" | "send"
+  coin: string
+  coinSymbol: string
+  logo: string
   amount: number
-  pricePerUnit: number
-  totalValue: number
+  value: number
   date: string
   status: "completed" | "pending"
 }
@@ -284,11 +294,12 @@ export const cryptoTransactions: CryptoTransaction[] = []
 
 // ── Health Score ───────────────────────────────────────────────────────────
 export type HealthFactor = {
-  name: string
+  id: string
+  label: string
   score: number
-  weight: number
-  status: "good" | "warning" | "critical"
-  recommendation: string
+  maxScore: number
+  status: "excellent" | "good" | "fair" | "poor"
+  description: string
 }
 export const financialHealthScore = {
   overall: 100,
