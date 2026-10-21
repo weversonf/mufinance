@@ -103,7 +103,7 @@ export function TransactionTable({
       <div className="space-y-2 md:hidden">
         {transactions.length === 0 ? (
           <div className="rounded-xl ring-1 ring-foreground/10">
-            <EmptyState variant="filter" className="py-12" />
+            <EmptyState variant="transactions" className="py-12" />
           </div>
         ) : (
           transactions.map((tx) => (
@@ -147,7 +147,7 @@ export function TransactionTable({
           {transactions.length === 0 && (
             <TableRow>
               <TableCell colSpan={7}>
-                <EmptyState variant="filter" className="py-12" />
+                <EmptyState variant="transactions" className="py-12" />
               </TableCell>
             </TableRow>
           )}
