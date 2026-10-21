@@ -12,10 +12,10 @@ import { QuickSend } from "@/components/transfers/quick-send"
 type TabKey = "all" | "sent" | "received" | "scheduled"
 
 const tabs: { key: TabKey; label: string }[] = [
-  { key: "all", label: "All" },
-  { key: "sent", label: "Sent" },
-  { key: "received", label: "Received" },
-  { key: "scheduled", label: "Scheduled" },
+  { key: "all", label: "Todas" },
+  { key: "sent", label: "Enviadas" },
+  { key: "received", label: "Recebidas" },
+  { key: "scheduled", label: "Agendadas" },
 ]
 
 export function TransfersPageClient() {

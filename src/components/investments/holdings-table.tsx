@@ -149,39 +149,39 @@ export function HoldingsTable() {
                 className="cursor-pointer select-none pl-4"
                 onClick={() => cycleSortDir("name")}
               >
-                Asset <SortIcon col="name" sortKey={sortKey} sortDir={sortDir} />
+                Ativo <SortIcon col="name" sortKey={sortKey} sortDir={sortDir} />
               </TableHead>
               <TableHead
                 className="hidden cursor-pointer select-none text-right sm:table-cell"
                 onClick={() => cycleSortDir("quantity")}
               >
-                Qty <SortIcon col="quantity" sortKey={sortKey} sortDir={sortDir} />
+                Qtd <SortIcon col="quantity" sortKey={sortKey} sortDir={sortDir} />
               </TableHead>
               <TableHead
                 className="hidden cursor-pointer select-none text-right lg:table-cell"
                 onClick={() => cycleSortDir("avgBuyPrice")}
               >
-                Avg Buy <SortIcon col="avgBuyPrice" sortKey={sortKey} sortDir={sortDir} />
+                Preço Médio <SortIcon col="avgBuyPrice" sortKey={sortKey} sortDir={sortDir} />
               </TableHead>
               <TableHead
                 className="cursor-pointer select-none text-right"
                 onClick={() => cycleSortDir("currentPrice")}
               >
-                Atual <SortIcon col="currentPrice" sortKey={sortKey} sortDir={sortDir} />
+                Preço Atual <SortIcon col="currentPrice" sortKey={sortKey} sortDir={sortDir} />
               </TableHead>
               <TableHead
                 className="cursor-pointer select-none text-right"
                 onClick={() => cycleSortDir("plPct")}
               >
-                P&L % <SortIcon col="plPct" sortKey={sortKey} sortDir={sortDir} />
+                Retorno % <SortIcon col="plPct" sortKey={sortKey} sortDir={sortDir} />
               </TableHead>
               <TableHead
                 className="hidden cursor-pointer select-none text-right md:table-cell"
                 onClick={() => cycleSortDir("plDollar")}
               >
-                P&L $ <SortIcon col="plDollar" sortKey={sortKey} sortDir={sortDir} />
+                Resultado <SortIcon col="plDollar" sortKey={sortKey} sortDir={sortDir} />
               </TableHead>
-              <TableHead className="hidden text-right pr-4 xl:table-cell">Trend</TableHead>
+              <TableHead className="hidden text-right pr-4 xl:table-cell">Tendência</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

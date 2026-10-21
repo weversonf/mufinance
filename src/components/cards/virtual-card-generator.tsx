@@ -107,7 +107,7 @@ export function VirtualCardGenerator({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Generate Virtual Card</CardTitle>
+        <CardTitle>Gerar Cartão Virtual</CardTitle>
       </CardHeader>
       <CardContent>
         <AnimatePresence mode="wait">
@@ -120,11 +120,11 @@ export function VirtualCardGenerator({
               exit={{ opacity: 0, y: -8 }}
             >
               <p className="mb-4 text-sm text-muted-foreground">
-                Create a disposable virtual card for online purchases.
+                Crie um cartão virtual seguro para compras online.
               </p>
               <Button onClick={() => setStep("form")} className="w-full">
                 <PlusIcon className="size-4" />
-                Create Virtual Card
+                Criar Cartão Virtual
               </Button>
             </motion.div>
           )}
@@ -140,17 +140,17 @@ export function VirtualCardGenerator({
             >
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-muted-foreground">
-                  Card Name
+                  Nome do Cartão
                 </label>
                 <Input
-                  placeholder="e.g. Netflix Sub"
+                  placeholder="Ex: Compras Online / Assinatura"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                 />
               </div>
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-muted-foreground">
-                  Monthly Limit ($)
+                  Limite Mensal (R$)
                 </label>
                 <Input
                   type="number"
@@ -165,14 +165,14 @@ export function VirtualCardGenerator({
                   className="flex-1"
                   onClick={reset}
                 >
-                  Cancel
+                  Cancelar
                 </Button>
                 <Button
                   className="flex-1"
                   disabled={!name.trim()}
                   onClick={handleGenerate}
                 >
-                  Generate
+                  Gerar Cartão
                 </Button>
               </div>
             </motion.div>
@@ -194,7 +194,7 @@ export function VirtualCardGenerator({
                 <LoaderIcon className="size-6 text-muted-foreground" />
               </motion.div>
               <span className="text-sm text-muted-foreground">
-                Generating...
+                Gerando cartão...
               </span>
             </motion.div>
           )}
@@ -210,7 +210,7 @@ export function VirtualCardGenerator({
             >
               <div className="rounded-lg bg-muted/50 p-3">
                 <p className="mb-1 text-xs text-muted-foreground">
-                  Card Number
+                  Número do Cartão
                 </p>
                 <motion.p
                   className="font-mono text-sm font-medium tabular-nums"
@@ -222,7 +222,7 @@ export function VirtualCardGenerator({
                 </motion.p>
                 <div className="mt-2 flex gap-4">
                   <div>
-                    <p className="text-xs text-muted-foreground">Exp</p>
+                    <p className="text-xs text-muted-foreground">Validade</p>
                     <p className="text-xs font-medium tabular-nums">
                       {newCard.expiry}
                     </p>
@@ -247,12 +247,12 @@ export function VirtualCardGenerator({
                 {copied ? (
                   <>
                     <CheckIcon className="size-3.5" />
-                    Copied!
+                    Copiado!
                   </>
                 ) : (
                   <>
                     <CopyIcon className="size-3.5" />
-                    Copy Number
+                    Copiar Número
                   </>
                 )}
               </Button>

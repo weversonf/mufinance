@@ -263,7 +263,7 @@ export function HealthScore() {
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center gap-2 text-base font-semibold">
           <HeartPulseIcon className="size-4 text-primary" />
-          Financial Health
+          Saúde Financeira
         </CardTitle>
         <CardAction>
           <div

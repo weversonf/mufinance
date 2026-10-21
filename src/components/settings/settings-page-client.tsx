@@ -50,10 +50,10 @@ import {
 type TabId = "profile" | "security" | "notifications" | "billing" | "appearance"
 
 const tabs: { id: TabId; label: string; icon: React.ReactNode }[] = [
-  { id: "profile", label: "Profile", icon: <UserIcon className="size-4" /> },
-  { id: "security", label: "Security", icon: <ShieldIcon className="size-4" /> },
-  { id: "notifications", label: "Notifications", icon: <BellIcon className="size-4" /> },
-  { id: "billing", label: "Billing", icon: <CreditCardIcon className="size-4" /> },
+  { id: "profile", label: "Perfil", icon: <UserIcon className="size-4" /> },
+  { id: "security", label: "Segurança", icon: <ShieldIcon className="size-4" /> },
+  { id: "notifications", label: "Notificações", icon: <BellIcon className="size-4" /> },
+  { id: "billing", label: "Plano e Assinatura", icon: <CreditCardIcon className="size-4" /> },
   { id: "appearance", label: "Aparência", icon: <PaletteIcon className="size-4" /> },
 ]
 
@@ -98,7 +98,7 @@ function ProfileTab() {
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <label className="text-sm font-medium" htmlFor="name">
-                Full Name
+                Nome completo
               </label>
               <Input
                 id="name"
@@ -108,7 +108,7 @@ function ProfileTab() {
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium" htmlFor="email">
-                Email Address
+                Endereço de e-mail
               </label>
               <Input
                 id="email"
@@ -123,7 +123,7 @@ function ProfileTab() {
           <div className="flex justify-end">
             <Button onClick={handleSave} disabled={saving}>
               {saving && <LoaderIcon className="mr-2 size-4 animate-spin" />}
-              {saving ? "Salvando..." : "Save Changes"}
+              {saving ? "Salvando..." : "Salvar alterações"}
             </Button>
           </div>
         </CardContent>
@@ -220,9 +220,9 @@ function DangerZoneDialog() {
 // ── Security Tab ─────────────────────────────────────────────────────────────
 
 const mockSessions = [
-  { device: "MacBook Pro", icon: <LaptopIcon className="size-4" />, location: "San Francisco, CA", lastActive: "Active now" },
-  { device: "iPhone 15", icon: <SmartphoneIcon className="size-4" />, location: "San Francisco, CA", lastActive: "2 hours ago" },
-  { device: "iPad Air", icon: <TabletIcon className="size-4" />, location: "New York, NY", lastActive: "3 days ago" },
+  { device: "MacBook Pro", icon: <LaptopIcon className="size-4" />, location: "São Paulo, SP", lastActive: "Ativo agora" },
+  { device: "iPhone 15", icon: <SmartphoneIcon className="size-4" />, location: "São Paulo, SP", lastActive: "Há 2 horas" },
+  { device: "Navegador Web", icon: <TabletIcon className="size-4" />, location: "Fortaleza, CE", lastActive: "Há 3 dias" },
 ]
 
 function SecurityTab() {
@@ -235,28 +235,28 @@ function SecurityTab() {
         <CardHeader>
           <CardTitle>Alterar senha</CardTitle>
           <CardDescription>
-            Update your password to keep your account secure
+            Atualize sua senha para manter sua conta protegida
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <label className="text-sm font-medium" htmlFor="current-pw">
-              Atual Password
+              Senha atual
             </label>
-            <Input id="current-pw" type="password" placeholder="Enter current password" />
+            <Input id="current-pw" type="password" placeholder="Digite a senha atual" />
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <label className="text-sm font-medium" htmlFor="new-pw">
-                New Password
+                Nova senha
               </label>
-              <Input id="new-pw" type="password" placeholder="Enter new password" />
+              <Input id="new-pw" type="password" placeholder="Digite a nova senha" />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium" htmlFor="confirm-pw">
-                Confirm Password
+                Confirmar nova senha
               </label>
-              <Input id="confirm-pw" type="password" placeholder="Confirm new password" />
+              <Input id="confirm-pw" type="password" placeholder="Confirme a nova senha" />
             </div>
           </div>
           <div className="flex justify-end">
@@ -270,19 +270,19 @@ function SecurityTab() {
         <CardHeader>
           <CardTitle>Autenticação em dois fatores</CardTitle>
           <CardDescription>
-            Add an extra layer of security to your account
+            Adicione uma camada extra de proteção à sua conta
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-between">
             <div className="space-y-1">
               <p className="text-sm font-medium">
-                {twoFA ? "Enabled" : "Disabled"}
+                {twoFA ? "Ativado" : "Desativado"}
               </p>
               <p className="text-sm text-muted-foreground">
                 {twoFA
-                  ? "Your account is protected with 2FA"
-                  : "Enable 2FA for enhanced security"}
+                  ? "Sua conta está protegida com autenticação em duas etapas"
+                  : "Ative a verificação em duas etapas para mais segurança"}
               </p>
             </div>
             <Switch checked={twoFA} onCheckedChange={setTwoFA} />
@@ -295,7 +295,7 @@ function SecurityTab() {
         <CardHeader>
           <CardTitle>Sessões ativas</CardTitle>
           <CardDescription>
-            Manage devices logged into your account
+            Gerencie os dispositivos conectados à sua conta
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -315,9 +315,9 @@ function SecurityTab() {
                   </p>
                 </div>
               </div>
-              {s.lastActive !== "Active now" && (
+              {s.lastActive !== "Ativo agora" && (
                 <Button variant="outline" size="sm">
-                  Revoke
+                  Revogar
                 </Button>
               )}
             </div>
@@ -331,12 +331,12 @@ function SecurityTab() {
 // ── Notifications Tab ────────────────────────────────────────────────────────
 
 const notifToggles = [
-  { id: "email", label: "Email Notifications", description: "Receive notifications via email", default: true },
-  { id: "push", label: "Push Notifications", description: "Receive push notifications on your devices", default: true },
-  { id: "transaction", label: "Transaction Alerts", description: "Get notified for every transaction", default: true },
-  { id: "security", label: "Security Alerts", description: "Alerts for suspicious activity and logins", default: true },
-  { id: "marketing", label: "Marketing Emails", description: "Receive product updates and offers", default: false },
-  { id: "digest", label: "Weekly Digest", description: "A weekly summary of your account activity", default: true },
+  { id: "email", label: "Notificações por e-mail", description: "Receba alertas e comunicados importantes por e-mail", default: true },
+  { id: "push", label: "Notificações push", description: "Receba alertas instantâneos nos seus dispositivos", default: true },
+  { id: "transaction", label: "Alertas de transações", description: "Notificação a cada novo lançamento registrado", default: true },
+  { id: "security", label: "Alertas de segurança", description: "Avisos sobre atividades suspeitas e novos logins", default: true },
+  { id: "marketing", label: "Novidades do MuFinance", description: "Receba novidades, dicas financeiras e melhorias", default: false },
+  { id: "digest", label: "Resumo semanal", description: "Relatório consolidado semanal das suas finanças", default: true },
 ]
 
 function NotificationsTab() {
@@ -353,7 +353,7 @@ function NotificationsTab() {
       <CardHeader>
         <CardTitle>Preferências de notificações</CardTitle>
         <CardDescription>
-          Choose what notifications you want to receive
+          Escolha quais notificações você deseja receber
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-1">
@@ -386,19 +386,19 @@ const invoices = [
 ]
 
 const freeFeatures = [
-  "1 bank account connection",
-  "Basic transaction tracking",
-  "Monthly budget tracking",
-  "Standard support",
+  "Gestão de contas bancárias",
+  "Controle completo de receitas e despesas",
+  "Metas e acompanhamento de orçamento",
+  "Suporte padrão",
 ]
 
 const proFeatures = [
-  "Unlimited bank connections",
-  "Advanced analytics & insights",
-  "Unlimited virtual cards",
-  "Priority support",
-  "Custom budget categories",
-  "Export to CSV & PDF",
+  "Contas e cartões ilimitados",
+  "Análises financeiras avançadas e insights",
+  "Geração de cartões virtuais ilimitados",
+  "Suporte prioritário 24/7",
+  "Categorias de orçamento personalizadas",
+  "Exportação completa em CSV e relatórios",
 ]
 
 function BillingTab() {
@@ -416,7 +416,7 @@ function BillingTab() {
           <div className="flex items-start justify-between">
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-lg font-semibold">Vault Free</h3>
+                <h3 className="text-lg font-semibold">MuFinance Free</h3>
                 <Badge variant="secondary">Atual</Badge>
               </div>
               <ul className="mt-3 space-y-1.5">
@@ -439,7 +439,7 @@ function BillingTab() {
               <div>
                 <div className="flex items-center gap-2">
                   <SparklesIcon className="size-4 text-primary" />
-                  <h4 className="font-semibold">Vault Pro</h4>
+                  <h4 className="font-semibold">MuFinance Pro</h4>
                 </div>
                 <ul className="mt-3 space-y-1.5">
                   {proFeatures.map((f) => (
@@ -475,12 +475,12 @@ function BillingTab() {
                 <CreditCardIcon className="size-4" />
               </div>
               <div>
-                <p className="text-sm font-medium">Visa ending in 4589</p>
-                <p className="text-xs text-muted-foreground">Expires 09/28</p>
+                <p className="text-sm font-medium">Cartão de Crédito</p>
+                <p className="text-xs text-muted-foreground">Nenhum cartão cadastrado</p>
               </div>
             </div>
             <Button variant="outline" size="sm">
-              Update
+              Adicionar
             </Button>
           </div>
         </CardContent>
@@ -491,7 +491,7 @@ function BillingTab() {
         <CardHeader>
           <CardTitle>Histórico de cobrança</CardTitle>
           <CardDescription>
-            Download past invoices and receipts
+            Baixe faturas e comprovantes anteriores
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -501,7 +501,7 @@ function BillingTab() {
                 <TableHead>Data</TableHead>
                 <TableHead>Valor</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead className="text-right">Invoice</TableHead>
+                <TableHead className="text-right">Fatura</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -515,7 +515,7 @@ function BillingTab() {
                   <TableCell className="text-right">
                     <Button variant="ghost" size="icon-xs">
                       <DownloadIcon className="size-3.5" />
-                      <span className="sr-only">Download</span>
+                      <span className="sr-only">Baixar</span>
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -536,9 +536,9 @@ function AparênciaTab() {
   React.useEffect(() => setMounted(true), [])
 
   const themes: { id: string; label: string; icon: React.ReactNode }[] = [
-    { id: "light", label: "Light", icon: <SunIcon className="size-5" /> },
-    { id: "dark", label: "Dark", icon: <MoonIcon className="size-5" /> },
-    { id: "system", label: "System", icon: <MonitorIcon className="size-5" /> },
+    { id: "light", label: "Claro", icon: <SunIcon className="size-5" /> },
+    { id: "dark", label: "Escuro", icon: <MoonIcon className="size-5" /> },
+    { id: "system", label: "Sistema", icon: <MonitorIcon className="size-5" /> },
   ]
 
   if (!mounted) return null
@@ -548,7 +548,7 @@ function AparênciaTab() {
       <CardHeader>
         <CardTitle>Aparência</CardTitle>
         <CardDescription>
-          Customize how Vault looks on your device
+          Personalize como o MuFinance é exibido no seu dispositivo
         </CardDescription>
       </CardHeader>
       <CardContent>

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useCallback, useEffect } from "react"
 import {
   DndContext,
   pointerWithin,
@@ -16,8 +16,7 @@ import {
   SortableContext,
   useSortable,
 } from "@dnd-kit/sortable"
-import { Button } from "@/components/ui/button"
-import { GripVerticalIcon, LayoutGridIcon, LockIcon } from "lucide-react"
+import { GripVerticalIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { FinancialOverview } from "@/components/dashboard/financial-overview"
 import { AccountCards } from "@/components/dashboard/account-cards"
@@ -26,6 +25,7 @@ import { SpendingLimit } from "@/components/dashboard/spending-limit"
 import { MoneyMovement } from "@/components/dashboard/money-movement"
 import { RecentTransactions } from "@/components/dashboard/recent-transactions"
 import { HealthScore } from "@/components/dashboard/health-score"
+import { useDashboardCustomizer } from "@/components/dashboard/dashboard-customizer-context"
 
 type WidgetSize = "sm" | "lg" | "full"
 
@@ -37,11 +37,11 @@ type Block = {
 }
 
 const defaultBlocks: Block[] = [
-  { id: "financial-overview", label: "Financial Overview", size: "lg", component: <FinancialOverview /> },
-  { id: "account-cards", label: "Account Cards", size: "sm", component: <AccountCards /> },
-  { id: "transfer-spending", label: "Transfer & Spending", size: "sm", component: <div className="flex flex-col gap-4 [&>*]:flex-1"><QuickTransfer /><SpendingLimit /></div> },
-  { id: "money-movement", label: "Money Movement", size: "sm", component: <MoneyMovement /> },
-  { id: "health-score", label: "Financial Health", size: "sm", component: <HealthScore /> },
+  { id: "financial-overview", label: "Visão Geral Financeira", size: "lg", component: <FinancialOverview /> },
+  { id: "account-cards", label: "Cartões de Contas", size: "sm", component: <AccountCards /> },
+  { id: "transfer-spending", label: "Transferência e Limites", size: "sm", component: <div className="flex flex-col gap-4 [&>*]:flex-1"><QuickTransfer /><SpendingLimit /></div> },
+  { id: "money-movement", label: "Movimentação Financeira", size: "sm", component: <MoneyMovement /> },
+  { id: "health-score", label: "Saúde Financeira", size: "sm", component: <HealthScore /> },
   { id: "recent-transactions", label: "Transações recentes", size: "full", component: <RecentTransactions /> },
 ]
 
@@ -96,7 +96,10 @@ function SortableWidget({
 }
 
 export function DashboardCustomizer() {
-  const [editing, setEditing] = useState(false)
+  const customizer = useDashboardCustomizer()
+  const [localEditing, setLocalEditing] = useState(false)
+  const editing = customizer ? customizer.editing : localEditing
+
   const [blocks, setBlocks] = useState(() => {
     if (typeof window === "undefined") return defaultBlocks
     try {
@@ -142,47 +145,21 @@ export function DashboardCustomizer() {
     setActiveId(null)
   }
 
-  const handleReset = () => {
+  const handleReset = useCallback(() => {
     setBlocks(defaultBlocks)
     localStorage.removeItem(STORAGE_KEY)
-  }
+  }, [])
+
+  useEffect(() => {
+    if (customizer?.registerReset) {
+      customizer.registerReset(handleReset)
+    }
+  }, [customizer, handleReset])
 
   const activeBlock = blocks.find((b) => b.id === activeId)
 
   return (
-    <div className="flex min-w-0 flex-1 flex-col gap-3 p-3 pt-0 sm:gap-4 sm:p-4 sm:pt-0">
-      {/* Edit toggle */}
-      <div className="flex items-center justify-end gap-2">
-        {editing && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 text-xs text-muted-foreground"
-            onClick={handleReset}
-          >
-            Reset layout
-          </Button>
-        )}
-        <Button
-          variant={editing ? "default" : "outline"}
-          size="sm"
-          className="h-7 gap-1.5 text-xs"
-          onClick={() => setEditing(!editing)}
-        >
-          {editing ? (
-            <>
-              <LockIcon className="size-3" />
-              Lock
-            </>
-          ) : (
-            <>
-              <LayoutGridIcon className="size-3" />
-              Customize
-            </>
-          )}
-        </Button>
-      </div>
-
+    <div className="flex min-w-0 flex-1 flex-col gap-3 p-3 pt-2 sm:gap-4 sm:p-4 sm:pt-2">
       <DndContext
         sensors={sensors}
         collisionDetection={pointerWithin}

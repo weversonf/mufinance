@@ -66,7 +66,7 @@ export function MyPortfolio({ prices, originalPrices, selectedCoin, onSelectCoin
         <div className="flex items-center gap-2">
           <CardTitle>Meu portfólio</CardTitle>
           <Badge variant="secondary" className="text-xs tabular-nums">
-            {top3.length} Total Assets
+            {top3.length} Ativos
           </Badge>
         </div>
         <CardAction>

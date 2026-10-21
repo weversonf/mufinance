@@ -62,7 +62,7 @@ export function PortfolioAllocation() {
       const pct = ((s.value / totalValue) * 100).toFixed(1)
       return { title: s.name, value: s.value, pct }
     }
-    return { title: "Total Value", value: totalValue, pct: null }
+    return { title: "Valor Total", value: totalValue, pct: null }
   }, [activeIndex, sectorData, totalValue])
 
   return (

@@ -47,9 +47,9 @@ function buildInitialCards(accountCards: AccountCard[]): DisplayCard[] {
 }
 
 const newCardOptions = [
-  { value: "savings", label: "Poupança Account", currency: "$", style: "bg-emerald-600 text-white", icon: <TrendingUpIcon className="size-5 opacity-30" />, chipColor: "bg-white/20" },
-  { value: "business", label: "Business Account", currency: "$", style: "bg-violet-600 text-white", icon: <CreditCardIcon className="size-5 opacity-30" />, chipColor: "bg-white/20" },
-  { value: "travel", label: "Travel Card", currency: "€", style: "bg-amber-600 text-white", icon: <EuroIcon className="size-5 opacity-30" />, chipColor: "bg-white/20" },
+  { value: "savings", label: "Conta Poupança", currency: "R$", style: "bg-emerald-600 text-white", icon: <TrendingUpIcon className="size-5 opacity-30" />, chipColor: "bg-white/20" },
+  { value: "business", label: "Conta Jurídica", currency: "R$", style: "bg-violet-600 text-white", icon: <CreditCardIcon className="size-5 opacity-30" />, chipColor: "bg-white/20" },
+  { value: "travel", label: "Cartão Viagem", currency: "R$", style: "bg-amber-600 text-white", icon: <EuroIcon className="size-5 opacity-30" />, chipColor: "bg-white/20" },
 ]
 
 export function AccountCards() {
@@ -202,7 +202,7 @@ export function AccountCards() {
                   >
                     <CheckCircle2Icon className="size-10 text-emerald-500" />
                   </motion.div>
-                  <p className="text-sm font-semibold">Card added!</p>
+                  <p className="text-sm font-semibold">Cartão adicionado!</p>
                   <p className="text-xs text-muted-foreground">
                     {newCardName || newCardOptions.find((o) => o.value === newCardType)?.label}
                   </p>
@@ -210,12 +210,12 @@ export function AccountCards() {
               ) : addState === "adding" ? (
                 <div className="flex flex-1 flex-col items-center justify-center gap-3">
                   <LoaderCircleIcon className="size-8 animate-spin text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground">Creating card...</p>
+                  <p className="text-sm text-muted-foreground">Criando cartão...</p>
                 </div>
               ) : (
                 <div className="flex flex-1 flex-col gap-3">
                   <div className="flex items-center justify-between">
-                    <p className="text-sm font-semibold">Add New Card</p>
+                    <p className="text-sm font-semibold">Adicionar Novo Cartão</p>
                     <Button
                       variant="ghost"
                       size="icon"
@@ -245,7 +245,7 @@ export function AccountCards() {
                   />
                   <Button className="h-9 gap-2 text-xs" onClick={handleAdd}>
                     <PlusIcon className="size-3.5" />
-                    Create Card
+                    Criar Cartão
                   </Button>
                 </div>
               )}
@@ -257,7 +257,7 @@ export function AccountCards() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <CreditCardIcon className="size-3.5" />
-            <span>{cards.length} cards</span>
+            <span>{cards.length} {cards.length === 1 ? "cartão" : "cartões"}</span>
           </div>
           <Button
             variant="outline"

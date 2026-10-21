@@ -8,6 +8,7 @@ import { MobileBottomNav } from "@/components/mobile-bottom-nav"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { PrivacyProvider, PrivacyToggle } from "@/components/privacy-toggle"
 import { DemoModeToggle, DemoModeBanner } from "@/components/demo-mode-toggle"
+import { DashboardCustomizerProvider, DashboardCustomizeHeaderButton } from "@/components/dashboard/dashboard-customizer-context"
 import { Separator } from "@/components/ui/separator"
 import {
   SidebarInset,
@@ -23,8 +24,9 @@ export default function DashboardLayout({
   return (
     <AuthGuard>
       <FinanceProvider>
-        <PrivacyProvider>
-          <SidebarProvider>
+        <DashboardCustomizerProvider>
+          <PrivacyProvider>
+            <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
         <header className="flex h-14 shrink-0 items-center gap-2 sm:h-16">
@@ -42,6 +44,7 @@ export default function DashboardLayout({
             <kbd className="pointer-events-none hidden h-6 select-none items-center gap-1 rounded border bg-muted px-2 font-mono text-[10px] font-medium text-muted-foreground sm:flex">
               <span className="text-xs">⌘</span>K
             </kbd>
+            <DashboardCustomizeHeaderButton />
             <DemoModeToggle />
             <PrivacyToggle />
             <GlobalAddTransaction />
@@ -55,6 +58,7 @@ export default function DashboardLayout({
       <MobileBottomNav />
           </SidebarProvider>
         </PrivacyProvider>
+        </DashboardCustomizerProvider>
       </FinanceProvider>
     </AuthGuard>
   )

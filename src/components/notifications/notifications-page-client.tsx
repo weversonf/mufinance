@@ -56,11 +56,11 @@ const typeColors: Record<Notification["type"], string> = {
 }
 
 const filters: { label: string; value: FilterType }[] = [
-  { label: "All", value: "all" },
-  { label: "Unread", value: "unread" },
-  { label: "Transactions", value: "transaction" },
-  { label: "Security", value: "security" },
-  { label: "System", value: "system" },
+  { label: "Todas", value: "all" },
+  { label: "Não lidas", value: "unread" },
+  { label: "Transações", value: "transaction" },
+  { label: "Segurança", value: "security" },
+  { label: "Sistema", value: "system" },
 ]
 
 export function NotificationsPageClient() {
@@ -94,17 +94,17 @@ export function NotificationsPageClient() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-semibold tracking-tight">Notifications</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Notificações</h1>
           {unreadCount > 0 && (
             <Badge variant="default" className="tabular-nums">
-              {unreadCount} unread
+              {unreadCount} não {unreadCount === 1 ? "lida" : "lidas"}
             </Badge>
           )}
         </div>
         {unreadCount > 0 && (
           <Button variant="outline" size="sm" onClick={markAllRead}>
             <CheckCheckIcon className="size-4" />
-            Mark all as read
+            Marcar todas como lidas
           </Button>
         )}
       </div>

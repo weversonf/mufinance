@@ -64,10 +64,10 @@ import {
 type TabId = "faq" | "tickets" | "contact" | "status"
 
 const tabs: { id: TabId; label: string; icon: React.ReactNode }[] = [
-  { id: "faq", label: "FAQ", icon: <BookOpenIcon className="size-4" /> },
-  { id: "tickets", label: "My Tickets", icon: <TicketIcon className="size-4" /> },
-  { id: "contact", label: "Contact Us", icon: <MessageSquarePlusIcon className="size-4" /> },
-  { id: "status", label: "System Status", icon: <ActivityIcon className="size-4" /> },
+  { id: "faq", label: "Perguntas Frequentes", icon: <BookOpenIcon className="size-4" /> },
+  { id: "tickets", label: "Meus Chamados", icon: <TicketIcon className="size-4" /> },
+  { id: "contact", label: "Fale Conosco", icon: <MessageSquarePlusIcon className="size-4" /> },
+  { id: "status", label: "Status do Sistema", icon: <ActivityIcon className="size-4" /> },
 ]
 
 const categoryIcons: Record<FaqItem["category"], React.ReactNode> = {
@@ -491,50 +491,50 @@ function TicketForm() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <MessageSquarePlusIcon className="size-4 text-primary" />
-          Submit a Ticket
+          Abrir um Chamado
         </CardTitle>
-        <CardDescription>Describe your issue and we&#39;ll get back to you</CardDescription>
+        <CardDescription>Descreva sua dúvida ou problema e nossa equipe responderá em breve</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <label className="text-sm font-medium" htmlFor="t-subject">Subject</label>
-              <Input id="t-subject" placeholder="Descrição breve" required />
+              <label className="text-sm font-medium" htmlFor="t-subject">Assunto</label>
+              <Input id="t-subject" placeholder="Descrição breve do chamado" required />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium" htmlFor="t-category">Category</label>
+              <label className="text-sm font-medium" htmlFor="t-category">Categoria</label>
               <Select defaultValue="general">
                 <SelectTrigger id="t-category"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="account">Account</SelectItem>
-                  <SelectItem value="payments">Payments</SelectItem>
-                  <SelectItem value="security">Security</SelectItem>
-                  <SelectItem value="billing">Billing</SelectItem>
-                  <SelectItem value="general">General</SelectItem>
+                  <SelectItem value="account">Conta</SelectItem>
+                  <SelectItem value="payments">Pagamentos</SelectItem>
+                  <SelectItem value="security">Segurança</SelectItem>
+                  <SelectItem value="billing">Cobrança</SelectItem>
+                  <SelectItem value="general">Geral</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <label className="text-sm font-medium" htmlFor="t-priority">Priority</label>
+              <label className="text-sm font-medium" htmlFor="t-priority">Prioridade</label>
               <Select defaultValue="medium">
                 <SelectTrigger id="t-priority"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="low">Low</SelectItem>
-                  <SelectItem value="medium">Medium</SelectItem>
-                  <SelectItem value="high">High</SelectItem>
+                  <SelectItem value="low">Baixa</SelectItem>
+                  <SelectItem value="medium">Média</SelectItem>
+                  <SelectItem value="high">Alta</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium" htmlFor="t-email">Email</label>
+              <label className="text-sm font-medium" htmlFor="t-email">E-mail</label>
               <Input id="t-email" type="email" value={user?.email || ""} readOnly />
             </div>
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium" htmlFor="t-desc">Description</label>
+            <label className="text-sm font-medium" htmlFor="t-desc">Descrição</label>
             <Textarea id="t-desc" placeholder="Descreva o máximo de detalhes possível..." rows={4} required />
           </div>
           <div className="flex items-center justify-end gap-3">
@@ -547,12 +547,12 @@ function TicketForm() {
                   className="flex items-center gap-1.5 text-sm text-emerald-600 dark:text-emerald-400"
                 >
                   <CheckCircle2Icon className="size-4" />
-                  Ticket submitted!
+                  Chamado enviado com sucesso!
                 </motion.span>
               )}
             </AnimatePresence>
             <Button type="submit" disabled={sending || sent}>
-              {sending ? <><LoaderIcon className="size-4 animate-spin" /> Sending...</> : <><SendIcon className="size-4" /> Submit Ticket</>}
+              {sending ? <><LoaderIcon className="size-4 animate-spin" /> Enviando...</> : <><SendIcon className="size-4" /> Enviar Chamado</>}
             </Button>
           </div>
         </form>

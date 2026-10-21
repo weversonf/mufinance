@@ -43,20 +43,20 @@ export function CardControls({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Card Controls</CardTitle>
+        <CardTitle>Controles do Cartão</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* ❄️ Freeze Toggle ❄️ */}
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
-            <p className="text-sm font-medium">Card Status</p>
+            <p className="text-sm font-medium">Status do Cartão</p>
             <p
               className={cn(
                 "text-xs",
-                frozen ? "text-destructive" : "text-muted-foreground",
+                frozen ? "text-destructive font-medium" : "text-muted-foreground",
               )}
             >
-              {frozen ? "Frozen" : "Active"}
+              {frozen ? "Bloqueado" : "Ativo"}
             </p>
           </div>
           <Switch
@@ -70,7 +70,7 @@ export function CardControls({
         {/* 💸 Daily Limit 💸 */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium">Daily Limit</p>
+            <p className="text-sm font-medium">Limite Diário</p>
             <span className="text-sm font-medium tabular-nums">
               {formatCurrency(dailyLimit)}
             </span>
@@ -86,8 +86,8 @@ export function CardControls({
             }}
           />
           <div className="flex justify-between text-xs text-muted-foreground tabular-nums">
-            <span>$0</span>
-            <span>$10,000</span>
+            <span>R$ 0</span>
+            <span>R$ 10.000</span>
           </div>
         </div>
 
@@ -128,10 +128,10 @@ export function CardControls({
 
         {/* 🏷️ Card Info 🏷️ */}
         <div className="space-y-2">
-          <p className="text-sm font-medium">Card Info</p>
+          <p className="text-sm font-medium">Informações do Cartão</p>
           <div className="flex flex-wrap items-center gap-2">
             <Badge variant={card.type === "virtual" ? "secondary" : "outline"}>
-              {card.type}
+              {card.type === "virtual" ? "Virtual" : "Físico"}
             </Badge>
             <Badge variant="outline" className="uppercase">
               {card.network}

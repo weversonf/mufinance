@@ -28,21 +28,21 @@ export function TransferStats({ transfers }: TransferStatsProps) {
 
   const cards = [
     {
-      label: "Total Sent",
+      label: "Total Enviado",
       value: fmt(totalSent),
       icon: ArrowUpRightIcon,
       color: "text-rose-500",
       bg: "bg-rose-500/10",
     },
     {
-      label: "Total Received",
+      label: "Total Recebido",
       value: fmt(totalReceived),
       icon: ArrowDownLeftIcon,
       color: "text-emerald-500",
       bg: "bg-emerald-500/10",
     },
     {
-      label: "Scheduled",
+      label: "Agendadas",
       value: `${scheduled.length} (${fmt(scheduledTotal)})`,
       icon: ClockIcon,
       color: "text-amber-500",

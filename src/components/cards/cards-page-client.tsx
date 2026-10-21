@@ -69,8 +69,8 @@ export function CardsPageClient() {
           <CardContent className="pt-6">
             <EmptyState
               variant="cards"
-              title="No cards added"
-              description="Generate a virtual card below or add a card to start managing your spending."
+              title="Nenhum cartão cadastrado"
+              description="Gere um cartão virtual ou adicione um cartão para gerenciar seus gastos."
             />
           </CardContent>
         </Card>
@@ -93,8 +93,8 @@ export function CardsPageClient() {
               <CardContent className="pt-6">
                 <EmptyState
                   variant="cards"
-                  title="Your card list is empty"
-                  description="Cards created in this session will appear here."
+                  title="Sua lista de cartões está vazia"
+                  description="Os cartões cadastrados aparecerão aqui."
                 />
               </CardContent>
             </Card>

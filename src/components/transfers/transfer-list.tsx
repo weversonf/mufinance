@@ -29,13 +29,13 @@ function statusBadge(status: TransferRecord["status"]) {
     case "pending":
       return (
         <Badge variant="outline" className="text-amber-500 dark:text-amber-400">
-          Pending
+          Pendente
         </Badge>
       )
     case "scheduled":
       return (
         <Badge variant="outline" className="text-amber-500 dark:text-amber-400">
-          Scheduled
+          Agendada
         </Badge>
       )
   }
@@ -125,7 +125,7 @@ export function TransferList({ transfers, onCancel }: TransferListProps) {
                     onClick={() => onCancel(transfer.id)}
                   >
                     <XIcon className="size-3" />
-                    Cancel
+                    Cancelar
                   </Button>
                 ) : null}
               </div>

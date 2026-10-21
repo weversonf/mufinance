@@ -38,15 +38,15 @@ export function MyBalance({ prices }: { prices: CryptoPrices }) {
 
   const stats = [
     {
-      label: "Total Profit",
-      value: `+$${(totalBalance * 0.033).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      label: "Lucro Total",
+      value: `+R$ ${(totalBalance * 0.033).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
       positive: true,
     },
-    { label: "Avg. Growing", value: "+14.63%", positive: true },
+    { label: "Crescimento Médio", value: "+14.63%", positive: true },
     {
-      label: coin ? coin.symbol : "Best Token",
+      label: coin ? coin.symbol : "Destaque",
       value: coin
-        ? `$${coinValue.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+        ? `R$ ${coinValue.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
         : "Ethereum",
       positive: null,
     },
@@ -97,7 +97,7 @@ export function MyBalance({ prices }: { prices: CryptoPrices }) {
   return (
     <Card className="lg:col-span-4">
       <CardHeader>
-        <CardTitle>My Balance</CardTitle>
+        <CardTitle>Saldo em Cripto</CardTitle>
         <CardAction>
           <Select value={highlightedCoin} onValueChange={(v) => v && setHighlightedCoin(v)}>
             <SelectTrigger size="sm">
@@ -210,7 +210,7 @@ export function MyBalance({ prices }: { prices: CryptoPrices }) {
             ) : (
               <ArrowUpIcon className="size-4" />
             )}
-            {topUpFlow === "input" ? "Confirm" : topUpFlow === "loading" ? "Processing..." : "Top Up"}
+            {topUpFlow === "input" ? "Confirmar" : topUpFlow === "loading" ? "Processando..." : "Depositar"}
           </Button>
           <Button
             variant="outline"
@@ -224,7 +224,7 @@ export function MyBalance({ prices }: { prices: CryptoPrices }) {
             ) : (
               <ArrowDownIcon className="size-4" />
             )}
-            {withdrawFlow === "input" ? "Confirm" : withdrawFlow === "loading" ? "Processing..." : "Withdraw"}
+            {withdrawFlow === "input" ? "Confirmar" : withdrawFlow === "loading" ? "Processando..." : "Sacar"}
           </Button>
         </div>
       </CardContent>

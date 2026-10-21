@@ -136,7 +136,7 @@ export function InteractiveCard({
             >
               <SnowflakeIcon className="size-8 text-muted-foreground" />
               <span className="text-sm font-medium text-muted-foreground">
-                Card Frozen
+                Cartão Bloqueado
               </span>
             </motion.div>
           )}

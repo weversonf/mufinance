@@ -907,12 +907,12 @@ export const financialHealthScore = {
   trend: "up" as const,
   trendDelta: 3,
   factors: [
-    { id: "hf1", label: "Savings Rate", score: 85, maxScore: 100, status: "excellent" as const, description: "You save 28% of your income — well above the 20% target" },
-    { id: "hf2", label: "Spending Habits", score: 72, maxScore: 100, status: "good" as const, description: "Mostly within budget. Dining out is slightly over." },
-    { id: "hf3", label: "Debt Ratio", score: 90, maxScore: 100, status: "excellent" as const, description: "Debt-to-income ratio of 8% — very healthy" },
-    { id: "hf4", label: "Investment Growth", score: 68, maxScore: 100, status: "good" as const, description: "Portfolio up 12.4% YTD. Diversification is solid." },
-    { id: "hf5", label: "Emergency Fund", score: 55, maxScore: 100, status: "fair" as const, description: "3.2 months of expenses covered — aim for 6 months" },
-    { id: "hf6", label: "Bill Payments", score: 95, maxScore: 100, status: "excellent" as const, description: "All bills paid on time for 12 consecutive months" },
+    { id: "hf1", label: "Taxa de Poupança", score: 85, maxScore: 100, status: "excellent" as const, description: "Você poupa 28% da sua renda — bem acima da meta recomendada de 20%" },
+    { id: "hf2", label: "Controle de Gastos", score: 72, maxScore: 100, status: "good" as const, description: "Dentro do orçamento na maioria dos meses." },
+    { id: "hf3", label: "Índice de Dívidas", score: 90, maxScore: 100, status: "excellent" as const, description: "Comprometimento de renda em apenas 8% — muito saudável" },
+    { id: "hf4", label: "Crescimento de Investimentos", score: 68, maxScore: 100, status: "good" as const, description: "Carteira com boa rentabilidade e diversificação sólida." },
+    { id: "hf5", label: "Reserva de Emergência", score: 55, maxScore: 100, status: "fair" as const, description: "3,2 meses de despesas cobertas — meta ideal de 6 meses" },
+    { id: "hf6", label: "Pagamento de Contas", score: 95, maxScore: 100, status: "excellent" as const, description: "Contas pagas em dia consistentemente nos últimos 12 meses" },
   ] as HealthFactor[],
 }
 

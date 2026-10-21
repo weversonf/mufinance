@@ -27,21 +27,21 @@ export function AccountSummary({ accounts }: AccountSummaryProps) {
 
   const cards = [
     {
-      label: "Total Balance",
+      label: "Saldo Total",
       value: fmt(totalBalance),
       icon: WalletIcon,
       color: "text-primary",
       bg: "bg-primary/10",
     },
     {
-      label: "Total Change",
+      label: "Variação do Mês",
       value: `${isPositive ? "+" : "-"}${fmt(totalChange)}`,
       icon: isPositive ? TrendingUpIcon : TrendingDownIcon,
       color: isPositive ? "text-emerald-500" : "text-rose-500",
       bg: isPositive ? "bg-emerald-500/10" : "bg-rose-500/10",
     },
     {
-      label: "Linked Accounts",
+      label: "Contas Cadastradas",
       value: accounts.length.toString(),
       icon: LinkIcon,
       color: "text-muted-foreground",
