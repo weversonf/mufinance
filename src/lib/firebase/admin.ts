@@ -29,6 +29,13 @@ function getAdminApp() {
   return adminApp;
 }
 
+export function isFirebaseAdminConfigured(): boolean {
+  const projectId = process.env.FIREBASE_ADMIN_PROJECT_ID ?? process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+  const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL;
+  const privateKey = process.env.FIREBASE_ADMIN_PRIVATE_KEY;
+  return Boolean(projectId && clientEmail && privateKey);
+}
+
 export function getAdminAuth(): Auth {
   return getAuth(getAdminApp());
 }

@@ -221,12 +221,12 @@ export function HoldingsTable() {
                       initial={{
                         backgroundColor:
                           flash === "up"
-                            ? "var(--color-emerald-500/0.2)"
+                            ? "rgba(16,185,129,0.2)"
                             : flash === "down"
-                              ? "var(--color-rose-500/0.2)"
-                              : "transparent",
+                              ? "rgba(239,68,68,0.2)"
+                              : "rgba(0,0,0,0)",
                       }}
-                      animate={{ backgroundColor: "transparent" }}
+                      animate={{ backgroundColor: "rgba(0,0,0,0)" }}
                       transition={{ duration: 0.6 }}
                       className="rounded px-1 py-0.5"
                     >

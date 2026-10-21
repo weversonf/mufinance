@@ -7,6 +7,7 @@ import { motion } from "motion/react"
 
 import { cn } from "@/lib/utils"
 import type { BankAccount } from "@/data/seed"
+import { usePrivacy } from "@/components/privacy-toggle"
 
 interface AccountCardProps {
   account: BankAccount
@@ -32,6 +33,7 @@ const ACCOUNT_TYPE_LABELS: Record<string, string> = {
 }
 
 export function AccountCard({ account, index, onSelect }: AccountCardProps) {
+  const { privacyMode } = usePrivacy()
   const [imgError, setImgError] = useState(false)
   const typeLabel = ACCOUNT_TYPE_LABELS[account.type] ?? account.type
 
@@ -91,7 +93,7 @@ export function AccountCard({ account, index, onSelect }: AccountCardProps) {
 
         {/* Balance */}
         <p className={cn("mt-3 tabular-nums text-xl font-bold tracking-tight", account.balance < 0 && "text-rose-600 dark:text-rose-400")}>
-          {fmt(account.balance)}
+          {privacyMode ? "R$ •••••" : fmt(account.balance)}
         </p>
 
         {/* Change badge + last activity */}

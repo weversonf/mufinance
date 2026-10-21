@@ -7,18 +7,20 @@ import {
 
 import { cn } from "@/lib/utils"
 import type { BankAccount } from "@/data/seed"
+import { usePrivacy } from "@/components/privacy-toggle"
 
 interface AccountSummaryProps {
   accounts: BankAccount[]
 }
 
-const fmt = (n: number, currency = "$") =>
-  `${currency}${new Intl.NumberFormat("pt-BR", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(Math.abs(n))}`
-
 export function AccountSummary({ accounts }: AccountSummaryProps) {
+  const { privacyMode } = usePrivacy()
+  const fmt = (n: number, currency = "R$ ") =>
+    privacyMode ? "R$ •••••" : `${currency}${new Intl.NumberFormat("pt-BR", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(Math.abs(n))}`
+
   const totalBalance = accounts.reduce((sum, a) => sum + a.balance, 0)
   const totalChange = accounts.reduce((sum, a) => sum + a.change, 0)
   const isPositive = totalChange >= 0

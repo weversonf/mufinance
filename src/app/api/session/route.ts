@@ -1,11 +1,15 @@
 import { NextResponse } from "next/server";
-import { getAdminAuth } from "@/lib/firebase/admin";
+import { getAdminAuth, isFirebaseAdminConfigured } from "@/lib/firebase/admin";
 import { expiredSessionCookieOptions, SESSION_COOKIE, sessionCookieOptions } from "@/lib/auth/session";
 
 export async function POST(request: Request) {
   try {
     const body = await request.json() as { idToken?: string };
     if (!body.idToken) return NextResponse.json({ error: "ID token ausente." }, { status: 400 });
+
+    if (!isFirebaseAdminConfigured()) {
+      return NextResponse.json({ ok: false, message: "Firebase Admin não configurado em ambiente local." }, { status: 200 });
+    }
 
     const decoded = await getAdminAuth().verifyIdToken(body.idToken);
     const sessionCookie = await getAdminAuth().createSessionCookie(body.idToken, { expiresIn: sessionCookieOptions().maxAge * 1000 });

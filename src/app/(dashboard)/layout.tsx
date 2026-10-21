@@ -6,6 +6,7 @@ import { DynamicBreadcrumb } from "@/components/dynamic-breadcrumb"
 import { GlobalAddTransaction } from "@/components/global-add-transaction"
 import { MobileBottomNav } from "@/components/mobile-bottom-nav"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { PrivacyProvider, PrivacyToggle } from "@/components/privacy-toggle"
 import { Separator } from "@/components/ui/separator"
 import {
   SidebarInset,
@@ -21,7 +22,8 @@ export default function DashboardLayout({
   return (
     <AuthGuard>
       <FinanceProvider>
-        <SidebarProvider>
+        <PrivacyProvider>
+          <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
         <header className="flex h-14 shrink-0 items-center gap-2 sm:h-16">
@@ -39,6 +41,7 @@ export default function DashboardLayout({
             <kbd className="pointer-events-none hidden h-6 select-none items-center gap-1 rounded border bg-muted px-2 font-mono text-[10px] font-medium text-muted-foreground sm:flex">
               <span className="text-xs">⌘</span>K
             </kbd>
+            <PrivacyToggle />
             <GlobalAddTransaction />
             <ThemeToggle />
           </div>
@@ -47,7 +50,8 @@ export default function DashboardLayout({
         <main className="flex min-w-0 flex-1 flex-col pb-20 md:pb-0">{children}</main>
       </SidebarInset>
       <MobileBottomNav />
-        </SidebarProvider>
+          </SidebarProvider>
+        </PrivacyProvider>
       </FinanceProvider>
     </AuthGuard>
   )

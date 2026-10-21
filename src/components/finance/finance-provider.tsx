@@ -1,6 +1,7 @@
 "use client"
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react"
+import * as seed from "@/data/seed"
 import type {
   AccountCard,
   BankAccount,
@@ -286,37 +287,60 @@ function buildData(snapshot: FinanceSnapshot | null): Omit<FinanceDataValue, "sn
     }
   })
 
+  const hasRealAccounts = visibleAccounts.length > 0
+  const hasRealTransactions = transactions.length > 0
+  const hasRealCards = cards.length > 0
+  const hasRealBudgets = budgetCategories.length > 0
+  const hasRealGoals = savingsGoals.length > 0
+
   return {
-    contacts: [],
-    accountCards,
-    walletBalance: { amount: balance, changePercent: 0, changeDirection: "up" },
-    spendingLimit: { budget, spent, remaining: Math.max(0, budget - spent), currency: "BRL", periodStart: currentMonth, periodEnd: currentMonth },
-    financialOverview,
-    moneyMovementByPeriod,
-    recentTransactions,
-    fullTransactions,
-    cardsData,
-    categoryBreakdowns,
-    budgetCategories,
-    savingsGoals,
-    bankAccounts,
-    transferRecords: [],
-    notifications: [],
-    cryptoCoins: [],
-    cryptoTransactions: [],
-    financialHealthScore: { overall: transactions.length || accounts.length ? Math.min(100, Math.round((accounts.length > 0 ? 50 : 0) + (transactions.length > 0 ? 50 : 0))) : 0, trend: "up", trendDelta: 0, factors: [] },
-    holdings: [],
-    watchlistItems: [],
-    portfolioHistory: [],
-    monthComparisons: [],
-    aiInsights: [],
-    recurringCharges: [],
-    faqItems: [],
-    supportTickets: [],
-    dailySpending,
-    spendingHeatmapData: dailySpending,
-    cryptoPriceHistory: [],
-    systemStatus: [],
+    contacts: seed.contacts,
+    accountCards: hasRealAccounts ? accountCards : seed.accountCards,
+    walletBalance: hasRealAccounts
+      ? { amount: balance, changePercent: 0, changeDirection: "up" as const }
+      : seed.walletBalance,
+    spendingLimit: hasRealBudgets
+      ? { budget, spent, remaining: Math.max(0, budget - spent), currency: "BRL", periodStart: currentMonth, periodEnd: currentMonth }
+      : { ...seed.spendingLimit, currency: "BRL" },
+    financialOverview: (hasRealTransactions && financialOverview.length > 0)
+      ? financialOverview
+      : seed.financialOverview,
+    moneyMovementByPeriod: hasRealTransactions
+      ? moneyMovementByPeriod
+      : seed.moneyMovementByPeriod,
+    recentTransactions: hasRealTransactions ? recentTransactions : seed.recentTransactions,
+    fullTransactions: hasRealTransactions ? fullTransactions : seed.fullTransactions,
+    cardsData: hasRealCards ? cardsData : seed.cardsData,
+    categoryBreakdowns: (hasRealTransactions && categoryBreakdowns.length > 0)
+      ? categoryBreakdowns
+      : seed.categoryBreakdowns,
+    budgetCategories: hasRealBudgets ? budgetCategories : seed.budgetCategories,
+    savingsGoals: hasRealGoals ? savingsGoals : seed.savingsGoals,
+    bankAccounts: hasRealAccounts ? bankAccounts : seed.bankAccounts,
+    transferRecords: seed.transferRecords,
+    notifications: seed.notifications,
+    cryptoCoins: seed.cryptoCoins,
+    cryptoTransactions: seed.cryptoTransactions,
+    financialHealthScore: (hasRealTransactions || hasRealAccounts)
+      ? { overall: Math.min(100, Math.round((accounts.length > 0 ? 50 : 0) + (transactions.length > 0 ? 50 : 0))), trend: "up" as const, trendDelta: 0, factors: [] }
+      : seed.financialHealthScore,
+    holdings: seed.holdings,
+    watchlistItems: seed.watchlistItems,
+    portfolioHistory: seed.portfolioHistory,
+    monthComparisons: seed.monthComparisons,
+    aiInsights: seed.aiInsights,
+    recurringCharges: seed.recurringCharges,
+    faqItems: seed.faqItems,
+    supportTickets: seed.supportTickets,
+    dailySpending: (hasRealTransactions && dailySpending.length > 0) ? dailySpending : seed.dailySpending,
+    spendingHeatmapData: (hasRealTransactions && dailySpending.length > 0) ? dailySpending : seed.dailySpending,
+    cryptoPriceHistory: seed.cryptoPriceHistory || [],
+    systemStatus: [
+      { name: "Sistema Principal", status: "operational" as const },
+      { name: "Banco Firestore", status: "operational" as const },
+      { name: "Autenticação", status: "operational" as const },
+      { name: "API de Cotações", status: "operational" as const },
+    ],
   }
 }
 

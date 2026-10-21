@@ -15,6 +15,7 @@ import {
 import { cn } from "@/lib/utils"
 import type { FullTransaction } from "@/data/seed"
 import { Badge } from "@/components/ui/badge"
+import { usePrivacy } from "@/components/privacy-toggle"
 import { Button } from "@/components/ui/button"
 import {
   Table,
@@ -32,12 +33,14 @@ interface TransactionTableProps {
   onEdit: (transaction: FullTransaction) => void
 }
 
-const fmt = (n: number) =>
-  new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-    minimumFractionDigits: 2,
-  }).format(Math.abs(n))
+const fmt = (n: number, masked?: boolean) =>
+  masked
+    ? "••••••"
+    : new Intl.NumberFormat("pt-BR", {
+        style: "currency",
+        currency: "BRL",
+        minimumFractionDigits: 2,
+      }).format(Math.abs(n))
 
 function statusBadge(status: FullTransaction["status"]) {
   switch (status) {
@@ -182,6 +185,7 @@ function TransactionCard({
   onToggleSelect: () => void
   onEdit: () => void
 }) {
+  const { privacyMode } = usePrivacy()
   return (
     <article
       className={cn(
@@ -219,7 +223,7 @@ function TransactionCard({
                 tx.type === "income" ? "text-emerald-500" : "text-foreground",
               )}
             >
-              {tx.type === "income" ? "+" : "-"}{fmt(tx.amount)}
+              {tx.type === "income" ? "+" : "-"}{fmt(tx.amount, privacyMode)}
             </span>
           </div>
           <div className="mt-3 flex items-center justify-between gap-2 border-t pt-2.5 text-xs text-muted-foreground">
@@ -247,6 +251,7 @@ function TransactionRow({
   onToggleExpand: () => void
   onEdit: () => void
 }) {
+  const { privacyMode } = usePrivacy()
   return (
     <>
       <TableRow
@@ -300,7 +305,7 @@ function TransactionRow({
             )}
           >
             {tx.type === "income" ? "+" : "-"}
-            {fmt(tx.amount)}
+            {fmt(tx.amount, privacyMode)}
           </span>
         </TableCell>
 

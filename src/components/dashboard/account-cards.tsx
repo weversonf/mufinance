@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, useCallback } from "react"
 import { useFinanceData } from "@/components/finance/finance-provider"
+import { usePrivacy } from "@/components/privacy-toggle"
 import type { AccountCard } from "@/data/seed"
 import {
   CreditCardIcon,
@@ -53,6 +54,7 @@ const newCardOptions = [
 
 export function AccountCards() {
   const { accountCards, walletBalance } = useFinanceData()
+  const { privacyMode } = usePrivacy()
   const initialCards = useMemo(() => buildInitialCards(accountCards), [accountCards])
   const [addedCards, setAddedCards] = useState<DisplayCard[]>([])
   const [order, setOrder] = useState<string[]>([])
@@ -160,11 +162,13 @@ export function AccountCards() {
                           **** {c.last4}
                         </span>
                         <p className="text-xl font-bold tabular-nums tracking-tight">
-                          {c.last4
-                            ? c.currency === "BTC"
-                              ? `${c.balance} ${c.currency}`
-                              : `${c.currency}${c.balance}`
-                            : c.balance}
+                          {privacyMode
+                            ? "••••••"
+                            : c.last4
+                              ? c.currency === "BTC"
+                                ? `${c.balance} ${c.currency}`
+                                : `${c.currency}${c.balance}`
+                              : c.balance}
                         </p>
                       </div>
                     </motion.button>
@@ -260,7 +264,7 @@ export function AccountCards() {
         <div className="space-y-1.5 border-t pt-5">
           <p className="text-xs font-medium text-muted-foreground">Saldo da carteira</p>
           <p className="text-3xl font-bold tabular-nums tracking-tight">
-            R$ {walletBalance.amount.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+            {privacyMode ? "R$ •••••" : `R$ ${walletBalance.amount.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`}
           </p>
           <div className="flex items-center gap-1.5 text-sm font-medium text-emerald-600 dark:text-emerald-400">
             <TrendingUpIcon className="size-4" />

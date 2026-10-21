@@ -12,6 +12,9 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import type { CardData } from "@/data/seed"
+import { createCreditCard } from "@/actions/finance"
+import { useAuth } from "@/components/auth/auth-provider"
+import { useFinanceData } from "@/components/finance/finance-provider"
 
 type Step = "idle" | "form" | "loading" | "success"
 
@@ -28,6 +31,8 @@ function randomDigits(n: number): string {
 export function VirtualCardGenerator({
   onCardCreated,
 }: VirtualCardGeneratorProps) {
+  const { user } = useAuth()
+  const { refresh } = useFinanceData()
   const [step, setStep] = useState<Step>("idle")
   const [name, setName] = useState("")
   const [limit, setLimit] = useState("")
@@ -42,38 +47,55 @@ export function VirtualCardGenerator({
     setCopied(false)
   }, [])
 
-  const handleGenerate = useCallback(() => {
+  const handleGenerate = useCallback(async () => {
     if (!name.trim()) return
     setStep("loading")
 
     const last4 = randomDigits(4)
+    const brandType = Math.random() > 0.5 ? "Visa" : "Mastercard"
+    const cardLimit = Number(limit) || 3000
+    const holderName = (user?.displayName || "VOCÊ").toUpperCase()
+
     const card: CardData = {
       id: `vc-${Date.now()}`,
       name: name.trim(),
       type: "virtual",
       last4,
       cardNumber: `${randomDigits(4)} ${randomDigits(4)} ${randomDigits(4)} ${last4}`,
-      holder: "ALEX MORGAN",
+      holder: holderName,
       expiry: `${String(Math.floor(Math.random() * 12) + 1).padStart(2, "0")}/${String(new Date().getFullYear() + 3).slice(-2)}`,
       cvv: randomDigits(3),
-      network: Math.random() > 0.5 ? "visa" : "mastercard",
+      network: brandType.toLowerCase() === "mastercard" ? "mastercard" : "visa",
       frozen: false,
       dailyLimit: 1000,
       monthlySpend: 0,
-      monthlyLimit: Number(limit) || 3000,
+      monthlyLimit: cardLimit,
       color: "bg-muted text-foreground",
     }
 
-    setTimeout(() => {
-      setNewCard(card)
-      setStep("success")
-      onCardCreated(card)
+    try {
+      await createCreditCard({
+        name: name.trim(),
+        last4,
+        brand: brandType,
+        limit: cardLimit,
+        closingDay: 1,
+        dueDay: 10,
+        color: "ocean",
+      })
+      await refresh()
+    } catch (err) {
+      console.error("Falha ao salvar cartão no Firestore:", err)
+    }
 
-      setTimeout(() => {
-        reset()
-      }, 4000)
-    }, 1200)
-  }, [name, limit, onCardCreated, reset])
+    setNewCard(card)
+    setStep("success")
+    onCardCreated(card)
+
+    setTimeout(() => {
+      reset()
+    }, 4000)
+  }, [name, limit, onCardCreated, reset, user?.displayName, refresh])
 
   const handleCopy = useCallback(() => {
     if (!newCard) return

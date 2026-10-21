@@ -15,11 +15,13 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select"
+import { createAccount } from "@/actions/finance"
+import { useFinanceData } from "@/components/finance/finance-provider"
 
 import type { BankAccount } from "@/data/seed"
 
 interface AddAccountProps {
-  onAdd: (account: BankAccount) => void
+  onAdd?: (account: BankAccount) => void
 }
 
 type Step = "idle" | "form" | "loading" | "success"
@@ -41,31 +43,49 @@ const typeColors: Record<string, string> = {
 }
 
 export function AddAccount({ onAdd }: AddAccountProps) {
+  const { refresh } = useFinanceData()
   const [step, setStep] = useState<Step>("idle")
   const [institution, setInstitution] = useState("")
   const [accountType, setAccountType] = useState("")
   const [accountNumber, setAccountNumber] = useState("")
+  const [initialBalance, setInitialBalance] = useState("")
+  const [errorMsg, setErrorMsg] = useState("")
 
-  function handleConnect() {
-    if (!institution || !accountType || !accountNumber) return
+  async function handleConnect() {
+    if (!institution || !accountType) return
 
     setStep("loading")
-    setTimeout(() => {
-      const newAccount: BankAccount = {
-        id: `ba-${Date.now()}`,
-        name: `${institution} ${accountType.charAt(0).toUpperCase() + accountType.slice(1)}`,
-        type: accountType as BankAccount["type"],
-        institution,
-        institutionLogo: `/logos/${institution.toLowerCase().replace(/\s+/g, "")}-com.png`,
-        accountNumber: `****${accountNumber.slice(-4)}`,
-        balance: 0,
-        currency: "$",
-        change: 0,
-        changePercent: 0,
-        lastActivity: "Just now",
-        color: typeColors[accountType] ?? "bg-gray-500",
+    setErrorMsg("")
+    try {
+      const parsedBalance = parseFloat(initialBalance.replace(",", ".")) || 0
+      const created = await createAccount({
+        name: institution.trim(),
+        type: accountType as "checking" | "savings" | "digital" | "investment" | "crypto" | "wallet",
+        balance: parsedBalance,
+        color: typeColors[accountType] ?? "mint",
+        icon: "bank",
+        currency: "BRL",
+        createAdjustment: false,
+      })
+
+      if (onAdd) {
+        onAdd({
+          id: created.id,
+          name: institution.trim(),
+          type: accountType as BankAccount["type"],
+          institution: institution.trim(),
+          institutionLogo: "/icon.svg",
+          accountNumber: accountNumber ? `****${accountNumber.slice(-4)}` : `****${created.id.slice(-4)}`,
+          balance: parsedBalance,
+          currency: "BRL",
+          change: 0,
+          changePercent: 0,
+          lastActivity: "Agora",
+          color: typeColors[accountType] ?? "bg-blue-500",
+        })
       }
-      onAdd(newAccount)
+
+      await refresh()
       setStep("success")
 
       setTimeout(() => {
@@ -73,8 +93,13 @@ export function AddAccount({ onAdd }: AddAccountProps) {
         setInstitution("")
         setAccountType("")
         setAccountNumber("")
+        setInitialBalance("")
       }, 1500)
-    }, 1500)
+    } catch (err) {
+      console.error("Falha ao criar conta:", err)
+      setErrorMsg(err instanceof Error ? err.message : "Não foi possível criar a conta.")
+      setStep("form")
+    }
   }
 
   return (
@@ -112,7 +137,7 @@ export function AddAccount({ onAdd }: AddAccountProps) {
               onClick={(e) => e.stopPropagation()}
             >
               <Input
-                placeholder="Nome da conta (ex: Nubank, Itaú...)"
+                placeholder="Nome da conta (ex: Nubank, Itaú, Carteira)"
                 value={institution}
                 onChange={(e) => setInstitution(e.target.value)}
               />
@@ -131,11 +156,19 @@ export function AddAccount({ onAdd }: AddAccountProps) {
                   ))}
                 </SelectContent>
               </Select>
-              <Input
-                placeholder="Número/identificador da conta"
-                value={accountNumber}
-                onChange={(e) => setAccountNumber(e.target.value)}
-              />
+              <div className="grid grid-cols-2 gap-2">
+                <Input
+                  placeholder="Nº da conta (opcional)"
+                  value={accountNumber}
+                  onChange={(e) => setAccountNumber(e.target.value)}
+                />
+                <Input
+                  placeholder="Saldo inicial R$"
+                  value={initialBalance}
+                  onChange={(e) => setInitialBalance(e.target.value)}
+                />
+              </div>
+              {errorMsg && <p className="text-xs text-destructive">{errorMsg}</p>}
               <div className="flex gap-2">
                 <Button
                   variant="outline"
@@ -146,6 +179,8 @@ export function AddAccount({ onAdd }: AddAccountProps) {
                     setInstitution("")
                     setAccountType("")
                     setAccountNumber("")
+                    setInitialBalance("")
+                    setErrorMsg("")
                   }}
                 >
                   Cancelar
@@ -153,7 +188,7 @@ export function AddAccount({ onAdd }: AddAccountProps) {
                 <Button
                   size="sm"
                   className="flex-1"
-                  disabled={!institution || !accountType || !accountNumber}
+                  disabled={!institution.trim() || !accountType}
                   onClick={handleConnect}
                 >
                   Adicionar
@@ -171,7 +206,7 @@ export function AddAccount({ onAdd }: AddAccountProps) {
               className="flex flex-col items-center gap-2 text-muted-foreground"
             >
               <LoaderIcon className="size-6 animate-spin" />
-              <span className="text-sm">Conectando...</span>
+              <span className="text-sm">Salvando no Firestore...</span>
             </motion.div>
           )}
 
@@ -186,7 +221,7 @@ export function AddAccount({ onAdd }: AddAccountProps) {
               <div className="flex size-10 items-center justify-center rounded-full bg-emerald-500/10">
                 <CheckIcon className="size-5" />
               </div>
-              <span className="text-sm font-medium">Conectado!</span>
+              <span className="text-sm font-medium">Conta criada!</span>
             </motion.div>
           )}
         </AnimatePresence>

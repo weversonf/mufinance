@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useFinanceData } from "@/components/finance/finance-provider"
+import { usePrivacy } from "@/components/privacy-toggle"
 import {
   MoreHorizontalIcon,
   ChevronRightIcon,
@@ -27,6 +28,7 @@ const categoryColors: Record<string, string> = {
 
 export function RecentTransactions() {
   const { recentTransactions } = useFinanceData()
+  const { privacyMode } = usePrivacy()
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
@@ -94,7 +96,7 @@ export function RecentTransactions() {
                       : "text-foreground"
                   )}
                 >
-                  {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(tx.amount)}
+                  {privacyMode ? "R$ •••••" : new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(tx.amount)}
                 </span>
 
                 {/* Date */}

@@ -12,6 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Input } from "@/components/ui/input"
 import type { TransferRecord } from "@/data/seed"
 import { useFinanceData } from "@/components/finance/finance-provider"
+import { createTransaction } from "@/actions/finance"
 import {
   SendIcon,
   LoaderCircleIcon,
@@ -22,7 +23,7 @@ import { motion, AnimatePresence } from "motion/react"
 type SendState = "idle" | "sending" | "success"
 
 export function QuickSend({ onSend }: { onSend?: (record: TransferRecord) => void }) {
-  const { contacts } = useFinanceData()
+  const { contacts, bankAccounts, refresh } = useFinanceData()
   const [selectedContact, setSelectedContact] = useState<string | null>(null)
   const [amount, setValor] = useState("")
   const [note, setNote] = useState("")
@@ -33,31 +34,48 @@ export function QuickSend({ onSend }: { onSend?: (record: TransferRecord) => voi
   const numericValor = Number.parseFloat(amount)
   const canSend = Boolean(selected) && Number.isFinite(numericValor) && numericValor > 0
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (sendState !== "idle" || !canSend) return
     setSendState("sending")
 
-    timeoutRef.current = setTimeout(() => {
-      setSendState("success")
-      if (onSend && selected) {
-        const newRecord: TransferRecord = {
-          id: `tr-${Date.now()}`,
-          type: "sent",
-          contactName: selected.name,
-          contactAvatar: selected.avatar,
-          amount: parseFloat(amount),
-          date: new Date().toLocaleDateString("pt-BR", { month: "short", day: "2-digit", year: "numeric" }),
+    try {
+      const activeAccount = bankAccounts[0]
+      if (activeAccount && selected) {
+        await createTransaction({
+          date: new Date().toISOString().slice(0, 10),
+          payee: `Envio para ${selected.name}`,
+          category: "Transferência",
+          accountId: activeAccount.id,
+          amount: numericValor,
+          type: "expense",
           status: "completed",
-          note: note || undefined,
-        }
-        onSend(newRecord)
+          notes: note || `Transferência enviada para ${selected.name}`,
+        })
+        await refresh()
       }
-      timeoutRef.current = setTimeout(() => {
-        setSendState("idle")
-        setValor("")
-        setNote("")
-      }, 2000)
-    }, 1500)
+    } catch (err) {
+      console.error("Falha ao registrar transferência no Firestore:", err)
+    }
+
+    setSendState("success")
+    if (onSend && selected) {
+      const newRecord: TransferRecord = {
+        id: `tr-${Date.now()}`,
+        type: "sent",
+        contactName: selected.name,
+        contactAvatar: selected.avatar,
+        amount: parseFloat(amount),
+        date: new Date().toLocaleDateString("pt-BR", { month: "short", day: "2-digit", year: "numeric" }),
+        status: "completed",
+        note: note || undefined,
+      }
+      onSend(newRecord)
+    }
+    timeoutRef.current = setTimeout(() => {
+      setSendState("idle")
+      setValor("")
+      setNote("")
+    }, 2000)
   }
 
   return (

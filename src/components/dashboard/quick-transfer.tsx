@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Input } from "@/components/ui/input"
 import { useFinanceData } from "@/components/finance/finance-provider"
+import { createTransaction } from "@/actions/finance"
 import {
   ChevronRightIcon,
   SendIcon,
@@ -22,7 +23,7 @@ import { motion, AnimatePresence } from "motion/react"
 type SendState = "idle" | "sending" | "success"
 
 export function QuickTransfer() {
-  const { contacts } = useFinanceData()
+  const { contacts, bankAccounts, refresh } = useFinanceData()
   const [selectedContact, setSelectedContact] = useState<string | null>(null)
   const [amount, setValor] = useState("250.00")
   const [sendState, setSendState] = useState<SendState>("idle")
@@ -32,17 +33,33 @@ export function QuickTransfer() {
   const numericValor = Number.parseFloat(amount)
   const canSend = Boolean(selected) && Number.isFinite(numericValor) && numericValor > 0
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (sendState !== "idle" || !canSend) return
     setSendState("sending")
 
-    // simulate network delay
+    try {
+      const activeAccount = bankAccounts[0]
+      if (activeAccount && selected) {
+        await createTransaction({
+          date: new Date().toISOString().slice(0, 10),
+          payee: `Transferência para ${selected.name}`,
+          category: "Transferência",
+          accountId: activeAccount.id,
+          amount: numericValor,
+          type: "expense",
+          status: "completed",
+          notes: `Transferência rápida enviada para ${selected.name}`,
+        })
+        await refresh()
+      }
+    } catch (err) {
+      console.error("Falha ao registrar transferência no Firestore:", err)
+    }
+
+    setSendState("success")
     timeoutRef.current = setTimeout(() => {
-      setSendState("success")
-      timeoutRef.current = setTimeout(() => {
-        setSendState("idle")
-      }, 2000)
-    }, 1500)
+      setSendState("idle")
+    }, 2000)
   }
 
   return (
