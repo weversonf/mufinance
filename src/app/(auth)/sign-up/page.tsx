@@ -56,6 +56,10 @@ function authMessage(error: unknown) {
   if (code.includes("email-already-in-use")) return "Este e-mail já possui uma conta."
   if (code.includes("weak-password")) return "Escolha uma senha mais forte."
   if (code.includes("popup-closed-by-user")) return "A janela do Google foi fechada antes da conclusão."
+  if (code.includes("unauthorized-domain")) {
+    const host = typeof window !== "undefined" ? window.location.hostname : ""
+    return `Domínio não autorizado no Firebase (${host}). Adicione-o em Firebase Console > Authentication > Configurações > Domínios autorizados.`
+  }
   return error instanceof Error ? error.message : "Não foi possível criar a conta agora."
 }
 

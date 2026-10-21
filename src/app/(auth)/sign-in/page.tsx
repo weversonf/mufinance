@@ -54,6 +54,10 @@ function authMessage(error: unknown) {
   if (code.includes("invalid-credential") || code.includes("wrong-password") || code.includes("user-not-found")) return "E-mail ou senha incorretos."
   if (code.includes("too-many-requests")) return "Muitas tentativas. Aguarde alguns minutos e tente novamente."
   if (code.includes("popup-closed-by-user")) return "A janela do Google foi fechada antes da conclusão."
+  if (code.includes("unauthorized-domain")) {
+    const host = typeof window !== "undefined" ? window.location.hostname : ""
+    return `Domínio não autorizado no Firebase (${host}). Adicione-o em Firebase Console > Authentication > Configurações > Domínios autorizados.`
+  }
   return error instanceof Error ? error.message : "Não foi possível entrar agora."
 }
 
