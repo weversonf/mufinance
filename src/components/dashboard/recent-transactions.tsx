@@ -53,11 +53,19 @@ export function RecentTransactions() {
             </div>
 
             {/* Rows */}
-            {recentTransactions.map((tx) => (
-              <div
-                key={tx.id}
-                className="group grid grid-cols-[1fr_100px_32px] sm:grid-cols-[1fr_140px_100px_32px] md:grid-cols-[1fr_140px_100px_120px_32px] items-center gap-4 rounded-lg py-2.5 transition-colors hover:bg-muted/50"
-              >
+            {recentTransactions.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-10 text-center">
+                <p className="text-sm font-medium text-foreground">Nenhuma transação registrada ainda</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Use o botão &ldquo;+&rdquo; no cabeçalho para adicionar seu primeiro lançamento.
+                </p>
+              </div>
+            ) : (
+              recentTransactions.map((tx) => (
+                <div
+                  key={tx.id}
+                  className="group grid grid-cols-[1fr_100px_32px] sm:grid-cols-[1fr_140px_100px_32px] md:grid-cols-[1fr_140px_100px_120px_32px] items-center gap-4 rounded-lg py-2.5 transition-colors hover:bg-muted/50"
+                >
                 {/* Merchant */}
                 <div className="flex items-center gap-3">
                   <Image
@@ -111,7 +119,7 @@ export function RecentTransactions() {
                   <MoreHorizontalIcon className="size-4" />
                 </Button>
               </div>
-            ))}
+            )))}
           </div>
         </div>
       </CardContent>

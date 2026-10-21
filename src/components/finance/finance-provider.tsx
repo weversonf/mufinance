@@ -33,6 +33,8 @@ type FinanceDataValue = {
   loading: boolean
   error: string
   refresh: () => Promise<void>
+  isDemoMode: boolean
+  setDemoMode: (val: boolean) => void
   contacts: Contact[]
   accountCards: AccountCard[]
   walletBalance: { amount: number; changePercent: number; changeDirection: "up" | "down" }
@@ -121,7 +123,7 @@ function signedTransaction(transaction: Record<string, unknown>) {
   return 0
 }
 
-function buildData(snapshot: FinanceSnapshot | null): Omit<FinanceDataValue, "snapshot" | "loading" | "error" | "refresh"> {
+function buildData(snapshot: FinanceSnapshot | null, isDemoMode: boolean = false): Omit<FinanceDataValue, "snapshot" | "loading" | "error" | "refresh" | "isDemoMode" | "setDemoMode"> {
   const accounts = snapshot?.accounts ?? []
   const cards = snapshot?.creditCards ?? []
   const transactions = snapshot?.transactions ?? []
@@ -287,54 +289,116 @@ function buildData(snapshot: FinanceSnapshot | null): Omit<FinanceDataValue, "sn
     }
   })
 
+  const default12Months: FinancialOverviewPoint[] = [
+    { month: "Jan", currentYear: 0, lastYear: 0 },
+    { month: "Fev", currentYear: 0, lastYear: 0 },
+    { month: "Mar", currentYear: 0, lastYear: 0 },
+    { month: "Abr", currentYear: 0, lastYear: 0 },
+    { month: "Mai", currentYear: 0, lastYear: 0 },
+    { month: "Jun", currentYear: 0, lastYear: 0 },
+    { month: "Jul", currentYear: 0, lastYear: 0 },
+    { month: "Ago", currentYear: 0, lastYear: 0 },
+    { month: "Set", currentYear: 0, lastYear: 0 },
+    { month: "Out", currentYear: 0, lastYear: 0 },
+    { month: "Nov", currentYear: 0, lastYear: 0 },
+    { month: "Dez", currentYear: 0, lastYear: 0 },
+  ]
+  const emptyMovement = { "7d": [] as MoneyMovementPoint[], "30d": [] as MoneyMovementPoint[], "90d": [] as MoneyMovementPoint[] }
+
   const hasRealAccounts = visibleAccounts.length > 0
   const hasRealTransactions = transactions.length > 0
   const hasRealCards = cards.length > 0
   const hasRealBudgets = budgetCategories.length > 0
   const hasRealGoals = savingsGoals.length > 0
 
+  if (isDemoMode) {
+    return {
+      contacts: seed.contacts,
+      accountCards: hasRealAccounts ? accountCards : seed.accountCards,
+      walletBalance: hasRealAccounts
+        ? { amount: balance, changePercent: 0, changeDirection: "up" as const }
+        : seed.walletBalance,
+      spendingLimit: hasRealBudgets
+        ? { budget, spent, remaining: Math.max(0, budget - spent), currency: "BRL", periodStart: currentMonth, periodEnd: currentMonth }
+        : { ...seed.spendingLimit, currency: "BRL" },
+      financialOverview: (hasRealTransactions && financialOverview.length > 0)
+        ? financialOverview
+        : seed.financialOverview,
+      moneyMovementByPeriod: hasRealTransactions
+        ? moneyMovementByPeriod
+        : seed.moneyMovementByPeriod,
+      recentTransactions: hasRealTransactions ? recentTransactions : seed.recentTransactions,
+      fullTransactions: hasRealTransactions ? fullTransactions : seed.fullTransactions,
+      cardsData: hasRealCards ? cardsData : seed.cardsData,
+      categoryBreakdowns: (hasRealTransactions && categoryBreakdowns.length > 0)
+        ? categoryBreakdowns
+        : seed.categoryBreakdowns,
+      budgetCategories: hasRealBudgets ? budgetCategories : seed.budgetCategories,
+      savingsGoals: hasRealGoals ? savingsGoals : seed.savingsGoals,
+      bankAccounts: hasRealAccounts ? bankAccounts : seed.bankAccounts,
+      transferRecords: seed.transferRecords,
+      notifications: seed.notifications,
+      cryptoCoins: seed.cryptoCoins,
+      cryptoTransactions: seed.cryptoTransactions,
+      financialHealthScore: (hasRealTransactions || hasRealAccounts)
+        ? { overall: Math.min(100, Math.round((accounts.length > 0 ? 50 : 0) + (transactions.length > 0 ? 50 : 0))), trend: "up" as const, trendDelta: 0, factors: [] }
+        : seed.financialHealthScore,
+      holdings: seed.holdings,
+      watchlistItems: seed.watchlistItems,
+      portfolioHistory: seed.portfolioHistory,
+      monthComparisons: seed.monthComparisons,
+      aiInsights: seed.aiInsights,
+      recurringCharges: seed.recurringCharges,
+      faqItems: seed.faqItems,
+      supportTickets: seed.supportTickets,
+      dailySpending: (hasRealTransactions && dailySpending.length > 0) ? dailySpending : seed.dailySpending,
+      spendingHeatmapData: (hasRealTransactions && dailySpending.length > 0) ? dailySpending : seed.dailySpending,
+      cryptoPriceHistory: seed.cryptoPriceHistory || [],
+      systemStatus: [
+        { name: "Sistema Principal", status: "operational" as const },
+        { name: "Banco Firestore", status: "operational" as const },
+        { name: "Autenticação", status: "operational" as const },
+        { name: "API de Cotações", status: "operational" as const },
+      ],
+    }
+  }
+
+  // Pure real clean mode
   return {
-    contacts: seed.contacts,
-    accountCards: hasRealAccounts ? accountCards : seed.accountCards,
-    walletBalance: hasRealAccounts
-      ? { amount: balance, changePercent: 0, changeDirection: "up" as const }
-      : seed.walletBalance,
-    spendingLimit: hasRealBudgets
-      ? { budget, spent, remaining: Math.max(0, budget - spent), currency: "BRL", periodStart: currentMonth, periodEnd: currentMonth }
-      : { ...seed.spendingLimit, currency: "BRL" },
-    financialOverview: (hasRealTransactions && financialOverview.length > 0)
-      ? financialOverview
-      : seed.financialOverview,
-    moneyMovementByPeriod: hasRealTransactions
-      ? moneyMovementByPeriod
-      : seed.moneyMovementByPeriod,
-    recentTransactions: hasRealTransactions ? recentTransactions : seed.recentTransactions,
-    fullTransactions: hasRealTransactions ? fullTransactions : seed.fullTransactions,
-    cardsData: hasRealCards ? cardsData : seed.cardsData,
-    categoryBreakdowns: (hasRealTransactions && categoryBreakdowns.length > 0)
-      ? categoryBreakdowns
-      : seed.categoryBreakdowns,
-    budgetCategories: hasRealBudgets ? budgetCategories : seed.budgetCategories,
-    savingsGoals: hasRealGoals ? savingsGoals : seed.savingsGoals,
-    bankAccounts: hasRealAccounts ? bankAccounts : seed.bankAccounts,
-    transferRecords: seed.transferRecords,
-    notifications: seed.notifications,
-    cryptoCoins: seed.cryptoCoins,
-    cryptoTransactions: seed.cryptoTransactions,
-    financialHealthScore: (hasRealTransactions || hasRealAccounts)
-      ? { overall: Math.min(100, Math.round((accounts.length > 0 ? 50 : 0) + (transactions.length > 0 ? 50 : 0))), trend: "up" as const, trendDelta: 0, factors: [] }
-      : seed.financialHealthScore,
-    holdings: seed.holdings,
-    watchlistItems: seed.watchlistItems,
-    portfolioHistory: seed.portfolioHistory,
-    monthComparisons: seed.monthComparisons,
-    aiInsights: seed.aiInsights,
-    recurringCharges: seed.recurringCharges,
+    contacts: [],
+    accountCards,
+    walletBalance: { amount: balance, changePercent: 0, changeDirection: "up" as const },
+    spendingLimit: { budget, spent, remaining: Math.max(0, budget - spent), currency: "BRL", periodStart: currentMonth, periodEnd: currentMonth },
+    financialOverview: financialOverview.length > 0 ? financialOverview : default12Months,
+    moneyMovementByPeriod: hasRealTransactions ? moneyMovementByPeriod : emptyMovement,
+    recentTransactions,
+    fullTransactions,
+    cardsData,
+    categoryBreakdowns,
+    budgetCategories,
+    savingsGoals,
+    bankAccounts,
+    transferRecords: [],
+    notifications: [],
+    cryptoCoins: [],
+    cryptoTransactions: [],
+    financialHealthScore: {
+      overall: Math.min(100, Math.round((accounts.length > 0 ? 50 : 0) + (transactions.length > 0 ? 50 : 0))),
+      trend: "up" as const,
+      trendDelta: 0,
+      factors: []
+    },
+    holdings: [],
+    watchlistItems: [],
+    portfolioHistory: [],
+    monthComparisons: [],
+    aiInsights: [],
+    recurringCharges: [],
     faqItems: seed.faqItems,
-    supportTickets: seed.supportTickets,
-    dailySpending: (hasRealTransactions && dailySpending.length > 0) ? dailySpending : seed.dailySpending,
-    spendingHeatmapData: (hasRealTransactions && dailySpending.length > 0) ? dailySpending : seed.dailySpending,
-    cryptoPriceHistory: seed.cryptoPriceHistory || [],
+    supportTickets: [],
+    dailySpending,
+    spendingHeatmapData: dailySpending,
+    cryptoPriceHistory: [],
     systemStatus: [
       { name: "Sistema Principal", status: "operational" as const },
       { name: "Banco Firestore", status: "operational" as const },
@@ -348,6 +412,21 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
   const [snapshot, setSnapshot] = useState<FinanceSnapshot | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
+  const [isDemoMode, setIsDemoMode] = useState<boolean>(false)
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("mufinance_demo_mode")
+      if (stored === "true") setIsDemoMode(true)
+    } catch {}
+  }, [])
+
+  const setDemoMode = useCallback((val: boolean) => {
+    setIsDemoMode(val)
+    try {
+      localStorage.setItem("mufinance_demo_mode", String(val))
+    } catch {}
+  }, [])
 
   const refresh = useCallback(async () => {
     setLoading(true)
@@ -368,8 +447,11 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   useEffect(() => { void refresh() }, [refresh])
-  const mapped = useMemo(() => buildData(snapshot), [snapshot])
-  const value = useMemo(() => ({ snapshot, loading, error, refresh, ...mapped }), [snapshot, loading, error, refresh, mapped])
+  const mapped = useMemo(() => buildData(snapshot, isDemoMode), [snapshot, isDemoMode])
+  const value = useMemo(
+    () => ({ snapshot, loading, error, refresh, isDemoMode, setDemoMode, ...mapped }),
+    [snapshot, loading, error, refresh, isDemoMode, setDemoMode, mapped]
+  )
   return <FinanceDataContext.Provider value={value}>{children}</FinanceDataContext.Provider>
 }
 

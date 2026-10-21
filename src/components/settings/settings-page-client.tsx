@@ -162,6 +162,9 @@ function DangerZoneDialog() {
         throw new Error(errData.error || "Erro na API")
       }
       const data = await res.json()
+      try {
+        localStorage.setItem("mufinance_demo_mode", "false")
+      } catch {}
       alert(`Tudo apagado com sucesso. ${data.deleted ?? 0} documentos removidos (transações, contas, cartões, categorias, metas, orçamentos).`)
       setOpen(false)
       window.location.reload()

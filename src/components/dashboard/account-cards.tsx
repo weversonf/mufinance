@@ -129,7 +129,16 @@ export function AccountCards() {
             >
               {/* Stacked cards */}
               <div className="relative h-[200px]">
-                {orderedCards.map((c, stackPos) => {
+                {orderedCards.length === 0 ? (
+                  <div className="flex h-[152px] flex-col items-center justify-center rounded-2xl border border-dashed border-border/80 bg-muted/20 p-4 text-center">
+                    <CreditCardIcon className="size-6 text-muted-foreground/60 mb-2" />
+                    <p className="text-sm font-semibold">Nenhuma conta cadastrada</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Clique em &ldquo;Add New Card&rdquo; abaixo ou vá em Contas.
+                    </p>
+                  </div>
+                ) : (
+                  orderedCards.map((c, stackPos) => {
                   const isFront = stackPos === orderedCards.length - 1
                   const maxOffset = 48 / Math.max(orderedCards.length - 1, 1)
                   return (
@@ -173,7 +182,7 @@ export function AccountCards() {
                       </div>
                     </motion.button>
                   )
-                })}
+                }))}
               </div>
             </motion.div>
           ) : (
