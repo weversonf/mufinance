@@ -15,7 +15,7 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart"
-import { monthComparisons } from "@/data/seed"
+import { useFinanceData } from "@/components/finance/finance-provider"
 
 const chartConfig = {
   thisMonth: {
@@ -28,12 +28,13 @@ const chartConfig = {
   },
 } satisfies ChartConfig
 
-function ChangeLabel(props: Record<string, unknown>) {
-  const { x, y, width, index } = props as {
+function ChangeLabel(props: Record<string, unknown> & { monthComparisons?: Array<{ thisMonth: number; lastMonth: number }> }) {
+  const { x, y, width, index, monthComparisons = [] } = props as {
     x: number
     y: number
     width: number
     index: number
+    monthComparisons?: Array<{ thisMonth: number; lastMonth: number }>
   }
   const row = monthComparisons[index]
   if (!row || row.lastMonth === 0) return null
@@ -54,11 +55,27 @@ function ChangeLabel(props: Record<string, unknown>) {
 }
 
 export function MonthComparison() {
+  const { monthComparisons } = useFinanceData()
   const totals = useMemo(() => {
     const thisMonth = monthComparisons.reduce((s, r) => s + r.thisMonth, 0)
     const lastMonth = monthComparisons.reduce((s, r) => s + r.lastMonth, 0)
     return { thisMonth, lastMonth }
-  }, [])
+  }, [monthComparisons])
+
+  if (monthComparisons.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Comparativo Mensal</CardTitle>
+          <CardDescription>Comparação com o mês anterior</CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
+          <p className="text-sm font-medium text-foreground">Sem dados comparativos ainda</p>
+          <p className="text-xs mt-1">Conforme você acumular lançamentos nos meses, a comparação será calculada automaticamente.</p>
+        </CardContent>
+      </Card>
+    )
+  }
 
   return (
     <Card>
@@ -143,7 +160,7 @@ export function MonthComparison() {
             >
               <LabelList
                 dataKey="thisMonth"
-                content={<ChangeLabel />}
+                content={<ChangeLabel monthComparisons={monthComparisons} />}
               />
             </Bar>
           </BarChart>

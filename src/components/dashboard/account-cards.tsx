@@ -134,7 +134,7 @@ export function AccountCards() {
                     <CreditCardIcon className="size-6 text-muted-foreground/60 mb-2" />
                     <p className="text-sm font-semibold">Nenhuma conta cadastrada</p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Clique em &ldquo;Add New Card&rdquo; abaixo ou vá em Contas.
+                      Clique em &ldquo;Adicionar Cartão&rdquo; abaixo ou vá em Contas.
                     </p>
                   </div>
                 ) : (

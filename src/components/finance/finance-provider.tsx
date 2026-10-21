@@ -417,7 +417,10 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     try {
       const stored = localStorage.getItem("mufinance_demo_mode")
-      if (stored === "true") setIsDemoMode(true)
+      if (stored === "true") {
+        localStorage.setItem("mufinance_demo_mode", "false")
+        setIsDemoMode(false)
+      }
     } catch {}
   }, [])
 

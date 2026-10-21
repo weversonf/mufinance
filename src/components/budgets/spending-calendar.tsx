@@ -2,24 +2,27 @@
 
 import { useMemo } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { dailySpending } from "@/data/seed"
+import { useFinanceData } from "@/components/finance/finance-provider"
 import { cn } from "@/lib/utils"
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
 export function SpendingCalendar() {
+  const { dailySpending } = useFinanceData()
+  const now = new Date()
   const { weeks, maxValor } = useMemo(() => {
     const map = new Map(dailySpending.map((d) => [d.date, d.amount]))
-    // Build April 2026 calendar
-    const firstDay = new Date(2026, 3, 1) // April 1
-    const startPad = firstDay.getDay() // day of week offset
-    const daysInMonth = 30
+    const year = now.getFullYear()
+    const month = now.getMonth()
+    const firstDay = new Date(year, month, 1)
+    const startPad = firstDay.getDay()
+    const daysInMonth = new Date(year, month + 1, 0).getDate()
     const cells: { day: number | null; amount: number; date: string }[] = []
 
     for (let i = 0; i < startPad; i++) cells.push({ day: null, amount: 0, date: "" })
     let max = 0
     for (let d = 1; d <= daysInMonth; d++) {
-      const dateStr = `2026-04-${String(d).padStart(2, "0")}`
+      const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`
       const amount = map.get(dateStr) ?? 0
       if (amount > max) max = amount
       cells.push({ day: d, amount, date: dateStr })
@@ -29,18 +32,19 @@ export function SpendingCalendar() {
     for (let i = 0; i < cells.length; i += 7) {
       weeks.push(cells.slice(i, i + 7))
     }
-    // Pad last week
     const last = weeks[weeks.length - 1]
-    while (last.length < 7) last.push({ day: null, amount: 0, date: "" })
+    if (last) {
+      while (last.length < 7) last.push({ day: null, amount: 0, date: "" })
+    }
 
     return { weeks, maxValor: max }
-  }, [])
+  }, [dailySpending, now])
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="text-base font-semibold">
-          April 2026 Spending
+          Calendário de Gastos
         </CardTitle>
       </CardHeader>
       <CardContent>

@@ -10,7 +10,8 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card"
-import { recurringCharges, type RecurringCharge } from "@/data/seed"
+import { useFinanceData } from "@/components/finance/finance-provider"
+import type { RecurringCharge } from "@/data/seed"
 import { cn } from "@/lib/utils"
 import { CheckCircle2Icon, FlagIcon, CircleDashedIcon } from "lucide-react"
 
@@ -34,6 +35,7 @@ function StatusIcon({ status }: { status: Status }) {
 }
 
 export function RecurringDetector() {
+  const { recurringCharges } = useFinanceData()
   const [statuses, setStatuses] = useState<Record<string, Status>>(() => {
     const map: Record<string, Status> = {}
     recurringCharges.forEach((c) => {
@@ -48,8 +50,23 @@ export function RecurringDetector() {
         if (c.frequency === "yearly") return s + c.amount / 12
         return s + c.amount
       }, 0),
-    []
+    [recurringCharges]
   )
+
+  if (recurringCharges.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Assinaturas & Recorrentes</CardTitle>
+          <CardDescription>Gastos recorrentes identificados</CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
+          <p className="text-sm font-medium text-foreground">Nenhuma cobrança recorrente identificada</p>
+          <p className="text-xs mt-1">Conforme transações periódicas forem lançadas, elas aparecerão aqui.</p>
+        </CardContent>
+      </Card>
+    )
+  }
 
   const summary = useMemo(() => {
     let wanted = 0

@@ -11,7 +11,8 @@ import {
   CardAction,
 } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { financialHealthScore, type HealthFactor } from "@/data/seed"
+import { useFinanceData } from "@/components/finance/finance-provider"
+import type { HealthFactor } from "@/data/seed"
 import {
   HeartPulseIcon,
   TrendingUpIcon,
@@ -255,6 +256,7 @@ function FactorDetail({ factor, onClose }: { factor: HealthFactor; onClose: () =
 // ── Main component ───────────────────────────────────────────────────────────
 
 export function HealthScore() {
+  const { financialHealthScore } = useFinanceData()
   const { overall, trend, trendDelta, factors } = financialHealthScore
   const [selectedFactor, setSelectedFactor] = useState<HealthFactor | null>(null)
 
@@ -301,36 +303,42 @@ export function HealthScore() {
                   exit={{ opacity: 0 }}
                   className="space-y-1"
                 >
-                  {factors.map((factor, i) => {
-                    const cfg = statusColor[factor.status]
-                    return (
-                      <motion.button
-                        key={factor.id}
-                        type="button"
-                        initial={{ opacity: 0, x: -8 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.8 + i * 0.06 }}
-                        onClick={() => setSelectedFactor(factor)}
-                        className="flex w-full items-center gap-2.5 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-muted/50"
-                      >
-                        <div className={cn("flex size-6 shrink-0 items-center justify-center rounded-md", cfg.bg, cfg.text)}>
-                          {factorIcons[factor.id]}
-                        </div>
-                        <span className="flex-1 truncate text-xs font-medium">{factor.label}</span>
-                        <div className="hidden h-1.5 w-16 overflow-hidden rounded-full bg-muted sm:block">
-                          <motion.div
-                            className="h-full rounded-full"
-                            style={{ backgroundColor: cfg.fill }}
-                            initial={{ width: 0 }}
-                            animate={{ width: `${factor.score}%` }}
-                            transition={{ duration: 0.7, delay: 1 + i * 0.06 }}
-                          />
-                        </div>
-                        <span className="w-6 text-right text-[11px] font-semibold tabular-nums">{factor.score}</span>
-                        <ChevronRightIcon className="size-3 text-muted-foreground" />
-                      </motion.button>
-                    )
-                  })}
+                  {factors.length === 0 ? (
+                    <div className="py-2 text-center text-xs text-muted-foreground">
+                      Insira contas e transações para gerar o diagnóstico de saúde.
+                    </div>
+                  ) : (
+                    factors.map((factor, i) => {
+                      const cfg = statusColor[factor.status]
+                      return (
+                        <motion.button
+                          key={factor.id}
+                          type="button"
+                          initial={{ opacity: 0, x: -8 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.8 + i * 0.06 }}
+                          onClick={() => setSelectedFactor(factor)}
+                          className="flex w-full items-center gap-2.5 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-muted/50"
+                        >
+                          <div className={cn("flex size-6 shrink-0 items-center justify-center rounded-md", cfg.bg, cfg.text)}>
+                            {factorIcons[factor.id]}
+                          </div>
+                          <span className="flex-1 truncate text-xs font-medium">{factor.label}</span>
+                          <div className="hidden h-1.5 w-16 overflow-hidden rounded-full bg-muted sm:block">
+                            <motion.div
+                              className="h-full rounded-full"
+                              style={{ backgroundColor: cfg.fill }}
+                              initial={{ width: 0 }}
+                              animate={{ width: `${factor.score}%` }}
+                              transition={{ duration: 0.7, delay: 1 + i * 0.06 }}
+                            />
+                          </div>
+                          <span className="w-6 text-right text-[11px] font-semibold tabular-nums">{factor.score}</span>
+                          <ChevronRightIcon className="size-3 text-muted-foreground" />
+                        </motion.button>
+                      )
+                    })
+                  )}
                 </motion.div>
               )}
             </AnimatePresence>

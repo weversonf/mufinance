@@ -28,6 +28,8 @@ export function LiveTicker() {
     return [...fromHoldings, ...fromWatchlist]
   }, [])
 
+  if (entries.length === 0) return null
+
   const tickerItems = entries.map((e, i) => {
     const positive = e.change >= 0
     return (

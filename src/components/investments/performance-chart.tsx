@@ -37,6 +37,20 @@ export function PerformanceChart() {
     [period]
   )
 
+  if (data.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Desempenho</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
+          <p className="text-sm font-medium text-foreground">Sem histórico de desempenho</p>
+          <p className="text-xs mt-1">Conforme seus investimentos evoluírem, o gráfico de rentabilidade será traçado aqui.</p>
+        </CardContent>
+      </Card>
+    )
+  }
+
   return (
     <Card>
       <CardHeader>

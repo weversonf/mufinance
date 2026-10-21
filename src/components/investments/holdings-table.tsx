@@ -26,6 +26,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { cn } from "@/lib/utils"
+import { useFinanceData } from "@/components/finance/finance-provider"
 import { holdings as seedAtivos, type Holding } from "@/data/seed"
 
 type SortDir = "asc" | "desc" | null
@@ -44,9 +45,26 @@ function getPl(h: Holding) {
 }
 
 export function HoldingsTable() {
+  const { holdings: realHoldings } = useFinanceData()
+  const sourceHoldings = realHoldings.length > 0 ? realHoldings : seedAtivos
+
+  if (sourceHoldings.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Carteira de Investimentos</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
+          <p className="text-sm font-medium text-foreground">Nenhum investimento registrado</p>
+          <p className="text-xs mt-1">Conecte ou adicione seus ativos para acompanhar cotações e rendimentos.</p>
+        </CardContent>
+      </Card>
+    )
+  }
+
   const [prices, setPrices] = useState<Record<string, number>>(() => {
     const map: Record<string, number> = {}
-    for (const h of seedAtivos) map[h.id] = h.currentPrice
+    for (const h of sourceHoldings) map[h.id] = h.currentPrice
     return map
   })
   const [flashMap, setFlashMap] = useState<Record<string, "up" | "down" | null>>({})

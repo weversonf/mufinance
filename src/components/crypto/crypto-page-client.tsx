@@ -34,6 +34,7 @@ export function CryptoPageClient() {
 
   // Simulate live price drift every 3 seconds
   React.useEffect(() => {
+    if (Object.keys(prices).length === 0) return
     const interval = setInterval(() => {
       setPrices((prev) => {
         const next = { ...prev }
@@ -46,7 +47,23 @@ export function CryptoPageClient() {
       })
     }, 3000)
     return () => clearInterval(interval)
-  }, [])
+  }, [prices])
+
+  if (cryptoCoins.length === 0) {
+    return (
+      <div className="flex flex-1 flex-col items-center justify-center p-8 text-center">
+        <div className="max-w-md space-y-3 rounded-2xl border bg-card p-8 shadow-sm">
+          <h2 className="text-lg font-semibold">Criptomoedas</h2>
+          <p className="text-sm text-muted-foreground">
+            Nenhuma carteira de criptomoedas vinculada no momento.
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Quando você vincular uma conta do tipo Cripto em Contas, seus saldos e negociações aparecerão aqui.
+          </p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="grid gap-4 px-4 pb-6 lg:grid-cols-12">

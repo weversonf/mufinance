@@ -9,7 +9,7 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart"
 import { Area, AreaChart, ReferenceLine, XAxis, YAxis } from "recharts"
-import { budgetCategories, dailySpending } from "@/data/seed"
+import { useFinanceData } from "@/components/finance/finance-provider"
 import { AlertTriangleIcon, CheckCircle2Icon } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -21,6 +21,7 @@ const chartConfig = {
 } satisfies ChartConfig
 
 export function MonthProjection() {
+  const { budgetCategories, dailySpending } = useFinanceData()
   const stats = useMemo(() => {
     const totalBudget = budgetCategories.reduce((s, b) => s + b.budget, 0)
     const spentDays = dailySpending.filter((d) => d.amount > 0)
@@ -38,7 +39,21 @@ export function MonthProjection() {
     }, [])
 
     return { totalBudget, totalSpent, avgDaily, daysLeft, projected, overBudget, chartData }
-  }, [])
+  }, [budgetCategories, dailySpending])
+
+  if (budgetCategories.length === 0 && dailySpending.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base font-semibold">Projeção Mensal</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
+          <p className="text-sm font-medium text-foreground">Sem projeção disponível</p>
+          <p className="text-xs mt-1">Defina seus orçamentos e insira transações para ver o ritmo projetado do mês.</p>
+        </CardContent>
+      </Card>
+    )
+  }
 
   return (
     <Card>

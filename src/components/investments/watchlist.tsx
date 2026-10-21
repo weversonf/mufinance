@@ -22,6 +22,20 @@ export function Watchlist() {
     setItems((prev) => prev.filter((w) => w.id !== id))
   }
 
+  if (items.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Lista de observação</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
+          <p className="text-sm font-medium text-foreground">Sua lista de observação está vazia</p>
+          <p className="text-xs mt-1">Adicione ativos para acompanhar cotações diárias.</p>
+        </CardContent>
+      </Card>
+    )
+  }
+
   return (
     <Card>
       <CardHeader>

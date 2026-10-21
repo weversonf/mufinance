@@ -465,14 +465,16 @@ export async function deleteAllTransactions() {
   
   const txnsByOwnerId = await db.collection("transactions").where("ownerId", "==", user.uid).get();
   const txnsByUid = await db.collection("transactions").where("uid", "==", user.uid).get();
+  const txnsByUserId = await db.collection("transactions").where("userId", "==", user.uid).get();
   
   const accsByOwnerId = await db.collection("accounts").where("ownerId", "==", user.uid).get();
   const accsByUid = await db.collection("accounts").where("uid", "==", user.uid).get();
+  const accsByUserId = await db.collection("accounts").where("userId", "==", user.uid).get();
 
   const operations: Array<{ ref: FirebaseFirestore.DocumentReference, data?: Record<string, unknown>, type: "update" | "delete" }> = [];
   
-  const allAccounts = [...accsByOwnerId.docs, ...accsByUid.docs];
-  const allTransactions = [...txnsByOwnerId.docs, ...txnsByUid.docs];
+  const allAccounts = [...accsByOwnerId.docs, ...accsByUid.docs, ...accsByUserId.docs];
+  const allTransactions = [...txnsByOwnerId.docs, ...txnsByUid.docs, ...txnsByUserId.docs];
   
   // Zera os saldos - use um Map para evitar duplicatas (se o documento tiver ambos)
   const uniqueAccounts = new Map<string, FirebaseFirestore.QueryDocumentSnapshot>();
@@ -510,11 +512,12 @@ export async function deleteAllData() {
   const seen = new Set<string>();
 
   for (const col of wipeCollections) {
-    const [byOwner, byUid] = await Promise.all([
+    const [byOwner, byUid, byUserId] = await Promise.all([
       db.collection(col).where("ownerId", "==", uid).get().catch(() => null),
       db.collection(col).where("uid", "==", uid).get().catch(() => null),
+      db.collection(col).where("userId", "==", uid).get().catch(() => null),
     ]);
-    for (const doc of [...(byOwner?.docs ?? []), ...(byUid?.docs ?? [])]) {
+    for (const doc of [...(byOwner?.docs ?? []), ...(byUid?.docs ?? []), ...(byUserId?.docs ?? [])]) {
       const key = `${col}/${doc.id}`;
       if (!seen.has(key)) {
         seen.add(key);
@@ -525,12 +528,13 @@ export async function deleteAllData() {
 
   // Contas: regra de negócio — deve permanecer exatamente 1 conta padrão "Carteira" com saldo 0
   // As demais são excluídas. A padrão é escolhida por nome "Carteira" (case-insensitive) ou a mais antiga.
-  const [accByOwner, accByUid] = await Promise.all([
+  const [accByOwner, accByUid, accByUserId] = await Promise.all([
     db.collection("accounts").where("ownerId", "==", uid).get().catch(() => null),
     db.collection("accounts").where("uid", "==", uid).get().catch(() => null),
+    db.collection("accounts").where("userId", "==", uid).get().catch(() => null),
   ]);
   const accMap = new Map<string, FirebaseFirestore.QueryDocumentSnapshot>();
-  for (const doc of [...(accByOwner?.docs ?? []), ...(accByUid?.docs ?? [])]) accMap.set(doc.id, doc);
+  for (const doc of [...(accByOwner?.docs ?? []), ...(accByUid?.docs ?? []), ...(accByUserId?.docs ?? [])]) accMap.set(doc.id, doc);
   const accounts = [...accMap.values()];
 
   let keepRef: FirebaseFirestore.DocumentReference | null = null;

@@ -25,7 +25,7 @@ type SendState = "idle" | "sending" | "success"
 export function QuickTransfer() {
   const { contacts, bankAccounts, refresh } = useFinanceData()
   const [selectedContact, setSelectedContact] = useState<string | null>(null)
-  const [amount, setValor] = useState("250.00")
+  const [amount, setValor] = useState("0.00")
   const [sendState, setSendState] = useState<SendState>("idle")
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>(null)
   const selectedId = selectedContact ?? contacts[0]?.id ?? null

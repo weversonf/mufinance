@@ -40,6 +40,20 @@ export function PortfolioAllocation() {
     return { sectorData: data, totalValue: total }
   }, [])
 
+  if (sectorData.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Alocação por Setor</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
+          <p className="text-sm font-medium text-foreground">Sem dados de alocação</p>
+          <p className="text-xs mt-1">A distribuição por classes e setores será montada com base nos seus ativos.</p>
+        </CardContent>
+      </Card>
+    )
+  }
+
   const chartConfig = useMemo<ChartConfig>(() => {
     const config: ChartConfig = {}
     sectorData.forEach((s) => {

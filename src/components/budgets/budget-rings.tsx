@@ -1,7 +1,7 @@
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { budgetCategories } from "@/data/seed"
+import { useFinanceData } from "@/components/finance/finance-provider"
 import { motion } from "motion/react"
 import {
   UtensilsIcon,
@@ -30,6 +30,24 @@ const RADIUS = 40
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS
 
 export function BudgetRings() {
+  const { budgetCategories } = useFinanceData()
+
+  if (budgetCategories.length === 0) {
+    return (
+      <Card className="col-span-full">
+        <CardHeader>
+          <CardTitle className="text-base font-semibold">
+            Orçamentos Mensais
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col items-center justify-center py-10 text-center text-muted-foreground">
+          <p className="text-sm font-medium text-foreground">Nenhum orçamento configurado</p>
+          <p className="text-xs mt-1">Configure seus limites de gastos por categoria na aba Orçamentos.</p>
+        </CardContent>
+      </Card>
+    )
+  }
+
   return (
     <Card className="col-span-full">
       <CardHeader>

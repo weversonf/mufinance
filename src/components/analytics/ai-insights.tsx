@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { aiInsights } from "@/data/seed"
+import { useFinanceData } from "@/components/finance/finance-provider"
 import { cn } from "@/lib/utils"
 import {
   BrainIcon,
@@ -44,6 +44,25 @@ function TrendIcon({ trend }: { trend: "up" | "down" | "neutral" }) {
 }
 
 export function AiInsights() {
+  const { aiInsights } = useFinanceData()
+
+  if (aiInsights.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <SparklesIcon className="size-4 text-primary" />
+            Insights Inteligentes
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
+          <p className="text-sm font-medium text-foreground">Nenhum insight disponível ainda</p>
+          <p className="text-xs mt-1">Conforme você registrar lançamentos, a IA analisará seus padrões financeiros.</p>
+        </CardContent>
+      </Card>
+    )
+  }
+
   return (
     <Card>
       <CardHeader>

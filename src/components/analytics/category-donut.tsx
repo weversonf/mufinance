@@ -17,7 +17,7 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart"
-import { categoryBreakdowns } from "@/data/seed"
+import { useFinanceData } from "@/components/finance/finance-provider"
 
 const SUBCATEGORY_COLORS = [
   "var(--color-chart-1)",
@@ -28,16 +28,17 @@ const SUBCATEGORY_COLORS = [
 ]
 
 export function CategoryDonut() {
+  const { categoryBreakdowns } = useFinanceData()
   const [selected, setSelected] = useState<string | null>(null)
 
   const total = useMemo(
     () => categoryBreakdowns.reduce((s, c) => s + c.amount, 0),
-    []
+    [categoryBreakdowns]
   )
 
   const selectedCategory = useMemo(
     () => categoryBreakdowns.find((c) => c.category === selected) ?? null,
-    [selected]
+    [categoryBreakdowns, selected]
   )
 
   const chartConfig = useMemo<ChartConfig>(() => {
@@ -59,7 +60,21 @@ export function CategoryDonut() {
       }
     })
     return config
-  }, [selectedCategory])
+  }, [categoryBreakdowns, selectedCategory])
+
+  if (categoryBreakdowns.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Gastos por Categoria</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
+          <p className="text-sm font-medium text-foreground">Nenhum gasto por categoria ainda</p>
+          <p className="text-xs mt-1">Os gastos por categoria aparecerão aqui conforme você registrar transações.</p>
+        </CardContent>
+      </Card>
+    )
+  }
 
   const pieData = useMemo(() => {
     if (selectedCategory) {
