@@ -14,30 +14,32 @@ export function DemoModeToggle() {
 
   return (
     <Tooltip>
-      <TooltipTrigger asChild>
-        <Button
-          variant={isDemoMode ? "secondary" : "ghost"}
-          size="sm"
-          onClick={() => setDemoMode(!isDemoMode)}
-          className={`h-8 gap-1.5 px-2.5 text-xs font-medium transition-all ${
-            isDemoMode
-              ? "border border-amber-500/30 bg-amber-500/15 text-amber-700 hover:bg-amber-500/25 dark:text-amber-300"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          {isDemoMode ? (
-            <>
-              <SparklesIcon className="size-3.5 text-amber-500" />
-              <span className="hidden sm:inline">Modo Demo</span>
-            </>
-          ) : (
-            <>
-              <DatabaseIcon className="size-3.5 text-emerald-500" />
-              <span className="hidden sm:inline">Meus Dados</span>
-            </>
-          )}
-        </Button>
-      </TooltipTrigger>
+      <TooltipTrigger
+        render={
+          <Button
+            variant={isDemoMode ? "secondary" : "ghost"}
+            size="sm"
+            onClick={() => setDemoMode(!isDemoMode)}
+            className={`h-8 gap-1.5 px-2.5 text-xs font-medium transition-all ${
+              isDemoMode
+                ? "border border-amber-500/30 bg-amber-500/15 text-amber-700 hover:bg-amber-500/25 dark:text-amber-300"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {isDemoMode ? (
+              <>
+                <SparklesIcon className="size-3.5 text-amber-500" />
+                <span className="hidden sm:inline">Modo Demo</span>
+              </>
+            ) : (
+              <>
+                <DatabaseIcon className="size-3.5 text-emerald-500" />
+                <span className="hidden sm:inline">Meus Dados</span>
+              </>
+            )}
+          </Button>
+        }
+      />
       <TooltipContent side="bottom">
         <p className="text-xs">
           {isDemoMode
