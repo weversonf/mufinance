@@ -2,21 +2,19 @@
 
 import { useMemo, useState } from "react"
 import { useFinanceData } from "@/components/finance/finance-provider"
-import { format } from "date-fns"
-import { ptBR } from "date-fns/locale"
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
-import { Calendar } from "@/components/ui/calendar"
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import {
   ChartContainer,
   ChartTooltip,
@@ -24,9 +22,6 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart"
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis, type DotProps } from "recharts"
-import { CalendarIcon } from "lucide-react"
-import { cn } from "@/lib/utils"
-import type { DateRange } from "react-day-picker"
 
 function SquareDot({ cx, cy, fill, opacity = 1, size = 6 }: DotProps & { size?: number; opacity?: number }) {
   if (cx == null || cy == null) return null
@@ -45,11 +40,11 @@ function SquareDot({ cx, cy, fill, opacity = 1, size = 6 }: DotProps & { size?: 
 
 const chartConfig = {
   currentYear: {
-    label: "Ano atual",
+    label: "Período selecionado",
     color: "var(--color-primary)",
   },
   lastYear: {
-    label: "Ano anterior",
+    label: "Mesmo período anterior",
     color: "var(--color-muted-foreground)",
   },
 } satisfies ChartConfig
@@ -72,27 +67,58 @@ const monthIndex: Record<string, number> = {
 
 const ptMonths = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"]
 
+type Period = "current" | "previous" | "quarter-forward" | "quarter-backward"
+
+const periodOptions = [
+  { value: "current", label: "Mês atual" },
+  { value: "previous", label: "Mês passado" },
+  { value: "quarter-forward", label: "Trimestre +" },
+  { value: "quarter-backward", label: "Trimestre -" },
+] as const
+
+const periodOffsets: Record<Period, number[]> = {
+  current: [0],
+  previous: [-1],
+  "quarter-forward": [0, 1, 2],
+  "quarter-backward": [-2, -1, 0],
+}
+
 export function FinancialOverview() {
   const { financialOverview } = useFinanceData()
-  const [date, setDate] = useState<DateRange | undefined>({
-    from: new Date(2026, 0, 1),
-    to: new Date(2026, 11, 31),
-  })
+  const [period, setPeriod] = useState<Period>("current")
+  const [today] = useState(() => new Date())
 
   const filteredData = useMemo(() => {
-    if (!date?.from || !date?.to) return financialOverview
-    let fromMonth = date.from.getMonth()
-    let toMonth = date.to.getMonth()
-    // Ensure at least 3 months are shown for readability
-    if (toMonth - fromMonth < 2) {
-      fromMonth = Math.max(0, fromMonth - 1)
-      toMonth = Math.min(11, toMonth + 1)
-    }
-    return financialOverview.filter((d) => {
-      const m = monthIndex[d.month.trim().toLowerCase().replace(".", "")]
-      return m !== undefined && m >= fromMonth && m <= toMonth
+    const sourceByMonth = new Map(financialOverview.map((item) => [
+      monthIndex[item.month.trim().toLowerCase().replace(".", "")],
+      item,
+    ]))
+    const referenceYear = today.getFullYear()
+
+    return periodOffsets[period].map((offset) => {
+      const target = new Date(referenceYear, today.getMonth() + offset, 1)
+      const source = sourceByMonth.get(target.getMonth())
+      let currentYear = 0
+      let lastYear = 0
+
+      if (source) {
+        if (target.getFullYear() === referenceYear) {
+          currentYear = source.currentYear
+          lastYear = source.lastYear
+        } else if (target.getFullYear() === referenceYear + 1) {
+          lastYear = source.currentYear
+        } else if (target.getFullYear() === referenceYear - 1) {
+          currentYear = source.lastYear
+        }
+      }
+
+      return {
+        month: `${ptMonths[target.getMonth()]}/${String(target.getFullYear()).slice(-2)}`,
+        currentYear,
+        lastYear,
+      }
     })
-  }, [date, financialOverview])
+  }, [financialOverview, period, today])
 
   const totals = useMemo(() => {
     const current = filteredData.reduce((s, d) => s + d.currentYear, 0)
@@ -115,56 +141,34 @@ export function FinancialOverview() {
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
             <span className="flex items-center gap-1.5">
               <span className="size-2 rounded-full bg-primary" />
-              Ano atual {""}
+              Período {""}
               <span className="font-medium text-foreground">
                 {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(totals.current)}
               </span>
             </span>
             <span className="flex items-center gap-1.5">
               <span className="size-2 rounded-full bg-muted-foreground/40" />
-              Ano anterior {""}
+              Mesmo período anterior {""}
               <span className="font-medium text-foreground">
                 {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(totals.last)}
               </span>
             </span>
           </div>
         </div>
-        <Popover>
-          <PopoverTrigger
-            render={
-              <Button
-                variant="outline"
-                className={cn(
-                  "h-8 w-full justify-start text-left text-xs font-normal sm:w-[200px]",
-                  !date && "text-muted-foreground"
-                )}
-              />
-            }
-          >
-            <CalendarIcon className="mr-2 size-3.5" />
-            {date?.from ? (
-              date.to ? (
-                <>
-                  {format(date.from, "MMM/yyyy", { locale: ptBR })} - {format(date.to, "MMM/yyyy", { locale: ptBR })}
-                </>
-              ) : (
-                format(date.from, "MMM/yyyy", { locale: ptBR })
-              )
-            ) : (
-              "Selecione um período"
-            )}
-          </PopoverTrigger>
-          <PopoverContent className="max-h-[70dvh] w-auto overflow-y-auto p-0" align="end">
-            <Calendar
-              mode="range"
-              defaultMonth={date?.from}
-              selected={date}
-              onSelect={setDate}
-              numberOfMonths={2}
-              locale={ptBR}
-            />
-          </PopoverContent>
-        </Popover>
+        <Select
+          items={periodOptions.map((option) => ({ ...option }))}
+          value={period}
+          onValueChange={(value) => value && setPeriod(value as Period)}
+        >
+          <SelectTrigger className="h-8 w-full text-xs sm:w-[160px]" aria-label="Período da visão financeira">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent align="end">
+            {periodOptions.map((option) => (
+              <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </CardHeader>
       <CardContent className="pt-0">
         {!hasData ? (
@@ -207,10 +211,6 @@ export function FinancialOverview() {
               fontSize={12}
               tickMargin={8}
               stroke="var(--color-muted-foreground)"
-              tickFormatter={(value) => {
-                const m = monthIndex[String(value).trim().toLowerCase().replace(".", "")]
-                return m !== undefined ? ptMonths[m] : value
-              }}
             />
             <YAxis
               tickLine={false}
