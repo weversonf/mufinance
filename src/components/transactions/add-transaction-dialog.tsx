@@ -5,12 +5,18 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useFinanceData } from "@/components/finance/finance-provider"
+import { cn } from "@/lib/utils"
+
+function localDateISO() {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`
+}
 
 export function AddTransactionDialog({ open, onOpenChange, onSaved }: { open: boolean; onOpenChange: (open: boolean) => void; onSaved: () => Promise<void> | void }) {
   const { bankAccounts, cardsData, snapshot } = useFinanceData()
   const [payee, setPayee] = useState("")
   const [category, setCategory] = useState("Geral")
-  const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10))
+  const [date, setDate] = useState(() => localDateISO())
   const [amount, setValor] = useState("")
   const [type, setType] = useState<"income" | "expense" | "transfer">("expense")
   const [accountId, setAccountId] = useState("")
@@ -36,7 +42,7 @@ export function AddTransactionDialog({ open, onOpenChange, onSaved }: { open: bo
     if (open) {
       setPayee("")
       setCategory("Casa")
-      setDate(new Date().toISOString().slice(0, 10))
+      setDate(localDateISO())
       setValor("")
       setType("expense")
       setAccountId(bankAccounts[0]?.id || "")
@@ -51,6 +57,19 @@ export function AddTransactionDialog({ open, onOpenChange, onSaved }: { open: bo
       setMonths(12)
     }
   }, [open, bankAccounts])
+
+  const inputClass = "h-11 sm:h-9"
+  const selectClass = "h-11 w-full rounded-md border bg-background px-3 text-sm sm:h-9"
+
+  function handleTypeChange(next: "income" | "expense" | "transfer") {
+    setType(next)
+    if (next !== "transfer") {
+      const nextCategories = (snapshot?.categories ?? []).filter((c) => String(c.type) === next)
+      const first = nextCategories[0]?.name
+      setCategory(first ? String(first) : next === "income" ? "Salário" : "Casa")
+      setDestinationAccountId("")
+    }
+  }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -145,34 +164,59 @@ export function AddTransactionDialog({ open, onOpenChange, onSaved }: { open: bo
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
+      <DialogContent className="max-h-[90dvh] gap-0 p-0 pb-0 before:mt-2 sm:max-w-[720px]">
+        <DialogHeader className="px-5 pb-3 pr-12 pt-2">
           <DialogTitle>Nova transação</DialogTitle>
           <DialogDescription>Adicione um novo lançamento manual.</DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="grid gap-4 max-sm:[&_input[type=text]]:h-11 max-sm:[&_input[type=number]]:h-11 max-sm:[&_input[type=date]]:h-11 max-sm:[&_select]:h-11 sm:grid-cols-2">
-          <label className="grid gap-1.5 text-sm font-medium sm:col-span-2">
+        <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-x-3 gap-y-3 px-5 pt-2 sm:gap-x-4 sm:gap-y-4">
+          <label className="col-span-2 grid gap-1.5 text-sm font-medium">
             Descrição
-            <Input value={payee} onChange={(event) => setPayee(event.target.value)} required placeholder="Ex: Mercado, Salário..." />
+            <Input value={payee} onChange={(event) => setPayee(event.target.value)} required placeholder="Ex: Mercado, Salário..." className={inputClass} />
           </label>
-          
-          <label className="grid gap-1.5 text-sm font-medium">
-            Tipo
-            <select value={type} onChange={(event) => setType(event.target.value as typeof type)} className="h-9 rounded-md border bg-background px-3 text-sm">
-              <option value="expense">Despesa</option>
-              <option value="income">Entrada</option>
-              <option value="transfer">Transferência</option>
-            </select>
-          </label>
+
+          <div className="col-span-2 grid gap-1.5">
+            <span className="text-sm font-medium">Tipo</span>
+            <div className="grid grid-cols-3 gap-1 rounded-lg bg-muted p-1" role="group" aria-label="Tipo de transação">
+              {([
+                { value: "expense", label: "Despesa" },
+                { value: "income", label: "Entrada" },
+                { value: "transfer", label: "Transferência" },
+              ] as const).map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => handleTypeChange(option.value)}
+                  aria-pressed={type === option.value}
+                  className={cn(
+                    "h-9 rounded-md px-1.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 sm:text-sm",
+                    type === option.value
+                      ? "bg-background text-foreground shadow-sm ring-1 ring-foreground/10"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
 
           <label className="grid gap-1.5 text-sm font-medium">
             Valor
-            <Input type="number" step="0.01" min="0.01" value={amount} onChange={(event) => setValor(event.target.value)} required placeholder="0,00" />
+            <div className="relative">
+              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">R$</span>
+              <Input type="number" inputMode="decimal" step="0.01" min="0.01" value={amount} onChange={(event) => setValor(event.target.value)} required placeholder="0,00" className={cn(inputClass, "pl-9")} />
+            </div>
           </label>
 
           <label className="grid gap-1.5 text-sm font-medium">
-            Conta {type === "transfer" ? "de Origem" : ""}
-            <select value={accountId} onChange={(event) => setAccountId(event.target.value)} required className="h-9 rounded-md border bg-background px-3 text-sm">
+            Data
+            <Input type="date" value={date} onChange={(event) => setDate(event.target.value)} required className={inputClass} />
+          </label>
+
+          <label className="grid gap-1.5 text-sm font-medium">
+            Conta {type === "transfer" ? "de origem" : ""}
+            <select value={accountId} onChange={(event) => setAccountId(event.target.value)} required className={selectClass}>
               <option value="" disabled>Selecione...</option>
               <optgroup label="Contas Bancárias">
                 {bankAccounts.map(acc => (
@@ -189,8 +233,8 @@ export function AddTransactionDialog({ open, onOpenChange, onSaved }: { open: bo
 
           {type === "transfer" ? (
             <label className="grid gap-1.5 text-sm font-medium">
-              Conta de Destino
-              <select value={destinationAccountId} onChange={(event) => setDestinationAccountId(event.target.value)} required className="h-9 rounded-md border bg-background px-3 text-sm">
+              Conta de destino
+              <select value={destinationAccountId} onChange={(event) => setDestinationAccountId(event.target.value)} required className={selectClass}>
                 <option value="" disabled>Selecione...</option>
                 <optgroup label="Contas Bancárias">
                   {bankAccounts.map(acc => (
@@ -201,92 +245,81 @@ export function AddTransactionDialog({ open, onOpenChange, onSaved }: { open: bo
             </label>
           ) : (
             <label className="grid gap-1.5 text-sm font-medium">
-              Categoria <span className="text-xs text-muted-foreground font-normal">(lista)</span>
-              <select value={category} onChange={(event) => setCategory(event.target.value)} required className="h-9 rounded-md border bg-background px-3 text-sm">
+              Categoria
+              <select value={category} onChange={(event) => setCategory(event.target.value)} required className={selectClass}>
                 {availableCategories.length > 0 ? availableCategories.map((cat) => (
                   <option key={String(cat.id)} value={String(cat.name)}>{String(cat.name)}{cat.isDefault ? " • padrão" : ""}</option>
                 )) : fallbackCategories.map((name) => (
                   <option key={name} value={name}>{name}</option>
                 ))}
               </select>
-              <span className="text-xs text-muted-foreground">Padrões podem ser renomeadas mas não excluídas. Novas categorias você pode editar/excluir em Configurações.</span>
             </label>
           )}
 
           <label className="grid gap-1.5 text-sm font-medium">
-            Data
-            <Input type="date" value={date} onChange={(event) => setDate(event.target.value)} required />
-          </label>
-
-          <label className="grid gap-1.5 text-sm font-medium">
             Status
-            <select value={status} onChange={(event) => setStatus(event.target.value as typeof status)} className="h-9 rounded-md border bg-background px-3 text-sm">
+            <select value={status} onChange={(event) => setStatus(event.target.value as typeof status)} className={selectClass}>
               <option value="completed">Concluída</option>
               <option value="planned">Planejada</option>
             </select>
           </label>
 
-          <label className="grid gap-1.5 text-sm font-medium sm:col-span-2">
-            Observações
-            <Input value={notes} onChange={(event) => setNotes(event.target.value)} />
+          <label className="grid gap-1.5 text-sm font-medium">
+            Repetição
+            <select value={recurrence} onChange={(event) => setRecurrence(event.target.value as typeof recurrence)} className={selectClass}>
+              <option value="unica">Única</option>
+              <option value="fixa">Fixa (mensal)</option>
+              <option value="parcelada">Parcelada</option>
+            </select>
           </label>
 
-          <div className="grid gap-2 sm:col-span-2 rounded-lg border p-3">
-            <p className="text-sm font-medium">Repetição / Recorrência</p>
-            <div className="flex flex-wrap gap-4 mt-1">
-              <label className="flex items-center gap-2 text-sm">
-                <input type="radio" name="recurrence" checked={recurrence === "unica"} onChange={() => setRecurrence("unica")} className="accent-primary" />
-                <span>Única</span>
-              </label>
-              <label className="flex items-center gap-2 text-sm">
-                <input type="radio" name="recurrence" checked={recurrence === "fixa"} onChange={() => setRecurrence("fixa")} className="accent-primary" />
-                <span>Fixa (Mensal)</span>
-              </label>
-              <label className="flex items-center gap-2 text-sm">
-                <input type="radio" name="recurrence" checked={recurrence === "parcelada"} onChange={() => setRecurrence("parcelada")} className="accent-primary" />
-                <span>Parcelada</span>
-              </label>
-            </div>
-            
-            {recurrence === "fixa" && (
-              <label className="grid gap-1.5 text-sm font-medium mt-2">
-                Gerar para quantos meses?
-                <Input type="number" min="2" max="120" value={months} onChange={(e) => setMonths(Number(e.target.value))} />
-              </label>
-            )}
-            {recurrence === "parcelada" && (
-              <div className="grid gap-3 mt-2">
-                <div className="grid grid-cols-2 gap-3">
-                  <label className="grid gap-1.5 text-sm font-medium">
-                    Total de parcelas
-                    <Input type="number" min="2" max="120" value={installments} onChange={(e) => {
-                      const v = Number(e.target.value)
-                      setInstallments(v)
-                      if (currentInstallment > v) setCurrentInstallment(v)
-                    }} />
-                  </label>
-                  <label className="grid gap-1.5 text-sm font-medium">
-                    Estou na parcela
-                    <Input type="number" min="1" max={installments} value={currentInstallment} onChange={(e) => setCurrentInstallment(Number(e.target.value))} />
-                  </label>
-                </div>
-                {currentInstallment > 1 && (
-                  <label className="flex items-center gap-2 text-sm rounded-md border p-2">
-                    <input type="checkbox" checked={pastEffective} onChange={(e) => setPastEffective(e.target.checked)} className="accent-primary" />
-                    <span>Parcelas anteriores ({currentInstallment - 1}) já estão efetivadas?</span>
-                  </label>
-                )}
-                <span className="text-xs text-muted-foreground">
-                  Ex: valor R$ 100, 4 parcelas, estou na 3 → cria 1: 07/07 {pastEffective ? "efetivada" : "pendente"}, 2: 07/08 {pastEffective ? "efetivada" : "pendente"}, 3: 07/09 (status acima), 4: 07/10 pendente. Valor é sempre da parcela.
-                </span>
-              </div>
-            )}
-          </div>
+          {recurrence === "fixa" && (
+            <label className="col-span-2 grid gap-1.5 text-sm font-medium">
+              Gerar para quantos meses?
+              <Input type="number" min="2" max="120" value={months} onChange={(e) => setMonths(Number(e.target.value))} className={inputClass} />
+            </label>
+          )}
 
-          {error && <p className="text-sm text-destructive sm:col-span-2">{error}</p>}
-          <DialogFooter className="sm:col-span-2">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-            <Button type="submit" disabled={saving}>{saving ? "Salvando..." : "Adicionar"}</Button>
+          {recurrence === "parcelada" && (
+            <div className="col-span-2 grid gap-3 rounded-lg border bg-muted/30 p-3">
+              <div className="grid grid-cols-2 gap-3">
+                <label className="grid gap-1.5 text-sm font-medium">
+                  Total de parcelas
+                  <Input type="number" min="2" max="120" value={installments} onChange={(e) => {
+                    const v = Number(e.target.value)
+                    setInstallments(v)
+                    if (currentInstallment > v) setCurrentInstallment(v)
+                  }} className={inputClass} />
+                </label>
+                <label className="grid gap-1.5 text-sm font-medium">
+                  Estou na parcela
+                  <Input type="number" min="1" max={installments} value={currentInstallment} onChange={(e) => setCurrentInstallment(Number(e.target.value))} className={inputClass} />
+                </label>
+              </div>
+              {currentInstallment > 1 && (
+                <label className="flex items-center gap-2 rounded-md border bg-background p-2 text-sm">
+                  <input type="checkbox" checked={pastEffective} onChange={(e) => setPastEffective(e.target.checked)} className="accent-primary" />
+                  <span>Parcelas anteriores ({currentInstallment - 1}) já estão efetivadas?</span>
+                </label>
+              )}
+              <span className="text-[11px] leading-snug text-muted-foreground">
+                O valor informado é o de cada parcela. Parcelas anteriores seguem a opção acima; as futuras ficam pendentes.
+              </span>
+            </div>
+          )}
+
+          <label className="col-span-2 grid gap-1.5 text-sm font-medium">
+            <span>Observações <span className="text-xs font-normal text-muted-foreground">(opcional)</span></span>
+            <Input value={notes} onChange={(event) => setNotes(event.target.value)} className={inputClass} />
+          </label>
+
+          {error && <p className="col-span-2 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>}
+
+          <DialogFooter className="sticky bottom-0 z-10 col-span-2 -mx-5 mb-0 mt-1 flex-row justify-end gap-2 rounded-none border-t bg-popover px-5 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:pb-3">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="h-10 flex-1 sm:h-9 sm:flex-none">Cancelar</Button>
+            <Button type="submit" disabled={saving} className="h-10 flex-1 sm:h-9 sm:flex-none">
+              {saving ? "Salvando..." : type === "income" ? "Adicionar entrada" : type === "transfer" ? "Transferir" : "Adicionar despesa"}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>
