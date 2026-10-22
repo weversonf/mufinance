@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useFinanceData } from "@/components/finance/finance-provider"
 import { cn } from "@/lib/utils"
@@ -9,7 +9,7 @@ const DAYS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"]
 
 export function SpendingCalendar() {
   const { dailySpending } = useFinanceData()
-  const now = new Date()
+  const [now] = useState(() => new Date())
   const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`
   const { weeks, maxValor } = useMemo(() => {
     const map = new Map(dailySpending.map((d) => [d.date, d.amount]))

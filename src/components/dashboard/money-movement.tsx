@@ -71,7 +71,7 @@ export function MoneyMovement() {
           value={period}
           onValueChange={(v) => setPeriod(v as Period)}
         >
-          <SelectTrigger className="h-8 w-[110px] text-xs">
+          <SelectTrigger className="h-8 w-[110px] text-xs" aria-label="Período da movimentação financeira">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -100,7 +100,7 @@ export function MoneyMovement() {
               <ArrowUpRightIcon className="size-4 text-rose-600 dark:text-rose-400" />
             </div>
             <div>
-              <p className="text-[10px] font-medium text-rose-600/70 dark:text-rose-400/70">Saídas</p>
+              <p className="text-[10px] font-medium text-rose-700 dark:text-rose-300">Saídas</p>
               <p className="text-sm font-bold tabular-nums text-rose-700 dark:text-rose-300">
                 {brl(totals.out)}
               </p>

@@ -264,6 +264,8 @@ export function AccountCards() {
             size="icon"
             className="size-7 rounded-full"
             onClick={() => addState === "idle" && setAddState("form")}
+            disabled={addState !== "idle"}
+            aria-label="Adicionar conta"
           >
             <PlusIcon className="size-3.5" />
           </Button>

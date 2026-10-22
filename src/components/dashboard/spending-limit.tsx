@@ -42,7 +42,7 @@ export function SpendingLimit() {
           </p>
         </div>
 
-        <Progress value={percentUsed} className="h-2" />
+        <Progress value={percentUsed} className="h-2" aria-label="Percentual do orçamento mensal utilizado" />
 
         <div className="flex items-center justify-between text-sm">
           <div>

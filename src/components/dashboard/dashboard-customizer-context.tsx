@@ -22,7 +22,8 @@ export function DashboardCustomizerProvider({ children }: { children: React.Reac
   // Reset editing mode when navigating away from dashboard
   useEffect(() => {
     if (pathname !== "/dashboard") {
-      setEditing(false)
+      const timeout = window.setTimeout(() => setEditing(false), 0)
+      return () => window.clearTimeout(timeout)
     }
   }, [pathname])
 

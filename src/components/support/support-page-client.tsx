@@ -749,7 +749,7 @@ export function SupportPageClient() {
     <div className="space-y-6">
       {/* Header */}
       <div className="space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight">Ajuda e suporte</h1>
+        <h2 className="text-2xl font-semibold tracking-tight">Ajuda e suporte</h2>
         <p className="text-sm text-muted-foreground">Encontre respostas, fale conosco, abra chamados e acompanhe o status do sistema</p>
       </div>
 

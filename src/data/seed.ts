@@ -2,9 +2,6 @@
 // Seed data – Dados financeiros padronizados (Conta Limpa / Zero State)
 // ---------------------------------------------------------------------------
 
-// Avatar URLs (local)
-const avatar = (id: number) => `/avatars/${id}.jpg`
-
 // ── Contacts (Quick Transfer) ──────────────────────────────────────────────
 export type Contact = { id: string; name: string; avatar: string }
 export const contacts: Contact[] = []

@@ -7,7 +7,6 @@ import {
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
-  BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 
@@ -45,7 +44,7 @@ export function DynamicBreadcrumb() {
           return (
             <BreadcrumbItem key={href} className={index === 0 && segments.length > 1 ? "hidden md:block" : undefined}>
               {isLast ? (
-                <BreadcrumbPage>{label}</BreadcrumbPage>
+                <h1 aria-current="page" className="font-normal text-foreground">{label}</h1>
               ) : (
                 <>
                   <BreadcrumbLink render={<Link href={href} />}>

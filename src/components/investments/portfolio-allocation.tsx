@@ -12,7 +12,7 @@ import {
   ChartContainer,
   type ChartConfig,
 } from "@/components/ui/chart"
-import { holdings } from "@/data/seed"
+import { useFinanceData } from "@/components/finance/finance-provider"
 
 const SECTOR_COLORS = [
   "var(--color-chart-1)",
@@ -23,6 +23,7 @@ const SECTOR_COLORS = [
 ]
 
 export function PortfolioAllocation() {
+  const { holdings } = useFinanceData()
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
 
   const { sectorData, totalValue } = useMemo(() => {
@@ -38,21 +39,7 @@ export function PortfolioAllocation() {
     }))
     const total = data.reduce((s, d) => s + d.value, 0)
     return { sectorData: data, totalValue: total }
-  }, [])
-
-  if (sectorData.length === 0) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Alocação por Setor</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
-          <p className="text-sm font-medium text-foreground">Sem dados de alocação</p>
-          <p className="text-xs mt-1">A distribuição por classes e setores será montada com base nos seus ativos.</p>
-        </CardContent>
-      </Card>
-    )
-  }
+  }, [holdings])
 
   const chartConfig = useMemo<ChartConfig>(() => {
     const config: ChartConfig = {}
@@ -78,6 +65,20 @@ export function PortfolioAllocation() {
     }
     return { title: "Valor Total", value: totalValue, pct: null }
   }, [activeIndex, sectorData, totalValue])
+
+  if (sectorData.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Alocação por Setor</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
+          <p className="text-sm font-medium text-foreground">Sem dados de alocação</p>
+          <p className="text-xs mt-1">A distribuição por classes e setores será montada com base nos seus ativos.</p>
+        </CardContent>
+      </Card>
+    )
+  }
 
   return (
     <Card>
@@ -129,7 +130,7 @@ export function PortfolioAllocation() {
               dominantBaseline="middle"
               className="fill-foreground text-xl font-bold tabular-nums"
             >
-              ${centerLabel.value.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+              {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).format(centerLabel.value)}
             </text>
             {centerLabel.pct && (
               <text

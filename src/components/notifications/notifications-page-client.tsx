@@ -94,7 +94,7 @@ export function NotificationsPageClient() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-semibold tracking-tight">Notificações</h1>
+          <h2 className="text-2xl font-semibold tracking-tight">Notificações</h2>
           {unreadCount > 0 && (
             <Badge variant="default" className="tabular-nums">
               {unreadCount} não {unreadCount === 1 ? "lida" : "lidas"}

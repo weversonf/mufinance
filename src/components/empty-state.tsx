@@ -422,6 +422,7 @@ export function EmptyState({
     >
       {/* Illustration */}
       <motion.div
+        aria-hidden="true"
         initial={{ scale: 0.85 }}
         animate={{ scale: 1 }}
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}

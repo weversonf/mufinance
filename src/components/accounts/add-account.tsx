@@ -106,9 +106,18 @@ export function AddAccount({ onAdd }: AddAccountProps) {
     <Card
       className={cn(
         "flex min-h-[180px] items-center justify-center border-2 border-dashed ring-0 transition-colors",
-        step === "idle" && "cursor-pointer hover:border-primary/40 hover:bg-muted/30"
+        step === "idle" && "cursor-pointer hover:border-primary/40 hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       )}
       onClick={() => step === "idle" && setStep("form")}
+      role={step === "idle" ? "button" : undefined}
+      tabIndex={step === "idle" ? 0 : undefined}
+      aria-label={step === "idle" ? "Adicionar conta" : undefined}
+      onKeyDown={(event) => {
+        if (step === "idle" && (event.key === "Enter" || event.key === " ")) {
+          event.preventDefault()
+          setStep("form")
+        }
+      }}
     >
       <CardContent className="flex w-full flex-col items-center justify-center">
         <AnimatePresence mode="wait">
@@ -136,37 +145,50 @@ export function AddAccount({ onAdd }: AddAccountProps) {
               className="flex w-full flex-col gap-3"
               onClick={(e) => e.stopPropagation()}
             >
-              <Input
-                placeholder="Nome da conta (ex: Nubank, Itaú, Carteira)"
-                value={institution}
-                onChange={(e) => setInstitution(e.target.value)}
-              />
-              <Select
-                value={accountType}
-                onValueChange={(v) => v && setAccountType(v)}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Tipo de conta" />
-                </SelectTrigger>
-                <SelectContent>
-                  {accountTypes.map((t) => (
-                    <SelectItem key={t.value} value={t.value}>
-                      {t.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <label className="grid gap-1 text-xs font-medium">
+                Nome da conta
+                <Input
+                  placeholder="Ex.: Nubank, Itaú ou Carteira"
+                  value={institution}
+                  onChange={(e) => setInstitution(e.target.value)}
+                />
+              </label>
+              <label className="grid gap-1 text-xs font-medium">
+                Tipo de conta
+                <Select
+                  value={accountType}
+                  onValueChange={(v) => v && setAccountType(v)}
+                >
+                  <SelectTrigger className="w-full" aria-label="Tipo de conta">
+                    <SelectValue placeholder="Selecione..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {accountTypes.map((t) => (
+                      <SelectItem key={t.value} value={t.value}>
+                        {t.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </label>
               <div className="grid grid-cols-2 gap-2">
-                <Input
-                  placeholder="Nº da conta (opcional)"
-                  value={accountNumber}
-                  onChange={(e) => setAccountNumber(e.target.value)}
-                />
-                <Input
-                  placeholder="Saldo inicial R$"
-                  value={initialBalance}
-                  onChange={(e) => setInitialBalance(e.target.value)}
-                />
+                <label className="grid gap-1 text-xs font-medium">
+                  Número <span className="sr-only">da conta, opcional</span>
+                  <Input
+                    placeholder="Opcional"
+                    value={accountNumber}
+                    onChange={(e) => setAccountNumber(e.target.value)}
+                  />
+                </label>
+                <label className="grid gap-1 text-xs font-medium">
+                  Saldo inicial
+                  <Input
+                    inputMode="decimal"
+                    placeholder="R$ 0,00"
+                    value={initialBalance}
+                    onChange={(e) => setInitialBalance(e.target.value)}
+                  />
+                </label>
               </div>
               {errorMsg && <p className="text-xs text-destructive">{errorMsg}</p>}
               <div className="flex gap-2">

@@ -52,7 +52,7 @@ export function ThemeToggle() {
       onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
     >
       <ContrastIcon className="size-[18px]" />
-      <span className="sr-only">Toggle theme</span>
+      <span className="sr-only">Alternar tema</span>
     </Button>
   )
 }

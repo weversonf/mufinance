@@ -76,7 +76,7 @@ export function SavingsGoals() {
                         variant={isComplete || onTrack ? "secondary" : hasProjection ? "destructive" : "outline"}
                         className="text-[10px]"
                       >
-                        {isComplete ? "Complete" : onTrack ? "On track" : hasProjection ? "Behind" : "Set contribution"}
+                        {isComplete ? "Concluída" : onTrack ? "No prazo" : hasProjection ? "Atrasada" : "Defina um aporte"}
                       </Badge>
                     </div>
                     <div className="flex items-baseline gap-1">
@@ -87,11 +87,11 @@ export function SavingsGoals() {
                         / {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(goal.targetAmount)}
                       </span>
                     </div>
-                    <Progress value={percent} className="h-2" />
+                    <Progress value={percent} className="h-2" aria-label={`Progresso da meta ${goal.name}`} />
                     <div className="flex items-center justify-between text-[11px] text-muted-foreground">
                       <span>
                         {goal.monthlyContribution > 0
-                          ? `$${goal.monthlyContribution}/mo`
+                          ? `${new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(goal.monthlyContribution)}/mês`
                           : "Contribuição mensal não definida"}
                       </span>
                       <span>{goal.deadline ? `Meta: ${goal.deadline}` : "Sem prazo"}</span>

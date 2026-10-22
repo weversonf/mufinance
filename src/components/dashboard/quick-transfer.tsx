@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useRef } from "react"
+import Link from "next/link"
 import {
   Card,
   CardContent,
@@ -12,6 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Input } from "@/components/ui/input"
 import { useFinanceData } from "@/components/finance/finance-provider"
 import { createTransaction } from "@/actions/finance"
+import { localDateISO } from "@/lib/date"
 import {
   ChevronRightIcon,
   SendIcon,
@@ -27,21 +29,23 @@ export function QuickTransfer() {
   const [selectedContact, setSelectedContact] = useState<string | null>(null)
   const [amount, setValor] = useState("0.00")
   const [sendState, setSendState] = useState<SendState>("idle")
+  const [error, setError] = useState("")
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>(null)
   const selectedId = selectedContact ?? contacts[0]?.id ?? null
   const selected = contacts.find((c) => c.id === selectedId)
   const numericValor = Number.parseFloat(amount)
-  const canSend = Boolean(selected) && Number.isFinite(numericValor) && numericValor > 0
+  const canSend = Boolean(selected && bankAccounts[0]) && Number.isFinite(numericValor) && numericValor > 0
 
   const handleSend = async () => {
     if (sendState !== "idle" || !canSend) return
     setSendState("sending")
+    setError("")
 
     try {
       const activeAccount = bankAccounts[0]
       if (activeAccount && selected) {
         await createTransaction({
-          date: new Date().toISOString().slice(0, 10),
+          date: localDateISO(),
           payee: `Transferência para ${selected.name}`,
           category: "Transferência",
           accountId: activeAccount.id,
@@ -54,6 +58,9 @@ export function QuickTransfer() {
       }
     } catch (err) {
       console.error("Falha ao registrar transferência no Firestore:", err)
+      setError(err instanceof Error ? err.message : "Não foi possível concluir a transferência.")
+      setSendState("idle")
+      return
     }
 
     setSendState("success")
@@ -68,7 +75,7 @@ export function QuickTransfer() {
         <CardTitle className="text-base font-semibold">
           Transferência Rápida
         </CardTitle>
-        <Button variant="ghost" size="sm" className="h-auto gap-1 px-0 text-xs text-muted-foreground">
+        <Button render={<Link href="/transfers" />} nativeButton={false} variant="ghost" size="sm" className="h-auto gap-1 px-0 text-xs text-muted-foreground">
           Ver todos os contatos
           <ChevronRightIcon className="size-3" />
         </Button>
@@ -115,9 +122,12 @@ export function QuickTransfer() {
             })}
           </div>
           <Button
+            render={<Link href="/transfers" />}
+            nativeButton={false}
             variant="outline"
             size="icon"
             className="size-10 shrink-0 rounded-full"
+            aria-label="Ver todos os contatos"
           >
             <ChevronRightIcon className="size-4" />
           </Button>
@@ -173,12 +183,13 @@ export function QuickTransfer() {
               className="flex items-end gap-3"
             >
               <div className="flex-1 space-y-1.5">
-                <label className="text-xs text-muted-foreground">Valor</label>
+                <label htmlFor="quick-transfer-amount" className="text-xs text-muted-foreground">Valor</label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-muted-foreground">
                     R$
                   </span>
                   <Input
+                    id="quick-transfer-amount"
                     type="text"
                     value={amount}
                     onChange={(e) => setValor(e.target.value)}
@@ -202,6 +213,10 @@ export function QuickTransfer() {
             </motion.div>
           )}
         </AnimatePresence>
+        {!bankAccounts[0] && (
+          <p className="text-xs text-muted-foreground">Cadastre uma conta para realizar transferências.</p>
+        )}
+        {error && <p role="alert" className="text-xs text-destructive">{error}</p>}
       </CardContent>
     </Card>
   )

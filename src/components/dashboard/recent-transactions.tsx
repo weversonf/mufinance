@@ -1,6 +1,7 @@
 "use client"
 
 import Image from "next/image"
+import Link from "next/link"
 import {
   Card,
   CardContent,
@@ -35,7 +36,7 @@ export function RecentTransactions() {
         <CardTitle className="text-base font-semibold">
           Transações recentes
         </CardTitle>
-        <Button variant="outline" size="sm" className="h-8 gap-1 text-xs">
+        <Button render={<Link href="/transactions" />} nativeButton={false} variant="outline" size="sm" className="h-8 gap-1 text-xs">
           Ver todas
           <ChevronRightIcon className="size-3" />
         </Button>
@@ -57,7 +58,7 @@ export function RecentTransactions() {
               <div className="flex flex-col items-center justify-center py-10 text-center">
                 <p className="text-sm font-medium text-foreground">Nenhuma transação registrada ainda</p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Use o botão &ldquo;+&rdquo; no cabeçalho para adicionar seu primeiro lançamento.
+                  Use o botão &ldquo;Nova Transação&rdquo; no cabeçalho para adicionar seu primeiro lançamento.
                 </p>
               </div>
             ) : (
@@ -112,9 +113,12 @@ export function RecentTransactions() {
 
                 {/* Actions */}
                 <Button
+                  render={<Link href="/transactions" />}
+                  nativeButton={false}
                   variant="ghost"
                   size="icon"
                   className="hidden size-8 opacity-0 transition-opacity group-hover:opacity-100 sm:inline-flex"
+                  aria-label={`Ver a transação de ${tx.merchant}`}
                 >
                   <MoreHorizontalIcon className="size-4" />
                 </Button>

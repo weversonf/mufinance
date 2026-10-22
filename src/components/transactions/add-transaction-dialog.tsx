@@ -6,11 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useFinanceData } from "@/components/finance/finance-provider"
 import { cn } from "@/lib/utils"
-
-function localDateISO() {
-  const d = new Date()
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`
-}
+import { localDateISO } from "@/lib/date"
 
 export function AddTransactionDialog({ open, onOpenChange, onSaved }: { open: boolean; onOpenChange: (open: boolean) => void; onSaved: () => Promise<void> | void }) {
   const { bankAccounts, cardsData, snapshot } = useFinanceData()

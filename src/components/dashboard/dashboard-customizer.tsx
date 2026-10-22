@@ -97,8 +97,7 @@ function SortableWidget({
 
 export function DashboardCustomizer() {
   const customizer = useDashboardCustomizer()
-  const [localEditing, setLocalEditing] = useState(false)
-  const editing = customizer ? customizer.editing : localEditing
+  const editing = customizer?.editing ?? false
 
   const [blocks, setBlocks] = useState(() => {
     if (typeof window === "undefined") return defaultBlocks

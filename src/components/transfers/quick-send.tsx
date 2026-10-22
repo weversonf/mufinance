@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input"
 import type { TransferRecord } from "@/data/seed"
 import { useFinanceData } from "@/components/finance/finance-provider"
 import { createTransaction } from "@/actions/finance"
+import { localDateISO } from "@/lib/date"
 import {
   SendIcon,
   LoaderCircleIcon,
@@ -28,21 +29,24 @@ export function QuickSend({ onSend }: { onSend?: (record: TransferRecord) => voi
   const [amount, setValor] = useState("")
   const [note, setNote] = useState("")
   const [sendState, setSendState] = useState<SendState>("idle")
+  const [error, setError] = useState("")
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>(null)
+  const transferSequenceRef = useRef(0)
   const selectedId = selectedContact ?? contacts[0]?.id ?? null
   const selected = contacts.find((c) => c.id === selectedId)
   const numericValor = Number.parseFloat(amount)
-  const canSend = Boolean(selected) && Number.isFinite(numericValor) && numericValor > 0
+  const canSend = Boolean(selected && bankAccounts[0]) && Number.isFinite(numericValor) && numericValor > 0
 
   const handleSend = async () => {
     if (sendState !== "idle" || !canSend) return
     setSendState("sending")
+    setError("")
 
     try {
       const activeAccount = bankAccounts[0]
       if (activeAccount && selected) {
         await createTransaction({
-          date: new Date().toISOString().slice(0, 10),
+          date: localDateISO(),
           payee: `Envio para ${selected.name}`,
           category: "Transferência",
           accountId: activeAccount.id,
@@ -55,12 +59,16 @@ export function QuickSend({ onSend }: { onSend?: (record: TransferRecord) => voi
       }
     } catch (err) {
       console.error("Falha ao registrar transferência no Firestore:", err)
+      setError(err instanceof Error ? err.message : "Não foi possível concluir a transferência.")
+      setSendState("idle")
+      return
     }
 
     setSendState("success")
     if (onSend && selected) {
+      transferSequenceRef.current += 1
       const newRecord: TransferRecord = {
-        id: `tr-${Date.now()}`,
+        id: `tr-local-${transferSequenceRef.current}`,
         type: "sent",
         contactName: selected.name,
         contactAvatar: selected.avatar,
@@ -172,12 +180,13 @@ export function QuickSend({ onSend }: { onSend?: (record: TransferRecord) => voi
 
               {/* Valor input */}
               <div className="flex-1 space-y-1.5 lg:max-w-[160px]">
-                <label className="text-xs text-muted-foreground">Valor</label>
+                <label htmlFor="quick-send-amount" className="text-xs text-muted-foreground">Valor</label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-muted-foreground">
                     R$
                   </span>
                   <Input
+                    id="quick-send-amount"
                     type="text"
                     placeholder="0,00"
                     value={amount}
@@ -190,10 +199,11 @@ export function QuickSend({ onSend }: { onSend?: (record: TransferRecord) => voi
 
               {/* Note input */}
               <div className="flex-1 space-y-1.5 lg:max-w-[200px]">
-                <label className="text-xs text-muted-foreground">
+                <label htmlFor="quick-send-note" className="text-xs text-muted-foreground">
                   Observação <span className="text-muted-foreground/60">(opcional)</span>
                 </label>
                 <Input
+                  id="quick-send-note"
                   type="text"
                   placeholder="Para que serve?"
                   value={note}
@@ -219,6 +229,10 @@ export function QuickSend({ onSend }: { onSend?: (record: TransferRecord) => voi
             </motion.div>
           )}
         </AnimatePresence>
+        {!bankAccounts[0] && (
+          <p className="mt-3 text-xs text-muted-foreground">Cadastre uma conta para realizar transferências.</p>
+        )}
+        {error && <p role="alert" className="mt-3 text-xs text-destructive">{error}</p>}
       </CardContent>
     </Card>
   )

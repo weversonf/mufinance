@@ -62,6 +62,21 @@ export function CategoryDonut() {
     return config
   }, [categoryBreakdowns, selectedCategory])
 
+  const pieData = useMemo(() => {
+    if (selectedCategory) {
+      return selectedCategory.subcategories.map((sub, i) => ({
+        name: sub.name,
+        value: sub.amount,
+        fill: SUBCATEGORY_COLORS[i % SUBCATEGORY_COLORS.length],
+      }))
+    }
+    return categoryBreakdowns.map((c) => ({
+      name: c.category,
+      value: c.amount,
+      fill: c.color,
+    }))
+  }, [categoryBreakdowns, selectedCategory])
+
   if (categoryBreakdowns.length === 0) {
     return (
       <Card>
@@ -76,21 +91,6 @@ export function CategoryDonut() {
     )
   }
 
-  const pieData = useMemo(() => {
-    if (selectedCategory) {
-      return selectedCategory.subcategories.map((sub, i) => ({
-        name: sub.name,
-        value: sub.amount,
-        fill: SUBCATEGORY_COLORS[i % SUBCATEGORY_COLORS.length],
-      }))
-    }
-    return categoryBreakdowns.map((c) => ({
-      name: c.category,
-      value: c.amount,
-      fill: c.color,
-    }))
-  }, [selectedCategory])
-
   const centerValor = selectedCategory ? selectedCategory.amount : total
 
   return (
@@ -100,7 +100,7 @@ export function CategoryDonut() {
           <CardTitle>
             {selectedCategory
               ? selectedCategory.category
-              : "Spending by Category"}
+              : "Gastos por categoria"}
           </CardTitle>
           {selectedCategory && (
             <Button
@@ -110,7 +110,7 @@ export function CategoryDonut() {
               onClick={() => setSelected(null)}
             >
               <ArrowLeftIcon className="size-3" />
-              Back to all
+              Voltar para todas
             </Button>
           )}
         </div>
@@ -133,7 +133,7 @@ export function CategoryDonut() {
                   content={
                     <ChartTooltipContent
                       formatter={(value) =>
-                        `$${Number(value).toLocaleString()}`
+                        new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(Number(value))
                       }
                     />
                   }
@@ -196,7 +196,7 @@ export function CategoryDonut() {
                 {entry.name}
               </span>
               <span className="ml-auto font-medium tabular-nums">
-                ${entry.value.toLocaleString()}
+                  {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(entry.value)}
               </span>
             </div>
           ))}

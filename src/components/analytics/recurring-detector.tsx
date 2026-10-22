@@ -53,6 +53,17 @@ export function RecurringDetector() {
     [recurringCharges]
   )
 
+  const summary = useMemo(() => {
+    let wanted = 0
+    let review = 0
+    recurringCharges.forEach((charge) => {
+      const status = statuses[charge.id] ?? charge.status
+      if (status === "wanted") wanted++
+      if (status === "review") review++
+    })
+    return { wanted, review }
+  }, [recurringCharges, statuses])
+
   if (recurringCharges.length === 0) {
     return (
       <Card>
@@ -68,21 +79,11 @@ export function RecurringDetector() {
     )
   }
 
-  const summary = useMemo(() => {
-    let wanted = 0
-    let review = 0
-    Object.values(statuses).forEach((s) => {
-      if (s === "wanted") wanted++
-      if (s === "review") review++
-    })
-    return { wanted, review }
-  }, [statuses])
-
   function toggleStatus(id: string) {
-    setStatuses((prev) => ({
-      ...prev,
-      [id]: nextStatus(prev[id]),
-    }))
+    setStatuses((prev) => {
+      const initialStatus = recurringCharges.find((charge) => charge.id === id)?.status ?? "unset"
+      return { ...prev, [id]: nextStatus(prev[id] ?? initialStatus) }
+    })
   }
 
   return (
@@ -102,7 +103,7 @@ export function RecurringDetector() {
       </CardHeader>
       <CardContent className="space-y-1">
         {recurringCharges.map((charge) => {
-          const status = statuses[charge.id]
+          const status = statuses[charge.id] ?? charge.status
           return (
             <div
               key={charge.id}
@@ -123,22 +124,22 @@ export function RecurringDetector() {
                   {charge.merchant}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Next: {charge.nextDate}
+                  Próxima: {charge.nextDate}
                 </p>
               </div>
               <div className="text-right mr-2">
                 <p className="text-sm font-medium tabular-nums">
-                  ${charge.amount.toFixed(2)}
+                  {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(charge.amount)}
                 </p>
                 <p className="text-[10px] text-muted-foreground capitalize">
-                  {charge.frequency}
+                  {charge.frequency === "yearly" ? "anual" : "mensal"}
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => toggleStatus(charge.id)}
                 className="rounded-full p-1 transition-colors hover:bg-muted"
-                aria-label={`Toggle status for ${charge.merchant}`}
+                aria-label={`Alterar status de ${charge.merchant}`}
               >
                 <StatusIcon status={status} />
               </button>
@@ -150,12 +151,11 @@ export function RecurringDetector() {
         <div className="flex w-full items-center justify-between text-xs text-muted-foreground">
           <span className="flex items-center gap-1.5">
             <CheckCircle2Icon className="size-3.5 text-emerald-500" />
-            <span className="tabular-nums">{summary.wanted}</span> wanted
+            <span className="tabular-nums">{summary.wanted}</span> desejadas
           </span>
           <span className="flex items-center gap-1.5">
             <FlagIcon className="size-3.5 text-amber-500" />
-            <span className="tabular-nums">{summary.review}</span> flagged for
-            review
+            <span className="tabular-nums">{summary.review}</span> para revisar
           </span>
         </div>
       </CardFooter>

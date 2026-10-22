@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import Image from "next/image"
 import { LineChart, Line } from "recharts"
 import {
@@ -48,20 +48,6 @@ export function HoldingsTable() {
   const { holdings: realHoldings } = useFinanceData()
   const sourceHoldings = realHoldings.length > 0 ? realHoldings : seedAtivos
 
-  if (sourceHoldings.length === 0) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Carteira de Investimentos</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
-          <p className="text-sm font-medium text-foreground">Nenhum investimento registrado</p>
-          <p className="text-xs mt-1">Conecte ou adicione seus ativos para acompanhar cotações e rendimentos.</p>
-        </CardContent>
-      </Card>
-    )
-  }
-
   const [prices, setPrices] = useState<Record<string, number>>(() => {
     const map: Record<string, number> = {}
     for (const h of sourceHoldings) map[h.id] = h.currentPrice
@@ -70,29 +56,27 @@ export function HoldingsTable() {
   const [flashMap, setFlashMap] = useState<Record<string, "up" | "down" | null>>({})
   const [sortKey, setSortKey] = useState<SortKey | null>(null)
   const [sortDir, setSortDir] = useState<SortDir>(null)
-  const prevPrices = useRef<Record<string, number>>({ ...prices })
-
   // Live price simulation
   useEffect(() => {
     const interval = setInterval(() => {
       setPrices((prev) => {
         const next = { ...prev }
         const flashes: Record<string, "up" | "down" | null> = {}
-        for (const h of seedAtivos) {
+        for (const h of sourceHoldings) {
+          const currentPrice = prev[h.id] ?? h.currentPrice
           const change = 1 + (Math.random() - 0.5) * 0.006 // +/- 0.3%
-          const newPrice = Math.round(prev[h.id] * change * 100) / 100
-          if (newPrice !== prev[h.id]) {
-            flashes[h.id] = newPrice > prev[h.id] ? "up" : "down"
+          const newPrice = Math.round(currentPrice * change * 100) / 100
+          if (newPrice !== currentPrice) {
+            flashes[h.id] = newPrice > currentPrice ? "up" : "down"
           }
           next[h.id] = newPrice
         }
-        prevPrices.current = prev
         setFlashMap(flashes)
         return next
       })
     }, 3000)
     return () => clearInterval(interval)
-  }, [])
+  }, [sourceHoldings])
 
   // Clear flash after animation
   useEffect(() => {
@@ -103,11 +87,11 @@ export function HoldingsTable() {
 
   const holdings = useMemo(
     () =>
-      seedAtivos.map((h) => ({
+      sourceHoldings.map((h) => ({
         ...h,
         currentPrice: prices[h.id] ?? h.currentPrice,
       })),
-    [prices]
+    [prices, sourceHoldings]
   )
 
   const cycleSortDir = useCallback(
@@ -152,6 +136,20 @@ export function HoldingsTable() {
     })
     return arr
   }, [holdings, sortKey, sortDir])
+
+  if (sourceHoldings.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Carteira de Investimentos</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
+          <p className="text-sm font-medium text-foreground">Nenhum investimento registrado</p>
+          <p className="text-xs mt-1">Conecte ou adicione seus ativos para acompanhar cotações e rendimentos.</p>
+        </CardContent>
+      </Card>
+    )
+  }
 
   return (
     <Card>
