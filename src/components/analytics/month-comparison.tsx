@@ -19,11 +19,11 @@ import { useFinanceData } from "@/components/finance/finance-provider"
 
 const chartConfig = {
   thisMonth: {
-    label: "This Month",
+    label: "Este mês",
     color: "var(--color-primary)",
   },
   lastMonth: {
-    label: "Last Month",
+    label: "Mês anterior",
     color: "var(--color-muted-foreground)",
   },
 } satisfies ChartConfig
@@ -82,21 +82,21 @@ export function MonthComparison() {
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle>Month vs Last Month</CardTitle>
+            <CardTitle>Este mês vs. mês anterior</CardTitle>
             <CardDescription>
               <span className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
                 <span className="flex items-center gap-1.5">
                   <span className="size-2 rounded-full bg-primary" />
-                  This Month{" "}
+                  Este mês{" "}
                   <span className="font-medium tabular-nums text-foreground">
-                    ${totals.thisMonth.toLocaleString()}
+                    {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(totals.thisMonth)}
                   </span>
                 </span>
                 <span className="flex items-center gap-1.5">
                   <span className="size-2 rounded-full bg-muted-foreground/30" />
-                  Last Month{" "}
+                  Mês anterior{" "}
                   <span className="font-medium tabular-nums text-foreground">
-                    ${totals.lastMonth.toLocaleString()}
+                    {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(totals.lastMonth)}
                   </span>
                 </span>
               </span>

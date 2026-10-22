@@ -168,7 +168,7 @@ export function CategoryDonut() {
                   dominantBaseline="middle"
                   className="fill-foreground text-2xl font-bold tabular-nums"
                 >
-                  ${centerValor.toLocaleString()}
+                  {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).format(centerValor)}
                 </text>
                 <text
                   x="50%"
@@ -177,7 +177,7 @@ export function CategoryDonut() {
                   dominantBaseline="middle"
                   className="fill-muted-foreground text-xs"
                 >
-                  {selectedCategory ? "category total" : "total spent"}
+                  {selectedCategory ? "total da categoria" : "total gasto"}
                 </text>
               </PieChart>
             </ChartContainer>

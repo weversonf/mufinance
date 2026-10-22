@@ -4,13 +4,11 @@ import { useMemo, useState } from "react"
 
 import { useFinanceData } from "@/components/finance/finance-provider"
 import { EditTransactionDialog } from "@/components/transactions/edit-transaction-dialog"
-import { AddTransactionDialog } from "@/components/transactions/add-transaction-dialog"
 import type { FullTransaction } from "@/data/seed"
 import { TransactionSummary } from "@/components/transactions/transaction-summary"
 import { TransactionFilters } from "@/components/transactions/transaction-filters"
 import { TransactionTable } from "@/components/transactions/transaction-table"
 import { TransactionActions } from "@/components/transactions/transaction-actions"
-import { Button } from "@/components/ui/button"
 
 export function TransactionsPageClient() {
   const { fullTransactions, snapshot, bankAccounts, refresh } = useFinanceData()
@@ -54,12 +52,11 @@ export function TransactionsPageClient() {
     return data
   }, [categoryFilter, fullTransactions, search, statusFilter, typeFilter])
 
-  const [addDialogOpen, setAddDialogOpen] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
 
   function handleExport() {
     const selected = fullTransactions.filter((transaction) => selectedIds.has(transaction.id))
-    const header = "Merchant,ID da transação,Valor,Date,Status,Type"
+    const header = "Descrição,ID da transação,Valor,Data,Status,Tipo"
     const rows = selected.map(
       (transaction) =>
         `"${transaction.merchant}","${transaction.transactionId}",${transaction.amount},"${transaction.date}","${transaction.status}","${transaction.type}"`,
@@ -100,7 +97,7 @@ export function TransactionsPageClient() {
     <div className="flex flex-col gap-4">
       <TransactionSummary transactions={filteredData} />
 
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col gap-3">
         <TransactionFilters
           search={search}
           setSearch={setSearch}
@@ -112,11 +109,6 @@ export function TransactionsPageClient() {
           setTypeFilter={setTypeFilter}
           categories={categories}
         />
-        <div className="flex shrink-0 items-center gap-2">
-          <Button onClick={() => setAddDialogOpen(true)} className="gap-2">
-            Nova Transação
-          </Button>
-        </div>
       </div>
 
       <TransactionTable
@@ -124,12 +116,6 @@ export function TransactionsPageClient() {
         selectedIds={selectedIds}
         setSelectedIds={setSelectedIds}
         onEdit={setSelectedTransaction}
-      />
-
-      <AddTransactionDialog 
-        open={addDialogOpen} 
-        onOpenChange={setAddDialogOpen} 
-        onSaved={refresh} 
       />
 
       <EditTransactionDialog

@@ -12,19 +12,20 @@ import {
 } from "@/components/ui/breadcrumb"
 
 const labelMap: Record<string, string> = {
-  dashboard: "Dashboard",
-  accounts: "Accounts",
-  transactions: "Transactions",
-  transfers: "Transfers",
-  cards: "Cards",
+  dashboard: "Visão geral",
+  accounts: "Contas",
+  transactions: "Transações",
+  transfers: "Transferências",
+  cards: "Cartões",
   crypto: "Cripto",
-  analytics: "Analytics",
-  investments: "Investimentoss",
-  budgets: "Budgets",
-  settings: "Settings",
-  notifications: "Notifications",
-  "sign-in": "Sign In",
-  "sign-up": "Sign Up",
+  analytics: "Análises",
+  investments: "Investimentos",
+  budgets: "Orçamentos",
+  settings: "Configurações",
+  notifications: "Notificações",
+  support: "Suporte",
+  "sign-in": "Entrar",
+  "sign-up": "Criar conta",
 }
 
 export function DynamicBreadcrumb() {

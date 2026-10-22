@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button"
 
 interface TransferListProps {
   transfers: TransferRecord[]
+  hasAny?: boolean
   onCancel: (id: string) => void
 }
 
@@ -41,7 +42,7 @@ function statusBadge(status: TransferRecord["status"]) {
   }
 }
 
-export function TransferList({ transfers, onCancel }: TransferListProps) {
+export function TransferList({ transfers, hasAny = true, onCancel }: TransferListProps) {
   return (
     <div className="overflow-hidden rounded-xl ring-1 ring-foreground/10">
       <div className="divide-y">
@@ -53,7 +54,7 @@ export function TransferList({ transfers, onCancel }: TransferListProps) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
-              <EmptyState variant="filter" className="py-10" />
+              <EmptyState variant={hasAny ? "filter" : "transfers"} className="py-10" />
             </motion.div>
           )}
 

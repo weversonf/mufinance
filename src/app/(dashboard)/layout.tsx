@@ -44,8 +44,10 @@ export default function DashboardLayout({
             <kbd className="pointer-events-none hidden h-6 select-none items-center gap-1 rounded border bg-muted px-2 font-mono text-[10px] font-medium text-muted-foreground sm:flex">
               <span className="text-xs">⌘</span>K
             </kbd>
-            <DashboardCustomizeHeaderButton />
-            <DemoModeToggle />
+            <div className="hidden items-center gap-1.5 sm:contents">
+              <DashboardCustomizeHeaderButton />
+              <DemoModeToggle />
+            </div>
             <PrivacyToggle />
             <GlobalAddTransaction />
             <ThemeToggle />

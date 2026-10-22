@@ -150,7 +150,7 @@ export function AddTransactionDialog({ open, onOpenChange, onSaved }: { open: bo
           <DialogTitle>Nova transação</DialogTitle>
           <DialogDescription>Adicione um novo lançamento manual.</DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="grid gap-4 sm:grid-cols-2">
+        <form onSubmit={handleSubmit} className="grid gap-4 max-sm:[&_input[type=text]]:h-11 max-sm:[&_input[type=number]]:h-11 max-sm:[&_input[type=date]]:h-11 max-sm:[&_select]:h-11 sm:grid-cols-2">
           <label className="grid gap-1.5 text-sm font-medium sm:col-span-2">
             Descrição
             <Input value={payee} onChange={(event) => setPayee(event.target.value)} required placeholder="Ex: Mercado, Salário..." />

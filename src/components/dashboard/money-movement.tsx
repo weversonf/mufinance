@@ -51,13 +51,26 @@ export function MoneyMovement() {
     return { in: inTotal, out: outTotal, net: inTotal - outTotal }
   }, [data])
 
+  const hasData = useMemo(
+    () => data.some((d) => d.moneyIn !== 0 || d.moneyOut !== 0),
+    [data],
+  )
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
         <CardTitle className="text-base font-semibold">
           Movimentação Financeira
         </CardTitle>
-        <Select value={period} onValueChange={(v) => setPeriod(v as Period)}>
+        <Select
+          items={[
+            { value: "7d", label: "7 dias" },
+            { value: "30d", label: "30 dias" },
+            { value: "90d", label: "90 dias" },
+          ]}
+          value={period}
+          onValueChange={(v) => setPeriod(v as Period)}
+        >
           <SelectTrigger className="h-8 w-[110px] text-xs">
             <SelectValue />
           </SelectTrigger>
@@ -104,6 +117,7 @@ export function MoneyMovement() {
         </div>
 
         {/* Chart */}
+        {hasData ? (
         <ChartContainer config={chartConfig} className="h-[180px] w-full">
           <BarChart
             data={data}
@@ -160,6 +174,12 @@ export function MoneyMovement() {
             />
           </BarChart>
         </ChartContainer>
+        ) : (
+          <div className="flex h-24 flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-border/80 bg-muted/20 text-center">
+            <p className="text-xs font-medium">Sem movimentações no período</p>
+            <p className="text-[11px] text-muted-foreground">Os lançamentos aparecerão aqui.</p>
+          </div>
+        )}
       </CardContent>
     </Card>
   )

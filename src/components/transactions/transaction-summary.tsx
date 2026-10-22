@@ -1,4 +1,4 @@
-import { ArrowDownLeftIcon, ArrowUpRightIcon, HashIcon, TrendingUpIcon } from "lucide-react"
+import { ArrowDownLeftIcon, ArrowUpRightIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import type { FullTransaction } from "@/data/seed"
@@ -23,45 +23,25 @@ export function TransactionSummary({ transactions }: TransactionSummaryProps) {
     .filter((t) => t.type === "expense")
     .reduce((s, t) => s + Math.abs(t.amount), 0)
 
-  const largest = transactions.length
-    ? transactions.reduce((max, t) =>
-        Math.abs(t.amount) > Math.abs(max.amount) ? t : max
-      )
-    : null
-
   const cards = [
     {
-      label: "Total de entradas",
+      label: "Entradas",
       value: fmt(totalIn),
       icon: ArrowDownLeftIcon,
       color: "text-emerald-500",
       bg: "bg-emerald-500/10",
     },
     {
-      label: "Total de saídas",
+      label: "Saídas",
       value: fmt(totalOut),
       icon: ArrowUpRightIcon,
       color: "text-rose-500",
       bg: "bg-rose-500/10",
     },
-    {
-      label: "Maior lançamento",
-      value: largest ? fmt(Math.abs(largest.amount)) : "R$ 0,00",
-      icon: TrendingUpIcon,
-      color: "text-primary",
-      bg: "bg-primary/10",
-    },
-    {
-      label: "Quantidade",
-      value: transactions.length.toString(),
-      icon: HashIcon,
-      color: "text-muted-foreground",
-      bg: "bg-muted",
-    },
   ]
 
   return (
-    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+    <div className="grid grid-cols-2 gap-3">
       {cards.map((card) => (
         <div
           key={card.label}
@@ -77,7 +57,7 @@ export function TransactionSummary({ transactions }: TransactionSummaryProps) {
           </div>
           <div className="min-w-0">
             <p className="text-xs text-muted-foreground">{card.label}</p>
-            <p className="tabular-nums text-base font-semibold tracking-tight">
+            <p className="truncate tabular-nums text-base font-semibold tracking-tight">
               {card.value}
             </p>
           </div>

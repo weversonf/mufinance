@@ -90,6 +90,15 @@ const categoryColors: Record<FaqItem["category"], string> = {
 
 const categoryFilters = ["all", "account", "payments", "security", "billing", "general"] as const
 
+const categoryLabels: Record<(typeof categoryFilters)[number], string> = {
+  all: "Todos",
+  account: "Conta",
+  payments: "Pagamentos",
+  security: "Segurança",
+  billing: "Cobrança",
+  general: "Geral",
+}
+
 function FaqTab() {
   const [search, setSearch] = React.useState("")
   const [categoryFilter, setCategoryFilter] = React.useState<string>("all")
@@ -123,13 +132,13 @@ function FaqTab() {
               key={cat}
               onClick={() => setCategoryFilter(cat)}
               className={cn(
-                "rounded-lg px-3 py-1.5 text-xs font-medium transition-colors capitalize",
+                "rounded-lg px-3 py-1.5 text-xs font-medium transition-colors",
                 categoryFilter === cat
                   ? "bg-primary text-primary-foreground"
                   : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground"
               )}
             >
-              {cat === "all" ? "All Topics" : cat}
+              {categoryLabels[cat]}
             </button>
           ))}
         </div>
@@ -149,7 +158,7 @@ function FaqTab() {
               >
                 <SearchIcon className="size-10 opacity-30" />
                 <p className="text-sm font-medium">Nenhuma pergunta encontrada</p>
-                <p className="text-xs">Try a different search term or category</p>
+                <p className="text-xs">Tente outro termo de busca ou categoria</p>
               </motion.div>
             ) : (
               filtered.map((item, i) => {
@@ -185,10 +194,10 @@ function FaqTab() {
                             >
                               <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{item.answer}</p>
                               <div className="mt-3 flex items-center gap-3">
-                                <span className="text-[11px] text-muted-foreground">Was this helpful?</span>
+                                <span className="text-[11px] text-muted-foreground">Isso foi útil?</span>
                                 <div className="flex gap-1">
-                                  <button type="button" className="rounded-md px-2 py-0.5 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-emerald-500/10 hover:text-emerald-600">Yes</button>
-                                  <button type="button" className="rounded-md px-2 py-0.5 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-rose-500/10 hover:text-rose-600">No</button>
+                                  <button type="button" className="rounded-md px-2 py-0.5 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-emerald-500/10 hover:text-emerald-600">Sim</button>
+                                  <button type="button" className="rounded-md px-2 py-0.5 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-rose-500/10 hover:text-rose-600">Não</button>
                                 </div>
                               </div>
                             </motion.div>
@@ -217,15 +226,15 @@ function FaqTab() {
 // ── Tickets Tab ──────────────────────────────────────────────────────────────
 
 const ticketStatusConfig: Record<SupportTicket["status"], { label: string; icon: React.ReactNode; className: string }> = {
-  open: { label: "Open", icon: <CircleDotIcon className="size-3" />, className: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20" },
-  "in-progress": { label: "In Progress", icon: <ClockIcon className="size-3" />, className: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20" },
-  resolved: { label: "Resolved", icon: <CheckCircle2Icon className="size-3" />, className: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20" },
+  open: { label: "Aberto", icon: <CircleDotIcon className="size-3" />, className: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20" },
+  "in-progress": { label: "Em andamento", icon: <ClockIcon className="size-3" />, className: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20" },
+  resolved: { label: "Resolvido", icon: <CheckCircle2Icon className="size-3" />, className: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20" },
 }
 
 const priorityConfig: Record<SupportTicket["priority"], { label: string; dot: string }> = {
-  high: { label: "High", dot: "bg-rose-500" },
-  medium: { label: "Medium", dot: "bg-amber-500" },
-  low: { label: "Low", dot: "bg-muted-foreground" },
+  high: { label: "Alta", dot: "bg-rose-500" },
+  medium: { label: "Média", dot: "bg-amber-500" },
+  low: { label: "Baixa", dot: "bg-muted-foreground" },
 }
 
 function TicketsTab() {
@@ -290,7 +299,7 @@ function TicketsTab() {
                           <span className="font-mono text-[10px] text-muted-foreground">#{ticket.id}</span>
                           <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
                             <span className={cn("size-1.5 rounded-full", pCfg.dot)} />
-                            {pCfg.label} priority
+                            {pCfg.label} prioridade
                           </span>
                         </div>
                       </div>
@@ -300,8 +309,8 @@ function TicketsTab() {
                       </Badge>
                     </div>
                     <div className="mt-3 flex items-center gap-4 text-[11px] text-muted-foreground">
-                      <span>Created {ticket.createdAt}</span>
-                      <span>Updated {ticket.lastUpdate}</span>
+                      <span>Criado em {ticket.createdAt}</span>
+                      <span>Atualizado em {ticket.lastUpdate}</span>
                     </div>
                   </div>
                 </motion.div>
@@ -319,15 +328,15 @@ function TicketsTab() {
 type ChatMessage = { id: string; sender: "user" | "bot"; text: string }
 
 const botResponses = [
-  "Thanks for reaching out! Let me look into that for you.",
-  "I can see your account. Let me pull up the relevant details.",
-  "I've escalated this to our specialist team. You should hear back within 2 hours.",
-  "Is there anything else I can help you with today?",
+  "Obrigado pelo contato! Vou verificar isso para você.",
+  "Consigo ver sua conta. Deixe-me buscar os detalhes relevantes.",
+  "Encaminhei para nossa equipe especializada. Você receberá uma resposta em até 2 horas.",
+  "Posso ajudar com mais alguma coisa hoje?",
 ]
 
 function LiveChatSimulator() {
   const [messages, setMessages] = React.useState<ChatMessage[]>([
-    { id: "welcome", sender: "bot", text: "Hi there! I'm Vault Assistant. How can I help you today?" },
+    { id: "welcome", sender: "bot", text: "Olá! Sou o Assistente Vault. Como posso ajudar você hoje?" },
   ])
   const [input, setInput] = React.useState("")
   const [typing, setTyping] = React.useState(false)
@@ -364,8 +373,8 @@ function LiveChatSimulator() {
           <span className="absolute bottom-0 right-0 size-2.5 rounded-full border-2 border-background bg-emerald-500" />
         </div>
         <div>
-          <p className="text-sm font-semibold">Vault Assistant</p>
-          <p className="text-[11px] text-muted-foreground">Online &middot; Avg. reply: 30s</p>
+          <p className="text-sm font-semibold">Assistente Vault</p>
+          <p className="text-[11px] text-muted-foreground">Online &middot; Resposta média: 30s</p>
         </div>
       </div>
 
@@ -448,9 +457,9 @@ function ContactChannels() {
   return (
     <div className="grid gap-3 sm:grid-cols-3">
       {[
-        { icon: <MessageCircleIcon className="size-5" />, label: "Live Chat", desc: "Avg. wait: 2 min", badge: "Online", badgeColor: "bg-emerald-500", color: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" },
-        { icon: <MailIcon className="size-5" />, label: "Email Support", desc: "Response within 24h", badge: null, badgeColor: "", color: "bg-blue-500/10 text-blue-600 dark:text-blue-400" },
-        { icon: <HeadphonesIcon className="size-5" />, label: "Phone", desc: "Mon-Fri, 9am-6pm", badge: null, badgeColor: "", color: "bg-violet-500/10 text-violet-600 dark:text-violet-400" },
+        { icon: <MessageCircleIcon className="size-5" />, label: "Chat ao vivo", desc: "Espera média: 2 min", badge: "Online", badgeColor: "bg-emerald-500", color: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" },
+        { icon: <MailIcon className="size-5" />, label: "Suporte por e-mail", desc: "Resposta em até 24h", badge: null, badgeColor: "", color: "bg-blue-500/10 text-blue-600 dark:text-blue-400" },
+        { icon: <HeadphonesIcon className="size-5" />, label: "Telefone", desc: "Seg-Sex, 9h-18h", badge: null, badgeColor: "", color: "bg-violet-500/10 text-violet-600 dark:text-violet-400" },
       ].map((ch) => (
         <Card key={ch.label} className="group cursor-pointer transition-all hover:shadow-md hover:ring-1 hover:ring-primary/20">
           <CardContent className="flex items-center gap-3 p-4">
@@ -576,7 +585,7 @@ function ContactTab() {
 // ── Status Tab ───────────────────────────────────────────────────────────────
 
 const statusColors = { operational: "#10b981", degraded: "#f59e0b", outage: "#ef4444" }
-const statusLabels = { operational: "Operational", degraded: "Degraded", outage: "Outage" }
+const statusLabels = { operational: "Operacional", degraded: "Degradado", outage: "Fora do ar" }
 
 function StatusTab() {
   const allOperational = systemStatus.every((s) => s.status === "operational")
@@ -613,7 +622,7 @@ function StatusTab() {
           </div>
           <div className="ml-auto hidden text-right sm:block">
             <p className="text-2xl font-bold tabular-nums">{uptimePct}%</p>
-            <p className="text-xs text-muted-foreground">90-day uptime</p>
+            <p className="text-xs text-muted-foreground">Disponibilidade em 90 dias</p>
           </div>
         </CardContent>
       </Card>
@@ -650,7 +659,7 @@ function StatusTab() {
                         }
                       />
                       <TooltipContent>
-                        <span className="text-xs tabular-nums">{30 - j} days ago &middot; {statusLabels[status]}</span>
+                        <span className="text-xs tabular-nums">há {30 - j} dias &middot; {statusLabels[status]}</span>
                       </TooltipContent>
                     </Tooltip>
                   ))}
@@ -682,11 +691,11 @@ function StatusTab() {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Uptime &mdash; Last 90 Days</CardTitle>
+            <CardTitle>Disponibilidade &mdash; últimos 90 dias</CardTitle>
             <div className="flex items-center gap-3 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1"><span className="size-2 rounded-sm bg-emerald-500" /> Up</span>
-              <span className="flex items-center gap-1"><span className="size-2 rounded-sm bg-amber-500" /> Degraded</span>
-              <span className="flex items-center gap-1"><span className="size-2 rounded-sm bg-rose-500" /> Down</span>
+              <span className="flex items-center gap-1"><span className="size-2 rounded-sm bg-emerald-500" /> Ativo</span>
+              <span className="flex items-center gap-1"><span className="size-2 rounded-sm bg-amber-500" /> Degradado</span>
+              <span className="flex items-center gap-1"><span className="size-2 rounded-sm bg-rose-500" /> Fora</span>
             </div>
           </div>
         </CardHeader>
@@ -707,15 +716,15 @@ function StatusTab() {
                     }
                   />
                   <TooltipContent>
-                    <span className="text-xs tabular-nums">{90 - i} days ago &middot; {statusLabels[status]}</span>
+                    <span className="text-xs tabular-nums">há {90 - i} dias &middot; {statusLabels[status]}</span>
                   </TooltipContent>
                 </Tooltip>
               ))}
             </div>
           </TooltipProvider>
           <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
-            <span>90 days ago</span>
-            <span className="font-medium text-foreground tabular-nums">{uptimePct}% uptime</span>
+            <span>há 90 dias</span>
+            <span className="font-medium text-foreground tabular-nums">{uptimePct}% de disponibilidade</span>
             <span>Hoje</span>
           </div>
         </CardContent>
@@ -741,7 +750,7 @@ export function SupportPageClient() {
       {/* Header */}
       <div className="space-y-1">
         <h1 className="text-2xl font-semibold tracking-tight">Ajuda e suporte</h1>
-        <p className="text-sm text-muted-foreground">Find answers, chat with us, submit tickets, and check system status</p>
+        <p className="text-sm text-muted-foreground">Encontre respostas, fale conosco, abra chamados e acompanhe o status do sistema</p>
       </div>
 
       <div className="flex flex-1 flex-col gap-6 lg:flex-row">
@@ -761,7 +770,7 @@ export function SupportPageClient() {
               </Button>
             ))}
           </nav>
-          <div className="-mx-1 flex gap-1 overflow-x-auto px-1 pb-2 lg:hidden">
+          <div className="-mx-1 flex flex-wrap gap-1 px-1 pb-2 lg:hidden">
             {tabs.map((tab) => (
               <Button
                 key={tab.id}

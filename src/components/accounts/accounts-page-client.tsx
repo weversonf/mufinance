@@ -66,11 +66,11 @@ export function AccountsPageClient() {
       {filtered.length === 0 && (
         <EmptyState
           variant={accounts.length === 0 ? "accounts" : "filter"}
-          title={accounts.length === 0 ? "Nenhuma conta vinculada" : "No accounts in this category"}
+          title={accounts.length === 0 ? "Nenhuma conta vinculada" : "Nenhuma conta nesta categoria"}
           description={
             accounts.length === 0
-              ? "Connect your first account below to see balances and track spending."
-              : "Try a different filter or link a new account below."
+              ? "Conecte sua primeira conta abaixo para ver saldos e acompanhar gastos."
+              : "Tente outro filtro ou vincule uma nova conta abaixo."
           }
           className="py-8"
         />

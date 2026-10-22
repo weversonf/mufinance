@@ -144,11 +144,11 @@ export default function SignInPage() {
         <div className="relative z-20 mt-auto p-8">
           <div className="rounded-xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm">
             <blockquote className="text-sm leading-relaxed text-white/80">
-              &ldquo;The best time to start investing was yesterday. The second
-              best time is now.&rdquo;
+              &ldquo;O melhor momento para começar a investir foi ontem. O
+              segundo melhor momento é agora.&rdquo;
             </blockquote>
             <p className="mt-3 text-xs text-white/50">
-              &mdash; Financial Wisdom
+              &mdash; Sabedoria financeira
             </p>
           </div>
         </div>
@@ -175,10 +175,10 @@ export default function SignInPage() {
           {/* Heading */}
           <motion.div className="text-center" variants={itemVariants}>
             <h1               className="text-3xl font-semibold tracking-[-0.03em]">
-              Welcome back
+              Bem-vindo de volta
             </h1>
             <p className="mt-1.5 text-sm text-muted-foreground">
-              Sign in to your account
+              Entre na sua conta
             </p>
           </motion.div>
 
@@ -216,7 +216,7 @@ export default function SignInPage() {
           >
             <div className="flex-1 border-t border-border" />
             <span className="mx-3 text-xs text-muted-foreground">
-              or continue with
+              ou continue com
             </span>
             <div className="flex-1 border-t border-border" />
           </motion.div>
@@ -228,7 +228,7 @@ export default function SignInPage() {
                 htmlFor="email"
                 className="mb-1.5 block text-sm font-medium"
               >
-                Email
+                E-mail
               </label>
               <InputGroup>
                 <InputGroupAddon align="inline-start">
@@ -237,7 +237,7 @@ export default function SignInPage() {
                 <InputGroupInput
                   id="email"
                   type="email"
-                  placeholder="name@example.com"
+                  placeholder="voce@exemplo.com"
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
                   required
@@ -248,10 +248,10 @@ export default function SignInPage() {
             <motion.div variants={itemVariants}>
               <div className="mb-1.5 flex items-center justify-between">
                 <label htmlFor="password" className="text-sm font-medium">
-                  Password
+                  Senha
                 </label>
                 <Link href="#" onClick={handleReset} className="text-xs text-muted-foreground transition-colors hover:text-foreground">
-                  Forgot password?
+                  Esqueceu a senha?
                 </Link>
               </div>
               <InputGroup>
@@ -261,7 +261,7 @@ export default function SignInPage() {
                 <InputGroupInput
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  placeholder="Enter your password"
+                  placeholder="Digite sua senha"
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
                   required
@@ -272,7 +272,7 @@ export default function SignInPage() {
                     size="icon-xs"
                     variant="ghost"
                     onClick={() => setShowPassword(!showPassword)}
-                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
                   >
                     {showPassword ? (
                       <EyeOffIcon className="size-3.5 text-muted-foreground" />
@@ -296,15 +296,15 @@ export default function SignInPage() {
                 {isLoading ? (
                   <>
                     <Loader2Icon className="size-4 animate-spin" />
-                    <span>Signing in...</span>
+                    <span>Entrando...</span>
                   </>
                 ) : isSuccess ? (
                   <>
                     <CheckIcon className="size-4" />
-                    <span>Success!</span>
+                    <span>Sucesso!</span>
                   </>
                 ) : (
-                  <span>Sign in</span>
+                  <span>Entrar</span>
                 )}
               </Button>
             </motion.div>
@@ -315,12 +315,12 @@ export default function SignInPage() {
             className="mt-6 text-center text-sm text-muted-foreground"
             variants={itemVariants}
           >
-            Don&apos;t have an account?{" "}
+            Não tem uma conta?{" "}
             <Link
               href="/sign-up"
               className="font-medium text-foreground underline-offset-4 transition-colors hover:underline"
             >
-              Sign up
+              Criar conta
             </Link>
           </motion.p>
 
@@ -330,7 +330,7 @@ export default function SignInPage() {
             variants={itemVariants}
           >
             <ShieldCheckIcon className="size-3.5" />
-            <span>256-bit SSL encrypted</span>
+            <span>Criptografia SSL de 256 bits</span>
           </motion.div>
         </motion.div>
       </div>

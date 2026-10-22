@@ -132,8 +132,8 @@ export default function SignUpPage() {
         <div className="relative z-20 mt-auto p-8">
           <div className="rounded-xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm">
             <blockquote className="text-sm leading-relaxed text-white/80">
-              &ldquo;Compound interest is the eighth wonder of the world. He who
-              understands it, earns it; he who doesn&apos;t, pays it.&rdquo;
+              &ldquo;Os juros compostos são a oitava maravilha do mundo. Quem
+              entende, ganha; quem não entende, paga.&rdquo;
             </blockquote>
             <p className="mt-3 text-xs text-white/50">
               &mdash; Albert Einstein
@@ -163,10 +163,10 @@ export default function SignUpPage() {
           {/* Heading */}
           <motion.div className="text-center" variants={itemVariants}>
             <h1 className="text-2xl font-semibold tracking-tight">
-              Create your account
+              Criar sua conta
             </h1>
             <p className="mt-1.5 text-sm text-muted-foreground">
-              Start managing your finances today
+              Comece a organizar suas finanças hoje
             </p>
           </motion.div>
 
@@ -204,7 +204,7 @@ export default function SignUpPage() {
           >
             <div className="flex-1 border-t border-border" />
             <span className="mx-3 text-xs text-muted-foreground">
-              or continue with
+              ou continue com
             </span>
             <div className="flex-1 border-t border-border" />
           </motion.div>
@@ -216,7 +216,7 @@ export default function SignUpPage() {
                 htmlFor="name"
                 className="mb-1.5 block text-sm font-medium"
               >
-                Full name
+                Nome completo
               </label>
               <InputGroup>
                 <InputGroupAddon align="inline-start">
@@ -225,7 +225,7 @@ export default function SignUpPage() {
                 <InputGroupInput
                   id="name"
                   type="text"
-                  placeholder="John Doe"
+                  placeholder="Seu nome"
                   value={name}
                   onChange={(event) => setName(event.target.value)}
                   required
@@ -238,7 +238,7 @@ export default function SignUpPage() {
                 htmlFor="email"
                 className="mb-1.5 block text-sm font-medium"
               >
-                Email
+                E-mail
               </label>
               <InputGroup>
                 <InputGroupAddon align="inline-start">
@@ -247,7 +247,7 @@ export default function SignUpPage() {
                 <InputGroupInput
                   id="email"
                   type="email"
-                  placeholder="name@example.com"
+                  placeholder="voce@exemplo.com"
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
                   required
@@ -260,7 +260,7 @@ export default function SignUpPage() {
                 htmlFor="password"
                 className="mb-1.5 block text-sm font-medium"
               >
-                Password
+                Senha
               </label>
               <InputGroup>
                 <InputGroupAddon align="inline-start">
@@ -269,7 +269,7 @@ export default function SignUpPage() {
                 <InputGroupInput
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  placeholder="Create a password"
+                  placeholder="Crie uma senha"
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
                   required
@@ -280,7 +280,7 @@ export default function SignUpPage() {
                     size="icon-xs"
                     variant="ghost"
                     onClick={() => setShowPassword(!showPassword)}
-                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
                   >
                     {showPassword ? (
                       <EyeOffIcon className="size-3.5 text-muted-foreground" />
@@ -303,19 +303,19 @@ export default function SignUpPage() {
                 className="mt-0.5"
               />
               <label htmlFor="terms" className="text-sm text-muted-foreground">
-                I agree to the{" "}
+                Concordo com os{" "}
                 <Link
                   href="#"
                   className="font-medium text-foreground underline-offset-4 hover:underline"
                 >
-                  Terms of Service
+                  Termos de Serviço
                 </Link>{" "}
-                and{" "}
+                e a{" "}
                 <Link
                   href="#"
                   className="font-medium text-foreground underline-offset-4 hover:underline"
                 >
-                  Privacy Policy
+                  Política de Privacidade
                 </Link>
               </label>
             </motion.div>
@@ -332,15 +332,15 @@ export default function SignUpPage() {
                 {isLoading ? (
                   <>
                     <Loader2Icon className="size-4 animate-spin" />
-                    <span>Creating account...</span>
+                    <span>Criando conta...</span>
                   </>
                 ) : isSuccess ? (
                   <>
                     <CheckIcon className="size-4" />
-                    <span>Account created!</span>
+                    <span>Conta criada!</span>
                   </>
                 ) : (
-                  <span>Create account</span>
+                  <span>Criar conta</span>
                 )}
               </Button>
             </motion.div>
@@ -351,12 +351,12 @@ export default function SignUpPage() {
             className="mt-6 text-center text-sm text-muted-foreground"
             variants={itemVariants}
           >
-            Already have an account?{" "}
+            Já tem uma conta?{" "}
             <Link
               href="/sign-in"
               className="font-medium text-foreground underline-offset-4 transition-colors hover:underline"
             >
-              Sign in
+              Entrar
             </Link>
           </motion.p>
 
@@ -366,7 +366,7 @@ export default function SignUpPage() {
             variants={itemVariants}
           >
             <ShieldCheckIcon className="size-3.5" />
-            <span>256-bit SSL encrypted</span>
+            <span>Criptografia SSL de 256 bits</span>
           </motion.div>
         </motion.div>
       </div>

@@ -35,7 +35,11 @@ export function TransactionFilters({
   setTypeFilter,
   categories,
 }: TransactionFiltersProps) {
-  const typeOptions = ["all", "income", "expense"] as const
+  const typeOptions = [
+    { value: "all", label: "Todas" },
+    { value: "income", label: "Entradas" },
+    { value: "expense", label: "Saídas" },
+  ] as const
 
   return (
     <div className="flex flex-wrap items-center gap-2">
@@ -52,6 +56,10 @@ export function TransactionFilters({
 
       {/* Category */}
       <Select
+        items={[
+          { value: "all", label: "Todas as categorias" },
+          ...categories.map((cat) => ({ value: cat, label: cat })),
+        ]}
         value={categoryFilter}
         onValueChange={(v) => v && setCategoryFilter(v)}
       >
@@ -70,6 +78,12 @@ export function TransactionFilters({
 
       {/* Status */}
       <Select
+        items={[
+          { value: "all", label: "Todos os status" },
+          { value: "completed", label: "Concluídas" },
+          { value: "pending", label: "Pendentes" },
+          { value: "failed", label: "Falharam" },
+        ]}
         value={statusFilter}
         onValueChange={(v) => v && setStatusFilter(v)}
       >
@@ -88,16 +102,18 @@ export function TransactionFilters({
       <div className="flex items-center rounded-lg border border-border p-0.5">
         {typeOptions.map((opt) => (
           <button
-            key={opt}
-            onClick={() => setTypeFilter(opt)}
+            key={opt.value}
+            type="button"
+            onClick={() => setTypeFilter(opt.value)}
+            aria-pressed={typeFilter === opt.value}
             className={cn(
-              "rounded-md px-3 py-1 text-sm font-medium capitalize transition-colors",
-              typeFilter === opt
+              "rounded-md px-3 py-1.5 text-[13px] font-medium transition-colors",
+              typeFilter === opt.value
                 ? "bg-primary text-primary-foreground"
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
-            {opt}
+            {opt.label}
           </button>
         ))}
       </div>

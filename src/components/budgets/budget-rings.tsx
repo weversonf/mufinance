@@ -52,7 +52,7 @@ export function BudgetRings() {
     <Card className="col-span-full">
       <CardHeader>
         <CardTitle className="text-base font-semibold">
-          Monthly Budgets
+          Orçamentos mensais
         </CardTitle>
       </CardHeader>
       <CardContent>

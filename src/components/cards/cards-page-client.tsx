@@ -71,6 +71,7 @@ export function CardsPageClient() {
               variant="cards"
               title="Nenhum cartão cadastrado"
               description="Gere um cartão virtual ou adicione um cartão para gerenciar seus gastos."
+              className="py-8 sm:py-16"
             />
           </CardContent>
         </Card>
@@ -80,7 +81,7 @@ export function CardsPageClient() {
         <div className="lg:col-span-4">
           <VirtualCardGenerator onCardCreated={handleCardCreated} />
         </div>
-        <div className="lg:col-span-8">
+        <div className={cards.length > 0 ? "lg:col-span-8" : "hidden lg:col-span-8 lg:block"}>
           {cards.length > 0 ? (
             <CardList
               cards={cards}

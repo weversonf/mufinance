@@ -90,12 +90,12 @@ export function RecurringDetector() {
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle>Recurring Charges</CardTitle>
+            <CardTitle>Cobranças recorrentes</CardTitle>
             <CardDescription>
               <span className="tabular-nums font-medium text-foreground">
-                ${monthlyTotal.toFixed(2)}
-              </span>
-              /mês total
+                {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(monthlyTotal)}
+              </span>{" "}
+              por mês no total
             </CardDescription>
           </div>
         </div>

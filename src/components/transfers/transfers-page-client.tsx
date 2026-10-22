@@ -55,7 +55,7 @@ export function TransfersPageClient() {
         ))}
       </div>
 
-      <TransferList transfers={filtered} onCancel={handleCancel} />
+      <TransferList transfers={filtered} hasAny={transfers.length > 0} onCancel={handleCancel} />
 
       <QuickSend
         onSend={(record) => setLocalTransfers((prev) => [record, ...prev])}

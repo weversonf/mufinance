@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react"
 import { useFinanceData } from "@/components/finance/finance-provider"
 import { format } from "date-fns"
+import { ptBR } from "date-fns/locale"
 import {
   Card,
   CardContent,
@@ -69,6 +70,8 @@ const monthIndex: Record<string, number> = {
   dec: 11, december: 11, dezembro: 11,
 }
 
+const ptMonths = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"]
+
 export function FinancialOverview() {
   const { financialOverview } = useFinanceData()
   const [date, setDate] = useState<DateRange | undefined>({
@@ -96,6 +99,11 @@ export function FinancialOverview() {
     const last = filteredData.reduce((s, d) => s + d.lastYear, 0)
     return { current, last }
   }, [filteredData])
+
+  const hasData = useMemo(
+    () => filteredData.some((d) => d.currentYear !== 0 || d.lastYear !== 0),
+    [filteredData],
+  )
 
   return (
     <Card>
@@ -137,28 +145,37 @@ export function FinancialOverview() {
             {date?.from ? (
               date.to ? (
                 <>
-                  {format(date.from, "MMM/yyyy")} - {format(date.to, "MMM/yyyy")}
+                  {format(date.from, "MMM/yyyy", { locale: ptBR })} - {format(date.to, "MMM/yyyy", { locale: ptBR })}
                 </>
               ) : (
-                format(date.from, "MMM/yyyy")
+                format(date.from, "MMM/yyyy", { locale: ptBR })
               )
             ) : (
               "Selecione um período"
             )}
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="end">
+          <PopoverContent className="max-h-[70dvh] w-auto overflow-y-auto p-0" align="end">
             <Calendar
               mode="range"
               defaultMonth={date?.from}
               selected={date}
               onSelect={setDate}
               numberOfMonths={2}
+              locale={ptBR}
             />
           </PopoverContent>
         </Popover>
       </CardHeader>
       <CardContent className="pt-0">
-        <ChartContainer config={chartConfig} className="h-[260px] w-full">
+        {!hasData ? (
+          <div className="flex h-[180px] flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-border/80 bg-muted/20 text-center sm:h-[220px]">
+            <p className="text-sm font-medium">Sem movimentações no período</p>
+            <p className="text-xs text-muted-foreground">
+              Adicione lançamentos para ver a evolução.
+            </p>
+          </div>
+        ) : (
+        <ChartContainer config={chartConfig} className="h-[200px] w-full sm:h-[260px]">
           <AreaChart
             data={filteredData}
             margin={{ top: 8, right: 8, bottom: 0, left: -20 }}
@@ -190,6 +207,10 @@ export function FinancialOverview() {
               fontSize={12}
               tickMargin={8}
               stroke="var(--color-muted-foreground)"
+              tickFormatter={(value) => {
+                const m = monthIndex[String(value).trim().toLowerCase().replace(".", "")]
+                return m !== undefined ? ptMonths[m] : value
+              }}
             />
             <YAxis
               tickLine={false}
@@ -229,6 +250,7 @@ export function FinancialOverview() {
             />
           </AreaChart>
         </ChartContainer>
+        )}
       </CardContent>
     </Card>
   )

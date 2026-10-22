@@ -5,11 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useFinanceData } from "@/components/finance/finance-provider"
 import { cn } from "@/lib/utils"
 
-const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+const DAYS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"]
 
 export function SpendingCalendar() {
   const { dailySpending } = useFinanceData()
   const now = new Date()
+  const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`
   const { weeks, maxValor } = useMemo(() => {
     const map = new Map(dailySpending.map((d) => [d.date, d.amount]))
     const year = now.getFullYear()
@@ -68,7 +69,7 @@ export function SpendingCalendar() {
                   cell.amount === 0
                     ? 0
                     : Math.min(Math.round((cell.amount / maxValor) * 4), 4)
-                const isToday = cell.day === 13 // April 13 (today in seed)
+                const isToday = cell.date === todayKey
                 return (
                   <div
                     key={ci}
@@ -85,7 +86,7 @@ export function SpendingCalendar() {
                     <span className="text-[11px] font-medium">{cell.day}</span>
                     {cell.amount > 0 && (
                       <span className="hidden text-[9px] tabular-nums text-muted-foreground sm:inline">
-                        ${cell.amount}
+                        {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).format(cell.amount)}
                       </span>
                     )}
                   </div>

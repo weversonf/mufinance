@@ -63,30 +63,30 @@ export function CommandPalette() {
     <CommandDialog
       open={open}
       onOpenChange={setOpen}
-      title="Command Palette"
-      description="Search pages, transactions, contacts, and more"
+      title="Paleta de comandos"
+      description="Pesquise páginas, transações, contatos e mais"
     >
       <Command>
-        <CommandInput placeholder="Type a command or search..." />
+        <CommandInput placeholder="Digite um comando ou pesquise..." />
         <CommandList>
           <CommandEmpty>Nenhum resultado encontrado.</CommandEmpty>
 
-          <CommandGroup heading="Pages">
+          <CommandGroup heading="Páginas">
             {[
-              { label: "Dashboard", icon: LayoutDashboardIcon, href: "/dashboard" },
-              { label: "Accounts", icon: WalletIcon, href: "/accounts" },
-              { label: "Transactions", icon: ArrowLeftRightIcon, href: "/transactions" },
-              { label: "Transfers", icon: SendIcon, href: "/transfers" },
-              { label: "Cards", icon: CreditCardIcon, href: "/cards" },
+              { label: "Visão geral", icon: LayoutDashboardIcon, href: "/dashboard" },
+              { label: "Contas", icon: WalletIcon, href: "/accounts" },
+              { label: "Transações", icon: ArrowLeftRightIcon, href: "/transactions" },
+              { label: "Transferências", icon: SendIcon, href: "/transfers" },
+              { label: "Cartões", icon: CreditCardIcon, href: "/cards" },
               { label: "Cripto", icon: BitcoinIcon, href: "/crypto" },
-              { label: "Analytics", icon: ChartAreaIcon, href: "/analytics" },
-              { label: "Investimentoss", icon: TrendingUpIcon, href: "/investments" },
-              { label: "Budgets", icon: TargetIcon, href: "/budgets" },
-              { label: "Settings", icon: SettingsIcon, href: "/settings" },
-              { label: "Notifications", icon: BellIcon, href: "/notifications" },
+              { label: "Análises", icon: ChartAreaIcon, href: "/analytics" },
+              { label: "Investimentos", icon: TrendingUpIcon, href: "/investments" },
+              { label: "Orçamentos", icon: TargetIcon, href: "/budgets" },
+              { label: "Configurações", icon: SettingsIcon, href: "/settings" },
+              { label: "Notificações", icon: BellIcon, href: "/notifications" },
               { label: "Ajuda e suporte", icon: LifeBuoyIcon, href: "/support" },
-              { label: "Sign In", icon: LogInIcon, href: "/sign-in" },
-              { label: "Sign Up", icon: UserPlusIcon, href: "/sign-up" },
+              { label: "Entrar", icon: LogInIcon, href: "/sign-in" },
+              { label: "Criar conta", icon: UserPlusIcon, href: "/sign-up" },
             ].map((page) => (
               <CommandItem key={page.href} onSelect={() => run(() => router.push(page.href))}>
                 <page.icon className="mr-2 size-4" />
@@ -103,7 +103,8 @@ export function CommandPalette() {
                 <SearchIcon className="mr-2 size-4" />
                 {tx.merchant}
                 <span className="ml-auto text-xs tabular-nums text-muted-foreground">
-                  {tx.amount > 0 ? "+" : ""}${Math.abs(tx.amount).toFixed(2)}
+                  {tx.amount > 0 ? "+" : ""}
+                  {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(Math.abs(tx.amount))}
                 </span>
               </CommandItem>
             ))}
@@ -111,11 +112,11 @@ export function CommandPalette() {
 
           <CommandSeparator />
 
-          <CommandGroup heading="Quick Transfer">
+          <CommandGroup heading="Transferência rápida">
             {contacts.slice(0, 4).map((c) => (
               <CommandItem key={c.id} onSelect={() => run(() => router.push("/transfers"))}>
                 <SendIcon className="mr-2 size-4" />
-                Send to {c.name}
+                Enviar para {c.name}
               </CommandItem>
             ))}
           </CommandGroup>

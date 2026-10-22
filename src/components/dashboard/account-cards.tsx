@@ -128,13 +128,13 @@ export function AccountCards() {
               exit={{ opacity: 0 }}
             >
               {/* Stacked cards */}
-              <div className="relative h-[200px]">
+              <div className={cn("relative", orderedCards.length === 0 ? "h-[152px]" : "h-[200px]")}>
                 {orderedCards.length === 0 ? (
                   <div className="flex h-[152px] flex-col items-center justify-center rounded-2xl border border-dashed border-border/80 bg-muted/20 p-4 text-center">
                     <CreditCardIcon className="size-6 text-muted-foreground/60 mb-2" />
                     <p className="text-sm font-semibold">Nenhuma conta cadastrada</p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Clique em &ldquo;Adicionar Cartão&rdquo; abaixo ou vá em Contas.
+                      Clique em &ldquo;Adicionar conta&rdquo; abaixo ou vá em Contas.
                     </p>
                   </div>
                 ) : (
@@ -202,7 +202,7 @@ export function AccountCards() {
                   >
                     <CheckCircle2Icon className="size-10 text-emerald-500" />
                   </motion.div>
-                  <p className="text-sm font-semibold">Cartão adicionado!</p>
+                  <p className="text-sm font-semibold">Conta adicionada!</p>
                   <p className="text-xs text-muted-foreground">
                     {newCardName || newCardOptions.find((o) => o.value === newCardType)?.label}
                   </p>
@@ -210,12 +210,12 @@ export function AccountCards() {
               ) : addState === "adding" ? (
                 <div className="flex flex-1 flex-col items-center justify-center gap-3">
                   <LoaderCircleIcon className="size-8 animate-spin text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground">Criando cartão...</p>
+                  <p className="text-sm text-muted-foreground">Criando conta...</p>
                 </div>
               ) : (
                 <div className="flex flex-1 flex-col gap-3">
                   <div className="flex items-center justify-between">
-                    <p className="text-sm font-semibold">Adicionar Novo Cartão</p>
+                    <p className="text-sm font-semibold">Adicionar nova conta</p>
                     <Button
                       variant="ghost"
                       size="icon"
@@ -238,14 +238,14 @@ export function AccountCards() {
                     </SelectContent>
                   </Select>
                   <Input
-                    placeholder="Nome do cartão (opcional)"
+                    placeholder="Nome da conta (opcional)"
                     value={newCardName}
                     onChange={(e) => setNewCardName(e.target.value)}
                     className="h-9 text-xs"
                   />
                   <Button className="h-9 gap-2 text-xs" onClick={handleAdd}>
                     <PlusIcon className="size-3.5" />
-                    Criar Cartão
+                    Criar conta
                   </Button>
                 </div>
               )}
@@ -257,7 +257,7 @@ export function AccountCards() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <CreditCardIcon className="size-3.5" />
-            <span>{cards.length} {cards.length === 1 ? "cartão" : "cartões"}</span>
+            <span>{cards.length} {cards.length === 1 ? "conta" : "contas"}</span>
           </div>
           <Button
             variant="outline"
@@ -271,7 +271,7 @@ export function AccountCards() {
 
         {/* Wallet balance */}
         <div className="space-y-1.5 border-t pt-5">
-          <p className="text-xs font-medium text-muted-foreground">Saldo da carteira</p>
+          <p className="text-xs font-medium text-muted-foreground">Saldo total</p>
           <p className="text-3xl font-bold tabular-nums tracking-tight">
             {privacyMode ? "R$ •••••" : `R$ ${walletBalance.amount.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`}
           </p>

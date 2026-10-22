@@ -42,14 +42,14 @@ export function RecentTransactions() {
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">
-          <div className="min-w-[400px] sm:min-w-[600px] md:min-w-[800px] space-y-1">
+          <div className="min-w-0 space-y-1 sm:min-w-[600px] md:min-w-[800px]">
             {/* Header */}
-            <div className="grid grid-cols-[1fr_100px_32px] sm:grid-cols-[1fr_140px_100px_32px] md:grid-cols-[1fr_140px_100px_120px_32px] gap-4 border-b pb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            <div className="grid grid-cols-[1fr_100px] gap-4 border-b pb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground sm:grid-cols-[1fr_140px_100px_32px] md:grid-cols-[1fr_140px_100px_120px_32px]">
               <span>Descrição</span>
               <span className="hidden sm:inline">ID da transação</span>
               <span className="text-right">Valor</span>
               <span className="hidden md:inline">Data</span>
-              <span />
+              <span className="hidden sm:block" />
             </div>
 
             {/* Rows */}
@@ -64,7 +64,7 @@ export function RecentTransactions() {
               recentTransactions.map((tx) => (
                 <div
                   key={tx.id}
-                  className="group grid grid-cols-[1fr_100px_32px] sm:grid-cols-[1fr_140px_100px_32px] md:grid-cols-[1fr_140px_100px_120px_32px] items-center gap-4 rounded-lg py-2.5 transition-colors hover:bg-muted/50"
+                  className="group grid grid-cols-[1fr_100px] items-center gap-4 rounded-lg py-2.5 transition-colors hover:bg-muted/50 sm:grid-cols-[1fr_140px_100px_32px] md:grid-cols-[1fr_140px_100px_120px_32px]"
                 >
                 {/* Merchant */}
                 <div className="flex items-center gap-3">
@@ -114,7 +114,7 @@ export function RecentTransactions() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="size-8 opacity-0 transition-opacity group-hover:opacity-100"
+                  className="hidden size-8 opacity-0 transition-opacity group-hover:opacity-100 sm:inline-flex"
                 >
                   <MoreHorizontalIcon className="size-4" />
                 </Button>

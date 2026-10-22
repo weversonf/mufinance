@@ -17,7 +17,7 @@ import {
 import { useFinanceData } from "@/components/finance/finance-provider"
 import { EmptyState } from "@/components/empty-state"
 
-const DAY_LABELS = ["", "Mon", "", "Wed", "", "Fri", ""]
+const DAY_LABELS = ["", "Seg", "", "Qua", "", "Sex", ""]
 const CELL_SIZE = 13
 const CELL_GAP = 3
 const TOTAL = CELL_SIZE + CELL_GAP
@@ -84,19 +84,19 @@ export function SpendingHeatmap() {
             <CardTitle>Atividade de gastos</CardTitle>
             <CardDescription>
               <span className="tabular-nums font-medium text-foreground">
-                ${yearTotal.toLocaleString()}
+                {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(yearTotal)}
               </span>{" "}
-              total spent this year
+              em gastos este ano
             </CardDescription>
           </div>
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <span>Less</span>
+            <span>Menos</span>
             <span className="inline-block size-3 rounded-sm bg-muted/40" />
             <span className="inline-block size-3 rounded-sm bg-primary/10" />
             <span className="inline-block size-3 rounded-sm bg-primary/25" />
             <span className="inline-block size-3 rounded-sm bg-primary/45" />
             <span className="inline-block size-3 rounded-sm bg-primary/70" />
-            <span>More</span>
+            <span>Mais</span>
           </div>
         </div>
       </CardHeader>
@@ -104,8 +104,8 @@ export function SpendingHeatmap() {
         {spendingHeatmapData.length === 0 ? (
           <EmptyState
             variant="analytics"
-            title="No spending data yet"
-            description="Your spending activity will appear here after you add transactions."
+            title="Sem dados de gastos ainda"
+            description="Sua atividade de gastos aparecerá aqui após registrar transações."
             className="py-8"
           />
         ) : (
@@ -160,9 +160,9 @@ export function SpendingHeatmap() {
                   />
                   <TooltipContent>
                     <span className="tabular-nums">
-                      ${cell.amount.toLocaleString()}
+                      {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(cell.amount)}
                     </span>{" "}
-                    on{" "}
+                    em{" "}
                     {new Date(cell.date + "T12:00:00").toLocaleDateString(
                       "pt-BR",
                       {

@@ -108,7 +108,7 @@ export function AiInsights() {
                     <TrendIcon trend={insight.trend} />
                     {insight.percentChange > 0
                       ? `${insight.percentChange}%`
-                      : "No change"}
+                      : "Sem variação"}
                   </span>
                   <span className="text-[11px] text-muted-foreground">
                     {insight.category}
