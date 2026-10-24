@@ -52,17 +52,17 @@ const chartConfig = {
 // Map month names to month indices (0-based)
 const monthIndex: Record<string, number> = {
   jan: 0, january: 0, janeiro: 0,
-  feb: 1, february: 1, fevereiro: 1,
+  feb: 1, february: 1, fevereiro: 1, fev: 1,
   mar: 2, march: 2, março: 2, marco: 2,
-  apr: 3, april: 3, abril: 3,
-  may: 4, maio: 4,
+  apr: 3, april: 3, abril: 3, abr: 3,
+  may: 4, maio: 4, mai: 4,
   jun: 5, june: 5, junho: 5,
   jul: 6, july: 6, julho: 6,
-  aug: 7, august: 7, agosto: 7,
-  sep: 8, sept: 8, september: 8, setembro: 8,
-  oct: 9, october: 9, outubro: 9,
+  aug: 7, august: 7, agosto: 7, ago: 7,
+  sep: 8, sept: 8, september: 8, setembro: 8, set: 8,
+  oct: 9, october: 9, outubro: 9, out: 9,
   nov: 10, november: 10, novembro: 10,
-  dec: 11, december: 11, dezembro: 11,
+  dec: 11, december: 11, dezembro: 11, dez: 11,
 }
 
 const ptMonths = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"]
