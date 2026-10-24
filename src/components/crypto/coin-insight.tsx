@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/chart"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import { cryptoCoins } from "@/data/seed"
+import { useFinanceData } from "@/components/finance/finance-provider"
 import type { CryptoPrices } from "./crypto-page-client"
 
 /* ── candlestick data generator ───────────────────────────────────────── */
@@ -142,12 +142,12 @@ function CandlestickTooltip({ active, payload }: { active?: boolean; payload?: A
         {new Date(d.date).toLocaleDateString("pt-BR", { weekday: "short", month: "short", day: "numeric" })}
       </p>
       <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-muted-foreground">
-        <span>Open</span><span className="text-right font-medium text-foreground tabular-nums">{open.toLocaleString()}</span>
-        <span>High</span><span className="text-right font-medium text-foreground tabular-nums">{d.high.toLocaleString()}</span>
-        <span>Low</span><span className="text-right font-medium text-foreground tabular-nums">{d.low.toLocaleString()}</span>
-        <span>Close</span>
+        <span>Abertura</span><span className="text-right font-medium text-foreground tabular-nums">{open.toLocaleString("pt-BR")}</span>
+        <span>Máxima</span><span className="text-right font-medium text-foreground tabular-nums">{d.high.toLocaleString("pt-BR")}</span>
+        <span>Mínima</span><span className="text-right font-medium text-foreground tabular-nums">{d.low.toLocaleString("pt-BR")}</span>
+        <span>Fechamento</span>
         <span className={cn("text-right font-medium tabular-nums", isGrowing ? "text-emerald-500" : "text-rose-500")}>
-          {close.toLocaleString()}
+          {close.toLocaleString("pt-BR")}
         </span>
       </div>
     </div>
@@ -157,11 +157,11 @@ function CandlestickTooltip({ active, payload }: { active?: boolean; payload?: A
 /* ── config ────────────────────────────────────────────────────────────── */
 
 const chartConfig = {
-  openClose: { label: "Price", color: "var(--chart-1)" },
+  openClose: { label: "Preço", color: "var(--chart-1)" },
 } satisfies ChartConfig
 
-const PERIODS = ["1D", "1W", "1M", "3M", "1Y", "ALL"] as const
-const PERIOD_DAYS: Record<string, number> = { "1D": 15, "1W": 30, "1M": 60, "3M": 130, "1Y": 365, ALL: 365 }
+const PERIODS = ["1D", "1S", "1M", "3M", "1A", "Tudo"] as const
+const PERIOD_DAYS: Record<string, number> = { "1D": 15, "1S": 30, "1M": 60, "3M": 130, "1A": 365, Tudo: 365 }
 
 /* ── component ─────────────────────────────────────────────────────────── */
 
@@ -171,6 +171,7 @@ interface CoinInsightProps {
 }
 
 export function CoinInsight({ prices, selectedCoin }: CoinInsightProps) {
+  const { cryptoCoins } = useFinanceData()
   const [period, setPeriod] = React.useState<string>("3M")
 
   const coin = cryptoCoins.find((c) => c.id === selectedCoin)

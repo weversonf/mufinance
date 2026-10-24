@@ -6,7 +6,7 @@ import { ArrowUpRightIcon, TrendingUpIcon, TrendingDownIcon } from "lucide-react
 import { motion } from "motion/react"
 import { Card, CardContent } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
-import { cryptoCoins } from "@/data/seed"
+import { useFinanceData } from "@/components/finance/finance-provider"
 import type { CryptoPrices } from "./crypto-page-client"
 
 interface TopCoinsProps {
@@ -19,6 +19,7 @@ interface TopCoinsProps {
 type FlashMap = Record<string, "up" | "down" | null>
 
 export function TopCoins({ prices, originalPrices, selectedCoin, onSelectCoin }: TopCoinsProps) {
+  const { cryptoCoins } = useFinanceData()
   const top3 = cryptoCoins.slice(0, 3)
 
   // Track flash directions in state (computed inside effect, not during render)

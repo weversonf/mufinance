@@ -15,7 +15,7 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart"
 import { cn } from "@/lib/utils"
-import { portfolioHistory } from "@/data/seed"
+import { useFinanceData } from "@/components/finance/finance-provider"
 
 const PERIODS = [
   { label: "1M", months: 1 },
@@ -30,11 +30,12 @@ const chartConfig: ChartConfig = {
 }
 
 export function PerformanceChart() {
+  const { portfolioHistory } = useFinanceData()
   const [period, setPeriod] = useState<number>(12)
 
   const data = useMemo(
     () => portfolioHistory.slice(-period),
-    [period]
+    [period, portfolioHistory]
   )
 
   if (data.length === 0) {

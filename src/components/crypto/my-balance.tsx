@@ -14,12 +14,13 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { cn } from "@/lib/utils"
-import { cryptoCoins } from "@/data/seed"
+import { useFinanceData } from "@/components/finance/finance-provider"
 import type { CryptoPrices } from "./crypto-page-client"
 
 type ActionFlow = "idle" | "input" | "loading" | "success"
 
 export function MyBalance({ prices }: { prices: CryptoPrices }) {
+  const { cryptoCoins } = useFinanceData()
   const [highlightedCoin, setHighlightedCoin] = React.useState("eth")
   const [topUpFlow, setTopUpFlow] = React.useState<ActionFlow>("idle")
   const [withdrawFlow, setWithdrawFlow] = React.useState<ActionFlow>("idle")

@@ -7,11 +7,12 @@ import { MyPortfolio } from "@/components/crypto/my-portfolio"
 import { CoinInsight } from "@/components/crypto/coin-insight"
 import { TradeForm } from "@/components/crypto/trade-form"
 import { MarketOverview } from "@/components/crypto/market-overview"
-import { cryptoCoins } from "@/data/seed"
+import { useFinanceData } from "@/components/finance/finance-provider"
 
 export type CryptoPrices = Record<string, number>
 
 export function CryptoPageClient() {
+  const { cryptoCoins } = useFinanceData()
   const [selectedCoin, setSelectedCoin] = React.useState("btc")
 
   // Build initial prices from seed data
@@ -23,6 +24,15 @@ export function CryptoPageClient() {
     return initial
   })
 
+  React.useEffect(() => {
+    setPrices((prev) => {
+      if (cryptoCoins.length === 0) return {}
+      const next: CryptoPrices = {}
+      for (const coin of cryptoCoins) next[coin.id] = prev[coin.id] ?? coin.price
+      return next
+    })
+  }, [cryptoCoins])
+
   // Store original prices for 24h change calculation
   const originalPrices = React.useMemo(() => {
     const orig: CryptoPrices = {}
@@ -30,7 +40,7 @@ export function CryptoPageClient() {
       orig[coin.id] = coin.price
     }
     return orig
-  }, [])
+  }, [cryptoCoins])
 
   // Simulate live price drift every 3 seconds
   React.useEffect(() => {

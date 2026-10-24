@@ -53,13 +53,14 @@ export async function getFinanceSnapshot() {
   const user = await getSessionUser();
   if (!user) return null;
 
-  const [accounts, creditCards, transactions, categories, goals, budgets] = await Promise.all([
+  const [accounts, creditCards, transactions, categories, goals, budgets, transferRecords] = await Promise.all([
     getOwnedDocuments(["accounts"], user.uid),
     getOwnedDocuments(["creditCards", "cards"], user.uid),
     getOwnedDocuments(["transactions"], user.uid),
     getOwnedDocuments(["categories"], user.uid),
     getOwnedDocuments(["goals"], user.uid),
     getOwnedDocuments(["budgets", "budget"], user.uid),
+    getOwnedDocuments(["transferRecords"], user.uid),
   ]);
 
   return {
@@ -70,6 +71,7 @@ export async function getFinanceSnapshot() {
     categories: categories.map((item) => normalizeLegacyRecord("categories", item)),
     goals: goals.map((item) => normalizeLegacyRecord("goals", item)),
     budgets: budgets.map((item) => normalizeLegacyRecord("budgets", item)),
+    transferRecords,
   };
 }
 

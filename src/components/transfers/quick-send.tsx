@@ -1,95 +1,119 @@
 "use client"
 
-import { useState, useRef } from "react"
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Input } from "@/components/ui/input"
-import type { TransferRecord } from "@/data/seed"
+import { useEffect, useMemo, useRef, useState } from "react"
+import { AnimatePresence, motion } from "motion/react"
+import { CheckCircle2Icon, LoaderCircleIcon, SearchIcon, SendIcon } from "lucide-react"
+import { createInternalTransfer, findUserByUsername } from "@/actions/profiles"
 import { useFinanceData } from "@/components/finance/finance-provider"
-import { createTransaction } from "@/actions/finance"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
 import { localDateISO } from "@/lib/date"
-import {
-  SendIcon,
-  LoaderCircleIcon,
-  CheckCircle2Icon,
-} from "lucide-react"
-import { motion, AnimatePresence } from "motion/react"
+import type { TransferRecord } from "@/data/seed"
 
 type SendState = "idle" | "sending" | "success"
+type Recipient = { username: string; displayName: string; photoURL: string; isSelf: boolean }
 
 export function QuickSend({ onSend }: { onSend?: (record: TransferRecord) => void }) {
-  const { contacts, bankAccounts, refresh } = useFinanceData()
-  const [selectedContact, setSelectedContact] = useState<string | null>(null)
-  const [amount, setValor] = useState("")
+  const { contacts, bankAccounts, refresh, isDemoMode } = useFinanceData()
+  const [username, setUsername] = useState("")
+  const [recipient, setRecipient] = useState<Recipient | null>(null)
+  const [accountId, setAccountId] = useState("")
+  const [amount, setAmount] = useState("")
   const [note, setNote] = useState("")
   const [sendState, setSendState] = useState<SendState>("idle")
+  const [searching, setSearching] = useState(false)
   const [error, setError] = useState("")
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>(null)
-  const transferSequenceRef = useRef(0)
-  const selectedId = selectedContact ?? contacts[0]?.id ?? null
-  const selected = contacts.find((c) => c.id === selectedId)
-  const numericValor = Number.parseFloat(amount)
-  const canSend = Boolean(selected && bankAccounts[0]) && Number.isFinite(numericValor) && numericValor > 0
+  const selectedAccountId = accountId || bankAccounts[0]?.id || ""
+  const numericAmount = Number.parseFloat(amount.replace(",", "."))
+  const canSend = Boolean(recipient && !recipient.isSelf && selectedAccountId) && Number.isFinite(numericAmount) && numericAmount > 0
 
-  const handleSend = async () => {
-    if (sendState !== "idle" || !canSend) return
+  const demoUsers = useMemo(() => contacts.slice(0, 5).map((contact) => ({
+    username: contact.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").split(/\s+/)[0],
+    displayName: contact.name,
+    photoURL: contact.avatar,
+    isSelf: false,
+  })), [contacts])
+
+  useEffect(() => () => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current)
+  }, [])
+
+  function selectRecipient(nextRecipient: Recipient) {
+    setUsername(nextRecipient.username)
+    setRecipient(nextRecipient)
+    setError("")
+  }
+
+  async function handleSearch() {
+    const normalized = username.trim().toLowerCase().replace(/^@+/, "")
+    if (normalized.length < 3) {
+      setError("Digite pelo menos 3 caracteres.")
+      return
+    }
+    setSearching(true)
+    setError("")
+    setRecipient(null)
+    try {
+      const found = isDemoMode
+        ? demoUsers.find((item) => item.username === normalized) ?? null
+        : await findUserByUsername(normalized)
+      if (!found) throw new Error("@usuário não encontrado.")
+      if (found.isSelf) throw new Error("Você não pode transferir para si mesmo.")
+      setRecipient(found)
+    } catch (nextError) {
+      setError(nextError instanceof Error ? nextError.message : "Não foi possível localizar o usuário.")
+    } finally {
+      setSearching(false)
+    }
+  }
+
+  async function handleSend() {
+    if (sendState !== "idle" || !canSend || !recipient) return
     setSendState("sending")
     setError("")
-
     try {
-      const activeAccount = bankAccounts[0]
-      if (activeAccount && selected) {
-        await createTransaction({
-          date: localDateISO(),
-          payee: `Envio para ${selected.name}`,
-          category: "Transferência",
-          accountId: activeAccount.id,
-          amount: numericValor,
-          type: "expense",
+      if (isDemoMode) {
+        onSend?.({
+          id: `demo-transfer-${recipient.username}-${localDateISO()}`,
+          type: "sent",
+          contactName: recipient.displayName,
+          contactAvatar: recipient.photoURL,
+          amount: numericAmount,
+          date: new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" }),
           status: "completed",
-          notes: note || `Transferência enviada para ${selected.name}`,
+          note: note || undefined,
+        })
+      } else {
+        await createInternalTransfer({
+          recipientUsername: recipient.username,
+          sourceAccountId: selectedAccountId,
+          amount: numericAmount,
+          note,
+          idempotencyKey: crypto.randomUUID(),
         })
         await refresh()
       }
-    } catch (err) {
-      console.error("Falha ao registrar transferência no Firestore:", err)
-      setError(err instanceof Error ? err.message : "Não foi possível concluir a transferência.")
+      setSendState("success")
+      timeoutRef.current = setTimeout(() => {
+        setSendState("idle")
+        setUsername("")
+        setRecipient(null)
+        setAmount("")
+        setNote("")
+      }, 2000)
+    } catch (nextError) {
+      setError(nextError instanceof Error ? nextError.message : "Não foi possível concluir a transferência.")
       setSendState("idle")
-      return
     }
-
-    setSendState("success")
-    if (onSend && selected) {
-      transferSequenceRef.current += 1
-      const newRecord: TransferRecord = {
-        id: `tr-local-${transferSequenceRef.current}`,
-        type: "sent",
-        contactName: selected.name,
-        contactAvatar: selected.avatar,
-        amount: parseFloat(amount),
-        date: new Date().toLocaleDateString("pt-BR", { month: "short", day: "2-digit", year: "numeric" }),
-        status: "completed",
-        note: note || undefined,
-      }
-      onSend(newRecord)
-    }
-    timeoutRef.current = setTimeout(() => {
-      setSendState("idle")
-      setValor("")
-      setNote("")
-    }, 2000)
   }
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base font-semibold">Envio Rápido</CardTitle>
+        <CardTitle className="text-base font-semibold">Transferir para @usuário</CardTitle>
       </CardHeader>
       <CardContent>
         <AnimatePresence mode="wait">
@@ -99,140 +123,105 @@ export function QuickSend({ onSend }: { onSend?: (record: TransferRecord) => voi
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="flex flex-col items-center gap-2 py-4"
+              className="flex flex-col items-center gap-2 py-5"
             >
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ type: "spring", stiffness: 300, damping: 20, delay: 0.1 }}
-              >
-                <CheckCircle2Icon className="size-10 text-emerald-500" />
-              </motion.div>
+              <CheckCircle2Icon className="size-10 text-emerald-500" />
               <p className="text-sm font-semibold">
-                {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(numericValor)} enviado!
+                {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(numericAmount)} enviado!
               </p>
-              <p className="text-xs text-muted-foreground">
-                Para {selected?.name ?? "nenhum destinatário selecionado"}
-              </p>
+              <p className="text-xs text-muted-foreground">Para @{recipient?.username}</p>
             </motion.div>
           ) : (
-            <motion.div
-              key="form"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="flex flex-col gap-4 lg:flex-row lg:items-end"
-            >
-              {/* Contact selector */}
-              <div>
-                <label className="mb-1.5 block text-xs text-muted-foreground">Para</label>
-                <div className="flex items-center gap-1 pt-1">
-                  {contacts.length === 0 ? (
-                    <p className="py-2 text-xs text-muted-foreground">Nenhum contato disponível ainda.</p>
-                  ) : contacts.slice(0, 6).map((contact) => {
-                    const isSelected = selectedId === contact.id
-                    return (
-                      <motion.button
-                        key={contact.id}
-                        onClick={() => {
-                          if (sendState === "idle") setSelectedContact(contact.id)
+            <motion.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
+              <div className="grid gap-3 lg:grid-cols-[minmax(220px,1fr)_minmax(180px,0.8fr)]">
+                <div className="space-y-1.5">
+                  <label htmlFor="transfer-username" className="text-xs font-medium text-muted-foreground">Destinatário</label>
+                  <div className="flex gap-2">
+                    <div className="relative flex-1">
+                      <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">@</span>
+                      <Input
+                        id="transfer-username"
+                        value={username}
+                        onChange={(event) => {
+                          setUsername(event.target.value.toLowerCase().replace(/^@+/, "").replace(/[^a-z0-9._]/g, ""))
+                          setRecipient(null)
                         }}
-                        className="relative shrink-0 rounded-full"
-                        animate={{
-                          scale: isSelected ? 1 : 0.85,
-                          opacity: isSelected ? 1 : 0.6,
-                        }}
-                        whileHover={{ scale: isSelected ? 1 : 0.95, opacity: 1 }}
-                        transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                      >
-                        <Avatar
-                          className={
-                            isSelected
-                              ? "size-9 ring-2 ring-primary"
-                              : "size-8"
-                          }
-                        >
-                          <AvatarImage src={contact.avatar} alt={contact.name} />
-                          <AvatarFallback className="text-[10px]">
-                            {contact.name.split(" ").map((n) => n[0]).join("")}
-                          </AvatarFallback>
-                        </Avatar>
-                      </motion.button>
-                    )
-                  })}
+                        onKeyDown={(event) => { if (event.key === "Enter") void handleSearch() }}
+                        placeholder="usuario"
+                        className="pl-8"
+                        disabled={sendState === "sending"}
+                      />
+                    </div>
+                    <Button type="button" variant="outline" onClick={handleSearch} disabled={searching || username.length < 3} aria-label="Buscar usuário">
+                      {searching ? <LoaderCircleIcon className="size-4 animate-spin" /> : <SearchIcon className="size-4" />}
+                    </Button>
+                  </div>
                 </div>
-                <AnimatePresence mode="wait">
-                  <motion.p
-                    key={selectedId ?? "no-contact"}
-                    initial={{ opacity: 0, y: 2 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -2 }}
-                    transition={{ duration: 0.12 }}
-                    className="text-xs text-muted-foreground"
+
+                <label className="grid gap-1.5 text-xs font-medium text-muted-foreground">
+                  Conta de origem
+                  <select
+                    value={selectedAccountId}
+                    onChange={(event) => setAccountId(event.target.value)}
+                    className="h-9 w-full rounded-md border bg-background px-3 text-sm text-foreground"
+                    disabled={sendState === "sending" || bankAccounts.length === 0}
                   >
-                    Enviando para{" "}
-                    <span className="font-medium text-foreground">
-                      {selected?.name ?? "nenhum destinatário selecionado"}
-                    </span>
-                  </motion.p>
-                </AnimatePresence>
-              </div>
-
-              {/* Valor input */}
-              <div className="flex-1 space-y-1.5 lg:max-w-[160px]">
-                <label htmlFor="quick-send-amount" className="text-xs text-muted-foreground">Valor</label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-muted-foreground">
-                    R$
-                  </span>
-                  <Input
-                    id="quick-send-amount"
-                    type="text"
-                    placeholder="0,00"
-                    value={amount}
-                    onChange={(e) => setValor(e.target.value)}
-                    disabled={sendState === "sending"}
-                    className="h-9 pl-9 tabular-nums"
-                  />
-                </div>
-              </div>
-
-              {/* Note input */}
-              <div className="flex-1 space-y-1.5 lg:max-w-[200px]">
-                <label htmlFor="quick-send-note" className="text-xs text-muted-foreground">
-                  Observação <span className="text-muted-foreground/60">(opcional)</span>
+                    {bankAccounts.length === 0 && <option value="">Nenhuma conta disponível</option>}
+                    {bankAccounts.map((account) => (
+                      <option key={account.id} value={account.id}>{account.name} — {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(account.balance)}</option>
+                    ))}
+                  </select>
                 </label>
-                <Input
-                  id="quick-send-note"
-                  type="text"
-                  placeholder="Para que serve?"
-                  value={note}
-                  onChange={(e) => setNote(e.target.value)}
-                  disabled={sendState === "sending"}
-                  className="h-9"
-                />
               </div>
 
-              {/* Send button */}
-              <Button
-                className="h-9 gap-2 px-6"
-                disabled={sendState === "sending" || !canSend}
-                onClick={handleSend}
-              >
-                {sendState === "sending" ? (
-                  <LoaderCircleIcon className="size-4 animate-spin" />
-                ) : (
-                  <SendIcon className="size-4" />
-                )}
-                {sendState === "sending" ? "Enviando..." : "Enviar"}
-              </Button>
+              {isDemoMode && demoUsers.length > 0 && (
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-xs text-muted-foreground">Experimentar:</span>
+                  {demoUsers.slice(0, 4).map((item) => (
+                    <button key={item.username} type="button" onClick={() => selectRecipient(item)} className="rounded-full border px-2.5 py-1 text-xs transition-colors hover:bg-muted">
+                      @{item.username}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {recipient && (
+                <div className="flex items-center gap-3 rounded-lg border bg-muted/30 p-3">
+                  <Avatar className="size-9">
+                    <AvatarImage src={recipient.photoURL} alt={recipient.displayName} />
+                    <AvatarFallback>{recipient.displayName.slice(0, 2).toUpperCase()}</AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium">{recipient.displayName}</p>
+                    <p className="text-xs text-muted-foreground">@{recipient.username}</p>
+                  </div>
+                  <CheckCircle2Icon className="ml-auto size-5 text-emerald-500" aria-label="Usuário verificado" />
+                </div>
+              )}
+
+              <div className="grid gap-3 sm:grid-cols-[minmax(140px,0.5fr)_1fr_auto] sm:items-end">
+                <div className="space-y-1.5">
+                  <label htmlFor="transfer-amount" className="text-xs font-medium text-muted-foreground">Valor</label>
+                  <div className="relative">
+                    <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">R$</span>
+                    <Input id="transfer-amount" inputMode="decimal" value={amount} onChange={(event) => setAmount(event.target.value)} placeholder="0,00" className="pl-9" disabled={sendState === "sending"} />
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <label htmlFor="transfer-note" className="text-xs font-medium text-muted-foreground">Observação <span className="font-normal">(opcional)</span></label>
+                  <Input id="transfer-note" value={note} onChange={(event) => setNote(event.target.value)} maxLength={140} placeholder="Motivo da transferência" disabled={sendState === "sending"} />
+                </div>
+                <Button onClick={handleSend} disabled={sendState === "sending" || !canSend} className="gap-2">
+                  {sendState === "sending" ? <LoaderCircleIcon className="size-4 animate-spin" /> : <SendIcon className="size-4" />}
+                  {sendState === "sending" ? "Enviando..." : "Enviar"}
+                </Button>
+              </div>
+
+              {!isDemoMode && bankAccounts.length === 0 && <p className="text-xs text-muted-foreground">Crie seu @usuário no Perfil para ativar o Saldo MuFinance.</p>}
+              {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
             </motion.div>
           )}
         </AnimatePresence>
-        {!bankAccounts[0] && (
-          <p className="mt-3 text-xs text-muted-foreground">Cadastre uma conta para realizar transferências.</p>
-        )}
-        {error && <p role="alert" className="mt-3 text-xs text-destructive">{error}</p>}
       </CardContent>
     </Card>
   )

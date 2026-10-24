@@ -36,7 +36,7 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
-import { cryptoCoins } from "@/data/seed"
+import { useFinanceData } from "@/components/finance/finance-provider"
 import type { CryptoPrices } from "./crypto-page-client"
 
 function compactNumber(n: number) {
@@ -57,6 +57,7 @@ interface MarketOverviewProps {
 }
 
 export function MarketOverview({ prices, originalPrices, selectedCoin, onSelectCoin }: MarketOverviewProps) {
+  const { cryptoCoins } = useFinanceData()
   const [search, setSearch] = React.useState("")
   const [sortField, setSortField] = React.useState<SortField | null>(null)
   const [sortDir, setSortDir] = React.useState<SortDir>(null)
@@ -141,12 +142,12 @@ export function MarketOverview({ prices, originalPrices, selectedCoin, onSelectC
   return (
     <Card className="lg:col-span-8">
       <CardHeader>
-        <CardTitle>Market Overview</CardTitle>
+        <CardTitle>Visão do mercado</CardTitle>
         <CardAction className="flex items-center gap-2">
           <div className="relative">
             <SearchIcon className="absolute left-2 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="Search..."
+              placeholder="Buscar..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="h-7 w-36 pl-7 text-xs"
@@ -162,12 +163,12 @@ export function MarketOverview({ prices, originalPrices, selectedCoin, onSelectC
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="pl-4">Assets</TableHead>
+              <TableHead className="pl-4">Ativos</TableHead>
               <TableHead
                 className="cursor-pointer select-none text-right"
                 onClick={() => handleSort("price")}
               >
-                Price
+                Preço
                 <SortIndicator field="price" />
               </TableHead>
               <TableHead
@@ -181,7 +182,7 @@ export function MarketOverview({ prices, originalPrices, selectedCoin, onSelectC
                 className="cursor-pointer select-none text-right"
                 onClick={() => handleSort("change")}
               >
-                Change
+                Variação
                 <SortIndicator field="change" />
               </TableHead>
               <TableHead className="w-10 pr-4" />
@@ -268,7 +269,7 @@ export function MarketOverview({ prices, originalPrices, selectedCoin, onSelectC
                         <MoreHorizontalIcon className="size-4" />
                       </DropdownMenuTrigger>
                       <DropdownMenuContent side="bottom" align="end">
-                        <DropdownMenuItem>Buy</DropdownMenuItem>
+                        <DropdownMenuItem>Comprar</DropdownMenuItem>
                         <DropdownMenuItem>Vender</DropdownMenuItem>
                         <DropdownMenuItem onSelect={() => onSelectCoin(coin.id)}>
                           Ver gráfico
@@ -282,7 +283,7 @@ export function MarketOverview({ prices, originalPrices, selectedCoin, onSelectC
             {sorted.length === 0 && (
               <TableRow>
                 <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
-                  No coins match your search.
+                  Nenhuma moeda encontrada para sua busca.
                 </TableCell>
               </TableRow>
             )}

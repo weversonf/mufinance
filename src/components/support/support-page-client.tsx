@@ -4,6 +4,7 @@ import * as React from "react"
 import { AnimatePresence, motion } from "motion/react"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/components/auth/auth-provider"
+import { useFinanceData } from "@/components/finance/finance-provider"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
@@ -30,8 +31,6 @@ import {
 } from "@/components/ui/tooltip"
 import {
   faqItems,
-  supportTickets,
-  systemStatus,
   type FaqItem,
   type SupportTicket,
 } from "@/data/seed"
@@ -238,7 +237,8 @@ const priorityConfig: Record<SupportTicket["priority"], { label: string; dot: st
 }
 
 function TicketsTab() {
-  const [tickets] = React.useState<SupportTicket[]>(supportTickets)
+  const { supportTickets } = useFinanceData()
+  const tickets: SupportTicket[] = supportTickets
 
   return (
     <div className="space-y-4">
@@ -373,8 +373,8 @@ function LiveChatSimulator() {
           <span className="absolute bottom-0 right-0 size-2.5 rounded-full border-2 border-background bg-emerald-500" />
         </div>
         <div>
-          <p className="text-sm font-semibold">Assistente Vault</p>
-          <p className="text-[11px] text-muted-foreground">Online &middot; Resposta média: 30s</p>
+          <p className="text-sm font-semibold">Assistente MuFinance</p>
+          <p className="text-[11px] text-muted-foreground">Disponível &middot; Resposta média: 30 s</p>
         </div>
       </div>
 
@@ -588,6 +588,7 @@ const statusColors = { operational: "#10b981", degraded: "#f59e0b", outage: "#ef
 const statusLabels = { operational: "Operacional", degraded: "Degradado", outage: "Fora do ar" }
 
 function StatusTab() {
+  const { systemStatus } = useFinanceData()
   const allOperational = systemStatus.every((s) => s.status === "operational")
 
   // Generate fake uptime data for 90 days

@@ -2,7 +2,7 @@
 
 import { useMemo } from "react"
 import { cn } from "@/lib/utils"
-import { holdings, watchlistItems } from "@/data/seed"
+import { useFinanceData } from "@/components/finance/finance-provider"
 
 type TickerEntry = {
   symbol: string
@@ -11,6 +11,7 @@ type TickerEntry = {
 }
 
 export function LiveTicker() {
+  const { holdings, watchlistItems } = useFinanceData()
   const entries = useMemo<TickerEntry[]>(() => {
     const fromHoldings: TickerEntry[] = holdings.map((h) => ({
       symbol: h.symbol,
@@ -26,7 +27,7 @@ export function LiveTicker() {
       change: w.dayChange,
     }))
     return [...fromHoldings, ...fromWatchlist]
-  }, [])
+  }, [holdings, watchlistItems])
 
   if (entries.length === 0) return null
 

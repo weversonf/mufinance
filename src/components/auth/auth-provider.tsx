@@ -46,9 +46,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const auth = getFirebaseAuth();
     if (!auth) return;
     return onAuthStateChanged(auth, (nextUser) => {
-      setUser(nextUser);
-      setLoading(false);
-      void syncSession(nextUser).catch((error) => console.error("Falha ao sincronizar sessão", error));
+      void (async () => {
+        try {
+          await syncSession(nextUser);
+        } catch (error) {
+          console.error("Falha ao sincronizar sessão", error);
+        }
+        setUser(nextUser);
+        setLoading(false);
+      })();
     });
   }, []);
 

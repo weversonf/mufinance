@@ -33,9 +33,10 @@ import {
   MonitorIcon,
 } from "lucide-react"
 import { useTheme } from "next-themes"
-import { contacts, recentTransactions, cryptoCoins } from "@/data/seed"
+import { useFinanceData } from "@/components/finance/finance-provider"
 
 export function CommandPalette() {
+  const { contacts, recentTransactions, cryptoCoins } = useFinanceData()
   const [open, setOpen] = useState(false)
   const router = useRouter()
   const { setTheme } = useTheme()
@@ -137,18 +138,18 @@ export function CommandPalette() {
 
           <CommandSeparator />
 
-          <CommandGroup heading="Theme">
+          <CommandGroup heading="Tema">
             <CommandItem onSelect={() => run(() => setTheme("light"))}>
               <SunIcon className="mr-2 size-4" />
-              Light Mode
+              Tema claro
             </CommandItem>
             <CommandItem onSelect={() => run(() => setTheme("dark"))}>
               <MoonIcon className="mr-2 size-4" />
-              Dark Mode
+              Tema escuro
             </CommandItem>
             <CommandItem onSelect={() => run(() => setTheme("system"))}>
               <MonitorIcon className="mr-2 size-4" />
-              System Theme
+              Usar tema do sistema
             </CommandItem>
           </CommandGroup>
         </CommandList>

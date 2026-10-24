@@ -20,12 +20,12 @@ import {
   LoaderCircleIcon,
   CheckCircle2Icon,
 } from "lucide-react"
-import { motion, AnimatePresence } from "motion/react"
+import { motion } from "motion/react"
 
 type SendState = "idle" | "sending" | "success"
 
 export function QuickTransfer() {
-  const { contacts, bankAccounts, refresh } = useFinanceData()
+  const { contacts, bankAccounts, refresh, isDemoMode } = useFinanceData()
   const [selectedContact, setSelectedContact] = useState<string | null>(null)
   const [amount, setValor] = useState("0.00")
   const [sendState, setSendState] = useState<SendState>("idle")
@@ -43,7 +43,7 @@ export function QuickTransfer() {
 
     try {
       const activeAccount = bankAccounts[0]
-      if (activeAccount && selected) {
+      if (!isDemoMode && activeAccount && selected) {
         await createTransaction({
           date: localDateISO(),
           payee: `Transferência para ${selected.name}`,
@@ -134,85 +134,72 @@ export function QuickTransfer() {
         </div>
 
         {/* Selected contact name */}
-        <AnimatePresence mode="wait">
-          <motion.p
-            key={selectedId ?? "no-contact"}
-            initial={{ opacity: 0, y: 4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            transition={{ duration: 0.15 }}
-            className="text-xs text-muted-foreground"
-          >
-            Enviando para{" "}
-            <span className="font-medium text-foreground">
-              {selected?.name ?? "nenhum destinatário selecionado"}
-            </span>
-          </motion.p>
-        </AnimatePresence>
+        <p className="text-xs text-muted-foreground">
+          Enviando para{" "}
+          <span className="font-medium text-foreground">
+            {selected?.name ?? "nenhum destinatário selecionado"}
+          </span>
+        </p>
 
         {/* Valor + Send */}
-        <AnimatePresence mode="wait">
-          {sendState === "success" ? (
+        {sendState === "success" ? (
+          <motion.div
+            key="success"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="flex flex-col items-center gap-2 py-3"
+          >
             <motion.div
-              key="success"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="flex flex-col items-center gap-2 py-3"
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", stiffness: 300, damping: 20, delay: 0.1 }}
             >
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ type: "spring", stiffness: 300, damping: 20, delay: 0.1 }}
-              >
-                <CheckCircle2Icon className="size-10 text-emerald-500" />
-              </motion.div>
-              <p className="text-sm font-semibold">
-                {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(numericValor)} enviado!
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Para {selected?.name}
-              </p>
+              <CheckCircle2Icon className="size-10 text-emerald-500" />
             </motion.div>
-          ) : (
-            <motion.div
-              key="form"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="flex items-end gap-3"
-            >
-              <div className="flex-1 space-y-1.5">
-                <label htmlFor="quick-transfer-amount" className="text-xs text-muted-foreground">Valor</label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-muted-foreground">
-                    R$
-                  </span>
-                  <Input
-                    id="quick-transfer-amount"
-                    type="text"
-                    value={amount}
-                    onChange={(e) => setValor(e.target.value)}
-                    disabled={sendState === "sending"}
-                    className="h-10 pl-9 text-lg font-semibold tabular-nums"
-                  />
-                </div>
+            <p className="text-sm font-semibold">
+              {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(numericValor)} enviado!
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Para {selected?.name}
+            </p>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="form"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex items-end gap-3"
+          >
+            <div className="flex-1 space-y-1.5">
+              <label htmlFor="quick-transfer-amount" className="text-xs text-muted-foreground">Valor</label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-muted-foreground">
+                  R$
+                </span>
+                <Input
+                  id="quick-transfer-amount"
+                  type="text"
+                  value={amount}
+                  onChange={(e) => setValor(e.target.value)}
+                  disabled={sendState === "sending"}
+                  className="h-10 pl-9 text-lg font-semibold tabular-nums"
+                />
               </div>
-              <Button
-                className="h-10 gap-2 px-6"
-                disabled={sendState === "sending" || !canSend}
-                onClick={handleSend}
-              >
-                {sendState === "sending" ? (
-                  <LoaderCircleIcon className="size-4 animate-spin" />
-                ) : (
-                  <SendIcon className="size-4" />
-                )}
-                {sendState === "sending" ? "Enviando..." : "Enviar"}
-              </Button>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            </div>
+            <Button
+              className="h-10 gap-2 px-6"
+              disabled={sendState === "sending" || !canSend}
+              onClick={handleSend}
+            >
+              {sendState === "sending" ? (
+                <LoaderCircleIcon className="size-4 animate-spin" />
+              ) : (
+                <SendIcon className="size-4" />
+              )}
+              {sendState === "sending" ? "Enviando..." : "Enviar"}
+            </Button>
+          </motion.div>
+        )}
         {!bankAccounts[0] && (
           <p className="text-xs text-muted-foreground">Cadastre uma conta para realizar transferências.</p>
         )}

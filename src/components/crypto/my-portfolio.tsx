@@ -20,7 +20,7 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
-import { cryptoCoins } from "@/data/seed"
+import { useFinanceData } from "@/components/finance/finance-provider"
 import type { CryptoPrices } from "./crypto-page-client"
 
 const COLORS = [
@@ -39,6 +39,7 @@ interface MyPortfolioProps {
 }
 
 export function MyPortfolio({ prices, originalPrices, selectedCoin, onSelectCoin }: MyPortfolioProps) {
+  const { cryptoCoins } = useFinanceData()
   const top3 = cryptoCoins.slice(0, 3)
 
   const total = top3.reduce((s, c) => s + c.holdings * (prices[c.id] ?? c.price), 0)
@@ -90,7 +91,7 @@ export function MyPortfolio({ prices, originalPrices, selectedCoin, onSelectCoin
       </CardHeader>
       <CardContent className="space-y-4">
         <p className="text-xs text-muted-foreground">
-          Profit in last 30 days
+          Lucro nos últimos 30 dias
         </p>
 
         {/* allocation bar */}

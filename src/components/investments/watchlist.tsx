@@ -13,13 +13,16 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import { watchlistItems, type WatchlistItem } from "@/data/seed"
+import type { WatchlistItem } from "@/data/seed"
+import { useFinanceData } from "@/components/finance/finance-provider"
 
 export function Watchlist() {
-  const [items, setItems] = useState<WatchlistItem[]>(watchlistItems)
+  const { watchlistItems } = useFinanceData()
+  const [removedIds, setRemovedIds] = useState<string[]>([])
+  const items: WatchlistItem[] = watchlistItems.filter((item) => !removedIds.includes(item.id))
 
   const removeItem = (id: string) => {
-    setItems((prev) => prev.filter((w) => w.id !== id))
+    setRemovedIds((prev) => [...prev, id])
   }
 
   if (items.length === 0) {

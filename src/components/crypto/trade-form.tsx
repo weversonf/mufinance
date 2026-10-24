@@ -20,16 +20,23 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { cn } from "@/lib/utils"
-import { cryptoCoins } from "@/data/seed"
+import { useFinanceData } from "@/components/finance/finance-provider"
 import type { CryptoPrices } from "./crypto-page-client"
 
 const TABS = ["Exchange", "Trade", "Buy", "Sell"] as const
+const TAB_LABELS: Record<(typeof TABS)[number], string> = {
+  Exchange: "Câmbio",
+  Trade: "Negociar",
+  Buy: "Comprar",
+  Sell: "Vender",
+}
 
 interface TradeFormProps {
   prices: CryptoPrices
 }
 
 export function TradeForm({ prices }: TradeFormProps) {
+  const { cryptoCoins } = useFinanceData()
   const [activeTab, setActiveTab] = React.useState<string>("Trade")
   const [amount, setValor] = React.useState("0.5")
   const [fromCoin, setFromCoin] = React.useState("eth")
@@ -115,8 +122,8 @@ export function TradeForm({ prices }: TradeFormProps) {
     setToCoin(prevFrom)
   }
 
-  const amountLabel = isBuyMode ? "Valor (USD)" : isSellMode ? "Valor (Cripto)" : "Valor"
-  const receivedLabel = isBuyMode ? "You Receive" : isSellMode ? "You Receive (USD)" : "Received"
+  const amountLabel = isBuyMode ? "Valor (USD)" : isSellMode ? "Valor (cripto)" : "Valor"
+  const receivedLabel = isBuyMode ? "Você recebe" : isSellMode ? "Você recebe (USD)" : "Recebido"
 
   return (
     <Card className="lg:col-span-4">
@@ -142,7 +149,7 @@ export function TradeForm({ prices }: TradeFormProps) {
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
-              {tab}
+              {TAB_LABELS[tab]}
             </button>
           ))}
         </div>
@@ -230,7 +237,7 @@ export function TradeForm({ prices }: TradeFormProps) {
               className="flex flex-col items-center gap-1 rounded-lg bg-emerald-500/10 py-3 text-center"
             >
               <CheckCircleIcon className="size-6 text-emerald-500" />
-              <p className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">Trade completed!</p>
+              <p className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">Operação concluída!</p>
               {successDetail && (
                 <p className="text-xs text-muted-foreground">{successDetail}</p>
               )}
@@ -246,10 +253,10 @@ export function TradeForm({ prices }: TradeFormProps) {
                 {loading ? (
                   <>
                     <LoaderCircleIcon className="size-4 animate-spin" />
-                    Processing...
+                    Processando...
                   </>
                 ) : (
-                  `${activeTab} Now`
+                  `${TAB_LABELS[activeTab as keyof typeof TAB_LABELS]} agora`
                 )}
               </Button>
             </motion.div>

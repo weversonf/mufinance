@@ -14,7 +14,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { notifications } from "@/data/seed"
+import { useFinanceData } from "@/components/finance/finance-provider"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import {
@@ -37,8 +37,6 @@ import {
   LoaderIcon,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
-
-const unreadCount = notifications.filter((n) => !n.read).length
 
 const iconMap: Record<string, React.ReactNode> = {
   "arrow-down-left": <ArrowDownLeftIcon className="size-3.5" />,
@@ -65,8 +63,10 @@ const typeColor: Record<string, string> = {
   request: "bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-400",
 }
 
-function NotificationDropdown({ icon, badge }: { icon: React.ReactNode; badge: number }) {
+function NotificationDropdown({ icon }: { icon: React.ReactNode }) {
+  const { notifications } = useFinanceData()
   const latest = notifications.slice(0, 6)
+  const badge = notifications.filter((notification) => !notification.read).length
   const [actionStates, setActionStates] = React.useState<Record<string, "idle" | "loading" | "accepted" | "declined">>({})
 
   const handleAction = (id: string, action: "accepted" | "declined") => {
@@ -96,7 +96,7 @@ function NotificationDropdown({ icon, badge }: { icon: React.ReactNode; badge: n
           <p className="text-sm font-semibold">Notificações</p>
           {badge > 0 && (
             <span className="text-[10px] font-medium text-muted-foreground">
-              {badge} não lida(s)
+              {badge} não {badge === 1 ? "lida" : "lidas"}
             </span>
           )}
         </div>
@@ -194,7 +194,7 @@ function NotificationDropdown({ icon, badge }: { icon: React.ReactNode; badge: n
             href="/notifications"
             className="flex items-center justify-center rounded-md py-1.5 text-xs font-medium text-primary hover:bg-muted transition-colors"
           >
-            View all notifications
+            Ver todas as notificações
           </Link>
         </div>
       </PopoverContent>
@@ -219,7 +219,7 @@ export function NavSecondary({
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>
               {item.title === "Notificações" ? (
-                <NotificationDropdown icon={item.icon} badge={unreadCount} />
+                <NotificationDropdown icon={item.icon} />
               ) : (
                 <SidebarMenuButton size="sm" render={<Link href={item.url} />}>
                   {item.icon}

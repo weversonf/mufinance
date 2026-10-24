@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react"
 import * as seed from "@/data/seed"
+import * as demo from "@/data/demo"
 import type {
   AccountCard,
   BankAccount,
@@ -26,6 +27,7 @@ export type FinanceSnapshot = {
   categories: Array<Record<string, unknown> & { id: string }>
   goals: Array<Record<string, unknown> & { id: string }>
   budgets: Array<Record<string, unknown> & { id: string }>
+  transferRecords: Array<Record<string, unknown> & { id: string }>
 }
 
 type FinanceDataValue = {
@@ -89,6 +91,14 @@ function numberValue(value: unknown) {
   return Number.isFinite(parsed) ? parsed : 0
 }
 
+function formatRecordDate(value: unknown) {
+  const raw = String(value ?? "")
+  if (!/^\d{4}-\d{2}-\d{2}/.test(raw)) return raw
+  const date = new Date(raw)
+  if (Number.isNaN(date.valueOf())) return raw
+  return date.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" })
+}
+
 function dateValue(value: unknown) {
   const text = String(value ?? "").trim()
   const dateOnly = /^(\d{4})-(\d{2})-(\d{2})$/.exec(text)
@@ -130,6 +140,7 @@ function buildData(snapshot: FinanceSnapshot | null, isDemoMode: boolean = false
   const categories = snapshot?.categories ?? []
   const budgets = snapshot?.budgets ?? []
   const goals = snapshot?.goals ?? []
+  const storedTransferRecords = snapshot?.transferRecords ?? []
   const visibleAccounts = accounts.filter((account) => account.locked !== true && account.blindage !== true && account.blind !== true)
   const balance = visibleAccounts.reduce((sum, account) => sum + numberValue(account.balance), 0)
   // Exclui lançamentos automáticos do sistema (ex: ajustes de saldo) dos cálculos de analytics.
@@ -162,6 +173,19 @@ function buildData(snapshot: FinanceSnapshot | null, isDemoMode: boolean = false
     type: transaction.type === "income" ? "income" : "expense",
     notes: typeof transaction.notes === "string" ? transaction.notes : undefined,
   }))
+
+  const transferRecords: TransferRecord[] = storedTransferRecords
+    .sort((left, right) => String(right.createdAt ?? "").localeCompare(String(left.createdAt ?? "")))
+    .map((record) => ({
+      id: record.id,
+      type: record.direction === "received" ? "received" : record.direction === "scheduled" ? "scheduled" : "sent",
+      contactName: String(record.contactName ?? record.contactUsername ?? "Usuário MuFinance"),
+      contactAvatar: String(record.contactAvatar ?? ""),
+      amount: Math.abs(numberValue(record.amount)),
+      date: formatRecordDate(record.createdAt),
+      status: record.status === "pending" ? "pending" : record.status === "scheduled" ? "scheduled" : "completed",
+      note: typeof record.note === "string" && record.note ? record.note : undefined,
+    }))
 
   const monthly = new Map<number, { date: Date; currentYear: number; lastYear: number }>()
   for (const transaction of analyticsTransactions) {
@@ -305,61 +329,40 @@ function buildData(snapshot: FinanceSnapshot | null, isDemoMode: boolean = false
   ]
   const emptyMovement = { "7d": [] as MoneyMovementPoint[], "30d": [] as MoneyMovementPoint[], "90d": [] as MoneyMovementPoint[] }
 
-  const hasRealAccounts = visibleAccounts.length > 0
   const hasRealTransactions = transactions.length > 0
-  const hasRealCards = cards.length > 0
-  const hasRealBudgets = budgetCategories.length > 0
-  const hasRealGoals = savingsGoals.length > 0
 
   if (isDemoMode) {
     return {
-      contacts: seed.contacts,
-      accountCards: hasRealAccounts ? accountCards : seed.accountCards,
-      walletBalance: hasRealAccounts
-        ? { amount: balance, changePercent: 0, changeDirection: "up" as const }
-        : seed.walletBalance,
-      spendingLimit: hasRealBudgets
-        ? { budget, spent, remaining: Math.max(0, budget - spent), currency: "BRL", periodStart: currentMonth, periodEnd: currentMonth }
-        : { ...seed.spendingLimit, currency: "BRL" },
-      financialOverview: (hasRealTransactions && financialOverview.length > 0)
-        ? financialOverview
-        : seed.financialOverview,
-      moneyMovementByPeriod: hasRealTransactions
-        ? moneyMovementByPeriod
-        : seed.moneyMovementByPeriod,
-      recentTransactions: hasRealTransactions ? recentTransactions : seed.recentTransactions,
-      fullTransactions: hasRealTransactions ? fullTransactions : seed.fullTransactions,
-      cardsData: hasRealCards ? cardsData : seed.cardsData,
-      categoryBreakdowns: (hasRealTransactions && categoryBreakdowns.length > 0)
-        ? categoryBreakdowns
-        : seed.categoryBreakdowns,
-      budgetCategories: hasRealBudgets ? budgetCategories : seed.budgetCategories,
-      savingsGoals: hasRealGoals ? savingsGoals : seed.savingsGoals,
-      bankAccounts: hasRealAccounts ? bankAccounts : seed.bankAccounts,
-      transferRecords: seed.transferRecords,
-      notifications: seed.notifications,
-      cryptoCoins: seed.cryptoCoins,
-      cryptoTransactions: seed.cryptoTransactions,
-      financialHealthScore: (hasRealTransactions || hasRealAccounts)
-        ? { overall: Math.min(100, Math.round((accounts.length > 0 ? 50 : 0) + (transactions.length > 0 ? 50 : 0))), trend: "up" as const, trendDelta: 0, factors: [] }
-        : seed.financialHealthScore,
-      holdings: seed.holdings,
-      watchlistItems: seed.watchlistItems,
-      portfolioHistory: seed.portfolioHistory,
-      monthComparisons: seed.monthComparisons,
-      aiInsights: seed.aiInsights,
-      recurringCharges: seed.recurringCharges,
+      contacts: demo.contacts,
+      accountCards: demo.accountCards,
+      walletBalance: demo.walletBalance,
+      spendingLimit: { ...demo.spendingLimit, currency: "BRL" },
+      financialOverview: demo.financialOverview,
+      moneyMovementByPeriod: demo.moneyMovementByPeriod,
+      recentTransactions: demo.recentTransactions,
+      fullTransactions: demo.fullTransactions,
+      cardsData: demo.cardsData,
+      categoryBreakdowns: demo.categoryBreakdowns,
+      budgetCategories: demo.budgetCategories,
+      savingsGoals: demo.savingsGoals,
+      bankAccounts: demo.bankAccounts,
+      transferRecords: demo.transferRecords,
+      notifications: demo.notifications,
+      cryptoCoins: demo.cryptoCoins,
+      cryptoTransactions: demo.cryptoTransactions,
+      financialHealthScore: demo.financialHealthScore,
+      holdings: demo.holdings,
+      watchlistItems: demo.watchlistItems,
+      portfolioHistory: demo.portfolioHistory,
+      monthComparisons: demo.monthComparisons,
+      aiInsights: demo.aiInsights,
+      recurringCharges: demo.recurringCharges,
       faqItems: seed.faqItems,
-      supportTickets: seed.supportTickets,
-      dailySpending: (hasRealTransactions && dailySpending.length > 0) ? dailySpending : seed.dailySpending,
-      spendingHeatmapData: (hasRealTransactions && dailySpending.length > 0) ? dailySpending : seed.dailySpending,
-      cryptoPriceHistory: seed.cryptoPriceHistory || [],
-      systemStatus: [
-        { name: "Sistema Principal", status: "operational" as const },
-        { name: "Banco Firestore", status: "operational" as const },
-        { name: "Autenticação", status: "operational" as const },
-        { name: "API de Cotações", status: "operational" as const },
-      ],
+      supportTickets: demo.supportTickets,
+      dailySpending: demo.dailySpending,
+      spendingHeatmapData: demo.spendingHeatmapData,
+      cryptoPriceHistory: demo.cryptoPriceHistory,
+      systemStatus: demo.systemStatus,
     }
   }
 
@@ -378,7 +381,7 @@ function buildData(snapshot: FinanceSnapshot | null, isDemoMode: boolean = false
     budgetCategories,
     savingsGoals,
     bankAccounts,
-    transferRecords: [],
+    transferRecords,
     notifications: [],
     cryptoCoins: [],
     cryptoTransactions: [],

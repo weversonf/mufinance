@@ -69,6 +69,22 @@ service cloud.firestore {
       allow update: if ownsExisting() && ownsIncoming();
     }
 
+    match /transferRecords/{docId} {
+      allow read, delete: if ownsExisting();
+      allow create, update: if false;
+    }
+
+    match /usernames/{username} {
+      allow read, write: if false;
+    }
+
+    match /internalTransfers/{transferId} {
+      allow read: if signedIn()
+        && (resource.data.senderUid == request.auth.uid
+            || resource.data.recipientUid == request.auth.uid);
+      allow write: if false;
+    }
+
     match /creditCards/{docId} {
       allow read, delete: if ownsExisting();
       allow create: if ownsIncoming();

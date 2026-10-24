@@ -5,6 +5,8 @@ import { useSearchParams } from "next/navigation"
 import { useTheme } from "next-themes"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/components/auth/auth-provider"
+import { useFinanceData } from "@/components/finance/finance-provider"
+import { getMyProfile, saveMyProfile } from "@/actions/profiles"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
@@ -61,19 +63,40 @@ const tabs: { id: TabId; label: string; icon: React.ReactNode }[] = [
 
 function ProfileTab() {
   const { user } = useAuth()
+  const { refresh } = useFinanceData()
   const [saving, setSaving] = React.useState(false)
   const [name, setName] = React.useState("")
   const [email, setEmail] = React.useState("")
+  const [username, setUsername] = React.useState("")
+  const [profileError, setProfileError] = React.useState("")
+  const [saved, setSaved] = React.useState(false)
 
   React.useEffect(() => {
     if (!user) return
     setName(user.displayName?.trim() || user.email?.split("@")[0] || "")
     setEmail(user.email || "")
+    void getMyProfile().then((profile) => {
+      if (!profile) return
+      setName(profile.displayName)
+      setEmail(profile.email)
+      setUsername(profile.username)
+    }).catch(() => {})
   }, [user])
 
-  function handleSave() {
+  async function handleSave() {
     setSaving(true)
-    setTimeout(() => setSaving(false), 1200)
+    setProfileError("")
+    setSaved(false)
+    try {
+      const profile = await saveMyProfile({ displayName: name, username })
+      await refresh()
+      setUsername(profile.username)
+      setSaved(true)
+    } catch (error) {
+      setProfileError(error instanceof Error ? error.message : "Não foi possível salvar o perfil.")
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
@@ -118,10 +141,34 @@ function ProfileTab() {
                 readOnly
               />
             </div>
+            <div className="space-y-2 sm:col-span-2">
+              <label className="text-sm font-medium" htmlFor="username">
+                Usuário para transferências
+              </label>
+              <div className="relative max-w-md">
+                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">@</span>
+                <Input
+                  id="username"
+                  value={username}
+                  onChange={(event) => setUsername(event.target.value.toLowerCase().replace(/^@+/, "").replace(/[^a-z0-9._]/g, ""))}
+                  placeholder="weverson"
+                  autoComplete="username"
+                  className="pl-8"
+                  minLength={3}
+                  maxLength={24}
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Seu identificador único para receber saldo de outros usuários do MuFinance.
+              </p>
+            </div>
           </div>
 
+          {profileError && <p role="alert" className="text-sm text-destructive">{profileError}</p>}
+          {saved && <p role="status" className="text-sm text-emerald-600 dark:text-emerald-400">Perfil salvo. Você pode receber por @{username}.</p>}
+
           <div className="flex justify-end">
-            <Button onClick={handleSave} disabled={saving}>
+            <Button onClick={handleSave} disabled={saving || name.trim().length < 2 || username.length < 3}>
               {saving && <LoaderIcon className="mr-2 size-4 animate-spin" />}
               {saving ? "Salvando..." : "Salvar alterações"}
             </Button>

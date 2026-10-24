@@ -6,7 +6,8 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
-import { notifications as seedNotifications, type Notification } from "@/data/seed"
+import type { Notification } from "@/data/seed"
+import { useFinanceData } from "@/components/finance/finance-provider"
 import { EmptyState } from "@/components/empty-state"
 import {
   ArrowDownLeftIcon,
@@ -64,8 +65,14 @@ const filters: { label: string; value: FilterType }[] = [
 ]
 
 export function NotificationsPageClient() {
-  const [items, setItems] = React.useState<Notification[]>(seedNotifications)
+  const { notifications } = useFinanceData()
+  const [readIds, setReadIds] = React.useState<string[]>([])
+  const [dismissedIds, setDismissedIds] = React.useState<string[]>([])
   const [filter, setFilter] = React.useState<FilterType>("all")
+
+  const items: Notification[] = notifications
+    .filter((notification) => !dismissedIds.includes(notification.id))
+    .map((notification) => readIds.includes(notification.id) ? { ...notification, read: true } : notification)
 
   const unreadCount = items.filter((n) => !n.read).length
 
@@ -76,17 +83,15 @@ export function NotificationsPageClient() {
   })
 
   function markAllRead() {
-    setItems((prev) => prev.map((n) => ({ ...n, read: true })))
+    setReadIds((prev) => [...new Set([...prev, ...notifications.map((notification) => notification.id)])])
   }
 
   function toggleRead(id: string) {
-    setItems((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
-    )
+    setReadIds((prev) => prev.includes(id) ? prev : [...prev, id])
   }
 
   function dismiss(id: string) {
-    setItems((prev) => prev.filter((n) => n.id !== id))
+    setDismissedIds((prev) => prev.includes(id) ? prev : [...prev, id])
   }
 
   return (
@@ -128,17 +133,12 @@ export function NotificationsPageClient() {
         <CardContent className="p-0">
           <AnimatePresence mode="popLayout" initial={false}>
             {filtered.length === 0 ? (
-              <motion.div
-                key="empty"
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-              >
+              <div key="empty">
                 <EmptyState
                   variant={filter === "all" || filter === "unread" ? "notifications" : "filter"}
                   className="py-12"
                 />
-              </motion.div>
+              </div>
             ) : (
               filtered.map((n) => (
                 <motion.div
@@ -201,7 +201,7 @@ export function NotificationsPageClient() {
                         }}
                       >
                         <XIcon className="size-3" />
-                        <span className="sr-only">Dismiss</span>
+                        <span className="sr-only">Dispensar</span>
                       </Button>
                     </div>
                   </div>
