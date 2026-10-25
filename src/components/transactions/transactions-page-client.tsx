@@ -1,6 +1,7 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
+import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react"
 
 import { useFinanceData } from "@/components/finance/finance-provider"
 import { EditTransactionDialog } from "@/components/transactions/edit-transaction-dialog"
@@ -9,6 +10,33 @@ import { TransactionSummary } from "@/components/transactions/transaction-summar
 import { TransactionFilters } from "@/components/transactions/transaction-filters"
 import { TransactionTable } from "@/components/transactions/transaction-table"
 import { TransactionActions } from "@/components/transactions/transaction-actions"
+import { Button } from "@/components/ui/button"
+
+function monthKey(date: Date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`
+}
+
+function transactionMonthKey(dateValue: string) {
+  const isoMatch = /^(\d{4})-(\d{2})/.exec(dateValue)
+  if (isoMatch) return `${isoMatch[1]}-${isoMatch[2]}`
+
+  const brMatch = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(dateValue)
+  if (brMatch) return `${brMatch[3]}-${brMatch[2]}`
+
+  const parsed = new Date(dateValue)
+  return Number.isNaN(parsed.valueOf()) ? null : monthKey(parsed)
+}
+
+function shiftMonth(month: string, amount: number) {
+  const [year, monthNumber] = month.split("-").map(Number)
+  return monthKey(new Date(year, monthNumber - 1 + amount, 1))
+}
+
+function formatMonth(month: string) {
+  const [year, monthNumber] = month.split("-").map(Number)
+  const label = new Intl.DateTimeFormat("pt-BR", { month: "long", year: "numeric" }).format(new Date(year, monthNumber - 1, 1))
+  return `${label.charAt(0).toUpperCase()}${label.slice(1)}`
+}
 
 export function TransactionsPageClient() {
   const { fullTransactions, snapshot, bankAccounts, refresh } = useFinanceData()
@@ -18,14 +46,26 @@ export function TransactionsPageClient() {
   const [typeFilter, setTypeFilter] = useState("all")
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [selectedTransaction, setSelectedTransaction] = useState<FullTransaction | null>(null)
+  const currentMonth = monthKey(new Date())
+  const [selectedMonth, setSelectedMonth] = useState(currentMonth)
+  const selectedMonthLabel = formatMonth(selectedMonth)
+
+  useEffect(() => {
+    setSelectedIds(new Set())
+  }, [selectedMonth])
+
+  const monthlyTransactions = useMemo(
+    () => fullTransactions.filter((transaction) => transactionMonthKey(transaction.date) === selectedMonth),
+    [fullTransactions, selectedMonth],
+  )
 
   const categories = useMemo(() => {
-    const categoryNames = new Set(fullTransactions.map((transaction) => transaction.category))
+    const categoryNames = new Set(monthlyTransactions.map((transaction) => transaction.category))
     return Array.from(categoryNames).sort()
-  }, [fullTransactions])
+  }, [monthlyTransactions])
 
   const filteredData = useMemo(() => {
-    let data: FullTransaction[] = fullTransactions
+    let data: FullTransaction[] = monthlyTransactions
 
     if (search) {
       const query = search.toLowerCase()
@@ -50,7 +90,15 @@ export function TransactionsPageClient() {
     }
 
     return data
-  }, [categoryFilter, fullTransactions, search, statusFilter, typeFilter])
+  }, [categoryFilter, monthlyTransactions, search, statusFilter, typeFilter])
+
+  const hasActiveFilters = Boolean(search) || categoryFilter !== "all" || statusFilter !== "all" || typeFilter !== "all"
+  const emptyTitle = hasActiveFilters
+    ? "Nenhuma transação encontrada"
+    : `Nenhuma transação em ${selectedMonthLabel}`
+  const emptyDescription = hasActiveFilters
+    ? "Ajuste a pesquisa ou os filtros para ver os lançamentos deste mês."
+    : "Use as setas para consultar outro mês ou adicione um novo lançamento."
 
   const [isDeleting, setIsDeleting] = useState(false)
 
@@ -98,6 +146,46 @@ export function TransactionsPageClient() {
       <TransactionSummary transactions={filteredData} />
 
       <div className="flex flex-col gap-3">
+        <nav
+          aria-label="Navegação por mês das transações"
+          className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-card px-3 py-2.5 ring-1 ring-foreground/10"
+        >
+          <div>
+            <p className="text-xs text-muted-foreground">Transações de</p>
+            <p className="text-sm font-semibold">{selectedMonthLabel}</p>
+          </div>
+
+          <div className="flex items-center gap-1">
+            <Button
+              type="button"
+              variant="outline"
+              size="icon-sm"
+              onClick={() => setSelectedMonth((month) => shiftMonth(month, -1))}
+              aria-label="Ver mês anterior"
+            >
+              <ChevronLeftIcon />
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setSelectedMonth(currentMonth)}
+              disabled={selectedMonth === currentMonth}
+            >
+              Mês atual
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="icon-sm"
+              onClick={() => setSelectedMonth((month) => shiftMonth(month, 1))}
+              aria-label="Ver próximo mês"
+            >
+              <ChevronRightIcon />
+            </Button>
+          </div>
+        </nav>
+
         <TransactionFilters
           search={search}
           setSearch={setSearch}
@@ -116,6 +204,8 @@ export function TransactionsPageClient() {
         selectedIds={selectedIds}
         setSelectedIds={setSelectedIds}
         onEdit={setSelectedTransaction}
+        emptyTitle={emptyTitle}
+        emptyDescription={emptyDescription}
       />
 
       <EditTransactionDialog

@@ -31,6 +31,8 @@ interface TransactionTableProps {
   selectedIds: Set<string>
   setSelectedIds: (ids: Set<string>) => void
   onEdit: (transaction: FullTransaction) => void
+  emptyTitle?: string
+  emptyDescription?: string
 }
 
 const fmt = (n: number, masked?: boolean) =>
@@ -62,6 +64,8 @@ export function TransactionTable({
   selectedIds,
   setSelectedIds,
   onEdit,
+  emptyTitle,
+  emptyDescription,
 }: TransactionTableProps) {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
 
@@ -103,7 +107,7 @@ export function TransactionTable({
       <div className="space-y-2 md:hidden">
         {transactions.length === 0 ? (
           <div className="rounded-xl ring-1 ring-foreground/10">
-            <EmptyState variant="transactions" className="py-12" />
+            <EmptyState variant="transactions" title={emptyTitle} description={emptyDescription} className="py-12" />
           </div>
         ) : (
           transactions.map((tx) => (
@@ -147,7 +151,7 @@ export function TransactionTable({
           {transactions.length === 0 && (
             <TableRow>
               <TableCell colSpan={7}>
-                <EmptyState variant="transactions" className="py-12" />
+                <EmptyState variant="transactions" title={emptyTitle} description={emptyDescription} className="py-12" />
               </TableCell>
             </TableRow>
           )}
