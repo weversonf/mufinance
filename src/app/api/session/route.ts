@@ -18,7 +18,10 @@ export async function POST(request: Request) {
     return response;
   } catch (error) {
     console.error("Falha ao criar sessão do MuFinance", error);
-    return NextResponse.json({ error: "Não foi possível criar a sessão." }, { status: 401 });
+    return NextResponse.json(
+      { error: "Não foi possível validar a sessão do Firebase. Verifique a configuração Firebase Admin da Vercel." },
+      { status: 401 },
+    );
   }
 }
 
