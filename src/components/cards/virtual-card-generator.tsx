@@ -85,7 +85,7 @@ export function VirtualCardGenerator({
       })
       await refresh()
     } catch (err) {
-      console.error("Falha ao salvar cartão no Firestore:", err)
+      console.error("Falha ao salvar cartão no banco financeiro:", err)
     }
 
     setNewCard(card)

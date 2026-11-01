@@ -53,7 +53,7 @@ const newCardOptions = [
 ]
 
 export function AccountCards() {
-  const { accountCards, walletBalance } = useFinanceData()
+  const { accountCards, walletBalance, snapshot } = useFinanceData()
   const { privacyMode } = usePrivacy()
   const initialCards = useMemo(() => buildInitialCards(accountCards), [accountCards])
   const [addedCards, setAddedCards] = useState<DisplayCard[]>([])
@@ -274,13 +274,11 @@ export function AccountCards() {
         {/* Wallet balance */}
         <div className="space-y-1.5 border-t pt-5">
           <p className="text-xs font-medium text-muted-foreground">Saldo total</p>
-          <p className="text-3xl font-bold tabular-nums tracking-tight">
-            {privacyMode ? "R$ •••••" : `R$ ${walletBalance.amount.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`}
-          </p>
-          <div className="flex items-center gap-1.5 text-sm font-medium text-emerald-600 dark:text-emerald-400">
-            <TrendingUpIcon className="size-4" />
-            <span>+{walletBalance.changePercent}% este mês</span>
-          </div>
+          {(snapshot?.transactions ?? []).some((transaction) => transaction.status === "planned" || transaction.status === "pending") ? (
+            <p className="text-sm text-muted-foreground">Saldo efetivado em revisão: há lançamentos planejados que podem estar incluídos no saldo das contas.</p>
+          ) : (
+            <p className="text-3xl font-bold tabular-nums tracking-tight">{privacyMode ? "R$ •••••" : `R$ ${walletBalance.amount.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`}</p>
+          )}
         </div>
       </CardContent>
     </Card>

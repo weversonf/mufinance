@@ -1,8 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { getAdminFirestore } from "../lib/firebase/admin";
 import { requireSessionUser } from "../lib/auth/session";
+import { sql } from "../lib/neon/db";
 import { transactionInputSchema, type TransactionInput } from "../lib/finance/schemas";
 import { createHash } from "crypto";
 
@@ -17,10 +17,6 @@ export type ImportTransactionRow = {
   type?: string;
   notes?: string;
 };
-
-function timestamp() {
-  return new Date().toISOString();
-}
 
 function guessCategory(payee: string, originalCategory?: string): string {
   if (originalCategory && originalCategory.trim().toLowerCase() !== "outros") return originalCategory.trim().slice(0, 80);
@@ -96,23 +92,11 @@ export async function importTransactions(rows: ImportTransactionRow[]) {
   if (!Array.isArray(rows) || rows.length === 0) return { imported: 0, errors: ["Nenhum lançamento encontrado."] };
   if (rows.length > 500) throw new Error("Importe no máximo 500 lançamentos por vez.");
 
-  const db = getAdminFirestore();
   const errors: string[] = [];
   let imported = 0;
+  const statements = [];
 
-  // Processar em batches de 400 (limite Firestore = 500 ops)
-  const BATCH_SIZE = 400;
-  const chunks = [];
-  for (let i = 0; i < rows.length; i += BATCH_SIZE) {
-    chunks.push(rows.slice(i, i + BATCH_SIZE));
-  }
-
-  for (const chunk of chunks) {
-    const batch = db.batch();
-    // Mapa para acumular deltas de saldo por conta neste chunk
-    const balanceDeltas = new Map<string, number>();
-
-    for (const [index, row] of chunk.entries()) {
+  for (const [index, row] of rows.entries()) {
       const rawAmount = normalizeAmountRaw(row.amount);
       const amount = Math.abs(rawAmount); // sempre positivo para armazenar
       const txType = normalizeType(row.type, rawAmount);
@@ -143,42 +127,38 @@ export async function importTransactions(rows: ImportTransactionRow[]) {
         continue;
       }
 
-      // Acumula delta de saldo: receita soma, despesa subtrai
-      if (txType === "income" || txType === "expense") {
-        const delta = txType === "income" ? amount : -amount;
-        balanceDeltas.set(accountId, (balanceDeltas.get(accountId) ?? 0) + delta);
-      }
-
       // Usa hash determinístico como ID: reimportar é idempotente
-      const docId = importHash(user.uid, date, payee, amount, accountId);
-      const reference = db.collection("transactions").doc(docId);
-      batch.set(reference, { ...parsed.data, ownerId: user.uid, importSource: "csv-or-ofx", createdAt: timestamp(), updatedAt: timestamp() }, { merge: false });
+      const id = importHash(user.uid, date, payee, amount, accountId);
+      const [accountRows, existingRows] = await Promise.all([
+        sql`SELECT id FROM mufinance.accounts WHERE id = ${accountId} AND owner_uid = ${user.uid} LIMIT 1`,
+        sql`SELECT id FROM mufinance.transactions WHERE id = ${id} AND owner_uid = ${user.uid} LIMIT 1`,
+      ]);
+      if (!accountRows[0]) {
+        errors.push(`Linha ${index + 1}: conta não encontrada.`);
+        continue;
+      }
+      if (existingRows[0]) continue;
+
+      const delta = txType === "income" ? amount : txType === "expense" ? -amount : 0;
+      if (delta !== 0) {
+        statements.push(sql`
+          UPDATE mufinance.accounts
+          SET balance = balance + ${delta}, updated_at = now()
+          WHERE id = ${accountId} AND owner_uid = ${user.uid}
+        `);
+      }
+      statements.push(sql`
+        INSERT INTO mufinance.transactions
+          (id, owner_uid, account_id, date, payee, category, amount, type, status, notes, source_type, import_source)
+        VALUES
+          (${id}, ${user.uid}, ${accountId}, ${parsed.data.date}, ${parsed.data.payee}, ${parsed.data.category}, ${parsed.data.amount}, ${parsed.data.type}, ${parsed.data.status}, ${parsed.data.notes ?? null}, ${parsed.data.sourceType}, 'csv-or-ofx')
+        ON CONFLICT (id) DO NOTHING
+      `);
       imported += 1;
-    }
+  }
 
-    // Atualizar saldos das contas afetadas neste chunk
-    // Usamos db.runTransaction para garantir consistência de saldo
-    if (balanceDeltas.size > 0) {
-      await db.runTransaction(async (txn) => {
-        // Fase 1: leituras
-        const accountSnaps = new Map<string, FirebaseFirestore.DocumentSnapshot>();
-        for (const accountId of balanceDeltas.keys()) {
-          const ref = db.collection("accounts").doc(accountId);
-          const snap = await txn.get(ref);
-          accountSnaps.set(accountId, snap);
-        }
-        // Fase 2: escritas
-        for (const [accountId, delta] of balanceDeltas.entries()) {
-          const snap = accountSnaps.get(accountId);
-          if (snap?.exists && (snap.data()?.ownerId === user.uid || snap.data()?.uid === user.uid)) {
-            const currentBalance = Number(snap.data()?.balance ?? 0);
-            txn.update(snap.ref, { balance: Number((currentBalance + delta).toFixed(2)), updatedAt: timestamp() });
-          }
-        }
-      });
-    }
-
-    if (imported > 0) await batch.commit();
+  for (let i = 0; i < statements.length; i += 100) {
+    await sql.transaction(statements.slice(i, i + 100));
   }
 
   revalidatePath("/");

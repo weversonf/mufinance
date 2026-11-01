@@ -1,7 +1,6 @@
 "use client"
 
-import { useState } from "react"
-import Image from "next/image"
+import { useRef, useState } from "react"
 import { AnimatePresence, motion } from "motion/react"
 import { EmptyState } from "@/components/empty-state"
 import {
@@ -10,6 +9,10 @@ import {
   InfoIcon,
   MoreHorizontalIcon,
   StickyNoteIcon,
+  BriefcaseIcon, UtensilsIcon, HouseIcon, ShoppingCartIcon, CarIcon,
+  HeartPulseIcon, GraduationCapIcon, Gamepad2Icon, ShoppingBagIcon,
+  ReceiptIcon, RepeatIcon, GiftIcon, PlaneIcon, WalletIcon, TrendingUpIcon,
+  BanknoteIcon, TagIcon, UsersIcon,
 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -31,6 +34,8 @@ interface TransactionTableProps {
   selectedIds: Set<string>
   setSelectedIds: (ids: Set<string>) => void
   onEdit: (transaction: FullTransaction) => void
+  selectionMode: boolean
+  onStartSelection: (id: string) => void
 }
 
 const fmt = (n: number, masked?: boolean) =>
@@ -41,6 +46,27 @@ const fmt = (n: number, masked?: boolean) =>
         currency: "BRL",
         minimumFractionDigits: 2,
       }).format(Math.abs(n))
+
+function formatDate(value: string) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value)
+  return match ? `${match[3]}/${match[2]}/${match[1]}` : value
+}
+
+function CategoryIcon({ category }: { category: string }) {
+  const name = category.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
+  const icons: [RegExp, typeof TagIcon][] = [
+    [/freelance|servico|trabalho/, BriefcaseIcon], [/salario|bonus|receita/, BanknoteIcon],
+    [/alimentacao|restaurante|bares/, UtensilsIcon], [/mercado/, ShoppingCartIcon],
+    [/casa|moradia|aluguel/, HouseIcon], [/transporte|combustivel/, CarIcon],
+    [/saude|farmacia/, HeartPulseIcon], [/educacao/, GraduationCapIcon],
+    [/lazer/, Gamepad2Icon], [/compras|roupas/, ShoppingBagIcon],
+    [/assinatura/, RepeatIcon], [/imposto|taxa|divida/, ReceiptIcon],
+    [/presente|doac/, GiftIcon], [/viagem/, PlaneIcon],
+    [/investimento/, TrendingUpIcon], [/familia/, UsersIcon], [/transferencia/, WalletIcon],
+  ]
+  const Icon = icons.find(([pattern]) => pattern.test(name))?.[1] ?? TagIcon
+  return <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground" aria-hidden="true"><Icon className="size-5" /></span>
+}
 
 function statusBadge(status: FullTransaction["status"]) {
   switch (status) {
@@ -62,6 +88,8 @@ export function TransactionTable({
   selectedIds,
   setSelectedIds,
   onEdit,
+  selectionMode,
+  onStartSelection,
 }: TransactionTableProps) {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
 
@@ -113,6 +141,8 @@ export function TransactionTable({
               isSelected={selectedIds.has(tx.id)}
               onToggleSelect={() => toggleOne(tx.id)}
               onEdit={() => onEdit(tx)}
+              selectionMode={selectionMode}
+              onStartSelection={() => onStartSelection(tx.id)}
             />
           ))
         )}
@@ -123,7 +153,7 @@ export function TransactionTable({
         <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-10 pl-3">
+            {selectionMode && <TableHead className="w-10 pl-3">
               <input
                 type="checkbox"
                 checked={allSelected}
@@ -132,10 +162,10 @@ export function TransactionTable({
                 }}
                 onChange={toggleAll}
                 className="size-4 cursor-pointer rounded accent-primary"
+                aria-label="Selecionar todas as transações desta página"
               />
-            </TableHead>
+            </TableHead>}
             <TableHead>Descrição</TableHead>
-            <TableHead className="hidden sm:table-cell">ID da transação</TableHead>
             <TableHead className="text-right">Valor</TableHead>
             <TableHead className="hidden md:table-cell">Data</TableHead>
             <TableHead className="hidden lg:table-cell">Status</TableHead>
@@ -146,7 +176,7 @@ export function TransactionTable({
         <TableBody>
           {transactions.length === 0 && (
             <TableRow>
-              <TableCell colSpan={7}>
+              <TableCell colSpan={selectionMode ? 6 : 5}>
                 <EmptyState variant="transactions" className="py-12" />
               </TableCell>
             </TableRow>
@@ -163,6 +193,7 @@ export function TransactionTable({
                 onToggleSelect={() => toggleOne(tx.id)}
                 onToggleExpand={() => toggleExpand(tx.id)}
                 onEdit={() => onEdit(tx)}
+                selectionMode={selectionMode}
               />
             )
           })}
@@ -179,39 +210,49 @@ function TransactionCard({
   isSelected,
   onToggleSelect,
   onEdit,
+  selectionMode,
+  onStartSelection,
 }: {
   tx: FullTransaction
   isSelected: boolean
   onToggleSelect: () => void
   onEdit: () => void
+  selectionMode: boolean
+  onStartSelection: () => void
 }) {
   const { privacyMode } = usePrivacy()
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const startPoint = useRef<{ x: number; y: number } | null>(null)
+  const longPressed = useRef(false)
+  function cancelPress() { if (timer.current) clearTimeout(timer.current); timer.current = null }
   return (
     <article
+      onTouchStart={(event) => {
+        if (selectionMode) return
+        longPressed.current = false
+        startPoint.current = { x: event.touches[0].clientX, y: event.touches[0].clientY }
+        timer.current = setTimeout(() => { longPressed.current = true; onStartSelection() }, 550)
+      }}
+      onTouchMove={(event) => { const start = startPoint.current; if (start && (Math.abs(event.touches[0].clientX - start.x) > 10 || Math.abs(event.touches[0].clientY - start.y) > 10)) cancelPress() }}
+      onTouchEnd={cancelPress}
+      onTouchCancel={cancelPress}
       className={cn(
         "rounded-xl bg-card p-3.5 ring-1 ring-foreground/10 transition-colors",
         isSelected && "bg-muted/60 ring-primary/30",
       )}
     >
       <div className="flex items-start gap-3">
-        <input
+        {selectionMode && <input
           type="checkbox"
           checked={isSelected}
           onChange={onToggleSelect}
           className="mt-1 size-4 shrink-0 cursor-pointer rounded accent-primary"
           aria-label={`Selecionar ${tx.merchant}`}
-        />
-        <button type="button" onClick={onEdit} className="min-w-0 flex-1 text-left">
+        />}
+        <button type="button" onClick={() => { if (longPressed.current) { longPressed.current = false; return } if (selectionMode) onToggleSelect(); else onEdit() }} className="min-w-0 flex-1 text-left">
           <div className="flex items-start justify-between gap-3">
             <div className="flex min-w-0 items-center gap-2.5">
-              <Image
-                src={tx.logo}
-                alt=""
-                width={36}
-                height={36}
-                className="size-9 shrink-0 rounded-lg object-cover"
-                unoptimized
-              />
+              <CategoryIcon category={tx.category} />
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold">{tx.merchant}</p>
                 <p className="mt-0.5 truncate text-xs text-muted-foreground">{tx.category}</p>
@@ -227,7 +268,7 @@ function TransactionCard({
             </span>
           </div>
           <div className="mt-3 flex items-center justify-between gap-2 border-t pt-2.5 text-xs text-muted-foreground">
-            <span>{tx.date}</span>
+            <span>{formatDate(tx.date)}</span>
             <span>{statusBadge(tx.status)}</span>
           </div>
         </button>
@@ -243,6 +284,7 @@ function TransactionRow({
   onToggleSelect,
   onToggleExpand,
   onEdit,
+  selectionMode,
 }: {
   tx: FullTransaction
   isSelected: boolean
@@ -250,6 +292,7 @@ function TransactionRow({
   onToggleSelect: () => void
   onToggleExpand: () => void
   onEdit: () => void
+  selectionMode: boolean
 }) {
   const { privacyMode } = usePrivacy()
   return (
@@ -260,28 +303,22 @@ function TransactionRow({
           isSelected && "bg-muted/50",
           isExpanded && "border-b-0"
         )}
-        onClick={onEdit}
+        onClick={selectionMode ? onToggleSelect : onEdit}
       >
-        <TableCell className="pl-3">
+        {selectionMode && <TableCell className="pl-3">
           <input
             type="checkbox"
             checked={isSelected}
             onChange={onToggleSelect}
             onClick={(e) => e.stopPropagation()}
             className="size-4 cursor-pointer rounded accent-primary"
+            aria-label={`Selecionar ${tx.merchant}`}
           />
-        </TableCell>
+        </TableCell>}
 
         <TableCell>
           <div className="flex items-center gap-2.5">
-            <Image
-              src={tx.logo}
-              alt={tx.merchant}
-              width={32}
-              height={32}
-              className="size-8 rounded-lg object-cover"
-              unoptimized
-            />
+            <CategoryIcon category={tx.category} />
             <div className="min-w-0">
               <p className="truncate text-sm font-medium">{tx.merchant}</p>
               <Badge variant="secondary" className="mt-0.5 text-[10px]">
@@ -289,12 +326,6 @@ function TransactionRow({
               </Badge>
             </div>
           </div>
-        </TableCell>
-
-        <TableCell className="hidden sm:table-cell">
-          <span className="font-mono text-xs text-muted-foreground">
-            {tx.transactionId}
-          </span>
         </TableCell>
 
         <TableCell className="text-right">
@@ -310,7 +341,7 @@ function TransactionRow({
         </TableCell>
 
         <TableCell className="hidden md:table-cell">
-          <span className="text-sm text-muted-foreground">{tx.date}</span>
+          <span className="text-sm text-muted-foreground">{formatDate(tx.date)}</span>
         </TableCell>
 
         <TableCell className="hidden lg:table-cell">
@@ -336,7 +367,7 @@ function TransactionRow({
       <AnimatePresence initial={false}>
         {isExpanded && (
           <tr>
-            <td colSpan={7} className="p-0">
+            <td colSpan={selectionMode ? 6 : 5} className="p-0">
               <motion.div
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: "auto", opacity: 1 }}

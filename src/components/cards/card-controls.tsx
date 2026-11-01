@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { PlusIcon } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import { Slider } from "@/components/ui/slider"
@@ -16,6 +17,23 @@ interface CardControlsProps {
   onToggleFreeze: () => void
   dailyLimit: number
   onDailyLimitChange: (val: number) => void
+  onAddCard: () => void
+}
+
+function AddCardButton({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label="Adicionar cartão"
+      className="group flex h-8 items-center overflow-hidden rounded-full bg-muted pl-2 pr-2 text-sm font-medium transition-all hover:bg-accent hover:pl-2.5 hover:pr-3 focus-visible:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+    >
+      <PlusIcon className="size-4 shrink-0 transition-transform duration-300 group-hover:rotate-90 group-focus-visible:rotate-90" />
+      <span className="max-w-0 overflow-hidden whitespace-nowrap opacity-0 transition-all duration-300 group-hover:ml-1.5 group-hover:max-w-32 group-hover:opacity-100 group-focus-visible:ml-1.5 group-focus-visible:max-w-32 group-focus-visible:opacity-100">
+        Adicionar cartão
+      </span>
+    </button>
+  )
 }
 
 function formatCurrency(value: number): string {
@@ -33,6 +51,7 @@ export function CardControls({
   onToggleFreeze,
   dailyLimit,
   onDailyLimitChange,
+  onAddCard,
 }: CardControlsProps) {
   const [payBillOpen, setPayBillOpen] = useState(false)
   const spendPercent =
@@ -42,8 +61,9 @@ export function CardControls({
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0">
         <CardTitle>Controles do Cartão</CardTitle>
+        <AddCardButton onClick={onAddCard} />
       </CardHeader>
       <CardContent className="space-y-6">
         {/* ❄️ Freeze Toggle ❄️ */}

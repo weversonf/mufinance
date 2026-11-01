@@ -3,21 +3,22 @@
 import { useState } from "react"
 import Image from "next/image"
 import { motion, AnimatePresence } from "motion/react"
-import { SnowflakeIcon, WifiIcon } from "lucide-react"
+import { PencilIcon, SnowflakeIcon, WifiIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { CardData } from "@/data/seed"
 
 interface InteractiveCardProps {
   card: CardData
   frozen: boolean
+  onEdit: () => void
 }
 
 export function InteractiveCard({
   card,
   frozen,
+  onEdit,
 }: InteractiveCardProps) {
   const [flipped, setFlipped] = useState(false)
-  const [cvvRevealed, setCvvRevealed] = useState(false)
 
   return (
     <div
@@ -83,44 +84,28 @@ export function InteractiveCard({
           <div className="mt-6 h-10 w-full bg-foreground/80" />
 
           <div className="flex flex-1 flex-col justify-between p-5 pt-4">
-            {/* Signature + CVV area */}
-            <div className="flex items-center gap-3">
-              <div className="h-8 flex-1 rounded bg-muted/20" />
-              <div
-                className="flex h-8 w-14 items-center justify-center rounded bg-white"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setCvvRevealed((r) => !r)
-                }}
-              >
-                <AnimatePresence mode="wait">
-                  {cvvRevealed ? (
-                    <motion.span
-                      key="cvv"
-                      initial={{ scale: 0.5, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      exit={{ scale: 0.5, opacity: 0 }}
-                      className="font-mono text-sm font-bold text-foreground tabular-nums"
-                    >
-                      {card.cvv}
-                    </motion.span>
-                  ) : (
-                    <motion.span
-                      key="hidden"
-                      initial={{ scale: 0.5, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      exit={{ scale: 0.5, opacity: 0 }}
-                      className="font-mono text-sm text-muted-foreground"
-                    >
-                      ***
-                    </motion.span>
-                  )}
-                </AnimatePresence>
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="h-8 w-24 rounded bg-muted/20" />
+                <span className="font-mono text-xs text-primary-foreground/70">
+                  **** {card.last4}
+                </span>
               </div>
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation()
+                  onEdit()
+                }}
+                aria-label={`Editar ${card.name}`}
+                className="flex size-9 items-center justify-center rounded-full bg-primary-foreground/15 text-primary-foreground transition-colors hover:bg-primary-foreground/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-foreground"
+              >
+                <PencilIcon className="size-4" />
+              </button>
             </div>
 
             <p className="text-xs text-primary-foreground/60">
-              Tap CVV box to reveal. Click card to flip back.
+              Toque no lápis para editar. Toque no cartão para voltar.
             </p>
           </div>
         </div>

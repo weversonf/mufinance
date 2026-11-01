@@ -4,32 +4,27 @@ import * as React from "react"
 import Image from "next/image"
 import { ArrowUpRightIcon, TrendingUpIcon, TrendingDownIcon } from "lucide-react"
 import { motion } from "motion/react"
+
 import { Card, CardContent } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
-import { useFinanceData } from "@/components/finance/finance-provider"
+import type { CryptoCoin } from "@/data/seed"
 import type { CryptoPrices } from "./crypto-page-client"
 
 interface TopCoinsProps {
+  coins: CryptoCoin[]
   prices: CryptoPrices
-  originalPrices: CryptoPrices
   selectedCoin: string
   onSelectCoin: (id: string) => void
 }
 
 type FlashMap = Record<string, "up" | "down" | null>
 
-export function TopCoins({ prices, originalPrices, selectedCoin, onSelectCoin }: TopCoinsProps) {
-  const { cryptoCoins } = useFinanceData()
-  const top3 = cryptoCoins.slice(0, 3)
-
-  // Track flash directions in state (computed inside effect, not during render)
+export function TopCoins({ coins, prices, selectedCoin, onSelectCoin }: TopCoinsProps) {
+  const top3 = coins.slice(0, 3)
   const [flashes, setFlashes] = React.useState<FlashMap>({})
-
-  // Compare previous prices using a state-based approach
   const [prevPrices, setPrevPrices] = React.useState<CryptoPrices>(prices)
 
   React.useEffect(() => {
-    // Compute flash directions
     const newFlashes: FlashMap = {}
     for (const coin of top3) {
       const prev = prevPrices[coin.id] ?? coin.price
@@ -40,22 +35,21 @@ export function TopCoins({ prices, originalPrices, selectedCoin, onSelectCoin }:
     }
     setFlashes(newFlashes)
 
-    // Clear flashes and update prevPrices after animation
     const timer = setTimeout(() => {
       setPrevPrices({ ...prices })
       setFlashes({})
     }, 600)
     return () => clearTimeout(timer)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [prices])
+
+  if (top3.length === 0) return null
 
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 lg:col-span-8">
       {top3.map((coin) => {
         const livePrice = prices[coin.id] ?? coin.price
-        const origPrice = originalPrices[coin.id] ?? coin.price
-        const change24h = ((livePrice - origPrice) / origPrice) * 100
-        const positive = change24h >= 0
+        const positive = coin.change24h >= 0
         const flash = flashes[coin.id] ?? null
 
         return (
@@ -99,8 +93,9 @@ export function TopCoins({ prices, originalPrices, selectedCoin, onSelectCoin }:
                   transition={{ duration: 0.6 }}
                   className="rounded px-1 text-xl font-bold tabular-nums"
                 >
-                  $
                   {livePrice.toLocaleString("pt-BR", {
+                    style: "currency",
+                    currency: "BRL",
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
                   })}
@@ -119,7 +114,7 @@ export function TopCoins({ prices, originalPrices, selectedCoin, onSelectCoin }:
                     <TrendingDownIcon className="size-3" />
                   )}
                   {positive ? "+" : ""}
-                  {change24h.toFixed(2)}%
+                  {coin.change24h.toFixed(2)}%
                 </span>
               </div>
             </CardContent>

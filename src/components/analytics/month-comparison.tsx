@@ -15,7 +15,8 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart"
-import { useFinanceData } from "@/components/finance/finance-provider"
+import { useAnalyticsData } from "@/components/analytics/use-analytics-data"
+import { formatMonthKey, useAnalyticsMonth } from "@/components/analytics/analytics-month"
 
 const chartConfig = {
   thisMonth: {
@@ -55,7 +56,8 @@ function ChangeLabel(props: Record<string, unknown> & { monthComparisons?: Array
 }
 
 export function MonthComparison() {
-  const { monthComparisons } = useFinanceData()
+  const { monthComparisons } = useAnalyticsData()
+  const { month } = useAnalyticsMonth()
   const totals = useMemo(() => {
     const thisMonth = monthComparisons.reduce((s, r) => s + r.thisMonth, 0)
     const lastMonth = monthComparisons.reduce((s, r) => s + r.lastMonth, 0)
@@ -67,10 +69,10 @@ export function MonthComparison() {
       <Card>
         <CardHeader>
           <CardTitle>Comparativo Mensal</CardTitle>
-          <CardDescription>Comparação com o mês anterior</CardDescription>
+          <CardDescription>{formatMonthKey(month)} · comparação com o mês anterior</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
-          <p className="text-sm font-medium text-foreground">Sem dados comparativos ainda</p>
+          <p className="text-sm font-medium text-foreground">Sem dados comparativos neste mês</p>
           <p className="text-xs mt-1">Conforme você acumular lançamentos nos meses, a comparação será calculada automaticamente.</p>
         </CardContent>
       </Card>
@@ -87,7 +89,7 @@ export function MonthComparison() {
               <span className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
                 <span className="flex items-center gap-1.5">
                   <span className="size-2 rounded-full bg-primary" />
-                  Este mês{" "}
+                  {formatMonthKey(month)}{" "}
                   <span className="font-medium tabular-nums text-foreground">
                     {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(totals.thisMonth)}
                   </span>
@@ -134,13 +136,13 @@ export function MonthComparison() {
               fontSize={11}
               tickMargin={8}
               stroke="var(--color-muted-foreground)"
-              tickFormatter={(v: number) => `$${v}`}
+              tickFormatter={(v: number) => `R$ ${v}`}
             />
             <ChartTooltip
               content={
                 <ChartTooltipContent
                   formatter={(value) =>
-                    `$${Number(value).toLocaleString()}`
+                    new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(Number(value))
                   }
                 />
               }

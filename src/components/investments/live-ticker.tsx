@@ -3,6 +3,7 @@
 import { useMemo } from "react"
 import { cn } from "@/lib/utils"
 import { useFinanceData } from "@/components/finance/finance-provider"
+import { useMarketData } from "@/components/market/market-provider"
 
 type TickerEntry = {
   symbol: string
@@ -12,6 +13,8 @@ type TickerEntry = {
 
 export function LiveTicker() {
   const { holdings, watchlistItems } = useFinanceData()
+  const { data } = useMarketData()
+
   const entries = useMemo<TickerEntry[]>(() => {
     const fromHoldings: TickerEntry[] = holdings.map((h) => ({
       symbol: h.symbol,
@@ -26,8 +29,15 @@ export function LiveTicker() {
       price: w.currentPrice,
       change: w.dayChange,
     }))
-    return [...fromHoldings, ...fromWatchlist]
-  }, [holdings, watchlistItems])
+    const personal = [...fromHoldings, ...fromWatchlist]
+    if (personal.length > 0) return personal
+
+    return (data?.stocks ?? []).map((stock) => ({
+      symbol: stock.symbol,
+      price: stock.price,
+      change: stock.changePercent,
+    }))
+  }, [holdings, watchlistItems, data?.stocks])
 
   if (entries.length === 0) return null
 
@@ -40,7 +50,12 @@ export function LiveTicker() {
       >
         <span className="font-medium">{e.symbol}</span>
         <span className="tabular-nums text-muted-foreground">
-          ${e.price.toFixed(2)}
+          {e.price.toLocaleString("pt-BR", {
+            style: "currency",
+            currency: "BRL",
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}
         </span>
         <span
           className={cn(

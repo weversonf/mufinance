@@ -18,7 +18,7 @@ import {
 } from "@dnd-kit/sortable"
 import { GripVerticalIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { FinancialOverview } from "@/components/dashboard/financial-overview"
+import { ForecastOverview } from "@/components/dashboard/forecast-overview"
 import { AccountCards } from "@/components/dashboard/account-cards"
 import { QuickTransfer } from "@/components/dashboard/quick-transfer"
 import { SpendingLimit } from "@/components/dashboard/spending-limit"
@@ -37,7 +37,7 @@ type Block = {
 }
 
 const defaultBlocks: Block[] = [
-  { id: "financial-overview", label: "Visão Geral Financeira", size: "lg", component: <FinancialOverview /> },
+  { id: "financial-overview", label: "Visão Geral Financeira", size: "lg", component: <ForecastOverview /> },
   { id: "account-cards", label: "Cartões de Contas", size: "sm", component: <AccountCards /> },
   { id: "transfer-spending", label: "Transferência e Limites", size: "sm", component: <div className="flex flex-col gap-4 [&>*]:flex-1"><QuickTransfer /><SpendingLimit /></div> },
   { id: "money-movement", label: "Movimentação Financeira", size: "sm", component: <MoneyMovement /> },

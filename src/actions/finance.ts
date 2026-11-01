@@ -1,9 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { getAdminFirestore } from "../lib/firebase/admin";
 import { getSessionUser, requireSessionUser } from "../lib/auth/session";
-import { migrateLegacyState, type LegacyFinanceState } from "../lib/finance/normalization";
+import { sql } from "../lib/neon/db";
 import {
   accountInputSchema,
   budgetInputSchema,
@@ -12,96 +11,31 @@ import {
   transactionInputSchema,
 } from "../lib/finance/schemas";
 
-function timestamp() {
-  return new Date().toISOString();
-}
-
-async function getOwnedDocuments(collectionNames: string[], ownerId: string) {
-  const db = getAdminFirestore();
-  const snapshots = await Promise.all(collectionNames.flatMap((collectionName) => [
-    db.collection(collectionName).where("ownerId", "==", ownerId).get(),
-    db.collection(collectionName).where("uid", "==", ownerId).get(),
-  ]));
-  const documents = new Map<string, Record<string, unknown> & { id: string }>();
-  for (const snapshot of snapshots) {
-    for (const item of snapshot.docs) {
-      documents.set(`${item.ref.parent.id}/${item.id}`, { id: item.id, ...item.data() });
-    }
-  }
-  return [...documents.values()];
-}
-
-function normalizeLegacyRecord(collectionName: string, record: Record<string, unknown> & { id: string }) {
-  const normalized = { ...record, ownerId: record.ownerId ?? record.uid };
-  if (collectionName === "transactions") {
-    const legacyType = String(record.type ?? "").toLowerCase();
-    return {
-      ...normalized,
-      payee: record.payee ?? record.name ?? record.description,
-      category: record.category ?? record.cat ?? record.categoryName,
-      type: legacyType === "entrada" || legacyType === "income" ? "income" : legacyType === "saida" || legacyType === "expense" ? "expense" : record.type,
-      status: legacyType === "prevista" || record.status === "prevista" ? "pending" : record.status,
-    };
-  }
-  if (collectionName === "categories") {
-    return { ...normalized, name: record.name ?? record.label ?? record.cat };
-  }
-  return normalized;
-}
-
 export async function getFinanceSnapshot() {
   const user = await getSessionUser();
   if (!user) return null;
 
-  const [accounts, creditCards, transactions, categories, goals, budgets, transferRecords] = await Promise.all([
-    getOwnedDocuments(["accounts"], user.uid),
-    getOwnedDocuments(["creditCards", "cards"], user.uid),
-    getOwnedDocuments(["transactions"], user.uid),
-    getOwnedDocuments(["categories"], user.uid),
-    getOwnedDocuments(["goals"], user.uid),
-    getOwnedDocuments(["budgets", "budget"], user.uid),
-    getOwnedDocuments(["transferRecords"], user.uid),
+  // Todos os dados financeiros do snapshot vêm do banco novo.
+  const [accounts, transactions, categories, creditCards, goals, budgets, transferRecords] = await Promise.all([
+    getNeonAccounts(user.uid),
+    getNeonTransactions(user.uid),
+    getNeonCategories(user.uid),
+    getNeonCreditCards(user.uid),
+    getNeonGoals(user.uid),
+    getNeonBudgets(user.uid),
+    getNeonTransferRecords(user.uid),
   ]);
 
   return {
     uid: user.uid,
-    accounts: accounts.map((item) => normalizeLegacyRecord("accounts", item)),
-    creditCards: creditCards.map((item) => normalizeLegacyRecord("creditCards", item)),
-    transactions: transactions.map((item) => normalizeLegacyRecord("transactions", item)),
-    categories: categories.map((item) => normalizeLegacyRecord("categories", item)),
-    goals: goals.map((item) => normalizeLegacyRecord("goals", item)),
-    budgets: budgets.map((item) => normalizeLegacyRecord("budgets", item)),
+    accounts,
+    creditCards,
+    transactions,
+    categories,
+    goals,
+    budgets,
     transferRecords,
   };
-}
-
-export async function migrateLegacyFinanceState() {
-  const user = await requireSessionUser();
-  const db = getAdminFirestore();
-  const legacyReference = db.doc(`users/${user.uid}/finance/state`);
-  const legacySnapshot = await legacyReference.get();
-  if (!legacySnapshot.exists) return { migrated: false, writes: 0 };
-
-  const result = await migrateLegacyState(db, user.uid, legacySnapshot.data() as LegacyFinanceState);
-  await db.doc(`users/${user.uid}/finance/meta`).set({
-    normalizedMigrationVersion: 1,
-    normalizedMigrationAt: timestamp(),
-    normalizedWrites: result.writes,
-  }, { merge: true });
-  revalidatePath("/");
-  return { migrated: true, writes: result.writes };
-}
-
-async function findOwnedReference(collectionNames: string[], id: string, ownerId: string) {
-  const db = getAdminFirestore();
-  for (const collectionName of collectionNames) {
-    const reference = db.collection(collectionName).doc(id);
-    const snapshot = await reference.get();
-    if (snapshot.exists && (snapshot.data()?.ownerId === ownerId || snapshot.data()?.uid === ownerId)) {
-      return reference;
-    }
-  }
-  throw new Error("Registro não encontrado para este usuário.");
 }
 
 function numericAmount(value: unknown) {
@@ -117,40 +51,298 @@ function numericAmount(value: unknown) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+function mapAccount(row: Record<string, unknown>) {
+  return {
+    id: String(row.id),
+    name: String(row.name ?? ""),
+    institution: row.institution ?? null,
+    type: String(row.type ?? "checking"),
+    balance: Number(row.balance ?? 0),
+    currency: String(row.currency ?? "BRL"),
+    color: row.color ?? null,
+    icon: row.icon ?? null,
+    accountNumber: row.account_number ?? null,
+    internalWallet: Boolean(row.internal_wallet),
+    locked: Boolean(row.locked),
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+async function getNeonAccounts(ownerUid: string) {
+  const rows = await sql`
+    SELECT id, name, institution, type, balance, currency, color, icon,
+           account_number, internal_wallet, locked, created_at, updated_at
+    FROM mufinance.accounts
+    WHERE owner_uid = ${ownerUid}
+    ORDER BY created_at ASC, name ASC
+  `;
+  return rows.map((row) => mapAccount(row as Record<string, unknown>));
+}
+
+async function getNeonAccount(id: string, ownerUid: string) {
+  const rows = await sql`
+    SELECT id, name, institution, type, balance, currency, color, icon,
+           account_number, internal_wallet, locked, created_at, updated_at
+    FROM mufinance.accounts
+    WHERE id = ${id} AND owner_uid = ${ownerUid}
+    LIMIT 1
+  `;
+  if (!rows[0]) throw new Error("Registro não encontrado para este usuário.");
+  return mapAccount(rows[0] as Record<string, unknown>);
+}
+
+function mapTransaction(row: Record<string, unknown>) {
+  return {
+    id: String(row.id),
+    ownerId: String(row.owner_uid),
+    accountId: row.account_id ?? null,
+    destinationAccountId: row.destination_account_id ?? null,
+    date: String(row.date ?? ""),
+    payee: String(row.payee ?? ""),
+    category: String(row.category ?? "Outros"),
+    categoryId: row.category_id ?? null,
+    amount: Number(row.amount ?? 0),
+    type: String(row.type ?? "expense"),
+    status: String(row.status ?? "completed"),
+    notes: row.notes ?? null,
+    sourceType: row.source_type ?? null,
+    sourceId: row.source_id ?? null,
+    invoiceId: row.invoice_id ?? null,
+    installmentNumber: row.installment_number ?? null,
+    installmentTotal: row.installment_total ?? null,
+    installmentGroupId: row.installment_group_id ?? null,
+    isSystemEntry: Boolean(row.is_system_entry),
+    importSource: row.import_source ?? null,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+async function getNeonTransactions(ownerUid: string) {
+  const rows = await sql`
+    SELECT id, owner_uid, account_id, destination_account_id, date, payee,
+           category, category_id, amount, type, status, notes, source_type,
+           source_id, invoice_id, installment_number, installment_total,
+           installment_group_id, is_system_entry, import_source, created_at, updated_at
+    FROM mufinance.transactions
+    WHERE owner_uid = ${ownerUid}
+    ORDER BY date DESC, created_at DESC
+  `;
+  return rows.map((row) => mapTransaction(row as Record<string, unknown>));
+}
+
+async function getNeonTransaction(id: string, ownerUid: string) {
+  const rows = await sql`
+    SELECT id, owner_uid, account_id, destination_account_id, date, payee,
+           category, category_id, amount, type, status, notes, source_type,
+           source_id, invoice_id, installment_number, installment_total,
+           installment_group_id, is_system_entry, import_source, created_at, updated_at
+    FROM mufinance.transactions
+    WHERE id = ${id} AND owner_uid = ${ownerUid}
+    LIMIT 1
+  `;
+  if (!rows[0]) throw new Error("Transação não encontrada.");
+  return mapTransaction(rows[0] as Record<string, unknown>);
+}
+
+function mapCategory(row: Record<string, unknown>) {
+  return {
+    id: String(row.id),
+    ownerId: String(row.owner_uid),
+    name: String(row.name ?? ""),
+    type: String(row.type ?? "expense"),
+    tone: String(row.tone ?? "blue"),
+    active: Boolean(row.active),
+    isDefault: Boolean(row.is_default),
+    usage: Number(row.usage ?? 0),
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+async function getNeonCategories(ownerUid: string) {
+  const rows = await sql`
+    SELECT id, owner_uid, name, type, tone, active, is_default, usage, created_at, updated_at
+    FROM mufinance.categories
+    WHERE owner_uid = ${ownerUid}
+    ORDER BY type ASC, name ASC
+  `;
+  return rows.map((row) => mapCategory(row as Record<string, unknown>));
+}
+
+function mapCreditCard(row: Record<string, unknown>) {
+  return {
+    id: String(row.id),
+    ownerId: String(row.owner_uid),
+    name: String(row.name ?? "Cartão"),
+    last4: String(row.last4 ?? ""),
+    brand: String(row.brand ?? "Visa"),
+    color: String(row.color ?? "ocean"),
+    limit: Number(row.credit_limit ?? 0),
+    balance: String(row.balance ?? "R$ 0,00"),
+    closingDay: row.closing_day ?? null,
+    dueDay: row.due_day ?? null,
+    dueDate: row.due_date ?? null,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+async function getNeonCreditCards(ownerUid: string) {
+  const rows = await sql`
+    SELECT id, owner_uid, name, last4, brand, color, credit_limit, balance,
+           closing_day, due_day, due_date, created_at, updated_at
+    FROM mufinance.credit_cards
+    WHERE owner_uid = ${ownerUid}
+    ORDER BY created_at ASC, name ASC
+  `;
+  return rows.map((row) => mapCreditCard(row as Record<string, unknown>));
+}
+
+async function getNeonCreditCard(id: string, ownerUid: string) {
+  const rows = await sql`
+    SELECT id, owner_uid, name, last4, brand, color, credit_limit, balance,
+           closing_day, due_day, due_date, created_at, updated_at
+    FROM mufinance.credit_cards
+    WHERE id = ${id} AND owner_uid = ${ownerUid}
+    LIMIT 1
+  `;
+  if (!rows[0]) throw new Error("Cartão não encontrado.");
+  return mapCreditCard(rows[0] as Record<string, unknown>);
+}
+
+function mapGoal(row: Record<string, unknown>) {
+  return {
+    id: String(row.id),
+    ownerId: String(row.owner_uid),
+    name: String(row.name ?? "Meta"),
+    targetAmount: Number(row.target_amount ?? 0),
+    currentAmount: Number(row.current_amount ?? 0),
+    dueDate: row.due_date ?? null,
+    color: String(row.color ?? "mint"),
+    iconName: String(row.icon_name ?? "target"),
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+async function getNeonGoals(ownerUid: string) {
+  const rows = await sql`
+    SELECT id, owner_uid, name, target_amount, current_amount, due_date, color,
+           icon_name, created_at, updated_at
+    FROM mufinance.goals
+    WHERE owner_uid = ${ownerUid}
+    ORDER BY created_at ASC, name ASC
+  `;
+  return rows.map((row) => mapGoal(row as Record<string, unknown>));
+}
+
+function mapBudget(row: Record<string, unknown>) {
+  return {
+    id: String(row.id),
+    ownerId: String(row.owner_uid),
+    month: String(row.month),
+    categoryId: String(row.category_id),
+    limitAmount: Number(row.limit_amount ?? 0),
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+async function getNeonBudgets(ownerUid: string) {
+  const rows = await sql`
+    SELECT id, owner_uid, month, category_id, limit_amount, created_at, updated_at
+    FROM mufinance.budgets
+    WHERE owner_uid = ${ownerUid}
+    ORDER BY month DESC, category_id ASC
+  `;
+  return rows.map((row) => mapBudget(row as Record<string, unknown>));
+}
+
+function mapTransferRecord(row: Record<string, unknown>) {
+  return {
+    id: String(row.id),
+    ownerId: String(row.owner_uid),
+    direction: String(row.direction),
+    transferId: String(row.transfer_id),
+    amount: Number(row.amount ?? 0),
+    contactName: row.contact_name ?? null,
+    contactUsername: row.contact_username ?? null,
+    contactAvatar: row.contact_avatar ?? null,
+    note: row.note ?? null,
+    status: String(row.status ?? "completed"),
+    createdAt: row.created_at,
+  };
+}
+
+async function getNeonTransferRecords(ownerUid: string) {
+  const rows = await sql`
+    SELECT id, owner_uid, direction, transfer_id, amount, contact_name,
+           contact_username, contact_avatar, note, status, created_at
+    FROM mufinance.transfer_records
+    WHERE owner_uid = ${ownerUid}
+    ORDER BY created_at DESC
+  `;
+  return rows.map((row) => mapTransferRecord(row as Record<string, unknown>));
+}
+
+function accountDelta(type: string, amount: number) {
+  if (type === "income") return amount;
+  if (type === "expense") return -amount;
+  return 0;
+}
+
+function transactionColumns(data: ReturnType<typeof transactionInputSchema.parse>) {
+  return {
+    date: data.date,
+    payee: data.payee,
+    category: data.category,
+    accountId: data.accountId,
+    destinationAccountId: data.destinationAccountId ?? null,
+    amount: data.amount,
+    type: data.type,
+    status: data.status,
+    sourceType: data.sourceType,
+    sourceId: data.sourceId ?? null,
+    invoiceId: data.invoiceId ?? null,
+    notes: data.notes ?? null,
+    installmentNumber: data.installmentNumber ?? null,
+    installmentTotal: data.installmentTotal ?? null,
+    installmentGroupId: data.installmentGroupId ?? null,
+  };
+}
+
 export async function updateAccount(id: string, input: unknown) {
   const user = await requireSessionUser();
   const data = accountInputSchema.parse(input);
   const { createAdjustment, ...cleanData } = data;
-  const reference = await findOwnedReference(["accounts"], id, user.uid);
-  const currentSnapshot = await reference.get();
-  const currentBalance = numericAmount(currentSnapshot.data()?.balance);
+  const current = await getNeonAccount(id, user.uid);
+  const currentBalance = numericAmount(current.balance);
   const difference = Number((cleanData.balance - currentBalance).toFixed(2));
-  const now = timestamp();
-  const accountPayload = { ...cleanData, ownerId: user.uid, updatedAt: now };
-  const batch = getAdminFirestore().batch();
-  batch.set(reference, accountPayload, { merge: true });
+  const accountPayload = { ...cleanData, ownerId: user.uid };
+
+  await sql`
+    UPDATE mufinance.accounts
+    SET name = ${cleanData.name}, type = ${cleanData.type}, balance = ${cleanData.balance},
+        color = ${cleanData.color}, icon = ${cleanData.icon}, currency = ${cleanData.currency},
+        updated_at = now()
+    WHERE id = ${id} AND owner_uid = ${user.uid}
+  `;
 
   if (difference !== 0 && createAdjustment !== false) {
-    const adjustmentReference = getAdminFirestore().collection("transactions").doc();
-    batch.set(adjustmentReference, {
-      date: now.slice(0, 10),
-      payee: "Ajuste de saldo",
-      category: "Ajuste",
-      accountId: id,
-      amount: Math.abs(difference),
-      type: difference > 0 ? "income" : "expense",
-      status: "completed",
-      sourceType: "account",
-      sourceId: id,
-      notes: `Saldo ajustado de ${currentBalance.toFixed(2)} para ${cleanData.balance.toFixed(2)}.`,
-      isSystemEntry: true,
-      ownerId: user.uid,
-      createdAt: now,
-      updatedAt: now,
-    });
+    await sql`
+      INSERT INTO mufinance.transactions
+        (id, owner_uid, account_id, date, payee, category, amount, type, status,
+         source_type, source_id, notes, is_system_entry)
+      VALUES
+        (${crypto.randomUUID()}, ${user.uid}, ${id}, CURRENT_DATE::text, 'Ajuste de saldo',
+         'Ajuste', ${Math.abs(difference)}, ${difference > 0 ? "income" : "expense"},
+         'completed', 'account', ${id},
+         ${`Saldo ajustado de ${currentBalance.toFixed(2)} para ${cleanData.balance.toFixed(2)}.`}, true)
+    `;
   }
 
-  await batch.commit();
   revalidatePath("/");
   return { id, ...accountPayload, adjustment: difference };
 }
@@ -158,74 +350,136 @@ export async function updateAccount(id: string, input: unknown) {
 export async function createAccount(input: unknown) {
   const user = await requireSessionUser();
   const data = accountInputSchema.parse(input);
-  const db = getAdminFirestore();
-  const reference = db.collection("accounts").doc();
-  const payload = { ...data, ownerId: user.uid, createdAt: timestamp(), updatedAt: timestamp() };
-  await reference.set(payload);
+  const id = crypto.randomUUID();
+  const payload = { ...data, ownerId: user.uid };
+  await sql`
+    INSERT INTO mufinance.accounts
+      (id, owner_uid, name, type, balance, currency, color, icon)
+    VALUES
+      (${id}, ${user.uid}, ${data.name}, ${data.type}, ${data.balance}, ${data.currency}, ${data.color}, ${data.icon})
+  `;
   revalidatePath("/");
-  return { id: reference.id, ...payload };
+  return { id, ...payload };
 }
 
 export async function createCreditCard(input: unknown) {
   const user = await requireSessionUser();
   const data = (await import("../lib/finance/schemas")).creditCardInputSchema.parse(input);
-  const db = getAdminFirestore();
-  const reference = db.collection("creditCards").doc();
-  const payload = { ...data, balance: "R$ 0,00", dueDate: `vence em ${data.dueDay}`, ownerId: user.uid, createdAt: timestamp(), updatedAt: timestamp() };
-  await reference.set(payload);
+  const id = crypto.randomUUID();
+  const payload = { ...data, balance: "R$ 0,00", dueDate: `vence em ${data.dueDay}`, ownerId: user.uid };
+  await sql`
+    INSERT INTO mufinance.credit_cards
+      (id, owner_uid, name, last4, brand, color, credit_limit, balance, closing_day, due_day, due_date)
+    VALUES
+      (${id}, ${user.uid}, ${data.name}, ${data.last4}, ${data.brand}, ${data.color}, ${data.limit}, 'R$ 0,00', ${data.closingDay}, ${data.dueDay}, ${payload.dueDate})
+  `;
   revalidatePath("/");
-  return { id: reference.id, ...payload };
+  return { id, ...payload };
+}
+
+export async function updateCreditCard(id: string, input: unknown) {
+  const user = await requireSessionUser();
+  const data = (await import("../lib/finance/schemas")).creditCardInputSchema.parse(input);
+  const rows = await sql`
+    UPDATE mufinance.credit_cards
+    SET name = ${data.name}, last4 = ${data.last4}, brand = ${data.brand}, color = ${data.color},
+        credit_limit = ${data.limit}, closing_day = ${data.closingDay}, due_day = ${data.dueDay},
+        due_date = ${`vence em ${data.dueDay}`}, updated_at = now()
+    WHERE id = ${id} AND owner_uid = ${user.uid}
+    RETURNING id
+  `;
+  if (!rows[0]) throw new Error("Cartão não encontrado.");
+  revalidatePath("/");
+  return { id, ...data };
 }
 
 export async function updateTransaction(id: string, input: unknown) {
   const user = await requireSessionUser();
   const data = transactionInputSchema.parse(input);
-  const db = getAdminFirestore();
-  const reference = await findOwnedReference(["transactions"], id, user.uid);
+  const current = await getNeonTransaction(id, user.uid);
+  const scope = typeof input === "object" && input !== null && "scope" in input ? input.scope : "one";
+  if (scope === "series" || scope === "selected") {
+    const group = current.installmentGroupId;
+    if (scope === "series" && (typeof group !== "string" || !group.startsWith("fixed_"))) throw new Error("Esta transação não possui uma série fixa identificada.");
+    const ids = scope === "selected" && typeof input === "object" && input !== null && "selectedIds" in input && Array.isArray(input.selectedIds) ? input.selectedIds : [];
+    if (scope === "selected" && (ids.length < 1 || ids.length > 119 || !ids.every((value) => typeof value === "string" && value.length <= 120))) throw new Error("Selecione de 1 a 119 ocorrências válidas.");
+    if (scope === "selected" && (current.installmentGroupId || current.destinationAccountId)) throw new Error("Não é possível agrupar esta transação.");
+    if (data.accountId !== current.accountId || data.sourceType !== "account" || (current.sourceType && current.sourceType !== "account")) throw new Error("A edição da série não permite trocar a conta ou a origem.");
+    const targetIds = JSON.stringify([id, ...ids]);
+    const nextDelta = accountDelta(data.type, data.amount);
+    await sql`
+      WITH previous AS MATERIALIZED (
+        SELECT id, account_id, amount, type
+        FROM mufinance.transactions
+        WHERE owner_uid = ${user.uid} AND (
+          (${scope === "series"} AND installment_group_id = ${typeof group === "string" ? group : ""}) OR
+          (${scope === "selected"} AND id IN (SELECT jsonb_array_elements_text(${targetIds}::jsonb))
+           AND installment_group_id IS NULL AND destination_account_id IS NULL
+           AND account_id = ${String(current.accountId ?? "")}
+           AND payee = ${current.payee} AND category = ${current.category} AND type = ${current.type}
+           AND (source_type = 'account' OR source_type IS NULL))
+        )
+        FOR UPDATE
+      ), changed AS (
+        UPDATE mufinance.transactions AS t
+        SET payee = ${data.payee}, category = ${data.category}, amount = ${data.amount},
+            type = ${data.type}, notes = ${data.notes ?? null},
+            date = CASE WHEN t.id = ${id} THEN ${data.date} ELSE t.date END,
+            status = CASE WHEN t.id = ${id} THEN ${data.status} ELSE t.status END,
+            updated_at = now()
+        FROM previous p WHERE t.id = p.id AND t.owner_uid = ${user.uid}
+        RETURNING p.account_id, p.amount AS old_amount, p.type AS old_type
+      ), deltas AS (
+        SELECT account_id, sum(${nextDelta}::numeric - CASE old_type WHEN 'income' THEN old_amount WHEN 'expense' THEN -old_amount ELSE 0 END) AS delta
+        FROM changed WHERE account_id IS NOT NULL GROUP BY account_id
+      )
+      UPDATE mufinance.accounts a SET balance = a.balance + d.delta, updated_at = now()
+      FROM deltas d WHERE a.id = d.account_id AND a.owner_uid = ${user.uid}
+    `;
+    revalidatePath("/");
+    return { id, ...data };
+  }
+  const oldAccountId = String(current.accountId ?? "");
+  const newAccount = await getNeonAccount(data.accountId, user.uid);
+  const oldDelta = accountDelta(String(current.type), Number(current.amount));
+  const newDelta = accountDelta(data.type, data.amount);
+  const columns = transactionColumns(data);
+  const queries = [];
 
-  await db.runTransaction(async (txn) => {
-    // ── FASE 1: todas as leituras (Firestore exige get antes de write) ──
-    const current = await txn.get(reference);
-    if (!current.exists) throw new Error("Transação não encontrada.");
-
-    const oldType = String(current.data()?.type ?? "");
-    const oldAmount = numericAmount(current.data()?.amount);
-    const oldAccountId = String(current.data()?.accountId ?? "");
-    const sameAccount = oldAccountId === data.accountId;
-
-    const oldAccountRef = oldAccountId ? db.collection("accounts").doc(oldAccountId) : null;
-    const newAccountRef = (data.accountId && !sameAccount) ? db.collection("accounts").doc(data.accountId) : null;
-
-    const oldAccountSnap = oldAccountRef ? await txn.get(oldAccountRef) : null;
-    const newAccountSnap = newAccountRef ? await txn.get(newAccountRef) : null;
-    // Se mesma conta, reutilizar o snapshot já lido
-    const sameAccountSnap = sameAccount && oldAccountSnap ? oldAccountSnap : null;
-
-    // ── FASE 2: todas as escritas ──
-
-    // Reverte efeito antigo e aplica novo (mesma conta)
-    if (sameAccount && sameAccountSnap?.exists && (sameAccountSnap.data()?.ownerId === user.uid || sameAccountSnap.data()?.uid === user.uid)) {
-      const balance = numericAmount(sameAccountSnap.data()?.balance);
-      const revert = oldType === "income" ? -oldAmount : oldType === "expense" ? oldAmount : 0;
-      const apply = data.type === "income" ? data.amount : data.type === "expense" ? -data.amount : 0;
-      txn.update(oldAccountRef!, { balance: Number((balance + revert + apply).toFixed(2)), updatedAt: timestamp() });
-    } else {
-      // Reverte efeito antigo na conta antiga
-      if (oldAccountSnap?.exists && (oldAccountSnap.data()?.ownerId === user.uid || oldAccountSnap.data()?.uid === user.uid) && (oldType === "income" || oldType === "expense")) {
-        const oldBalance = numericAmount(oldAccountSnap.data()?.balance);
-        const revert = oldType === "income" ? -oldAmount : oldAmount;
-        txn.update(oldAccountRef!, { balance: Number((oldBalance + revert).toFixed(2)), updatedAt: timestamp() });
-      }
-      // Aplica efeito novo na conta nova
-      if (newAccountSnap?.exists && (newAccountSnap.data()?.ownerId === user.uid || newAccountSnap.data()?.uid === user.uid) && (data.type === "income" || data.type === "expense")) {
-        const newBalance = numericAmount(newAccountSnap.data()?.balance);
-        const delta = data.type === "income" ? data.amount : -data.amount;
-        txn.update(newAccountRef!, { balance: Number((newBalance + delta).toFixed(2)), updatedAt: timestamp() });
-      }
+  if (oldAccountId === data.accountId) {
+    queries.push(sql`
+      UPDATE mufinance.accounts
+      SET balance = balance + ${newDelta - oldDelta}, updated_at = now()
+      WHERE id = ${data.accountId} AND owner_uid = ${user.uid}
+    `);
+  } else {
+    if (oldAccountId && oldDelta !== 0) {
+      queries.push(sql`
+        UPDATE mufinance.accounts
+        SET balance = balance - ${oldDelta}, updated_at = now()
+        WHERE id = ${oldAccountId} AND owner_uid = ${user.uid}
+      `);
     }
-
-    txn.set(reference, { ...data, ownerId: user.uid, updatedAt: timestamp() }, { merge: true });
-  });
+    if (newDelta !== 0) {
+      queries.push(sql`
+        UPDATE mufinance.accounts
+        SET balance = balance + ${newDelta}, updated_at = now()
+        WHERE id = ${newAccount.id} AND owner_uid = ${user.uid}
+      `);
+    }
+  }
+  queries.push(sql`
+    UPDATE mufinance.transactions
+    SET date = ${columns.date}, payee = ${columns.payee}, category = ${columns.category},
+        account_id = ${columns.accountId}, destination_account_id = ${columns.destinationAccountId},
+        amount = ${columns.amount}, type = ${columns.type}, status = ${columns.status},
+        source_type = ${columns.sourceType}, source_id = ${columns.sourceId},
+        invoice_id = ${columns.invoiceId}, notes = ${columns.notes},
+        installment_number = ${columns.installmentNumber}, installment_total = ${columns.installmentTotal},
+        installment_group_id = ${columns.installmentGroupId}, updated_at = now()
+    WHERE id = ${id} AND owner_uid = ${user.uid}
+  `);
+  await sql.transaction(queries);
 
   revalidatePath("/");
   return { id, ...data };
@@ -234,78 +488,72 @@ export async function updateTransaction(id: string, input: unknown) {
 export async function createTransaction(input: unknown) {
   const user = await requireSessionUser();
   const data = transactionInputSchema.parse(input);
-  const db = getAdminFirestore();
-  const reference = db.collection("transactions").doc();
-  const payload = { ...data, ownerId: user.uid, createdAt: timestamp(), updatedAt: timestamp() };
+  const columns = transactionColumns(data);
+  const account = await getNeonAccount(data.accountId, user.uid);
+  const id = crypto.randomUUID();
 
   if (data.type === "transfer" && data.destinationAccountId) {
-    // Transferência: debita conta origem e credita conta destino atomicamente
-    await db.runTransaction(async (txn) => {
-      const [originSnap, destSnap] = await Promise.all([
-        txn.get(db.collection("accounts").doc(data.accountId)),
-        txn.get(db.collection("accounts").doc(data.destinationAccountId!)),
+    let destinationAccount;
+    try {
+      destinationAccount = await getNeonAccount(data.destinationAccountId, user.uid);
+    } catch {
+      // Pagamento de fatura: o destino é um cartão, não uma conta financeira.
+      await getNeonCreditCard(data.destinationAccountId, user.uid);
+      await sql.transaction([
+        sql`UPDATE mufinance.accounts SET balance = balance - ${data.amount}, updated_at = now() WHERE id = ${account.id} AND owner_uid = ${user.uid}`,
+        sql`INSERT INTO mufinance.transactions
+          (id, owner_uid, account_id, destination_account_id, date, payee, category, amount, type, status, source_type, source_id, invoice_id, notes, installment_number, installment_total, installment_group_id)
+          VALUES (${id}, ${user.uid}, ${columns.accountId}, ${data.destinationAccountId}, ${columns.date}, ${columns.payee}, ${columns.category}, ${columns.amount}, 'expense', ${columns.status}, ${columns.sourceType}, ${columns.sourceId}, ${columns.invoiceId}, ${columns.notes}, ${columns.installmentNumber}, ${columns.installmentTotal}, ${columns.installmentGroupId})`,
       ]);
-      if (!originSnap.exists || (originSnap.data()?.ownerId !== user.uid && originSnap.data()?.uid !== user.uid)) {
-        throw new Error("Conta de origem não encontrada ou sem permissão.");
-      }
-      if (!destSnap.exists || (destSnap.data()?.ownerId !== user.uid && destSnap.data()?.uid !== user.uid)) {
-        throw new Error("Conta de destino não encontrada ou sem permissão.");
-      }
-      const originBalance = numericAmount(originSnap.data()?.balance);
-      const destBalance = numericAmount(destSnap.data()?.balance);
-      txn.update(originSnap.ref, { balance: Number((originBalance - data.amount).toFixed(2)), updatedAt: timestamp() });
-      txn.update(destSnap.ref, { balance: Number((destBalance + data.amount).toFixed(2)), updatedAt: timestamp() });
-      // Salva dois registros espelhados: saída na origem e entrada no destino
-      const destTxnRef = db.collection("transactions").doc();
-      txn.set(reference, { ...payload, type: "expense" });
-      txn.set(destTxnRef, { ...payload, id: destTxnRef.id, accountId: data.destinationAccountId, destinationAccountId: data.accountId, type: "income" });
-    });
+    }
+    if (destinationAccount) {
+      const destinationId = crypto.randomUUID();
+      await sql.transaction([
+        sql`UPDATE mufinance.accounts SET balance = balance - ${data.amount}, updated_at = now() WHERE id = ${account.id} AND owner_uid = ${user.uid}`,
+        sql`UPDATE mufinance.accounts SET balance = balance + ${data.amount}, updated_at = now() WHERE id = ${destinationAccount.id} AND owner_uid = ${user.uid}`,
+        sql`INSERT INTO mufinance.transactions
+          (id, owner_uid, account_id, destination_account_id, date, payee, category, amount, type, status, source_type, source_id, invoice_id, notes, installment_number, installment_total, installment_group_id)
+          VALUES (${id}, ${user.uid}, ${columns.accountId}, ${destinationAccount.id}, ${columns.date}, ${columns.payee}, ${columns.category}, ${columns.amount}, 'expense', ${columns.status}, ${columns.sourceType}, ${columns.sourceId}, ${columns.invoiceId}, ${columns.notes}, ${columns.installmentNumber}, ${columns.installmentTotal}, ${columns.installmentGroupId})`,
+        sql`INSERT INTO mufinance.transactions
+          (id, owner_uid, account_id, destination_account_id, date, payee, category, amount, type, status, source_type, source_id, invoice_id, notes, installment_number, installment_total, installment_group_id)
+          VALUES (${destinationId}, ${user.uid}, ${destinationAccount.id}, ${account.id}, ${columns.date}, ${columns.payee}, ${columns.category}, ${columns.amount}, 'income', ${columns.status}, ${columns.sourceType}, ${columns.sourceId}, ${columns.invoiceId}, ${columns.notes}, ${columns.installmentNumber}, ${columns.installmentTotal}, ${columns.installmentGroupId})`,
+      ]);
+    }
   } else if (data.type === "income" || data.type === "expense") {
-    // Receita ou despesa: atualiza saldo da conta atomicamente
-    await db.runTransaction(async (txn) => {
-      const accountRef = db.collection("accounts").doc(data.accountId);
-      const accountSnap = await txn.get(accountRef);
-      if (accountSnap.exists && (accountSnap.data()?.ownerId === user.uid || accountSnap.data()?.uid === user.uid)) {
-        const currentBalance = numericAmount(accountSnap.data()?.balance);
-        const delta = data.type === "income" ? data.amount : -data.amount;
-        txn.update(accountRef, { balance: Number((currentBalance + delta).toFixed(2)), updatedAt: timestamp() });
-      }
-      txn.set(reference, payload);
-    });
+    const delta = accountDelta(data.type, data.amount);
+    await sql.transaction([
+      sql`UPDATE mufinance.accounts SET balance = balance + ${delta}, updated_at = now() WHERE id = ${account.id} AND owner_uid = ${user.uid}`,
+      sql`INSERT INTO mufinance.transactions
+        (id, owner_uid, account_id, destination_account_id, date, payee, category, amount, type, status, source_type, source_id, invoice_id, notes, installment_number, installment_total, installment_group_id)
+        VALUES (${id}, ${user.uid}, ${columns.accountId}, ${columns.destinationAccountId}, ${columns.date}, ${columns.payee}, ${columns.category}, ${columns.amount}, ${columns.type}, ${columns.status}, ${columns.sourceType}, ${columns.sourceId}, ${columns.invoiceId}, ${columns.notes}, ${columns.installmentNumber}, ${columns.installmentTotal}, ${columns.installmentGroupId})`,
+    ]);
   } else {
-    await reference.set(payload);
+    await sql`
+      INSERT INTO mufinance.transactions
+        (id, owner_uid, account_id, destination_account_id, date, payee, category, amount, type, status, source_type, source_id, invoice_id, notes, installment_number, installment_total, installment_group_id)
+      VALUES (${id}, ${user.uid}, ${columns.accountId}, ${columns.destinationAccountId}, ${columns.date}, ${columns.payee}, ${columns.category}, ${columns.amount}, ${columns.type}, ${columns.status}, ${columns.sourceType}, ${columns.sourceId}, ${columns.invoiceId}, ${columns.notes}, ${columns.installmentNumber}, ${columns.installmentTotal}, ${columns.installmentGroupId})
+    `;
   }
 
   revalidatePath("/");
-  return { id: reference.id, ...payload };
+  return { id, ...data, ownerId: user.uid };
 }
 
 export async function deleteTransaction(id: string) {
   const user = await requireSessionUser();
-  const db = getAdminFirestore();
-  const reference = await findOwnedReference(["transactions"], id, user.uid);
-
-  await db.runTransaction(async (txn) => {
-    const snap = await txn.get(reference);
-    if (!snap.exists) throw new Error("Transação não encontrada.");
-
-    const type = String(snap.data()?.type ?? "");
-    const amount = numericAmount(snap.data()?.amount);
-    const accountId = String(snap.data()?.accountId ?? "");
-
-    // Reverte o efeito da transação no saldo da conta
-    if (accountId && (type === "income" || type === "expense")) {
-      const accountRef = db.collection("accounts").doc(accountId);
-      const accountSnap = await txn.get(accountRef);
-      if (accountSnap.exists && (accountSnap.data()?.ownerId === user.uid || accountSnap.data()?.uid === user.uid)) {
-        const currentBalance = numericAmount(accountSnap.data()?.balance);
-        const revert = type === "income" ? -amount : amount;
-        txn.update(accountRef, { balance: Number((currentBalance + revert).toFixed(2)), updatedAt: timestamp() });
-      }
-    }
-
-    txn.delete(reference);
-  });
+  const current = await getNeonTransaction(id, user.uid);
+  const accountId = String(current.accountId ?? "");
+  const delta = accountDelta(String(current.type), Number(current.amount));
+  const queries = [];
+  if (accountId && delta !== 0) {
+    queries.push(sql`
+      UPDATE mufinance.accounts
+      SET balance = balance - ${delta}, updated_at = now()
+      WHERE id = ${accountId} AND owner_uid = ${user.uid}
+    `);
+  }
+  queries.push(sql`DELETE FROM mufinance.transactions WHERE id = ${id} AND owner_uid = ${user.uid}`);
+  await sql.transaction(queries);
 
   revalidatePath("/");
   return { id, deleted: true };
@@ -314,58 +562,75 @@ export async function deleteTransaction(id: string) {
 export async function createCategory(input: unknown) {
   const user = await requireSessionUser();
   const data = categoryInputSchema.parse(input);
-  const db = getAdminFirestore();
-  const reference = db.collection("categories").doc();
-  const payload = { ...data, isDefault: false, ownerId: user.uid, usage: 0, createdAt: timestamp(), updatedAt: timestamp() };
-  await reference.set(payload);
+  const id = crypto.randomUUID();
+  const payload = { ...data, isDefault: false, ownerId: user.uid, usage: 0 };
+  await sql`
+    INSERT INTO mufinance.categories
+      (id, owner_uid, name, type, tone, active, is_default, usage)
+    VALUES
+      (${id}, ${user.uid}, ${data.name}, ${data.type}, ${data.tone}, ${data.active}, false, 0)
+  `;
   revalidatePath("/");
-  return { id: reference.id, ...payload };
+  return { id, ...payload };
 }
 
 export async function updateCategory(id: string, input: unknown) {
   const user = await requireSessionUser();
   const data = categoryInputSchema.parse(input);
-  const db = getAdminFirestore();
-  const reference = db.collection("categories").doc(id);
-  const snapshot = await reference.get();
-  if (!snapshot.exists || snapshot.data()?.ownerId !== user.uid) throw new Error("Categoria não encontrada.");
-  // Categorias padrão podem ser renomeadas mas nunca virar não-padrão
-  const existing = snapshot.data() ?? {};
-  const merged = { ...data, isDefault: existing.isDefault ?? false, updatedAt: timestamp() };
-  await reference.set(merged, { merge: true });
+  const rows = await sql`
+    SELECT is_default, usage FROM mufinance.categories
+    WHERE id = ${id} AND owner_uid = ${user.uid}
+    LIMIT 1
+  `;
+  if (!rows[0]) throw new Error("Categoria não encontrada.");
+  await sql`
+    UPDATE mufinance.categories
+    SET name = ${data.name}, type = ${data.type}, tone = ${data.tone},
+        active = ${data.active}, updated_at = now()
+    WHERE id = ${id} AND owner_uid = ${user.uid}
+  `;
   revalidatePath("/");
-  return { id, ...merged };
+  return { id, ...data, isDefault: Boolean(rows[0].is_default), usage: Number(rows[0].usage ?? 0), ownerId: user.uid };
 }
 
 export async function deleteCategory(id: string) {
   const user = await requireSessionUser();
-  const db = getAdminFirestore();
-  const reference = db.collection("categories").doc(id);
-  const snapshot = await reference.get();
-  if (!snapshot.exists || snapshot.data()?.ownerId !== user.uid) throw new Error("Categoria não encontrada.");
-  if (snapshot.data()?.isDefault === true) throw new Error("Categorias padrão não podem ser excluídas. Você pode apenas renomeá-las (ex: Casa → Aluguel).");
-  await reference.delete();
+  const rows = await sql`
+    SELECT is_default FROM mufinance.categories
+    WHERE id = ${id} AND owner_uid = ${user.uid}
+    LIMIT 1
+  `;
+  if (!rows[0]) throw new Error("Categoria não encontrada.");
+  if (Boolean(rows[0].is_default)) throw new Error("Categorias padrão não podem ser excluídas. Você pode apenas renomeá-las (ex: Casa → Aluguel).");
+  await sql`DELETE FROM mufinance.categories WHERE id = ${id} AND owner_uid = ${user.uid}`;
   revalidatePath("/");
   return { id, deleted: true };
 }
 
 export async function seedDefaultCategories() {
   const user = await requireSessionUser();
-  const db = getAdminFirestore();
   const { defaultFinanceCategories } = await import("@/lib/financeData");
-  const existing = await db.collection("categories").where("ownerId", "==", user.uid).get();
-  const existingNames = new Set(existing.docs.map((d) => `${String(d.data().type)}:${String(d.data().name).trim().toLowerCase()}`));
+  const existing = await sql`
+    SELECT type, name FROM mufinance.categories WHERE owner_uid = ${user.uid}
+  `;
+  const existingNames = new Set(existing.map((row) => `${String(row.type)}:${String(row.name).trim().toLowerCase()}`));
   let created = 0;
-  const batch = db.batch();
+  const queries = [];
   for (const cat of defaultFinanceCategories) {
     const key = `${cat.type}:${cat.name.trim().toLowerCase()}`;
     if (!existingNames.has(key)) {
-      const ref = db.collection("categories").doc();
-      batch.set(ref, { ...cat, isDefault: true, ownerId: user.uid, createdAt: timestamp(), updatedAt: timestamp() });
+      const id = `${user.uid}:${cat.id}`;
+      queries.push(sql`
+        INSERT INTO mufinance.categories
+          (id, owner_uid, name, type, tone, active, is_default, usage)
+        VALUES
+          (${id}, ${user.uid}, ${cat.name}, ${cat.type}, ${cat.tone}, ${cat.active}, true, 0)
+        ON CONFLICT (id) DO NOTHING
+      `);
       created++;
     }
   }
-  if (created > 0) await batch.commit();
+  if (queries.length > 0) await sql.transaction(queries);
   revalidatePath("/");
   return { created };
 }
@@ -373,213 +638,132 @@ export async function seedDefaultCategories() {
 export async function createGoal(input: unknown) {
   const user = await requireSessionUser();
   const data = goalInputSchema.parse(input);
-  const db = getAdminFirestore();
-  const reference = db.collection("goals").doc();
-  const payload = { ...data, ownerId: user.uid, createdAt: timestamp(), updatedAt: timestamp() };
-  await reference.set(payload);
+  const id = crypto.randomUUID();
+  const payload = { ...data, ownerId: user.uid };
+  await sql`
+    INSERT INTO mufinance.goals
+      (id, owner_uid, name, target_amount, current_amount, due_date, color, icon_name)
+    VALUES
+      (${id}, ${user.uid}, ${data.name}, ${data.targetAmount}, ${data.currentAmount}, ${data.dueDate ?? null}, ${data.color}, 'target')
+  `;
   revalidatePath("/");
-  return { id: reference.id, ...payload };
+  return { id, ...payload };
 }
 
 export async function upsertBudget(input: unknown) {
   const user = await requireSessionUser();
   const data = budgetInputSchema.parse(input);
-  const db = getAdminFirestore();
   const id = `${user.uid}_${data.month}_${data.categoryId}`;
-  const reference = db.collection("budgets").doc(id);
-  const payload = { ...data, ownerId: user.uid, createdAt: timestamp(), updatedAt: timestamp() };
-  await reference.set(payload, { merge: true });
+  const payload = { ...data, ownerId: user.uid };
+  await sql`
+    INSERT INTO mufinance.budgets
+      (id, owner_uid, month, category_id, limit_amount)
+    VALUES
+      (${id}, ${user.uid}, ${data.month}, ${data.categoryId}, ${data.limitAmount})
+    ON CONFLICT (owner_uid, month, category_id)
+    DO UPDATE SET limit_amount = EXCLUDED.limit_amount, updated_at = now()
+  `;
   revalidatePath("/");
-  return { id: reference.id, ...payload };
+  return { id, ...payload };
 }
 
 export async function deleteAccount(id: string) {
   const user = await requireSessionUser();
-  const db = getAdminFirestore();
-  const ref = await findOwnedReference(["accounts"], id, user.uid);
-  const snap = await ref.get();
-  const data = snap.data() ?? {};
-  const name = String(data?.name ?? "").trim().toLowerCase();
+  const account = await getNeonAccount(id, user.uid);
+  const name = account.name.trim().toLowerCase();
   if (name === "carteira") throw new Error("A conta Carteira não pode ser excluída. Ela é obrigatória.");
-  // Impede deixar zero contas — deve restar ao menos 1 (Carteira)
-  const [byOwner, byUid] = await Promise.all([
-    db.collection("accounts").where("ownerId", "==", user.uid).get(),
-    db.collection("accounts").where("uid", "==", user.uid).get(),
-  ]);
-  const unique = new Set([...byOwner.docs, ...byUid.docs].map((d) => d.id));
-  if (unique.size <= 1) throw new Error("Não é possível excluir a última conta. Mantenha ao menos a Carteira.");
+  const [{ count }] = await sql`
+    SELECT count(*)::int AS count FROM mufinance.accounts WHERE owner_uid = ${user.uid}
+  `;
+  if (Number(count) <= 1) throw new Error("Não é possível excluir a última conta. Mantenha ao menos a Carteira.");
 
-  // Se houver transações vinculadas, impede exclusão (ou move para Carteira)
-  const txSnap = await db.collection("transactions").where("ownerId", "==", user.uid).where("accountId", "==", id).limit(1).get()
-    .catch(async () => db.collection("transactions").where("accountId", "==", id).limit(1).get());
-  if (!txSnap.empty) throw new Error("Esta conta possui transações. Apague ou mova as transações antes de excluir.");
+  const [{ count: transactionCount }] = await sql`
+    SELECT count(*)::int AS count FROM mufinance.transactions
+    WHERE owner_uid = ${user.uid} AND account_id = ${id}
+  `;
+  if (Number(transactionCount) > 0) throw new Error("Esta conta possui transações. Apague ou mova as transações antes de excluir.");
 
-  await ref.delete();
+  await sql`DELETE FROM mufinance.accounts WHERE id = ${id} AND owner_uid = ${user.uid}`;
   revalidatePath("/");
   return { id, deleted: true };
 }
 
 export async function keepOnlyOneCheckingAccount() {
   const user = await requireSessionUser();
-  const db = getAdminFirestore();
   const uid = user.uid;
-  const [byOwner, byUid] = await Promise.all([
-    db.collection("accounts").where("ownerId", "==", uid).get(),
-    db.collection("accounts").where("uid", "==", uid).get(),
-  ]);
-  const map = new Map<string, FirebaseFirestore.QueryDocumentSnapshot>();
-  for (const d of [...byOwner.docs, ...byUid.docs]) map.set(d.id, d);
-  const all = [...map.values()];
+  const all = await sql`
+    SELECT id, name, type, created_at
+    FROM mufinance.accounts
+    WHERE owner_uid = ${uid}
+    ORDER BY created_at ASC, id ASC
+  `;
   // Carteira sempre permanece (wallet)
-  const carteira = all.find((d) => String(d.data()?.name ?? "").trim().toLowerCase() === "carteira" || String(d.data()?.type ?? "") === "wallet");
-  const checking = all.filter((d) => String(d.data()?.type ?? "") === "checking" || String(d.data()?.type ?? "").toLowerCase().includes("corrente"));
+  const carteira = all.find((row) => String(row.name ?? "").trim().toLowerCase() === "carteira" || String(row.type ?? "") === "wallet");
+  const checking = all.filter((row) => String(row.type ?? "") === "checking" || String(row.type ?? "").toLowerCase().includes("corrente"));
   // Se não houver checking com type exato, trata qualquer não-Carteira como corrente
-  const candidates = checking.length > 0 ? checking : all.filter((d) => d.id !== carteira?.id);
+  const candidates = checking.length > 0 ? checking : all.filter((row) => row.id !== carteira?.id);
   if (candidates.length <= 1) return { success: true, kept: candidates[0]?.id ?? carteira?.id ?? null, deleted: 0, message: "Já há apenas 1 conta corrente." };
 
   // Mantém a mais antiga (createdAt) como padrão
-  const sorted = [...candidates].sort((a, b) => String(a.data()?.createdAt ?? a.id).localeCompare(String(b.data()?.createdAt ?? b.id)));
+  const sorted = [...candidates].sort((a, b) => String(a.created_at ?? a.id).localeCompare(String(b.created_at ?? b.id)));
   const keep = sorted[0];
   const toDelete = sorted.slice(1);
 
-  // Verifica se alguma das que serão excluídas tem transações — move para a mantida
-  for (const doc of toDelete) {
-    const txByOwner = await db.collection("transactions").where("ownerId", "==", uid).where("accountId", "==", doc.id).get().catch(() => null);
-    const txByUid = await db.collection("transactions").where("uid", "==", uid).where("accountId", "==", doc.id).get().catch(() => null);
-    const txs = [...(txByOwner?.docs ?? []), ...(txByUid?.docs ?? [])];
-    if (txs.length > 0) {
-      const batch = db.batch();
-      for (const tx of txs.slice(0, 400)) batch.update(tx.ref, { accountId: keep.id, updatedAt: timestamp() });
-      await batch.commit();
-    }
+  // Mantém as transações vinculadas apontando para a conta preservada.
+  for (const account of toDelete) {
+    await sql`
+      UPDATE mufinance.transactions
+      SET account_id = ${keep.id}, updated_at = now()
+      WHERE owner_uid = ${uid} AND account_id = ${account.id}
+    `;
+    await sql`
+      DELETE FROM mufinance.accounts
+      WHERE owner_uid = ${uid} AND id = ${account.id}
+    `;
   }
-
-  const batch = db.batch();
-  for (const doc of toDelete) batch.delete(doc.ref);
-  await batch.commit();
   revalidatePath("/");
-  return { success: true, kept: keep.id, keptName: String(keep.data()?.name ?? ""), deleted: toDelete.length, deletedIds: toDelete.map((d) => d.id) };
+  return { success: true, kept: keep.id, keptName: String(keep.name ?? ""), deleted: toDelete.length, deletedIds: toDelete.map((row) => row.id) };
 }
 
 export async function deleteAllTransactions() {
   const user = await requireSessionUser();
-  const db = getAdminFirestore();
-  
-  const txnsByOwnerId = await db.collection("transactions").where("ownerId", "==", user.uid).get();
-  const txnsByUid = await db.collection("transactions").where("uid", "==", user.uid).get();
-  const txnsByUserId = await db.collection("transactions").where("userId", "==", user.uid).get();
-  
-  const accsByOwnerId = await db.collection("accounts").where("ownerId", "==", user.uid).get();
-  const accsByUid = await db.collection("accounts").where("uid", "==", user.uid).get();
-  const accsByUserId = await db.collection("accounts").where("userId", "==", user.uid).get();
+  const [{ count }] = await sql`
+    SELECT count(*)::int AS count FROM mufinance.transactions WHERE owner_uid = ${user.uid}
+  `;
+  await sql.transaction([
+    sql`UPDATE mufinance.accounts SET balance = 0, updated_at = now() WHERE owner_uid = ${user.uid}`,
+    sql`DELETE FROM mufinance.transactions WHERE owner_uid = ${user.uid}`,
+  ]);
 
-  const operations: Array<{ ref: FirebaseFirestore.DocumentReference, data?: Record<string, unknown>, type: "update" | "delete" }> = [];
-  
-  const allAccounts = [...accsByOwnerId.docs, ...accsByUid.docs, ...accsByUserId.docs];
-  const allTransactions = [...txnsByOwnerId.docs, ...txnsByUid.docs, ...txnsByUserId.docs];
-  
-  // Zera os saldos - use um Map para evitar duplicatas (se o documento tiver ambos)
-  const uniqueAccounts = new Map<string, FirebaseFirestore.QueryDocumentSnapshot>();
-  allAccounts.forEach(doc => uniqueAccounts.set(doc.id, doc));
-  
-  const uniqueTransactions = new Map<string, FirebaseFirestore.QueryDocumentSnapshot>();
-  allTransactions.forEach(doc => uniqueTransactions.set(doc.id, doc));
-
-  uniqueAccounts.forEach(doc => operations.push({ ref: doc.ref, data: { balance: 0, updatedAt: timestamp() }, type: "update" }));
-  uniqueTransactions.forEach(doc => operations.push({ ref: doc.ref, type: "delete" }));
-  
-  const BATCH_SIZE = 400;
-  for (let i = 0; i < operations.length; i += BATCH_SIZE) {
-    const batch = db.batch();
-    const chunk = operations.slice(i, i + BATCH_SIZE);
-    for (const op of chunk) {
-      if (op.type === "update") batch.update(op.ref, op.data ?? {});
-      else batch.delete(op.ref);
-    }
-    await batch.commit();
-  }
-  
   revalidatePath("/");
-  return { success: true, count: uniqueTransactions.size };
+  return { success: true, count: Number(count) };
 }
 
 export async function deleteAllData() {
   const user = await requireSessionUser();
-  const db = getAdminFirestore();
   const uid = user.uid;
-
-  // Coleções que podem ser apagadas totalmente
-  const wipeCollections = ["transactions", "creditCards", "cards", "categories", "goals", "budgets", "budget"];
-  const allDocs: Array<{ ref: FirebaseFirestore.DocumentReference }> = [];
-  const seen = new Set<string>();
-
-  for (const col of wipeCollections) {
-    const [byOwner, byUid, byUserId] = await Promise.all([
-      db.collection(col).where("ownerId", "==", uid).get().catch(() => null),
-      db.collection(col).where("uid", "==", uid).get().catch(() => null),
-      db.collection(col).where("userId", "==", uid).get().catch(() => null),
-    ]);
-    for (const doc of [...(byOwner?.docs ?? []), ...(byUid?.docs ?? []), ...(byUserId?.docs ?? [])]) {
-      const key = `${col}/${doc.id}`;
-      if (!seen.has(key)) {
-        seen.add(key);
-        allDocs.push({ ref: doc.ref });
-      }
-    }
-  }
-
-  // Contas: regra de negócio — deve permanecer exatamente 1 conta padrão "Carteira" com saldo 0
-  // As demais são excluídas. A padrão é escolhida por nome "Carteira" (case-insensitive) ou a mais antiga.
-  const [accByOwner, accByUid, accByUserId] = await Promise.all([
-    db.collection("accounts").where("ownerId", "==", uid).get().catch(() => null),
-    db.collection("accounts").where("uid", "==", uid).get().catch(() => null),
-    db.collection("accounts").where("userId", "==", uid).get().catch(() => null),
+  const accounts = await sql`
+    SELECT id, name, type, created_at
+    FROM mufinance.accounts
+    WHERE owner_uid = ${uid}
+    ORDER BY CASE WHEN lower(name) = 'carteira' OR type = 'wallet' THEN 0 ELSE 1 END, created_at ASC
+    LIMIT 1
+  `;
+  const keepId = String(accounts[0]?.id ?? `wallet-${uid}`);
+  await sql.transaction([
+    sql`DELETE FROM mufinance.transactions WHERE owner_uid = ${uid}`,
+    sql`DELETE FROM mufinance.transfer_records WHERE owner_uid = ${uid}`,
+    sql`DELETE FROM mufinance.internal_transfers WHERE sender_uid = ${uid} OR recipient_uid = ${uid}`,
+    sql`DELETE FROM mufinance.credit_cards WHERE owner_uid = ${uid}`,
+    sql`DELETE FROM mufinance.categories WHERE owner_uid = ${uid}`,
+    sql`DELETE FROM mufinance.goals WHERE owner_uid = ${uid}`,
+    sql`DELETE FROM mufinance.budgets WHERE owner_uid = ${uid}`,
+    sql`DELETE FROM mufinance.accounts WHERE owner_uid = ${uid} AND id <> ${keepId}`,
+    sql`INSERT INTO mufinance.accounts (id, owner_uid, name, institution, type, balance, currency, color, icon, internal_wallet)
+        VALUES (${keepId}, ${uid}, 'Carteira', 'MuFinance', 'wallet', 0, 'BRL', 'mint', 'wallet', true)
+        ON CONFLICT (id) DO UPDATE SET name = 'Carteira', type = 'wallet', balance = 0, internal_wallet = true, updated_at = now()`,
   ]);
-  const accMap = new Map<string, FirebaseFirestore.QueryDocumentSnapshot>();
-  for (const doc of [...(accByOwner?.docs ?? []), ...(accByUid?.docs ?? []), ...(accByUserId?.docs ?? [])]) accMap.set(doc.id, doc);
-  const accounts = [...accMap.values()];
-
-  let keepRef: FirebaseFirestore.DocumentReference | null = null;
-  if (accounts.length > 0) {
-    const carteira = accounts.find((d) => String(d.data()?.name ?? "").trim().toLowerCase() === "carteira");
-    const chosen = carteira ?? [...accounts].sort((a, b) => String(a.data()?.createdAt ?? "").localeCompare(String(b.data()?.createdAt ?? "")))[0];
-    keepRef = chosen.ref;
-    for (const doc of accounts) {
-      if (doc.id !== chosen.id) {
-        const key = `accounts/${doc.id}`;
-        if (!seen.has(key)) {
-          seen.add(key);
-          allDocs.push({ ref: doc.ref });
-        }
-      }
-    }
-  }
-
-  // Estado legado em users/{uid}/finance/*
-  const legacyRefs = [
-    db.doc(`users/${uid}/finance/state`),
-    db.doc(`users/${uid}/finance/meta`),
-  ];
-  for (const ref of legacyRefs) {
-    const snap = await ref.get().catch(() => null);
-    if (snap?.exists) allDocs.push({ ref });
-  }
-
-  const BATCH_SIZE = 400;
-  for (let i = 0; i < allDocs.length; i += BATCH_SIZE) {
-    const batch = db.batch();
-    for (const doc of allDocs.slice(i, i + BATCH_SIZE)) batch.delete(doc.ref);
-    await batch.commit();
-  }
-
-  // Garante que a Carteira exista e esteja zerada
-  if (keepRef) {
-    await keepRef.set({ name: "Carteira", type: "wallet", balance: 0, currency: "BRL", ownerId: uid, updatedAt: timestamp() }, { merge: true });
-  } else {
-    const ref = db.collection("accounts").doc();
-    await ref.set({ name: "Carteira", type: "wallet", balance: 0, currency: "BRL", color: "mint", icon: "wallet", ownerId: uid, createdAt: timestamp(), updatedAt: timestamp() });
-  }
 
   revalidatePath("/");
-  return { success: true, deleted: allDocs.length, keptAccount: keepRef?.id ?? "created" };
+  return { success: true, deleted: true, keptAccount: keepId };
 }

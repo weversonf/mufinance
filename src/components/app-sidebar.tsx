@@ -22,6 +22,7 @@ import {
   CreditCardIcon,
   ChartAreaIcon,
   TargetIcon,
+  TablePropertiesIcon,
   SettingsIcon,
   LifeBuoyIcon,
   LandmarkIcon,
@@ -48,6 +49,7 @@ const navigation = {
   navInsights: [
     { title: "Análises", url: "/analytics", icon: <ChartAreaIcon /> },
     { title: "Orçamentos", url: "/budgets", icon: <TargetIcon /> },
+    { title: "Analítico", url: "/analitico", icon: <TablePropertiesIcon /> },
   ],
   navAuth: [
     { title: "Entrar", url: "/sign-in", icon: <LogInIcon /> },
@@ -74,15 +76,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const profile = getProfile(user)
 
   return (
-    <Sidebar variant="inset" {...props}>
+    <Sidebar variant="inset" collapsible="icon" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" render={<Link href="/dashboard" />}>
+            <SidebarMenuButton size="lg" tooltip="MuFinance — Visão geral" aria-label="MuFinance — Visão geral" render={<Link href="/dashboard" />}>
               <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
                 <LandmarkIcon className="size-4" />
               </div>
-              <div className="grid flex-1 text-left text-sm leading-tight">
+              <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
                 <span className="truncate font-semibold">MuFinance</span>
                 <span className="truncate text-xs text-muted-foreground">
                   Controle financeiro pessoal

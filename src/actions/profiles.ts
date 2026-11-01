@@ -3,7 +3,8 @@
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
 import { getSessionUser, requireSessionUser } from "@/lib/auth/session"
-import { getAdminAuth, getAdminFirestore } from "@/lib/firebase/admin"
+import { getAdminAuth } from "@/lib/firebase/admin"
+import { sql } from "@/lib/neon/db"
 
 const usernameSchema = z.string()
   .trim()
@@ -39,73 +40,50 @@ function numericAmount(value: unknown) {
 export async function getMyProfile() {
   const user = await getSessionUser()
   if (!user) return null
-  const snapshot = await getAdminFirestore().collection("profiles").doc(user.uid).get()
-  const profile = snapshot.data()
+  const rows = await sql`
+    SELECT username, display_name, photo_url, email
+    FROM mufinance.profiles
+    WHERE uid = ${user.uid}
+    LIMIT 1
+  `
+  const profile = rows[0] as Record<string, unknown> | undefined
   return {
-    displayName: String(profile?.displayName ?? user.name ?? user.email?.split("@")[0] ?? ""),
+    displayName: String(profile?.display_name ?? user.name ?? user.email?.split("@")[0] ?? ""),
     username: String(profile?.username ?? ""),
     email: String(user.email ?? ""),
-    photoURL: String(profile?.photoURL ?? user.picture ?? ""),
+    photoURL: String(profile?.photo_url ?? user.picture ?? ""),
   }
 }
 
 export async function saveMyProfile(input: unknown) {
   const user = await requireSessionUser()
   const data = profileSchema.parse(input)
-  const db = getAdminFirestore()
-  const profileRef = db.collection("profiles").doc(user.uid)
-  const usernameRef = db.collection("usernames").doc(data.username)
-  const walletRef = db.collection("accounts").doc(`wallet-${user.uid}`)
-  const updatedAt = nowISO()
+  const existing = await sql`
+    SELECT uid FROM mufinance.profiles
+    WHERE username = ${data.username} AND uid <> ${user.uid}
+    LIMIT 1
+  `
+  if (existing[0]) throw new Error("Este @usuário já está em uso.")
 
-  await db.runTransaction(async (transaction) => {
-    const profileSnapshot = await transaction.get(profileRef)
-    const previousUsername = String(profileSnapshot.data()?.username ?? "")
-    const previousUsernameRef = previousUsername && previousUsername !== data.username
-      ? db.collection("usernames").doc(previousUsername)
-      : null
-    const usernameSnapshot = await transaction.get(usernameRef)
-    const previousUsernameSnapshot = previousUsernameRef ? await transaction.get(previousUsernameRef) : null
-    const walletSnapshot = await transaction.get(walletRef)
-
-    if (usernameSnapshot.exists && usernameSnapshot.data()?.uid !== user.uid) {
-      throw new Error("Este @usuário já está em uso.")
-    }
-
-    if (previousUsernameRef && previousUsernameSnapshot?.data()?.uid === user.uid) {
-      transaction.delete(previousUsernameRef)
-    }
-
-    const publicProfile = {
-      uid: user.uid,
-      username: data.username,
-      displayName: data.displayName,
-      photoURL: String(user.picture ?? ""),
-      updatedAt,
-    }
-    transaction.set(usernameRef, publicProfile)
-    transaction.set(profileRef, {
-      ...publicProfile,
-      ownerId: user.uid,
-      email: String(user.email ?? ""),
-    }, { merge: true })
-
-    if (!walletSnapshot.exists) {
-      transaction.set(walletRef, {
-        ownerId: user.uid,
-        name: "Saldo MuFinance",
-        institution: "MuFinance",
-        type: "wallet",
-        balance: 0,
-        currency: "BRL",
-        color: "bg-primary",
-        icon: "wallet",
-        internalWallet: true,
-        createdAt: updatedAt,
-        updatedAt,
-      })
-    }
-  })
+  await sql.transaction([
+    sql`
+      INSERT INTO mufinance.profiles (uid, username, display_name, photo_url, email)
+      VALUES (${user.uid}, ${data.username}, ${data.displayName}, ${String(user.picture ?? "")}, ${String(user.email ?? "")})
+      ON CONFLICT (uid) DO UPDATE SET
+        username = EXCLUDED.username,
+        display_name = EXCLUDED.display_name,
+        photo_url = EXCLUDED.photo_url,
+        email = EXCLUDED.email,
+        updated_at = now()
+    `,
+    sql`
+      INSERT INTO mufinance.accounts
+        (id, owner_uid, name, institution, type, balance, currency, color, icon, internal_wallet)
+      VALUES
+        (${`wallet-${user.uid}`}, ${user.uid}, 'Saldo MuFinance', 'MuFinance', 'wallet', 0, 'BRL', 'bg-primary', 'wallet', true)
+      ON CONFLICT (id) DO NOTHING
+    `,
+  ])
 
   await getAdminAuth().updateUser(user.uid, { displayName: data.displayName })
   revalidatePath("/")
@@ -115,13 +93,18 @@ export async function saveMyProfile(input: unknown) {
 export async function findUserByUsername(input: unknown) {
   const user = await requireSessionUser()
   const username = usernameSchema.parse(input)
-  const snapshot = await getAdminFirestore().collection("usernames").doc(username).get()
-  if (!snapshot.exists) return null
-  const data = snapshot.data()!
+  const rows = await sql`
+    SELECT uid, username, display_name, photo_url
+    FROM mufinance.profiles
+    WHERE username = ${username}
+    LIMIT 1
+  `
+  if (!rows[0]) return null
+  const data = rows[0] as Record<string, unknown>
   return {
     username,
-    displayName: String(data.displayName ?? `@${username}`),
-    photoURL: String(data.photoURL ?? ""),
+    displayName: String(data.display_name ?? `@${username}`),
+    photoURL: String(data.photo_url ?? ""),
     isSelf: data.uid === user.uid,
   }
 }
@@ -129,117 +112,50 @@ export async function findUserByUsername(input: unknown) {
 export async function createInternalTransfer(input: unknown) {
   const sender = await requireSessionUser()
   const data = transferSchema.parse(input)
-  const db = getAdminFirestore()
-  const usernameRef = db.collection("usernames").doc(data.recipientUsername)
-  const senderAccountRef = db.collection("accounts").doc(data.sourceAccountId)
-  const transferRef = db.collection("internalTransfers").doc(`${sender.uid}_${data.idempotencyKey}`)
-  const senderProfileRef = db.collection("profiles").doc(sender.uid)
-  const transferId = transferRef.id
+  const transferId = `${sender.uid}_${data.idempotencyKey}`
   const createdAt = nowISO()
+  const existing = await sql`SELECT id FROM mufinance.internal_transfers WHERE id = ${transferId} LIMIT 1`
+  if (existing[0]) {
+    return { id: transferId, type: "sent" as const, contactName: `@${data.recipientUsername}`, contactAvatar: "", amount: data.amount, date: createdAt, status: "completed" as const, note: data.note || undefined }
+  }
 
-  const result = await db.runTransaction(async (transaction) => {
-    const [recipientUsernameSnapshot, senderAccountSnapshot, existingTransfer, senderProfileSnapshot] = await transaction.getAll(usernameRef, senderAccountRef, transferRef, senderProfileRef)
+  const [recipientRows, senderAccountRows, recipientWalletRows, senderProfileRows] = await Promise.all([
+    sql`SELECT uid, display_name, photo_url FROM mufinance.profiles WHERE username = ${data.recipientUsername} LIMIT 1`,
+    sql`SELECT id, balance FROM mufinance.accounts WHERE id = ${data.sourceAccountId} AND owner_uid = ${sender.uid} LIMIT 1`,
+    sql`SELECT id, balance FROM mufinance.accounts WHERE id = ${'wallet-' + String((await sql`SELECT uid FROM mufinance.profiles WHERE username = ${data.recipientUsername} LIMIT 1`)[0]?.uid ?? '')} LIMIT 1`,
+    sql`SELECT username, display_name FROM mufinance.profiles WHERE uid = ${sender.uid} LIMIT 1`,
+  ])
+  if (!recipientRows[0]) throw new Error("@usuário não encontrado.")
+  const recipientUid = String(recipientRows[0].uid)
+  if (!recipientUid || recipientUid === sender.uid) throw new Error("Você não pode transferir para si mesmo.")
+  if (!senderAccountRows[0]) throw new Error("Conta de origem não encontrada.")
+  if (!recipientWalletRows[0]) throw new Error("O destinatário ainda não ativou o saldo MuFinance.")
+  if (numericAmount(senderAccountRows[0].balance) < data.amount) throw new Error("Saldo insuficiente para esta transferência.")
 
-    if (existingTransfer.exists) return existingTransfer.data()!
-    if (!recipientUsernameSnapshot.exists) throw new Error("@usuário não encontrado.")
-
-    const recipientData = recipientUsernameSnapshot.data()!
-    const recipientUid = String(recipientData.uid ?? "")
-    if (!recipientUid || recipientUid === sender.uid) throw new Error("Você não pode transferir para si mesmo.")
-    if (!senderAccountSnapshot.exists || senderAccountSnapshot.data()?.ownerId !== sender.uid) {
-      throw new Error("Conta de origem não encontrada.")
-    }
-
-    const recipientWalletRef = db.collection("accounts").doc(`wallet-${recipientUid}`)
-    const recipientWalletSnapshot = await transaction.get(recipientWalletRef)
-    if (!recipientWalletSnapshot.exists || recipientWalletSnapshot.data()?.ownerId !== recipientUid) {
-      throw new Error("O destinatário ainda não ativou o saldo MuFinance.")
-    }
-
-    const senderBalance = numericAmount(senderAccountSnapshot.data()?.balance)
-    const recipientBalance = numericAmount(recipientWalletSnapshot.data()?.balance)
-    if (senderBalance < data.amount) throw new Error("Saldo insuficiente para esta transferência.")
-
-    const senderName = String(senderProfileSnapshot.data()?.displayName ?? sender.name ?? sender.email?.split("@")[0] ?? "Usuário")
-    const senderUsername = String(senderProfileSnapshot.data()?.username ?? "")
-    const recipientName = String(recipientData.displayName ?? `@${data.recipientUsername}`)
-    const date = createdAt.slice(0, 10)
-    const common = {
-      transferId,
-      amount: Number(data.amount.toFixed(2)),
-      note: data.note,
-      senderUid: sender.uid,
-      senderUsername,
-      senderName,
-      recipientUid,
-      recipientUsername: data.recipientUsername,
-      recipientName,
-      createdAt,
-      status: "completed",
-    }
-
-    transaction.update(senderAccountRef, {
-      balance: Number((senderBalance - data.amount).toFixed(2)),
-      updatedAt: createdAt,
-    })
-    transaction.update(recipientWalletRef, {
-      balance: Number((recipientBalance + data.amount).toFixed(2)),
-      updatedAt: createdAt,
-    })
-    transaction.set(transferRef, common)
-    transaction.set(db.collection("transferRecords").doc(`${transferId}-sent`), {
-      ...common,
-      ownerId: sender.uid,
-      direction: "sent",
-      contactName: recipientName,
-      contactUsername: data.recipientUsername,
-    })
-    transaction.set(db.collection("transferRecords").doc(`${transferId}-received`), {
-      ...common,
-      ownerId: recipientUid,
-      direction: "received",
-      contactName: senderName,
-      contactUsername: senderUsername,
-    })
-    transaction.set(db.collection("transactions").doc(`${transferId}-out`), {
-      ownerId: sender.uid,
-      accountId: data.sourceAccountId,
-      date,
-      payee: `Transferência para @${data.recipientUsername}`,
-      category: "Transferência",
-      amount: data.amount,
-      type: "expense",
-      status: "completed",
-      notes: data.note,
-      sourceType: "internalTransfer",
-      sourceId: transferId,
-      createdAt,
-      updatedAt: createdAt,
-    })
-    transaction.set(db.collection("transactions").doc(`${transferId}-in`), {
-      ownerId: recipientUid,
-      accountId: recipientWalletRef.id,
-      date,
-      payee: senderUsername ? `Recebido de @${senderUsername}` : `Recebido de ${senderName}`,
-      category: "Transferência",
-      amount: data.amount,
-      type: "income",
-      status: "completed",
-      notes: data.note,
-      sourceType: "internalTransfer",
-      sourceId: transferId,
-      createdAt,
-      updatedAt: createdAt,
-    })
-
-    return common
-  })
+  const senderName = String(senderProfileRows[0]?.display_name ?? sender.name ?? sender.email?.split("@")[0] ?? "Usuário")
+  const senderUsername = String(senderProfileRows[0]?.username ?? "")
+  const recipientName = String(recipientRows[0].display_name ?? `@${data.recipientUsername}`)
+  const date = createdAt.slice(0, 10)
+  await sql.transaction([
+    sql`UPDATE mufinance.accounts SET balance = balance - ${data.amount}, updated_at = now() WHERE id = ${data.sourceAccountId} AND owner_uid = ${sender.uid}`,
+    sql`UPDATE mufinance.accounts SET balance = balance + ${data.amount}, updated_at = now() WHERE id = ${recipientWalletRows[0].id} AND owner_uid = ${recipientUid}`,
+    sql`INSERT INTO mufinance.internal_transfers (id, sender_uid, sender_username, sender_name, recipient_uid, recipient_username, recipient_name, amount, note, status)
+        VALUES (${transferId}, ${sender.uid}, ${senderUsername}, ${senderName}, ${recipientUid}, ${data.recipientUsername}, ${recipientName}, ${data.amount}, ${data.note}, 'completed')`,
+    sql`INSERT INTO mufinance.transfer_records (id, owner_uid, direction, transfer_id, amount, contact_name, contact_username, contact_avatar, note, status)
+        VALUES (${transferId + '-sent'}, ${sender.uid}, 'sent', ${transferId}, ${data.amount}, ${recipientName}, ${data.recipientUsername}, ${recipientRows[0].photo_url ?? ''}, ${data.note}, 'completed')`,
+    sql`INSERT INTO mufinance.transfer_records (id, owner_uid, direction, transfer_id, amount, contact_name, contact_username, contact_avatar, note, status)
+        VALUES (${transferId + '-received'}, ${recipientUid}, 'received', ${transferId}, ${data.amount}, ${senderName}, ${senderUsername}, '', ${data.note}, 'completed')`,
+    sql`INSERT INTO mufinance.transactions (id, owner_uid, account_id, date, payee, category, amount, type, status, notes, source_type, source_id)
+        VALUES (${transferId + '-out'}, ${sender.uid}, ${data.sourceAccountId}, ${date}, ${`Transferência para @${data.recipientUsername}`}, 'Transferência', ${data.amount}, 'expense', 'completed', ${data.note}, 'internalTransfer', ${transferId})`,
+    sql`INSERT INTO mufinance.transactions (id, owner_uid, account_id, date, payee, category, amount, type, status, notes, source_type, source_id)
+        VALUES (${transferId + '-in'}, ${recipientUid}, ${recipientWalletRows[0].id}, ${date}, ${senderUsername ? `Recebido de @${senderUsername}` : `Recebido de ${senderName}`}, 'Transferência', ${data.amount}, 'income', 'completed', ${data.note}, 'internalTransfer', ${transferId})`,
+  ])
 
   revalidatePath("/")
   return {
     id: transferId,
     type: "sent" as const,
-    contactName: String(result.recipientName ?? `@${data.recipientUsername}`),
+    contactName: recipientName,
     contactAvatar: "",
     amount: data.amount,
     date: createdAt,

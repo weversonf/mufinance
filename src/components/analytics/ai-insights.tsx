@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { useFinanceData } from "@/components/finance/finance-provider"
+import { useAnalyticsData } from "@/components/analytics/use-analytics-data"
 import { cn } from "@/lib/utils"
 import {
   BrainIcon,
@@ -44,7 +44,7 @@ function TrendIcon({ trend }: { trend: "up" | "down" | "neutral" }) {
 }
 
 export function AiInsights() {
-  const { aiInsights } = useFinanceData()
+  const { aiInsights } = useAnalyticsData()
 
   if (aiInsights.length === 0) {
     return (

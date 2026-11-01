@@ -90,7 +90,7 @@ export function EditAccountDialog({ account, open, onOpenChange, onSaved }: { ac
 
   return <Dialog open={open} onOpenChange={onOpenChange}>
     <DialogContent>
-      <DialogHeader><DialogTitle>Editar conta</DialogTitle><DialogDescription>Atualize os dados desta conta. A alteração será salva no Firestore.</DialogDescription></DialogHeader>
+      <DialogHeader><DialogTitle>Editar conta</DialogTitle><DialogDescription>Atualize os dados desta conta. A alteração será salva no banco financeiro.</DialogDescription></DialogHeader>
       <form onSubmit={handleSubmit} className="space-y-4">
         <label className="grid gap-1.5 text-sm font-medium">Nome<Input value={name} onChange={(event) => setName(event.target.value)} required minLength={2} /></label>
         <label className="grid gap-1.5 text-sm font-medium">Tipo de conta

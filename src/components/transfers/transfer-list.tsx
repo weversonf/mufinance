@@ -44,7 +44,7 @@ function statusBadge(status: TransferRecord["status"]) {
 
 export function TransferList({ transfers, hasAny = true, onCancel }: TransferListProps) {
   return (
-    <div className="overflow-hidden rounded-xl ring-1 ring-foreground/10">
+    <div className="overflow-hidden rounded-xl">
       <div className="divide-y">
         <AnimatePresence mode="popLayout" initial={false}>
           {transfers.length === 0 && (
@@ -54,7 +54,7 @@ export function TransferList({ transfers, hasAny = true, onCancel }: TransferLis
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
-              <EmptyState variant={hasAny ? "filter" : "transfers"} className="py-10" />
+              <EmptyState variant={hasAny ? "filter" : "transfers"} className="flex min-h-[360px] flex-col justify-center py-10 sm:min-h-[440px]" />
             </motion.div>
           )}
 

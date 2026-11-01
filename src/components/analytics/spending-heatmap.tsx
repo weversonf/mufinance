@@ -1,6 +1,7 @@
 "use client"
 
-import { useMemo } from "react"
+import * as React from "react"
+
 import {
   Card,
   CardContent,
@@ -14,67 +15,48 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { useFinanceData } from "@/components/finance/finance-provider"
 import { EmptyState } from "@/components/empty-state"
+import { formatMonthKey, useAnalyticsMonth } from "@/components/analytics/analytics-month"
+import { useAnalyticsData } from "@/components/analytics/use-analytics-data"
+import { cn } from "@/lib/utils"
 
-const DAY_LABELS = ["", "Seg", "", "Qua", "", "Sex", ""]
-const CELL_SIZE = 13
-const CELL_GAP = 3
-const TOTAL = CELL_SIZE + CELL_GAP
+const WEEKDAYS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"]
 
-function intensityClass(amount: number, max: number): string {
-  if (amount === 0) return "fill-muted/40"
+function intensityClass(amount: number, max: number) {
+  if (amount === 0) return "bg-muted/40"
   const ratio = amount / max
-  if (ratio < 0.2) return "fill-primary/10"
-  if (ratio < 0.4) return "fill-primary/25"
-  if (ratio < 0.65) return "fill-primary/45"
-  return "fill-primary/70"
+  if (ratio < 0.2) return "bg-primary/10"
+  if (ratio < 0.4) return "bg-primary/25"
+  if (ratio < 0.65) return "bg-primary/45"
+  return "bg-primary/70"
+}
+
+function formatBRL(value: number) {
+  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value)
 }
 
 export function SpendingHeatmap() {
-  const { spendingHeatmapData } = useFinanceData()
-  const { grid, monthLabels, yearTotal, max } = useMemo(() => {
-    const data = spendingHeatmapData
-    if (data.length === 0) return { grid: [], monthLabels: [], yearTotal: 0, max: 0 }
-    const max = Math.max(...data.map((d) => d.amount))
-    const yearTotal = data.reduce((s, d) => s + d.amount, 0)
+  const { month } = useAnalyticsMonth()
+  const { dailySpending } = useAnalyticsData()
 
-    // Build 52-column x 7-row grid
-    // Find the first Sunday on or before the start date
-    const firstDate = new Date(data[0].date)
-    const startDay = firstDate.getDay()
-    const gridStart = new Date(firstDate)
-    gridStart.setDate(gridStart.getDate() - startDay)
+  const calendar = React.useMemo(() => {
+    const [year, monthNumber] = month.split("-").map(Number)
+    const firstDay = new Date(year, (monthNumber ?? 1) - 1, 1)
+    const daysInMonth = new Date(year, monthNumber ?? 1, 0).getDate()
+    const startWeekday = firstDay.getDay()
+    const lookup = new Map(dailySpending.map((day) => [day.date, day.amount]))
+    const max = Math.max(0, ...dailySpending.map((day) => day.amount))
+    const total = dailySpending.reduce((sum, day) => sum + day.amount, 0)
 
-    // Build lookup
-    const lookup = new Map(data.map((d) => [d.date, d.amount]))
-
-    const weeks: { date: string; amount: number; col: number; row: number }[] =
-      []
-    const months: { label: string; col: number }[] = []
-    const seenMonths = new Set<string>()
-
-    for (let col = 0; col < 53; col++) {
-      for (let row = 0; row < 7; row++) {
-        const d = new Date(gridStart)
-        d.setDate(d.getDate() + col * 7 + row)
-        const key = d.toISOString().split("T")[0]
-        const amount = lookup.get(key) ?? 0
-
-        weeks.push({ date: key, amount, col, row })
-
-        // Month labels — show at the first occurrence of a new month
-        const monthKey = `${d.getFullYear()}-${d.getMonth()}`
-        if (!seenMonths.has(monthKey) && row === 0) {
-          seenMonths.add(monthKey)
-          const label = d.toLocaleDateString("pt-BR", { month: "short" })
-          months.push({ label, col })
-        }
-      }
+    const cells: Array<{ day: number; date: string; amount: number } | null> = []
+    for (let index = 0; index < startWeekday; index++) cells.push(null)
+    for (let day = 1; day <= daysInMonth; day++) {
+      const date = `${month}-${String(day).padStart(2, "0")}`
+      cells.push({ day, date, amount: lookup.get(date) ?? 0 })
     }
 
-    return { grid: weeks, monthLabels: months, yearTotal, max }
-  }, [spendingHeatmapData])
+    return { cells, max, total }
+  }, [month, dailySpending])
 
   return (
     <Card>
@@ -83,10 +65,8 @@ export function SpendingHeatmap() {
           <div>
             <CardTitle>Atividade de gastos</CardTitle>
             <CardDescription>
-              <span className="tabular-nums font-medium text-foreground">
-                {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(yearTotal)}
-              </span>{" "}
-              em gastos este ano
+              <span className="font-medium tabular-nums text-foreground">{formatBRL(calendar.total)}</span>{" "}
+              em gastos em {formatMonthKey(month).toLowerCase()}
             </CardDescription>
           </div>
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -101,80 +81,54 @@ export function SpendingHeatmap() {
         </div>
       </CardHeader>
       <CardContent>
-        {spendingHeatmapData.length === 0 ? (
+        {dailySpending.length === 0 ? (
           <EmptyState
             variant="analytics"
-            title="Sem dados de gastos ainda"
-            description="Sua atividade de gastos aparecerá aqui após registrar transações."
+            title="Sem gastos neste mês"
+            description="Sua atividade de gastos aparecerá aqui após registrar transações no mês selecionado."
             className="py-8"
           />
         ) : (
-          <div className="overflow-x-auto">
+          <div className="space-y-2">
+            <div className="grid grid-cols-7 gap-1.5 text-center text-[10px] text-muted-foreground">
+              {WEEKDAYS.map((weekday) => (
+                <span key={weekday}>{weekday}</span>
+              ))}
+            </div>
             <TooltipProvider delay={0}>
-              <svg
-              width={53 * TOTAL + 32}
-              height={7 * TOTAL + 24}
-              className="text-muted-foreground"
-            >
-              {/* Month labels */}
-              {monthLabels.map((m) => (
-                <text
-                  key={`${m.label}-${m.col}`}
-                  x={m.col * TOTAL + 32}
-                  y={10}
-                  className="fill-muted-foreground text-[10px]"
-                >
-                  {m.label}
-                </text>
-              ))}
-
-              {/* Day labels */}
-              {DAY_LABELS.map((label, i) =>
-                label ? (
-                  <text
-                    key={i}
-                    x={0}
-                    y={i * TOTAL + 28}
-                    className="fill-muted-foreground text-[10px]"
-                    dominantBaseline="middle"
-                  >
-                    {label}
-                  </text>
-                ) : null
-              )}
-
-              {/* Day cells */}
-              {grid.map((cell) => (
-                <Tooltip key={cell.date}>
-                  <TooltipTrigger
-                    render={
-                      <rect
-                        x={cell.col * TOTAL + 32}
-                        y={cell.row * TOTAL + 18}
-                        width={CELL_SIZE}
-                        height={CELL_SIZE}
-                        rx={2}
-                        className={`${intensityClass(cell.amount, max)} transition-colors hover:stroke-foreground/30 hover:stroke-1`}
-                      />
-                    }
-                  />
-                  <TooltipContent>
-                    <span className="tabular-nums">
-                      {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(cell.amount)}
-                    </span>{" "}
-                    em{" "}
-                    {new Date(cell.date + "T12:00:00").toLocaleDateString(
-                      "pt-BR",
-                      {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      }
-                    )}
-                  </TooltipContent>
-                </Tooltip>
-              ))}
-              </svg>
+              <div className="grid grid-cols-7 gap-1.5">
+                {calendar.cells.map((cell, index) => {
+                  if (!cell) return <div key={`empty-${index}`} className="aspect-square rounded-md" />
+                  return (
+                    <Tooltip key={cell.date}>
+                      <TooltipTrigger
+                        render={
+                          <button
+                            type="button"
+                            aria-label={`${cell.day} de ${formatMonthKey(month)}: ${formatBRL(cell.amount)}`}
+                            className={cn(
+                              "flex aspect-square items-center justify-center rounded-md text-[10px] font-medium transition-colors hover:ring-2 hover:ring-foreground/20",
+                              intensityClass(cell.amount, calendar.max),
+                              cell.amount > 0 ? "text-foreground" : "text-muted-foreground/60"
+                            )}
+                          />
+                        }
+                      >
+                        {cell.day}
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <span className="tabular-nums">{formatBRL(cell.amount)}</span>{" "}
+                        em{" "}
+                        {new Date(`${cell.date}T12:00:00`).toLocaleDateString("pt-BR", {
+                          day: "2-digit",
+                          month: "long",
+                          year: "numeric",
+                        })}
+                      </TooltipContent>
+                    </Tooltip>
+                  )
+                })}
+              </div>
             </TooltipProvider>
           </div>
         )}

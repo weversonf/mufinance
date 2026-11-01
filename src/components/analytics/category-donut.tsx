@@ -17,7 +17,8 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart"
-import { useFinanceData } from "@/components/finance/finance-provider"
+import { useAnalyticsData } from "@/components/analytics/use-analytics-data"
+import { formatMonthKey, useAnalyticsMonth } from "@/components/analytics/analytics-month"
 
 const SUBCATEGORY_COLORS = [
   "var(--color-chart-1)",
@@ -28,7 +29,8 @@ const SUBCATEGORY_COLORS = [
 ]
 
 export function CategoryDonut() {
-  const { categoryBreakdowns } = useFinanceData()
+  const { categoryBreakdowns } = useAnalyticsData()
+  const { month } = useAnalyticsMonth()
   const [selected, setSelected] = useState<string | null>(null)
 
   const total = useMemo(
@@ -82,10 +84,11 @@ export function CategoryDonut() {
       <Card>
         <CardHeader>
           <CardTitle>Gastos por Categoria</CardTitle>
+          <p className="text-xs text-muted-foreground">{formatMonthKey(month)}</p>
         </CardHeader>
         <CardContent className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
-          <p className="text-sm font-medium text-foreground">Nenhum gasto por categoria ainda</p>
-          <p className="text-xs mt-1">Os gastos por categoria aparecerão aqui conforme você registrar transações.</p>
+          <p className="text-sm font-medium text-foreground">Nenhum gasto por categoria neste mês</p>
+          <p className="text-xs mt-1">Os gastos por categoria aparecerão aqui conforme você registrar transações no mês selecionado.</p>
         </CardContent>
       </Card>
     )
@@ -97,11 +100,14 @@ export function CategoryDonut() {
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle>
-            {selectedCategory
-              ? selectedCategory.category
-              : "Gastos por categoria"}
-          </CardTitle>
+          <div>
+            <CardTitle>
+              {selectedCategory
+                ? selectedCategory.category
+                : "Gastos por categoria"}
+            </CardTitle>
+            <p className="text-xs text-muted-foreground">{formatMonthKey(month)}</p>
+          </div>
           {selectedCategory && (
             <Button
               variant="ghost"
@@ -151,7 +157,10 @@ export function CategoryDonut() {
                   paddingAngle={2}
                   onClick={(_, index) => {
                     if (!selectedCategory) {
-                      setSelected(categoryBreakdowns[index].category)
+                      const category = categoryBreakdowns[index]
+                      if (category && category.subcategories.length > 0) {
+                        setSelected(category.category)
+                      }
                     }
                   }}
                   className={selectedCategory ? "" : "cursor-pointer"}

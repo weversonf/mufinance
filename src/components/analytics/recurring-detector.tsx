@@ -10,7 +10,7 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card"
-import { useFinanceData } from "@/components/finance/finance-provider"
+import { useAnalyticsData } from "@/components/analytics/use-analytics-data"
 import type { RecurringCharge } from "@/data/seed"
 import { cn } from "@/lib/utils"
 import { CheckCircle2Icon, FlagIcon, CircleDashedIcon } from "lucide-react"
@@ -35,7 +35,7 @@ function StatusIcon({ status }: { status: Status }) {
 }
 
 export function RecurringDetector() {
-  const { recurringCharges } = useFinanceData()
+  const { recurringCharges } = useAnalyticsData()
   const [statuses, setStatuses] = useState<Record<string, Status>>(() => {
     const map: Record<string, Status> = {}
     recurringCharges.forEach((c) => {

@@ -58,7 +58,7 @@ export function BudgetRings() {
       <CardContent>
         <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
           {budgetCategories.map((b, i) => {
-            const percent = Math.min((b.spent / b.budget) * 100, 100)
+            const percent = b.budget > 0 ? Math.min((b.spent / b.budget) * 100, 100) : (b.spent > 0 ? 100 : 0)
             const offset = CIRCUMFERENCE - (percent / 100) * CIRCUMFERENCE
             const isOver = b.spent > b.budget
 

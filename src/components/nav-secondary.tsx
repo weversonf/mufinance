@@ -80,7 +80,7 @@ function NotificationDropdown({ icon }: { icon: React.ReactNode }) {
     <Popover>
       <PopoverTrigger
         render={
-          <SidebarMenuButton size="sm" className="relative" />
+          <SidebarMenuButton size="sm" className="relative" tooltip="Notificações" aria-label="Notificações" />
         }
       >
         {icon}
@@ -221,7 +221,7 @@ export function NavSecondary({
               {item.title === "Notificações" ? (
                 <NotificationDropdown icon={item.icon} />
               ) : (
-                <SidebarMenuButton size="sm" render={<Link href={item.url} />}>
+                <SidebarMenuButton size="sm" tooltip={item.title} aria-label={item.title} render={<Link href={item.url} />}>
                   {item.icon}
                   <span>{item.title}</span>
                 </SidebarMenuButton>

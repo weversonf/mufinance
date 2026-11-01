@@ -10,8 +10,9 @@ import {
   CartesianGrid,
   ReferenceLine,
 } from "recharts"
-import { ArrowRightIcon } from "lucide-react"
+import { RefreshCwIcon, TrendingDownIcon, TrendingUpIcon } from "lucide-react"
 import { motion, AnimatePresence } from "motion/react"
+
 import {
   Card,
   CardContent,
@@ -25,11 +26,11 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart"
 import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
-import { useFinanceData } from "@/components/finance/finance-provider"
+import type { CryptoCoin } from "@/data/seed"
+import type { MarketCandle } from "@/lib/market/types"
 import type { CryptoPrices } from "./crypto-page-client"
-
-/* ── candlestick data generator ───────────────────────────────────────── */
 
 interface CandlestickData {
   date: string
@@ -37,40 +38,6 @@ interface CandlestickData {
   high: number
   low: number
 }
-
-function generateCandlestickData(basePrice: number, count: number): CandlestickData[] {
-  const data: CandlestickData[] = []
-  let price = basePrice * 0.92
-  const now = new Date()
-  // Use enough decimal precision so small-price coins have visible candles
-  const decimals = basePrice >= 100 ? 2 : basePrice >= 1 ? 4 : 6
-  const factor = Math.pow(10, decimals)
-  const round = (v: number) => Math.round(v * factor) / factor
-
-  for (let i = count; i > 0; i--) {
-    const date = new Date(now)
-    date.setDate(date.getDate() - i)
-    if (date.getDay() === 0 || date.getDay() === 6) continue
-
-    const volatility = price * 0.025
-    const open = price
-    const change = (Math.random() - 0.45) * volatility
-    const close = open + change
-    const high = Math.max(open, close) + Math.random() * volatility * 0.4
-    const low = Math.min(open, close) - Math.random() * volatility * 0.4
-
-    data.push({
-      date: date.toISOString().split("T")[0],
-      openClose: [round(open), round(close)],
-      high: round(high),
-      low: round(low),
-    })
-    price = close
-  }
-  return data
-}
-
-/* ── candlestick shape ────────────────────────────────────────────────── */
 
 interface CandlestickProps {
   x: number
@@ -85,7 +52,8 @@ interface CandlestickProps {
 function CandlestickShape(props: CandlestickProps) {
   const { x, y, width, height, low, high, openClose: [open, close] } = props
   const isGrowing = open < close
-  const ratio = Math.abs(height / (open - close)) || 0
+  const body = Math.abs(open - close)
+  const ratio = body > 0 ? Math.abs(height / body) : 0
 
   return (
     <g>
@@ -127,19 +95,31 @@ function renderCandlestick(props: any) {
   return <CandlestickShape x={0} y={0} width={0} height={0} low={0} high={0} openClose={[0, 0]} />
 }
 
-/* ── tooltip ──────────────────────────────────────────────────────────── */
-
-function CandlestickTooltip({ active, payload }: { active?: boolean; payload?: Array<{ payload?: CandlestickData }> }) {
+function CandlestickTooltip({
+  active,
+  payload,
+  intraday,
+}: {
+  active?: boolean
+  payload?: Array<{ payload?: CandlestickData }>
+  intraday?: boolean
+}) {
   if (!active || !payload?.length) return null
   const d = payload[0]?.payload
   if (!d) return null
   const [open, close] = d.openClose
   const isGrowing = close > open
+  const date = new Date(d.date)
 
   return (
     <div className="rounded-lg border bg-popover px-3 py-2 text-xs text-popover-foreground shadow-md">
       <p className="mb-1 font-medium">
-        {new Date(d.date).toLocaleDateString("pt-BR", { weekday: "short", month: "short", day: "numeric" })}
+        {date.toLocaleDateString("pt-BR", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+          ...(intraday ? { hour: "2-digit", minute: "2-digit" } : {}),
+        })}
       </p>
       <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-muted-foreground">
         <span>Abertura</span><span className="text-right font-medium text-foreground tabular-nums">{open.toLocaleString("pt-BR")}</span>
@@ -154,163 +134,252 @@ function CandlestickTooltip({ active, payload }: { active?: boolean; payload?: A
   )
 }
 
-/* ── config ────────────────────────────────────────────────────────────── */
-
 const chartConfig = {
   openClose: { label: "Preço", color: "var(--chart-1)" },
 } satisfies ChartConfig
 
-const PERIODS = ["1D", "1S", "1M", "3M", "1A", "Tudo"] as const
-const PERIOD_DAYS: Record<string, number> = { "1D": 15, "1S": 30, "1M": 60, "3M": 130, "1A": 365, Tudo: 365 }
-
-/* ── component ─────────────────────────────────────────────────────────── */
+const PERIODS = [
+  { label: "1D", days: 1 },
+  { label: "1S", days: 7 },
+  { label: "1M", days: 30 },
+  { label: "3M", days: 90 },
+  { label: "1A", days: 365 },
+] as const
 
 interface CoinInsightProps {
+  coins: CryptoCoin[]
   prices: CryptoPrices
   selectedCoin: string
 }
 
-export function CoinInsight({ prices, selectedCoin }: CoinInsightProps) {
-  const { cryptoCoins } = useFinanceData()
-  const [period, setPeriod] = React.useState<string>("3M")
+export function CoinInsight({ coins, prices, selectedCoin }: CoinInsightProps) {
+  const [period, setPeriod] = React.useState<(typeof PERIODS)[number]["label"]>("3M")
+  const [candles, setCandles] = React.useState<MarketCandle[]>([])
+  const [loading, setLoading] = React.useState(true)
+  const [error, setError] = React.useState<string | null>(null)
+  const [retryToken, setRetryToken] = React.useState(0)
 
-  const coin = cryptoCoins.find((c) => c.id === selectedCoin)
-  const livePrice = prices[selectedCoin] ?? (coin?.price ?? 0)
+  const coin = coins.find((c) => c.id === selectedCoin)
+  const livePrice = prices[selectedCoin] ?? coin?.price ?? 0
+  const days = PERIODS.find((item) => item.label === period)?.days ?? 90
+  const intraday = days <= 1
 
-  const data = React.useMemo(
-    () => generateCandlestickData(livePrice, PERIOD_DAYS[period] ?? 25),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [selectedCoin, period]
+  React.useEffect(() => {
+    if (!selectedCoin) return
+    const controller = new AbortController()
+    setLoading(true)
+    setError(null)
+
+    fetch(`/api/market/crypto/${selectedCoin}/ohlc?days=${days}`, {
+      signal: controller.signal,
+      cache: "no-store",
+    })
+      .then((response) => {
+        if (!response.ok) throw new Error(`Status ${response.status}`)
+        return response.json() as Promise<{ candles: MarketCandle[] }>
+      })
+      .then((payload) => {
+        setCandles(Array.isArray(payload.candles) ? payload.candles : [])
+      })
+      .catch((loadError) => {
+        if (loadError instanceof DOMException && loadError.name === "AbortError") return
+        setError("Não foi possível carregar o histórico desta moeda.")
+        setCandles([])
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false)
+      })
+
+    return () => controller.abort()
+  }, [selectedCoin, days, retryToken])
+
+  const data = React.useMemo<CandlestickData[]>(
+    () =>
+      candles.map((candle) => ({
+        date: new Date(candle.t).toISOString(),
+        openClose: [candle.o, candle.c] as [number, number],
+        high: candle.h,
+        low: candle.l,
+      })),
+    [candles]
   )
 
-  const minVal = data.reduce((m, d) => Math.min(m, d.low, ...d.openClose), Infinity)
-  const maxVal = data.reduce((m, d) => Math.max(m, d.high, ...d.openClose), -Infinity)
-  const pad = (maxVal - minVal) * 0.1
+  const minVal = data.length > 0 ? data.reduce((min, item) => Math.min(min, item.low, ...item.openClose), Infinity) : 0
+  const maxVal = data.length > 0 ? data.reduce((max, item) => Math.max(max, item.high, ...item.openClose), -Infinity) : 0
+  const pad = (maxVal - minVal) * 0.1 || maxVal * 0.02
 
   const lastCandle = data[data.length - 1]
   const lastClose = lastCandle?.openClose[1]
   const lastIsGrowing = lastCandle ? lastCandle.openClose[1] > lastCandle.openClose[0] : true
 
-  const formatTick = (val: string, idx: number) => {
-    const d = new Date(val)
-    const mo = d.getMonth()
-    const yr = d.getFullYear().toString().slice(2)
-    if (idx === 0) return `${d.toLocaleString("pt-BR", { month: "short" })} '${yr}`
-    const prev = data[idx - 1]
-    if (prev && new Date(prev.date).getMonth() !== mo) {
-      return `${d.toLocaleString("pt-BR", { month: "short" })} '${yr}`
+  const formatTick = (value: string, index: number) => {
+    const date = new Date(value)
+    if (intraday) {
+      return date.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
+    }
+    if (days <= 7) {
+      return date.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })
+    }
+    if (index === 0) return date.toLocaleDateString("pt-BR", { month: "short", year: "2-digit" })
+    const previous = data[index - 1]
+    if (previous && new Date(previous.date).getMonth() !== date.getMonth()) {
+      return date.toLocaleDateString("pt-BR", { month: "short", year: "2-digit" })
     }
     return ""
   }
 
   return (
-    <Card className="lg:col-span-8">
+    <Card className="lg:col-span-12">
       <CardHeader>
         <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-          <CardTitle>{coin?.name ?? "Coin"} Insight</CardTitle>
+          <CardTitle>{coin?.name ?? "Criptomoeda"}</CardTitle>
           <span className={cn(
             "rounded px-2 py-0.5 text-sm font-bold tabular-nums",
             lastIsGrowing ? "text-emerald-500" : "text-rose-500"
           )}>
-            ${livePrice.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            {livePrice.toLocaleString("pt-BR", {
+              style: "currency",
+              currency: "BRL",
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
           </span>
+          {coin && (
+            <span
+              className={cn(
+                "inline-flex items-center gap-0.5 rounded-md px-1.5 py-0.5 text-xs font-medium tabular-nums",
+                coin.change24h >= 0
+                  ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                  : "bg-rose-500/10 text-rose-600 dark:text-rose-400"
+              )}
+            >
+              {coin.change24h >= 0 ? (
+                <TrendingUpIcon className="size-3" />
+              ) : (
+                <TrendingDownIcon className="size-3" />
+              )}
+              {coin.change24h >= 0 ? "+" : ""}
+              {coin.change24h.toFixed(2)}% · 24h
+            </span>
+          )}
         </div>
         <CardAction>
-          <Button variant="ghost" size="sm" className="gap-1 text-xs text-muted-foreground">
-            More Insight <ArrowRightIcon className="size-3" />
+          <Button
+            variant="ghost"
+            size="sm"
+            className="gap-1 text-xs text-muted-foreground"
+            onClick={() => setRetryToken((token) => token + 1)}
+            disabled={loading}
+          >
+            <RefreshCwIcon className={cn("size-3", loading && "animate-spin")} />
+            Atualizar
           </Button>
         </CardAction>
       </CardHeader>
       <CardContent className="min-w-0 space-y-4">
-        {/* Legend */}
         <div className="flex items-center gap-4 text-xs text-muted-foreground">
           <span className="flex items-center gap-1.5">
-            <span className="inline-block size-2.5 rounded-sm bg-emerald-500" /> Bullish
+            <span className="inline-block size-2.5 rounded-sm bg-emerald-500" /> Alta
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="inline-block size-2.5 rounded-sm bg-rose-500" /> Bearish
+            <span className="inline-block size-2.5 rounded-sm bg-rose-500" /> Baixa
           </span>
+          <span className="ml-auto hidden sm:inline">Candles reais · BRL</span>
         </div>
 
-        {/* Candlestick chart */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={`${selectedCoin}-${period}`}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.25 }}
-          >
-            <ChartContainer
-              config={chartConfig}
-              className="aspect-auto h-[340px] w-full [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-zinc-950/5 dark:[&_.recharts-rectangle.recharts-tooltip-cursor]:fill-zinc-950/25 [&_.recharts-cartesian-grid_line[stroke='#ccc']]:stroke-border/64 [&_.recharts-cartesian-axis-line]:stroke-border/64 [&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground/72 dark:[&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground/64"
+        {loading ? (
+          <Skeleton className="h-[340px] w-full" />
+        ) : error ? (
+          <div className="flex h-[340px] flex-col items-center justify-center gap-3 text-center">
+            <p className="text-sm text-muted-foreground">{error}</p>
+            <Button variant="outline" size="sm" onClick={() => setRetryToken((token) => token + 1)}>
+              Tentar novamente
+            </Button>
+          </div>
+        ) : data.length === 0 ? (
+          <div className="flex h-[340px] items-center justify-center text-sm text-muted-foreground">
+            Sem histórico disponível para este período.
+          </div>
+        ) : (
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={`${selectedCoin}-${period}`}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.25 }}
             >
-              <BarChart data={data} maxBarSize={20} margin={{ left: 20, right: -5 }}>
-                <CartesianGrid vertical={false} strokeWidth={1} />
-                <XAxis
-                  dataKey="date"
-                  tickLine={false}
-                  tickFormatter={formatTick}
-                  interval={0}
-                  minTickGap={5}
-                  tickMargin={12}
-                />
-                <YAxis
-                  domain={[minVal - pad, maxVal + pad]}
-                  tickCount={7}
-                  tickLine={false}
-                  orientation="right"
-                  tickFormatter={(v: number) =>
-                    v >= 1000 ? `${(v / 1000).toFixed(1)}k` : v >= 1 ? v.toFixed(2) : v.toFixed(4)
-                  }
-                />
-                {lastClose != null && (
-                  <ReferenceLine
-                    y={lastClose}
-                    stroke="var(--muted-foreground)"
-                    opacity={0.5}
-                    strokeWidth={1}
-                    strokeDasharray="2 2"
-                    label={({ viewBox }: { viewBox: { x: number; y: number; width: number } }) => (
-                      <g transform={`translate(${viewBox.x + viewBox.width + 5},${viewBox.y})`}>
-                        <rect x={-2} y={-10} width={50} height={20}
-                          fill={lastIsGrowing ? "var(--color-emerald-500)" : "var(--color-rose-500)"}
-                          rx={4}
-                        />
-                        <text x={2} y={4} fill="#fff" fontSize={10} fontWeight="500" textAnchor="start" className="tabular-nums">
-                          {lastClose >= 1000 ? `${(lastClose / 1000).toFixed(1)}k` : lastClose.toFixed(2)}
-                        </text>
-                      </g>
-                    )}
+              <ChartContainer
+                config={chartConfig}
+                className="aspect-auto h-[340px] w-full [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-zinc-950/5 dark:[&_.recharts-rectangle.recharts-tooltip-cursor]:fill-zinc-950/25 [&_.recharts-cartesian-grid_line[stroke='#ccc']]:stroke-border/64 [&_.recharts-cartesian-axis-line]:stroke-border/64 [&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground/72 dark:[&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground/64"
+              >
+                <BarChart data={data} maxBarSize={20} margin={{ left: 20, right: -5 }}>
+                  <CartesianGrid vertical={false} strokeWidth={1} />
+                  <XAxis
+                    dataKey="date"
+                    tickLine={false}
+                    tickFormatter={formatTick}
+                    interval={0}
+                    minTickGap={5}
+                    tickMargin={12}
                   />
-                )}
-                <ChartTooltip content={<CandlestickTooltip />} />
-                <Bar dataKey="openClose" shape={renderCandlestick}>
-                  {data.map((d) => (
-                    <Cell key={d.date} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ChartContainer>
-          </motion.div>
-        </AnimatePresence>
+                  <YAxis
+                    domain={[minVal - pad, maxVal + pad]}
+                    tickCount={7}
+                    tickLine={false}
+                    orientation="right"
+                    tickFormatter={(value: number) =>
+                      value >= 1000 ? `${(value / 1000).toFixed(1)}k` : value >= 1 ? value.toFixed(2) : value.toFixed(4)
+                    }
+                  />
+                  {lastClose != null && (
+                    <ReferenceLine
+                      y={lastClose}
+                      stroke="var(--muted-foreground)"
+                      opacity={0.5}
+                      strokeWidth={1}
+                      strokeDasharray="2 2"
+                      label={({ viewBox }: { viewBox: { x: number; y: number; width: number } }) => (
+                        <g transform={`translate(${viewBox.x + viewBox.width + 5},${viewBox.y})`}>
+                          <rect x={-2} y={-10} width={50} height={20}
+                            fill={lastIsGrowing ? "var(--color-emerald-500)" : "var(--color-rose-500)"}
+                            rx={4}
+                          />
+                          <text x={2} y={4} fill="#fff" fontSize={10} fontWeight="500" textAnchor="start" className="tabular-nums">
+                            {lastClose >= 1000 ? `${(lastClose / 1000).toFixed(1)}k` : lastClose.toFixed(2)}
+                          </text>
+                        </g>
+                      )}
+                    />
+                  )}
+                  <ChartTooltip content={<CandlestickTooltip intraday={intraday} />} />
+                  <Bar dataKey="openClose" shape={renderCandlestick}>
+                    {data.map((item) => (
+                      <Cell key={item.date} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ChartContainer>
+            </motion.div>
+          </AnimatePresence>
+        )}
 
-        {/* Period pills */}
         <div className="flex flex-wrap items-center gap-1">
-          {PERIODS.map((p) => (
+          {PERIODS.map((item) => (
             <button
-              key={p}
-              onClick={() => setPeriod(p)}
+              key={item.label}
+              onClick={() => setPeriod(item.label)}
               className={cn(
                 "rounded-md px-3 py-1 text-xs font-medium tabular-nums transition-colors",
-                p === period
+                item.label === period
                   ? "bg-primary text-primary-foreground"
                   : "text-muted-foreground hover:bg-muted hover:text-foreground"
               )}
             >
-              {p}
+              {item.label}
             </button>
           ))}
+          <span className="ml-auto text-[11px] text-muted-foreground">Fonte: CoinGecko</span>
         </div>
       </CardContent>
     </Card>

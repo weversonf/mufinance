@@ -20,6 +20,7 @@ const labelMap: Record<string, string> = {
   analytics: "Análises",
   investments: "Investimentos",
   budgets: "Orçamentos",
+  analitico: "Analítico",
   settings: "Configurações",
   notifications: "Notificações",
   support: "Suporte",

@@ -1,6 +1,6 @@
 "use client"
 
-import Image from "next/image"
+import { useState } from "react"
 import Link from "next/link"
 import {
   Card,
@@ -12,8 +12,8 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useFinanceData } from "@/components/finance/finance-provider"
 import { usePrivacy } from "@/components/privacy-toggle"
+import { EditTransactionDialog } from "@/components/transactions/edit-transaction-dialog"
 import {
-  MoreHorizontalIcon,
   ChevronRightIcon,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -28,8 +28,14 @@ const categoryColors: Record<string, string> = {
 }
 
 export function RecentTransactions() {
-  const { recentTransactions } = useFinanceData()
+  const { recentTransactions, fullTransactions, snapshot, bankAccounts, refresh } = useFinanceData()
   const { privacyMode } = usePrivacy()
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const selected = fullTransactions.find((transaction) => transaction.id === selectedId)
+  function formatDate(value: string) {
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value)
+    return match ? `${match[3]}/${match[2]}/${match[1]}` : value
+  }
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
@@ -45,12 +51,11 @@ export function RecentTransactions() {
         <div className="overflow-x-auto">
           <div className="min-w-0 space-y-1 sm:min-w-[600px] md:min-w-[800px]">
             {/* Header */}
-            <div className="grid grid-cols-[1fr_100px] gap-4 border-b pb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground sm:grid-cols-[1fr_140px_100px_32px] md:grid-cols-[1fr_140px_100px_120px_32px]">
+            <div className="grid grid-cols-[minmax(90px,1fr)_minmax(120px,1.5fr)_100px_90px] gap-3 border-b pb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              <span>Categoria</span>
               <span>Descrição</span>
-              <span className="hidden sm:inline">ID da transação</span>
               <span className="text-right">Valor</span>
-              <span className="hidden md:inline">Data</span>
-              <span className="hidden sm:block" />
+              <span>Data</span>
             </div>
 
             {/* Rows */}
@@ -58,43 +63,27 @@ export function RecentTransactions() {
               <div className="flex flex-col items-center justify-center py-10 text-center">
                 <p className="text-sm font-medium text-foreground">Nenhuma transação registrada ainda</p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Use o botão &ldquo;Nova Transação&rdquo; no cabeçalho para adicionar seu primeiro lançamento.
+                  Use o botão + para adicionar seu primeiro lançamento.
                 </p>
               </div>
             ) : (
               recentTransactions.map((tx) => (
-                <div
+                <button
                   key={tx.id}
-                  className="group grid grid-cols-[1fr_100px] items-center gap-4 rounded-lg py-2.5 transition-colors hover:bg-muted/50 sm:grid-cols-[1fr_140px_100px_32px] md:grid-cols-[1fr_140px_100px_120px_32px]"
+                  type="button"
+                  onClick={() => setSelectedId(tx.id)}
+                  className="grid w-full grid-cols-[minmax(90px,1fr)_minmax(120px,1.5fr)_100px_90px] items-center gap-3 rounded-lg py-2.5 text-left transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
-                {/* Merchant */}
-                <div className="flex items-center gap-3">
-                  <Image
-                    src={tx.logo}
-                    alt={tx.merchant}
-                    width={36}
-                    height={36}
-                    className="size-9 shrink-0 rounded-lg object-contain"
-                    unoptimized
-                  />
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium">{tx.merchant}</p>
                     <Badge
                       variant="secondary"
                       className={cn(
-                        "mt-0.5 h-5 rounded-md px-1.5 text-[10px] font-medium",
+                        "w-fit max-w-full truncate rounded-md px-1.5 text-[10px] font-medium",
                         categoryColors[tx.category]
                       )}
                     >
                       {tx.category}
                     </Badge>
-                  </div>
-                </div>
-
-                {/* ID da transação */}
-                <span className="hidden font-mono text-xs text-muted-foreground sm:inline truncate">
-                  {tx.transactionId}
-                </span>
+                <span className="truncate text-sm font-medium">{tx.merchant}</span>
 
                 {/* Valor */}
                 <span
@@ -109,24 +98,13 @@ export function RecentTransactions() {
                 </span>
 
                 {/* Date */}
-                <span className="hidden text-xs text-muted-foreground md:inline truncate">{tx.date}</span>
-
-                {/* Actions */}
-                <Button
-                  render={<Link href="/transactions" />}
-                  nativeButton={false}
-                  variant="ghost"
-                  size="icon"
-                  className="hidden size-8 opacity-0 transition-opacity group-hover:opacity-100 sm:inline-flex"
-                  aria-label={`Ver a transação de ${tx.merchant}`}
-                >
-                  <MoreHorizontalIcon className="size-4" />
-                </Button>
-              </div>
+                <span className="truncate text-xs text-muted-foreground">{formatDate(tx.date)}</span>
+              </button>
             )))}
           </div>
         </div>
       </CardContent>
+      <EditTransactionDialog transaction={selected ? { ...selected, ...(snapshot?.transactions.find((item) => item.id === selected.id) || {}) } : null} accountId={bankAccounts[0]?.id || ""} allTransactions={snapshot?.transactions ?? []} open={selectedId !== null} onOpenChange={(open) => { if (!open) setSelectedId(null) }} onSaved={refresh} />
     </Card>
   )
 }

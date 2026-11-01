@@ -181,7 +181,7 @@ export default function SignUpPage() {
                 alt="Google"
                 width={16}
                 height={16}
-                className="size-4"
+                className="size-4 opacity-80 grayscale"
               />
               <span className="text-sm">Google</span>
             </Button>
@@ -191,7 +191,7 @@ export default function SignUpPage() {
                 alt="Apple"
                 width={16}
                 height={16}
-                className="size-4"
+                className="size-4 opacity-80 grayscale"
               />
               <span className="text-sm">Apple</span>
             </Button>

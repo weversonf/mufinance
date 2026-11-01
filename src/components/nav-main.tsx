@@ -32,6 +32,7 @@ export function NavMain({
             <SidebarMenuButton
               isActive={pathname === item.url}
               tooltip={item.title}
+              aria-label={item.title}
               render={<Link href={item.url} />}
             >
               {item.icon}

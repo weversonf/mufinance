@@ -169,7 +169,7 @@ function buildData(snapshot: FinanceSnapshot | null, isDemoMode: boolean = false
     date: String(transaction.date ?? ""),
     logo: "/icon.svg",
     category: String(transaction.category ?? "Sem categoria"),
-    status: transaction.status === "pending" ? "pending" : "completed",
+    status: transaction.status === "pending" || transaction.status === "planned" ? "pending" : "completed",
     type: transaction.type === "income" ? "income" : "expense",
     notes: typeof transaction.notes === "string" ? transaction.notes : undefined,
   }))
@@ -203,12 +203,14 @@ function buildData(snapshot: FinanceSnapshot | null, isDemoMode: boolean = false
     .map((item) => ({ month: monthLabel(item.date), currentYear: item.currentYear, lastYear: item.lastYear }))
 
   function movement(days: number, bucket: "day" | "week" | "month") {
-    const cutoff = new Date(now)
-    cutoff.setDate(now.getDate() - days)
+    const cutoff = new Date(now.getFullYear(), now.getMonth(), now.getDate() - (days - 1))
+    const startKey = `${cutoff.getFullYear()}-${String(cutoff.getMonth() + 1).padStart(2, "0")}-${String(cutoff.getDate()).padStart(2, "0")}`
+    const endKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`
     const grouped = new Map<string, MoneyMovementPoint>()
     for (const transaction of analyticsTransactions) {
       const date = dateValue(transaction.date)
-      if (!date || date < cutoff) continue
+      const transactionDate = String(transaction.date ?? "").slice(0, 10)
+      if (!date || transactionDate < startKey || transactionDate > endKey) continue
       let key = dateKey(date)
       let label = new Intl.DateTimeFormat("pt-BR", { weekday: "short" }).format(date)
       if (bucket === "week") {
@@ -258,7 +260,11 @@ function buildData(snapshot: FinanceSnapshot | null, isDemoMode: boolean = false
   }
 
   const categoryMap = new Map(categories.map((category) => [category.id, String(category.name ?? category.id)]))
-  const budgetCategories: BudgetCategory[] = monthBudgets.map((budget, index) => ({ id: budget.id, category: categoryMap.get(String(budget.categoryId)) ?? String(budget.categoryId ?? "Orçamento"), iconName: "wallet", budget: numberValue(budget.limitAmount), spent: spentByCategory.get(String(budget.categoryId)) ?? 0, color: `text-chart-${(index % 5) + 1}` }))
+  const budgetCategories: BudgetCategory[] = monthBudgets.map((budget, index) => {
+    const categoryId = String(budget.categoryId)
+    const name = categoryMap.get(categoryId) ?? categoryId
+    return { id: budget.id, category: name, iconName: "wallet", budget: numberValue(budget.limitAmount), spent: (spentByCategory.get(categoryId) ?? 0) + (categoryId === name ? 0 : spentByCategory.get(name) ?? 0), color: `text-chart-${(index % 5) + 1}` }
+  })
   const budget = budgetCategories.reduce((sum, item) => sum + item.budget, 0)
   const spent = budgetCategories.reduce((sum, item) => sum + item.spent, 0)
 
@@ -285,7 +291,15 @@ function buildData(snapshot: FinanceSnapshot | null, isDemoMode: boolean = false
       dailyLimit: 0, 
       monthlySpend: cardSpend, 
       monthlyLimit: numberValue(card.limit), 
-      color: "bg-primary text-primary-foreground" 
+      color: (() => {
+        const name = String(card.name ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
+        if (name.includes("nubank") || name.includes("nu bank")) return "bg-[#820ad1] text-white"
+        if (name.includes("caixa")) return "bg-[#0066a1] text-white"
+        if (name.includes("itau")) return "bg-[#ed6c00] text-white"
+        if (name.includes("inter")) return "bg-[#ff7a00] text-white"
+        const colors: Record<string, string> = { ocean: "bg-[#175a8b] text-white", forest: "bg-[#16634c] text-white", plum: "bg-[#70437c] text-white", sunset: "bg-[#b85a32] text-white", graphite: "bg-[#30343b] text-white" }
+        return colors[String(card.color)] ?? "bg-zinc-800 text-white"
+      })()
     }
   })
   const savingsGoals: SavingsGoal[] = goals.map((goal) => {
