@@ -12,20 +12,20 @@ export default function Page() {
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
         <AnalyticsHeader />
 
-        {/* Row 1: Heatmap */}
-        <SpendingHeatmap />
-
-        {/* Row 2: Donut + Month Comparison */}
+        {/* Row 1: Donut + Month Comparison */}
         <div className="grid gap-4 lg:grid-cols-2">
           <CategoryDonut />
           <MonthComparison />
         </div>
 
-        {/* Row 3: Recurring + AI Insights */}
+        {/* Row 2: Recurring + AI Insights */}
         <div className="grid gap-4 lg:grid-cols-2">
           <RecurringDetector />
           <AiInsights />
         </div>
+
+        {/* Row 3: Calendário compacto, menos destaque */}
+        <SpendingHeatmap />
       </div>
     </AnalyticsMonthProvider>
   )

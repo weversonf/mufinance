@@ -11,7 +11,7 @@ import { AmountCalculator } from "@/components/transactions/amount-calculator"
 import { DateField } from "@/components/transactions/date-field"
 import { cn } from "@/lib/utils"
 
-type EditableTransaction = FullTransaction & { accountId?: string | null; sourceType?: "account" | "credit-card" | null; sourceId?: string | null; installmentGroupId?: string | null; installmentNumber?: number | null; installmentTotal?: number | null; invoiceId?: string | null; destinationAccountId?: string | null }
+type EditableTransaction = Omit<FullTransaction, "status"> & { status: FullTransaction["status"] | "planned"; accountId?: string | null; sourceType?: "account" | "credit-card" | null; sourceId?: string | null; installmentGroupId?: string | null; installmentNumber?: number | null; installmentTotal?: number | null; invoiceId?: string | null; destinationAccountId?: string | null }
 
 const fieldLabel = "grid gap-1.5 text-xs font-medium text-muted-foreground"
 const inputClass = "h-11 sm:h-10"

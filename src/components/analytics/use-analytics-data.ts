@@ -72,6 +72,7 @@ export type AnalyticsData = {
   categoryBreakdowns: CategoryBreakdown[]
   monthComparisons: MonthComparison[]
   dailySpending: Array<{ date: string; amount: number }>
+  dailyTotals: Array<{ date: string; income: number; expense: number; balance: number }>
   recurringCharges: RecurringCharge[]
   aiInsights: AiInsight[]
   summary: AnalyticsSummary
@@ -167,6 +168,24 @@ export function useAnalyticsData(): AnalyticsData {
     const dailySpending = [...dailyMap.entries()]
       .sort(([left], [right]) => left.localeCompare(right))
       .map(([date, amount]) => ({ date, amount }))
+
+    const dailyTotalsMap = new Map<string, { income: number; expense: number }>()
+    for (const transaction of monthTransactions) {
+      const date = String(transaction.date ?? "").slice(0, 10)
+      if (!date) continue
+      const entry = dailyTotalsMap.get(date) ?? { income: 0, expense: 0 }
+      if (transaction.type === "income") entry.income += amountOf(transaction)
+      else if (transaction.type === "expense") entry.expense += amountOf(transaction)
+      dailyTotalsMap.set(date, entry)
+    }
+    const dailyTotals = [...dailyTotalsMap.entries()]
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([date, value]) => ({
+        date,
+        income: value.income,
+        expense: value.expense,
+        balance: value.income - value.expense,
+      }))
 
     // Detecta recorrências por favorecido com ocorrência em 2+ meses e valores estáveis.
     const recurringGroups = new Map<string, {
@@ -281,6 +300,7 @@ export function useAnalyticsData(): AnalyticsData {
       categoryBreakdowns,
       monthComparisons,
       dailySpending,
+      dailyTotals,
       recurringCharges,
       aiInsights: insights,
       summary,
