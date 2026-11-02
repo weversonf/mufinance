@@ -30,10 +30,11 @@ const chartConfig = {
 } satisfies ChartConfig
 
 function ChangeLabel(props: Record<string, unknown> & { monthComparisons?: Array<{ thisMonth: number; lastMonth: number }> }) {
-  const { x, y, width, index, monthComparisons = [] } = props as {
+  const { x, y, width, height, index, monthComparisons = [] } = props as {
     x: number
     y: number
     width: number
+    height: number
     index: number
     monthComparisons?: Array<{ thisMonth: number; lastMonth: number }>
   }
@@ -44,9 +45,10 @@ function ChangeLabel(props: Record<string, unknown> & { monthComparisons?: Array
   const isUp = pct > 0
   return (
     <text
-      x={x + width / 2}
-      y={y - 6}
-      textAnchor="middle"
+      x={x + width + 6}
+      y={y + height / 2}
+      textAnchor="start"
+      dominantBaseline="middle"
       className={`text-[10px] font-medium tabular-nums ${isUp ? "fill-rose-500" : "fill-emerald-500"}`}
     >
       {isUp ? "+" : ""}
@@ -107,36 +109,44 @@ export function MonthComparison() {
         </div>
       </CardHeader>
       <CardContent className="min-w-0">
-        <ChartContainer config={chartConfig} className="h-[280px] w-full">
+        <ChartContainer
+          config={chartConfig}
+          className="w-full"
+          style={{ height: Math.max(220, monthComparisons.length * 48 + 24) }}
+        >
           <BarChart
             data={monthComparisons}
-            margin={{ top: 24, right: 8, bottom: 0, left: -20 }}
+            layout="vertical"
+            margin={{ top: 4, right: 56, bottom: 0, left: 0 }}
             barGap={4}
           >
             <CartesianGrid
               strokeDasharray="3 3"
-              vertical={false}
+              horizontal={false}
               stroke="var(--color-border)"
               strokeOpacity={0.5}
             />
             <XAxis
-              dataKey="category"
-              tickLine={false}
-              axisLine={false}
-              fontSize={11}
-              tickMargin={8}
-              stroke="var(--color-muted-foreground)"
-              tickFormatter={(v: string) =>
-                v.length > 8 ? v.slice(0, 7) + "..." : v
-              }
-            />
-            <YAxis
+              type="number"
               tickLine={false}
               axisLine={false}
               fontSize={11}
               tickMargin={8}
               stroke="var(--color-muted-foreground)"
               tickFormatter={(v: number) => `R$ ${v}`}
+            />
+            <YAxis
+              type="category"
+              dataKey="category"
+              tickLine={false}
+              axisLine={false}
+              fontSize={11}
+              tickMargin={8}
+              width={96}
+              stroke="var(--color-muted-foreground)"
+              tickFormatter={(v: string) =>
+                v.length > 13 ? v.slice(0, 12) + "…" : v
+              }
             />
             <ChartTooltip
               content={
@@ -151,14 +161,16 @@ export function MonthComparison() {
               dataKey="lastMonth"
               fill="var(--color-muted-foreground)"
               fillOpacity={0.3}
-              radius={[4, 4, 0, 0]}
-              barSize={18}
+              radius={[0, 4, 4, 0]}
+              barSize={14}
+              isAnimationActive={false}
             />
             <Bar
               dataKey="thisMonth"
               fill="var(--color-primary)"
-              radius={[4, 4, 0, 0]}
-              barSize={18}
+              radius={[0, 4, 4, 0]}
+              barSize={14}
+              isAnimationActive={false}
             >
               <LabelList
                 dataKey="thisMonth"
