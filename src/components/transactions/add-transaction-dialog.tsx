@@ -171,8 +171,12 @@ export function AddTransactionDialog({
       setPayee(`Fatura ${cardName} - ${monthLabel}`)
       setCategory("Fatura de Cartão")
       setRecurrence("unica")
-      setStatus("completed")
-      setDate(`${invoiceMonth}-10`)
+      const rawDueDay = (targetCard as { dueDay?: number | string } | undefined)?.dueDay
+      const dueDay = rawDueDay ? String(rawDueDay).padStart(2, "0") : "10"
+      const invoiceDueDate = `${invoiceMonth}-${dueDay}`
+      const isPast = invoiceDueDate < localDateISO()
+      setStatus(isPast ? "completed" : "planned")
+      setDate(invoiceDueDate)
     } else {
       if (payee.startsWith("Fatura ")) {
         setPayee("")
@@ -184,15 +188,19 @@ export function AddTransactionDialog({
 
   function handleInvoiceMonthChange(nextMonth: string) {
     setInvoiceMonth(nextMonth)
-    const currentDay = date.slice(8, 10) || "10"
-    setDate(`${nextMonth}-${currentDay}`)
+    const targetCard = cardsData.find((c) => c.id === accountId) || cardsData[0]
+    const rawDueDay = (targetCard as { dueDay?: number | string } | undefined)?.dueDay
+    const dueDay = rawDueDay ? String(rawDueDay).padStart(2, "0") : (date.slice(8, 10) || "10")
+    const nextDate = `${nextMonth}-${dueDay}`
+    setDate(nextDate)
 
     if (cardEntryMode === "invoice") {
-      const targetCard = cardsData.find((c) => c.id === accountId) || cardsData[0]
       const cardName = targetCard?.name || "Cartão"
       const opt = invoiceMonthOptions.find((o) => o.key === nextMonth)
       const monthLabel = opt?.monthName || nextMonth
       setPayee(`Fatura ${cardName} - ${monthLabel}`)
+      const isPast = nextDate < localDateISO()
+      setStatus(isPast ? "completed" : "planned")
     }
   }
 
@@ -569,6 +577,7 @@ export function AddTransactionDialog({
               type="button"
               onClick={() => setStatus(status === "completed" ? "planned" : "completed")}
               aria-pressed={status === "planned"}
+              title="Clique para alternar entre Planejada e Concluída"
               className={cn(
                 "flex h-11 items-center justify-center gap-1.5 rounded-lg border px-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 sm:h-10",
                 status === "completed"
@@ -579,6 +588,11 @@ export function AddTransactionDialog({
               <span className={cn("size-1.5 rounded-full", status === "completed" ? "bg-emerald-500" : "bg-amber-500")} />
               {status === "completed" ? "Concluída" : "Planejada"}
             </button>
+            {cardEntryMode === "invoice" && (
+              <span className="text-[10px] text-muted-foreground/80 leading-tight">
+                {status === "planned" ? "A vencer (ainda não paga)" : "Fatura já paga no banco"}
+              </span>
+            )}
           </div>
 
           {/* Conta de Origem (Apenas quando não for modo Cartão de Crédito) */}

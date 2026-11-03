@@ -440,32 +440,38 @@ export async function updateTransaction(id: string, input: unknown) {
     return { id, ...data };
   }
   const oldAccountId = String(current.accountId ?? "");
-  const newAccount = await getNeonAccount(data.accountId, user.uid);
-  const oldDelta = accountDelta(String(current.type), Number(current.amount));
-  const newDelta = accountDelta(data.type, data.amount);
   const columns = transactionColumns(data);
   const queries = [];
 
-  if (oldAccountId === data.accountId) {
-    queries.push(sql`
-      UPDATE mufinance.accounts
-      SET balance = balance + ${newDelta - oldDelta}, updated_at = now()
-      WHERE id = ${data.accountId} AND owner_uid = ${user.uid}
-    `);
-  } else {
-    if (oldAccountId && oldDelta !== 0) {
+  const isOldCard = current.sourceType === "credit-card";
+  const isNewCard = data.sourceType === "credit-card";
+
+  if (!isOldCard && !isNewCard) {
+    const newAccount = await getNeonAccount(data.accountId, user.uid);
+    const oldDelta = accountDelta(String(current.type), Number(current.amount));
+    const newDelta = accountDelta(data.type, data.amount);
+
+    if (oldAccountId === data.accountId) {
       queries.push(sql`
         UPDATE mufinance.accounts
-        SET balance = balance - ${oldDelta}, updated_at = now()
-        WHERE id = ${oldAccountId} AND owner_uid = ${user.uid}
+        SET balance = balance + ${newDelta - oldDelta}, updated_at = now()
+        WHERE id = ${data.accountId} AND owner_uid = ${user.uid}
       `);
-    }
-    if (newDelta !== 0) {
-      queries.push(sql`
-        UPDATE mufinance.accounts
-        SET balance = balance + ${newDelta}, updated_at = now()
-        WHERE id = ${newAccount.id} AND owner_uid = ${user.uid}
-      `);
+    } else {
+      if (oldAccountId && oldDelta !== 0) {
+        queries.push(sql`
+          UPDATE mufinance.accounts
+          SET balance = balance - ${oldDelta}, updated_at = now()
+          WHERE id = ${oldAccountId} AND owner_uid = ${user.uid}
+        `);
+      }
+      if (newDelta !== 0) {
+        queries.push(sql`
+          UPDATE mufinance.accounts
+          SET balance = balance + ${newDelta}, updated_at = now()
+          WHERE id = ${newAccount.id} AND owner_uid = ${user.uid}
+        `);
+      }
     }
   }
   queries.push(sql`
@@ -489,8 +495,20 @@ export async function createTransaction(input: unknown) {
   const user = await requireSessionUser();
   const data = transactionInputSchema.parse(input);
   const columns = transactionColumns(data);
-  const account = await getNeonAccount(data.accountId, user.uid);
   const id = crypto.randomUUID();
+
+  if (data.sourceType === "credit-card") {
+    await getNeonCreditCard(data.accountId, user.uid);
+    await sql`
+      INSERT INTO mufinance.transactions
+        (id, owner_uid, account_id, destination_account_id, date, payee, category, amount, type, status, source_type, source_id, invoice_id, notes, installment_number, installment_total, installment_group_id)
+      VALUES (${id}, ${user.uid}, ${columns.accountId}, ${columns.destinationAccountId}, ${columns.date}, ${columns.payee}, ${columns.category}, ${columns.amount}, ${columns.type}, ${columns.status}, ${columns.sourceType}, ${columns.sourceId}, ${columns.invoiceId}, ${columns.notes}, ${columns.installmentNumber}, ${columns.installmentTotal}, ${columns.installmentGroupId})
+    `;
+    revalidatePath("/");
+    return { id, ...data, ownerId: user.uid };
+  }
+
+  const account = await getNeonAccount(data.accountId, user.uid);
 
   if (data.type === "transfer" && data.destinationAccountId) {
     let destinationAccount;
@@ -545,7 +563,8 @@ export async function deleteTransaction(id: string) {
   const accountId = String(current.accountId ?? "");
   const delta = accountDelta(String(current.type), Number(current.amount));
   const queries = [];
-  if (accountId && delta !== 0) {
+  const isCard = current.sourceType === "credit-card";
+  if (!isCard && accountId && delta !== 0) {
     queries.push(sql`
       UPDATE mufinance.accounts
       SET balance = balance - ${delta}, updated_at = now()
