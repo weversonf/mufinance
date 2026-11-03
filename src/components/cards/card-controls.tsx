@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { PlusIcon } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import type { CardData } from "@/data/seed"
 import { PayBillDialog } from "@/components/cards/pay-bill-dialog"
+import { useFinanceData } from "@/components/finance/finance-provider"
 
 interface CardControlsProps {
   card: CardData
@@ -40,8 +41,8 @@ function formatCurrency(value: number): string {
   return new Intl.NumberFormat("pt-BR", {
     style: "currency",
     currency: "BRL",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   }).format(value)
 }
 
@@ -53,10 +54,53 @@ export function CardControls({
   onDailyLimitChange,
   onAddCard,
 }: CardControlsProps) {
+  const { snapshot } = useFinanceData()
   const [payBillOpen, setPayBillOpen] = useState(false)
+
+  const now = new Date()
+  const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`
+  const [selectedInvoiceMonth, setSelectedInvoiceMonth] = useState(currentMonthKey)
+
+  const invoiceOptions = useMemo(() => {
+    const list = []
+    for (let i = -3; i <= 4; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth() + i, 1)
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`
+      const rawMonth = new Intl.DateTimeFormat("pt-BR", { month: "short" }).format(d)
+      const cap = rawMonth.charAt(0).toUpperCase() + rawMonth.slice(1).replace(".", "")
+      const label = i === 0 ? `${cap}/${d.getFullYear()} (Atual)` : `${cap}/${d.getFullYear()}`
+      list.push({ key, label, monthName: `${cap}/${d.getFullYear()}` })
+    }
+    return list
+  }, [now])
+
+  const selectedOption = invoiceOptions.find((o) => o.key === selectedInvoiceMonth)
+
+  const currentSpend = useMemo(() => {
+    const txs = snapshot?.transactions ?? []
+    const matching = txs.filter(
+      (t) =>
+        t.accountId === card.id &&
+        t.type === "expense" &&
+        String(t.date ?? "").startsWith(selectedInvoiceMonth)
+    )
+
+    if (matching.length === 0 && selectedInvoiceMonth === currentMonthKey) {
+      return card.monthlySpend
+    }
+
+    return matching.reduce((sum, t) => {
+      const val =
+        typeof t.amount === "number"
+          ? Math.abs(t.amount)
+          : parseFloat(String(t.amount || 0).replace(",", ".")) || 0
+      return sum + val
+    }, 0)
+  }, [snapshot?.transactions, card.id, card.monthlySpend, selectedInvoiceMonth, currentMonthKey])
+
   const spendPercent =
     card.monthlyLimit > 0
-      ? Math.round((card.monthlySpend / card.monthlyLimit) * 100)
+      ? Math.round((currentSpend / card.monthlyLimit) * 100)
       : 0
 
   return (
@@ -73,7 +117,7 @@ export function CardControls({
             <p
               className={cn(
                 "text-xs",
-                frozen ? "text-destructive font-medium" : "text-muted-foreground",
+                frozen ? "text-destructive font-medium" : "text-muted-foreground"
               )}
             >
               {frozen ? "Bloqueado" : "Ativo"}
@@ -111,14 +155,28 @@ export function CardControls({
           </div>
         </div>
 
-        {/* 📊 Monthly Usage 📊 */}
+        {/* 📊 Monthly Usage & Invoice Selector 📊 */}
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <p className="text-sm font-medium">Fatura Atual</p>
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <p className="text-sm font-medium">Fatura</p>
+              <select
+                value={selectedInvoiceMonth}
+                onChange={(e) => setSelectedInvoiceMonth(e.target.value)}
+                className="h-7 rounded-md border border-border/70 bg-background px-2 text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+              >
+                {invoiceOptions.map((opt) => (
+                  <option key={opt.key} value={opt.key}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
             <span className="text-xs text-muted-foreground tabular-nums">
               {spendPercent}% do limite
             </span>
           </div>
+
           <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
             <div
               className={cn(
@@ -126,23 +184,25 @@ export function CardControls({
                 spendPercent >= 90
                   ? "bg-destructive"
                   : spendPercent >= 70
-                    ? "bg-amber-500"
-                    : "bg-primary",
+                  ? "bg-amber-500"
+                  : "bg-primary"
               )}
               style={{ width: `${Math.min(spendPercent, 100)}%` }}
             />
           </div>
+
           <div className="flex justify-between text-xs text-muted-foreground tabular-nums">
-            <span>{formatCurrency(card.monthlySpend)}</span>
-            <span>{formatCurrency(card.monthlyLimit)}</span>
+            <span className="font-medium text-foreground">{formatCurrency(currentSpend)}</span>
+            <span>Limite: {formatCurrency(card.monthlyLimit)}</span>
           </div>
-          <Button 
-            className="w-full mt-2" 
-            variant="secondary" 
-            disabled={card.monthlySpend <= 0}
+
+          <Button
+            className="mt-2 w-full"
+            variant="secondary"
+            disabled={currentSpend <= 0}
             onClick={() => setPayBillOpen(true)}
           >
-            Pagar Fatura
+            Pagar Fatura {selectedOption ? `(${selectedOption.monthName})` : ""}
           </Button>
         </div>
 
@@ -163,10 +223,12 @@ export function CardControls({
         </div>
       </CardContent>
 
-      <PayBillDialog 
-        open={payBillOpen} 
-        onOpenChange={setPayBillOpen} 
-        card={card} 
+      <PayBillDialog
+        open={payBillOpen}
+        onOpenChange={setPayBillOpen}
+        card={card}
+        amountOverride={currentSpend}
+        invoiceLabel={selectedOption?.monthName}
       />
     </Card>
   )

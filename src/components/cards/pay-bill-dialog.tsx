@@ -7,13 +7,25 @@ import { useFinanceData } from "@/components/finance/finance-provider"
 import type { CardData } from "@/data/seed"
 import { Loader2Icon } from "lucide-react"
 
-export function PayBillDialog({ open, onOpenChange, card }: { open: boolean; onOpenChange: (open: boolean) => void; card: CardData }) {
+export function PayBillDialog({
+  open,
+  onOpenChange,
+  card,
+  amountOverride,
+  invoiceLabel,
+}: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  card: CardData
+  amountOverride?: number
+  invoiceLabel?: string
+}) {
   const { bankAccounts, refresh } = useFinanceData()
   const [accountId, setAccountId] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
 
-  const amount = card.monthlySpend || 0
+  const amount = typeof amountOverride === "number" ? amountOverride : (card.monthlySpend || 0)
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -29,7 +41,7 @@ export function PayBillDialog({ open, onOpenChange, card }: { open: boolean; onO
       
       const payload = {
         date: `${year}-${month}-${day}`,
-        payee: `Pagamento Fatura ${card.name}`,
+        payee: `Pagamento Fatura ${card.name}${invoiceLabel ? ` (${invoiceLabel})` : ""}`,
         category: "Transferência",
         accountId: accountId,
         destinationAccountId: card.id,
@@ -65,7 +77,7 @@ export function PayBillDialog({ open, onOpenChange, card }: { open: boolean; onO
         <DialogHeader>
           <DialogTitle>Pagar Fatura</DialogTitle>
           <DialogDescription>
-            A fatura atual do cartão {card.name} está em {new Intl.NumberFormat('pt-BR', {style:'currency', currency:'BRL'}).format(amount)}.
+            A fatura {invoiceLabel ? `de ${invoiceLabel}` : "atual"} do cartão {card.name} está em {new Intl.NumberFormat('pt-BR', {style:'currency', currency:'BRL'}).format(amount)}.
           </DialogDescription>
         </DialogHeader>
         
