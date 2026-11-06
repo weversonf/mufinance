@@ -95,34 +95,6 @@ export function AccountCard({ account, index, onSelect }: AccountCardProps) {
         <p className={cn("mt-3 tabular-nums text-xl font-bold tracking-tight", account.balance < 0 && "text-rose-600 dark:text-rose-400")}>
           {privacyMode ? "R$ •••••" : fmt(account.balance)}
         </p>
-
-        {/* Change badge + last activity */}
-        <div className="mt-2 flex items-center justify-between">
-          <span
-            className={cn(
-              "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium",
-              account.change >= 0
-                ? "bg-emerald-500/10 text-emerald-500"
-                : "bg-rose-500/10 text-rose-500"
-            )}
-          >
-            {account.change >= 0 ? (
-              <TrendingUpIcon className="size-3" />
-            ) : (
-              <TrendingDownIcon className="size-3" />
-            )}
-            <span className="tabular-nums">
-              {account.change >= 0 ? "+" : "-"}
-              {fmt(account.change)}{" "}
-              ({Math.abs(account.changePercent).toFixed(1)}%)
-            </span>
-          </span>
-
-          <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-            <ClockIcon className="size-3" />
-            {account.lastActivity}
-          </span>
-        </div>
       </div>
     </motion.div>
   )

@@ -22,8 +22,6 @@ export function AccountSummary({ accounts }: AccountSummaryProps) {
     }).format(Math.abs(n))}`
 
   const totalBalance = accounts.reduce((sum, a) => sum + a.balance, 0)
-  const totalChange = accounts.reduce((sum, a) => sum + a.change, 0)
-  const isPositive = totalChange >= 0
 
   const cards = [
     {
@@ -32,13 +30,6 @@ export function AccountSummary({ accounts }: AccountSummaryProps) {
       icon: WalletIcon,
       color: "text-primary",
       bg: "bg-primary/10",
-    },
-    {
-      label: "Variação do Mês",
-      value: `${isPositive ? "+" : "-"}${fmt(totalChange)}`,
-      icon: isPositive ? TrendingUpIcon : TrendingDownIcon,
-      color: isPositive ? "text-emerald-500" : "text-rose-500",
-      bg: isPositive ? "bg-emerald-500/10" : "bg-rose-500/10",
     },
     {
       label: "Contas Cadastradas",
@@ -50,7 +41,7 @@ export function AccountSummary({ accounts }: AccountSummaryProps) {
   ]
 
   return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
       {cards.map((card) => (
         <div
           key={card.label}
