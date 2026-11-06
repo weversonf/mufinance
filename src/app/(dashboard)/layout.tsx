@@ -30,7 +30,7 @@ export default function DashboardLayout({
             <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
-        <header className="flex h-14 shrink-0 items-center gap-2 sm:h-16">
+        <header className="flex h-14 shrink-0 items-center gap-2 pt-[env(safe-area-inset-top)] sm:h-16">
           <div className="flex min-w-0 items-center gap-2 px-3 sm:px-4">
             <SidebarTrigger className="-ml-1" />
             <Separator
