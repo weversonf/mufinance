@@ -69,6 +69,15 @@ export function TransactionsPageClient() {
       data = data.filter((transaction) => transaction.type === typeFilter)
     }
 
+    // Ordenação estrita: por data decrescente; e na mesma data, receitas primeiro
+    data.sort((a, b) => {
+      const dateCmp = b.date.localeCompare(a.date)
+      if (dateCmp !== 0) return dateCmp
+      const typeA = a.type === "income" ? 0 : 1
+      const typeB = b.type === "income" ? 0 : 1
+      return typeA - typeB
+    })
+
     return data
   }, [categoryFilter, fullTransactions, month, search, statusFilter, typeFilter])
 

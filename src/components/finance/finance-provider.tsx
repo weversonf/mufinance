@@ -147,7 +147,15 @@ function buildData(snapshot: FinanceSnapshot | null, isDemoMode: boolean = false
   // Exclui lançamentos automáticos do sistema (ex: ajustes de saldo) dos cálculos de analytics.
   // Eles continuam visíveis na lista completa de transações mas não distorcem gráficos e orçamentos.
   const analyticsTransactions = transactions.filter((t) => t.isSystemEntry !== true)
-  const sortedTransactions = [...transactions].sort((a, b) => String(b.date ?? "").localeCompare(String(a.date ?? "")))
+  const sortedTransactions = [...transactions].sort((a, b) => {
+    const dateCmp = String(b.date ?? "").localeCompare(String(a.date ?? ""))
+    if (dateCmp !== 0) return dateCmp
+    // Mesma data: receitas vêm na frente das despesas
+    const typeA = a.type === "income" ? 0 : 1
+    const typeB = b.type === "income" ? 0 : 1
+    if (typeA !== typeB) return typeA - typeB
+    return String(b.createdAt ?? "").localeCompare(String(a.createdAt ?? ""))
+  })
 
   const now = new Date()
   const currentMonth = monthKey(now)

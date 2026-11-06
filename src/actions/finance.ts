@@ -129,7 +129,9 @@ async function getNeonTransactions(ownerUid: string) {
            installment_group_id, is_system_entry, import_source, created_at, updated_at
     FROM mufinance.transactions
     WHERE owner_uid = ${ownerUid}
-    ORDER BY date DESC, created_at DESC
+    ORDER BY date DESC,
+             CASE WHEN type = 'income' THEN 0 ELSE 1 END ASC,
+             created_at DESC
   `;
   return rows.map((row) => mapTransaction(row as Record<string, unknown>));
 }
