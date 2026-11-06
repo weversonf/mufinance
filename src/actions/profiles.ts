@@ -25,7 +25,9 @@ const transferSchema = z.object({
   sourceAccountId: z.string().trim().min(1, "Selecione uma conta de origem."),
   amount: z.coerce.number().positive("Informe um valor maior que zero.").max(1_000_000),
   note: z.string().trim().max(140).optional().default(""),
-  idempotencyKey: z.string().trim().min(8).max(100).regex(/^[a-zA-Z0-9_-]+$/),
+  idempotencyKey: z.string().trim().min(8).max(100).regex(/^[a-zA-Z0-9_-]+$/).optional(),
+  // Se houver uma transação original a ser concluída (ex: converter despesa planejada)
+  originalTransactionId: z.string().trim().max(120).optional(),
 })
 
 function nowISO() {
@@ -90,6 +92,23 @@ export async function saveMyProfile(input: unknown) {
   return { displayName: data.displayName, username: data.username }
 }
 
+export async function listAllUsers() {
+  const user = await requireSessionUser()
+  const rows = await sql`
+    SELECT uid, username, display_name, photo_url, email
+    FROM mufinance.profiles
+    ORDER BY display_name ASC, username ASC
+  `
+  return rows.map((r: Record<string, unknown>) => ({
+    uid: String(r.uid),
+    username: String(r.username ?? ""),
+    displayName: String(r.display_name ?? `@${r.username}`),
+    photoURL: String(r.photo_url ?? ""),
+    email: String(r.email ?? ""),
+    isSelf: r.uid === user.uid,
+  }))
+}
+
 export async function findUserByUsername(input: unknown) {
   const user = await requireSessionUser()
   const username = usernameSchema.parse(input)
@@ -112,7 +131,8 @@ export async function findUserByUsername(input: unknown) {
 export async function createInternalTransfer(input: unknown) {
   const sender = await requireSessionUser()
   const data = transferSchema.parse(input)
-  const transferId = `${sender.uid}_${data.idempotencyKey}`
+  const key = data.idempotencyKey || crypto.randomUUID()
+  const transferId = `${sender.uid}_${key}`
   const createdAt = nowISO()
   const existing = await sql`SELECT id FROM mufinance.internal_transfers WHERE id = ${transferId} LIMIT 1`
   if (existing[0]) {
@@ -136,7 +156,7 @@ export async function createInternalTransfer(input: unknown) {
   const senderUsername = String(senderProfileRows[0]?.username ?? "")
   const recipientName = String(recipientRows[0].display_name ?? `@${data.recipientUsername}`)
   const date = createdAt.slice(0, 10)
-  await sql.transaction([
+  const queries = [
     sql`UPDATE mufinance.accounts SET balance = balance - ${data.amount}, updated_at = now() WHERE id = ${data.sourceAccountId} AND owner_uid = ${sender.uid}`,
     sql`UPDATE mufinance.accounts SET balance = balance + ${data.amount}, updated_at = now() WHERE id = ${recipientWalletRows[0].id} AND owner_uid = ${recipientUid}`,
     sql`INSERT INTO mufinance.internal_transfers (id, sender_uid, sender_username, sender_name, recipient_uid, recipient_username, recipient_name, amount, note, status)
@@ -145,11 +165,31 @@ export async function createInternalTransfer(input: unknown) {
         VALUES (${transferId + '-sent'}, ${sender.uid}, 'sent', ${transferId}, ${data.amount}, ${recipientName}, ${data.recipientUsername}, ${recipientRows[0].photo_url ?? ''}, ${data.note}, 'completed')`,
     sql`INSERT INTO mufinance.transfer_records (id, owner_uid, direction, transfer_id, amount, contact_name, contact_username, contact_avatar, note, status)
         VALUES (${transferId + '-received'}, ${recipientUid}, 'received', ${transferId}, ${data.amount}, ${senderName}, ${senderUsername}, '', ${data.note}, 'completed')`,
+  ]
+
+  if (data.originalTransactionId) {
+    // Atualiza a transação existente para concluída e vinculada à transferência
+    queries.push(
+      sql`UPDATE mufinance.transactions
+          SET status = 'completed',
+              account_id = ${data.sourceAccountId},
+              notes = coalesce(notes || ' | ', '') || ${`Transferência enviada para @${data.recipientUsername}`},
+              updated_at = now()
+          WHERE id = ${data.originalTransactionId} AND owner_uid = ${sender.uid}`
+    )
+  } else {
+    queries.push(
+      sql`INSERT INTO mufinance.transactions (id, owner_uid, account_id, date, payee, category, amount, type, status, notes, source_type, source_id)
+          VALUES (${transferId + '-out'}, ${sender.uid}, ${data.sourceAccountId}, ${date}, ${`Transferência para @${data.recipientUsername}`}, 'Transferência', ${data.amount}, 'expense', 'completed', ${data.note}, 'internalTransfer', ${transferId})`
+    )
+  }
+
+  queries.push(
     sql`INSERT INTO mufinance.transactions (id, owner_uid, account_id, date, payee, category, amount, type, status, notes, source_type, source_id)
-        VALUES (${transferId + '-out'}, ${sender.uid}, ${data.sourceAccountId}, ${date}, ${`Transferência para @${data.recipientUsername}`}, 'Transferência', ${data.amount}, 'expense', 'completed', ${data.note}, 'internalTransfer', ${transferId})`,
-    sql`INSERT INTO mufinance.transactions (id, owner_uid, account_id, date, payee, category, amount, type, status, notes, source_type, source_id)
-        VALUES (${transferId + '-in'}, ${recipientUid}, ${recipientWalletRows[0].id}, ${date}, ${senderUsername ? `Recebido de @${senderUsername}` : `Recebido de ${senderName}`}, 'Transferência', ${data.amount}, 'income', 'completed', ${data.note}, 'internalTransfer', ${transferId})`,
-  ])
+        VALUES (${transferId + '-in'}, ${recipientUid}, ${recipientWalletRows[0].id}, ${date}, ${senderUsername ? `Recebido de @${senderUsername}` : `Recebido de ${senderName}`}, 'Transferência', ${data.amount}, 'income', 'completed', ${data.note}, 'internalTransfer', ${transferId})`
+  )
+
+  await sql.transaction(queries)
 
   revalidatePath("/")
   return {

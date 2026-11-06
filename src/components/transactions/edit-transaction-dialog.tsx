@@ -5,10 +5,11 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import type { FullTransaction } from "@/data/seed"
-import { CheckIcon, CopyIcon, TagIcon, CircleDollarSignIcon, ArrowDownLeftIcon, ArrowUpRightIcon, ClockIcon } from "lucide-react"
+import { CheckIcon, CopyIcon, TagIcon, CircleDollarSignIcon, ArrowDownLeftIcon, ArrowUpRightIcon, ClockIcon, SendIcon } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { AmountCalculator } from "@/components/transactions/amount-calculator"
 import { DateField } from "@/components/transactions/date-field"
+import { SendToUserDialog } from "@/components/transactions/send-to-user-dialog"
 import { cn } from "@/lib/utils"
 
 type EditableTransaction = Omit<FullTransaction, "status"> & { status: FullTransaction["status"] | "planned"; accountId?: string | null; sourceType?: "account" | "credit-card" | null; sourceId?: string | null; installmentGroupId?: string | null; installmentNumber?: number | null; installmentTotal?: number | null; invoiceId?: string | null; destinationAccountId?: string | null }
@@ -27,6 +28,7 @@ export function EditTransactionDialog({ transaction, accountId, allTransactions,
   const [error, setError] = useState("")
   const [saving, setSaving] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [sendOpen, setSendOpen] = useState(false)
   const [scope, setScope] = useState<"one" | "series" | "selected">("one")
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const candidates = !transaction?.installmentGroupId ? allTransactions.filter((item) => item.id !== transaction?.id && !item.installmentGroupId && item.payee === transaction?.merchant && item.category === transaction?.category && item.accountId === transaction?.accountId && item.type === transaction?.type && !item.destinationAccountId && (item.sourceType === "account" || !item.sourceType)) : []
@@ -118,6 +120,30 @@ export function EditTransactionDialog({ transaction, accountId, allTransactions,
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-x-3 gap-y-4 sm:grid-cols-6 sm:gap-x-4 sm:gap-y-5">
+          {/* Ação rápida: Enviar para outro usuário */}
+          {type === "expense" && (
+            <div className="col-span-2 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-primary/20 bg-primary/5 p-3 sm:col-span-6">
+              <div>
+                <p className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                  <SendIcon className="size-3.5 text-primary" />
+                  Enviar dinheiro para outro usuário (@)
+                </p>
+                <p className="text-[11px] text-muted-foreground">
+                  Transformar este lançamento num envio real para a carteira de outro usuário MuFinance.
+                </p>
+              </div>
+              <Button
+                type="button"
+                size="sm"
+                className="gap-1.5 h-8 text-xs font-semibold"
+                onClick={() => setSendOpen(true)}
+              >
+                <SendIcon className="size-3" />
+                Pagar / Transferir para @usuário
+              </Button>
+            </div>
+          )}
+
           <label className={cn(fieldLabel, "col-span-2 sm:col-span-6")}>
             Descrição
             <Input value={payee} onChange={(event) => setPayee(event.target.value)} required className={inputClass} />
@@ -233,6 +259,16 @@ export function EditTransactionDialog({ transaction, accountId, allTransactions,
           </DialogFooter>
         </form>
       </DialogContent>
+
+      <SendToUserDialog
+        transaction={transaction}
+        open={sendOpen}
+        onOpenChange={setSendOpen}
+        onCompleted={async () => {
+          await onSaved()
+          onOpenChange(false)
+        }}
+      />
     </Dialog>
   )
 }
