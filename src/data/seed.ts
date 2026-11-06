@@ -249,6 +249,17 @@ export type Notification = {
   time: string
   read: boolean
   icon: string
+  status?: "pending" | "accepted" | "declined"
+  metadata?: {
+    senderUid?: string
+    senderUsername?: string
+    senderName?: string
+    amount?: number
+    category?: string
+    payee?: string
+    date?: string
+    notes?: string
+  }
   actionable?: {
     accept: string
     decline: string

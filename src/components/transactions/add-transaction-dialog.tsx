@@ -23,6 +23,8 @@ import {
   CreditCardIcon,
   Building2Icon,
   SparklesIcon,
+  UsersIcon,
+  AtSignIcon,
 } from "lucide-react"
 
 const fieldLabel = "grid gap-1.5 text-xs font-medium text-muted-foreground"
@@ -79,6 +81,12 @@ export function AddTransactionDialog({
   const [error, setError] = useState("")
   const [saving, setSaving] = useState(false)
 
+  // Compartilhamento / Menção de amigo (@username)
+  const [enableShare, setEnableShare] = useState(false)
+  const [taggedUsername, setTaggedUsername] = useState("")
+  const [shareMode, setShareMode] = useState<"full" | "split">("full")
+  const [sharedAmount, setSharedAmount] = useState("")
+
   const [recurrence, setRecurrence] = useState<"unica" | "parcelada" | "fixa">("unica")
   const [installments, setInstallments] = useState(4)
   const [currentInstallment, setCurrentInstallment] = useState(1)
@@ -120,6 +128,10 @@ export function AddTransactionDialog({
       setStatus("completed")
       setNotes("")
       setError("")
+      setEnableShare(false)
+      setTaggedUsername("")
+      setShareMode("full")
+      setSharedAmount("")
       setRecurrence("unica")
       setInstallments(4)
       setCurrentInstallment(1)
@@ -284,6 +296,11 @@ export function AddTransactionDialog({
           const day = String(currentDate.getUTCDate()).padStart(2, '0')
           const formattedDate = `${year}-${month}-${day}`
           const title = payee
+          const cleanTagged = enableShare && taggedUsername.trim() ? taggedUsername.trim().toLowerCase().replace(/^@+/, "") : undefined
+          const finalSharedAmount = enableShare && cleanTagged
+            ? (shareMode === "split" && sharedAmount ? Number(sharedAmount) : (shareMode === "split" ? numericAmount / 2 : numericAmount))
+            : undefined
+
           const payload = {
             date: formattedDate,
             payee: title,
@@ -296,6 +313,8 @@ export function AddTransactionDialog({
             sourceType: isCreditCard ? "credit-card" : "account",
             invoiceId,
             notes: notes || (cardEntryMode === "invoice" ? `Fatura consolidada do cartão (${invoiceMonth})` : undefined),
+            taggedUsername: i === 0 ? cleanTagged : undefined,
+            sharedAmount: i === 0 ? finalSharedAmount : undefined,
             installmentGroupId,
           }
           promises.push(fetch(`/api/finance/transactions`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }))
@@ -712,6 +731,93 @@ export function AddTransactionDialog({
               <p className="text-xs leading-relaxed text-muted-foreground">
                 {installmentValueMode === "total" ? "O total será dividido entre as parcelas; a diferença de centavos será distribuída." : "O valor informado será aplicado em cada parcela."} As futuras ficam planejadas.
               </p>
+            </div>
+          )}
+
+          {/* Compartilhar / Marcar amigo (@username) */}
+          {type === "expense" && (
+            <div className="col-span-2 rounded-xl border bg-muted/15 p-3.5 sm:col-span-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <UsersIcon className="size-4 text-primary" />
+                  <div>
+                    <p className="text-xs font-semibold">Marcar amigo (@)</p>
+                    <p className="text-[11px] text-muted-foreground">Notifica seu amigo para lançar a receita na conta dele</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setEnableShare(!enableShare)}
+                  className={cn(
+                    "relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none",
+                    enableShare ? "bg-primary" : "bg-muted-foreground/20"
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "pointer-events-none inline-block size-4 transform rounded-full bg-background shadow ring-0 transition duration-200 ease-in-out",
+                      enableShare ? "translate-x-4" : "translate-x-0"
+                    )}
+                  />
+                </button>
+              </div>
+
+              {enableShare && (
+                <div className="mt-3.5 grid gap-3 border-t pt-3">
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    <label className={fieldLabel}>
+                      <span className="flex items-center gap-1.5"><AtSignIcon className="size-3.5" />Usuário do amigo</span>
+                      <Input
+                        value={taggedUsername}
+                        onChange={(e) => setTaggedUsername(e.target.value)}
+                        placeholder="Ex: @carlos ou joao"
+                        className={inputClass}
+                        required={enableShare}
+                      />
+                    </label>
+
+                    <div className="grid gap-1.5">
+                      <span className="text-xs font-medium text-muted-foreground">Tipo de divisão</span>
+                      <div className="grid grid-cols-2 gap-1 rounded-lg bg-muted p-1">
+                        <button
+                          type="button"
+                          onClick={() => setShareMode("full")}
+                          className={cn(
+                            "h-9 rounded-md text-xs font-medium transition-colors",
+                            shareMode === "full" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"
+                          )}
+                        >
+                          Paguei tudo por ele
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setShareMode("split")}
+                          className={cn(
+                            "h-9 rounded-md text-xs font-medium transition-colors",
+                            shareMode === "split" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"
+                          )}
+                        >
+                          Dividir valor (50%)
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {shareMode === "split" && (
+                    <label className={fieldLabel}>
+                      <span>Valor para o amigo receber (opcional - padrão 50%)</span>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        value={sharedAmount}
+                        onChange={(e) => setSharedAmount(e.target.value)}
+                        placeholder={amount ? (Number(amount) / 2).toFixed(2) : "0,00"}
+                        className={inputClass}
+                      />
+                    </label>
+                  )}
+                </div>
+              )}
             </div>
           )}
 

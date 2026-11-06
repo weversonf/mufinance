@@ -36,6 +36,9 @@ export const transactionInputSchema = z.object({
   sourceId: z.string().trim().max(120).optional(),
   invoiceId: z.string().trim().max(120).optional(),
   notes: z.string().trim().max(1000).optional(),
+  // Compartilhamento / Amigo (@username)
+  taggedUsername: z.string().trim().max(50).optional(),
+  sharedAmount: z.number().positive().finite().optional(),
   // Parcelamento
   installmentNumber: z.number().int().min(1).max(120).optional(),
   installmentTotal: z.number().int().min(1).max(120).optional(),

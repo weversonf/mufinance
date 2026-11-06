@@ -28,6 +28,7 @@ export type FinanceSnapshot = {
   goals: Array<Record<string, unknown> & { id: string }>
   budgets: Array<Record<string, unknown> & { id: string }>
   transferRecords: Array<Record<string, unknown> & { id: string }>
+  notifications?: Array<Notification>
 }
 
 type FinanceDataValue = {
@@ -396,7 +397,7 @@ function buildData(snapshot: FinanceSnapshot | null, isDemoMode: boolean = false
     savingsGoals,
     bankAccounts,
     transferRecords,
-    notifications: [],
+    notifications: (snapshot?.notifications as Notification[]) || [],
     cryptoCoins: [],
     cryptoTransactions: [],
     financialHealthScore: {

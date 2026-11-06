@@ -16,7 +16,7 @@ export async function getFinanceSnapshot() {
   if (!user) return null;
 
   // Todos os dados financeiros do snapshot vêm do banco novo.
-  const [accounts, transactions, categories, creditCards, goals, budgets, transferRecords] = await Promise.all([
+  const [accounts, transactions, categories, creditCards, goals, budgets, transferRecords, notifications] = await Promise.all([
     getNeonAccounts(user.uid),
     getNeonTransactions(user.uid),
     getNeonCategories(user.uid),
@@ -24,6 +24,7 @@ export async function getFinanceSnapshot() {
     getNeonGoals(user.uid),
     getNeonBudgets(user.uid),
     getNeonTransferRecords(user.uid),
+    getNeonNotifications(user.uid),
   ]);
 
   return {
@@ -35,6 +36,7 @@ export async function getFinanceSnapshot() {
     goals,
     budgets,
     transferRecords,
+    notifications,
   };
 }
 
@@ -285,6 +287,51 @@ async function getNeonTransferRecords(ownerUid: string) {
     ORDER BY created_at DESC
   `;
   return rows.map((row) => mapTransferRecord(row as Record<string, unknown>));
+}
+
+function mapNotification(row: Record<string, unknown>) {
+  const meta = (row.metadata as Record<string, unknown>) ?? {};
+  const createdAt = row.created_at ? new Date(String(row.created_at)) : new Date();
+  const timeFormatted = createdAt.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }) + " " +
+    createdAt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+
+  return {
+    id: String(row.id),
+    type: (row.type as any) ?? "request",
+    title: String(row.title ?? ""),
+    description: String(row.description ?? ""),
+    time: timeFormatted,
+    read: Boolean(row.read),
+    icon: String(row.icon ?? "hand-coins"),
+    status: (row.status as any) ?? "pending",
+    metadata: {
+      senderUid: meta.senderUid ? String(meta.senderUid) : undefined,
+      senderUsername: meta.senderUsername ? String(meta.senderUsername) : undefined,
+      senderName: meta.senderName ? String(meta.senderName) : undefined,
+      amount: meta.amount ? Number(meta.amount) : undefined,
+      category: meta.category ? String(meta.category) : undefined,
+      payee: meta.payee ? String(meta.payee) : undefined,
+      date: meta.date ? String(meta.date) : undefined,
+      notes: meta.notes ? String(meta.notes) : undefined,
+    },
+    actionable: row.status === "pending" ? {
+      accept: "Aceitar",
+      decline: "Recusar",
+      amount: meta.amount ? `R$ ${Number(meta.amount).toFixed(2).replace(".", ",")}` : undefined,
+      from: meta.senderUsername ? `@${meta.senderUsername}` : (meta.senderName ? String(meta.senderName) : undefined),
+    } : undefined,
+  };
+}
+
+async function getNeonNotifications(ownerUid: string) {
+  const rows = await sql`
+    SELECT id, owner_uid, type, title, description, read, icon, metadata, status, created_at
+    FROM mufinance.notifications
+    WHERE owner_uid = ${ownerUid}
+    ORDER BY created_at DESC
+    LIMIT 50
+  `;
+  return rows.map((row) => mapNotification(row as Record<string, unknown>));
 }
 
 function accountDelta(type: string, amount: number) {
@@ -553,6 +600,57 @@ export async function createTransaction(input: unknown) {
     `;
   }
 
+  if (data.type === "expense" && data.taggedUsername) {
+    const cleanUsername = data.taggedUsername.toLowerCase().replace(/^@+/, "").trim();
+    if (cleanUsername) {
+      try {
+        const friendRows = await sql`
+          SELECT uid, username, display_name
+          FROM mufinance.profiles
+          WHERE username = ${cleanUsername}
+          LIMIT 1
+        `;
+        if (friendRows[0] && friendRows[0].uid !== user.uid) {
+          const friendUid = String(friendRows[0].uid);
+          const senderProfileRows = await sql`
+            SELECT username, display_name FROM mufinance.profiles WHERE uid = ${user.uid} LIMIT 1
+          `;
+          const senderName = String(senderProfileRows[0]?.display_name ?? user.name ?? user.email?.split("@")[0] ?? "Um amigo");
+          const senderUsername = String(senderProfileRows[0]?.username ?? "");
+          const notifId = crypto.randomUUID();
+          const shareVal = data.sharedAmount && data.sharedAmount > 0 ? data.sharedAmount : data.amount;
+
+          await sql`
+            INSERT INTO mufinance.notifications
+              (id, owner_uid, type, title, description, read, icon, metadata, status)
+            VALUES (
+              ${notifId},
+              ${friendUid},
+              'request',
+              ${senderUsername ? `@${senderUsername} marcou você numa despesa` : `${senderName} marcou você numa despesa`},
+              ${`${senderName} pagou "${data.payee}" (${data.category}) no valor de R$ ${shareVal.toFixed(2).replace(".", ",")} e indicou como recebimento seu.`},
+              false,
+              'hand-coins',
+              ${JSON.stringify({
+                senderUid: user.uid,
+                senderUsername,
+                senderName,
+                amount: shareVal,
+                category: data.category,
+                payee: data.payee,
+                date: data.date,
+                notes: data.notes ?? "",
+              })},
+              'pending'
+            )
+          `;
+        }
+      } catch (err) {
+        console.error("Falha ao notificar amigo:", err);
+      }
+    }
+  }
+
   revalidatePath("/");
   return { id, ...data, ownerId: user.uid };
 }
@@ -785,4 +883,99 @@ export async function deleteAllData() {
 
   revalidatePath("/");
   return { success: true, deleted: true, keptAccount: keepId };
+}
+
+export async function markNotificationAsRead(id: string) {
+  const user = await requireSessionUser();
+  await sql`
+    UPDATE mufinance.notifications
+    SET read = true, updated_at = now()
+    WHERE id = ${id} AND owner_uid = ${user.uid}
+  `;
+  revalidatePath("/");
+  return { success: true };
+}
+
+export async function markAllNotificationsAsRead() {
+  const user = await requireSessionUser();
+  await sql`
+    UPDATE mufinance.notifications
+    SET read = true, updated_at = now()
+    WHERE owner_uid = ${user.uid}
+  `;
+  revalidatePath("/");
+  return { success: true };
+}
+
+export async function dismissNotification(id: string) {
+  const user = await requireSessionUser();
+  await sql`
+    DELETE FROM mufinance.notifications
+    WHERE id = ${id} AND owner_uid = ${user.uid}
+  `;
+  revalidatePath("/");
+  return { success: true };
+}
+
+export async function respondToSharedExpense(input: {
+  notificationId: string;
+  action: "accept" | "decline";
+  targetAccountId?: string;
+}) {
+  const user = await requireSessionUser();
+  const rows = await sql`
+    SELECT id, owner_uid, metadata, status
+    FROM mufinance.notifications
+    WHERE id = ${input.notificationId} AND owner_uid = ${user.uid}
+    LIMIT 1
+  `;
+  if (!rows[0]) throw new Error("Notificação não encontrada.");
+  const notif = rows[0] as Record<string, unknown>;
+  if (notif.status !== "pending") throw new Error("Esta solicitação já foi respondida.");
+
+  if (input.action === "decline") {
+    await sql`
+      UPDATE mufinance.notifications
+      SET status = 'declined', read = true, updated_at = now()
+      WHERE id = ${input.notificationId} AND owner_uid = ${user.uid}
+    `;
+    revalidatePath("/");
+    return { success: true, status: "declined" as const };
+  }
+
+  // Se aceitou, cria a transação de RECEITA na conta do usuário
+  const meta = (notif.metadata as Record<string, unknown>) ?? {};
+  const amount = Number(meta.amount ?? 0);
+  if (amount <= 0) throw new Error("Valor inválido na solicitação.");
+
+  let accountId = input.targetAccountId;
+  if (!accountId) {
+    const accRows = await sql`
+      SELECT id FROM mufinance.accounts
+      WHERE owner_uid = ${user.uid}
+      ORDER BY CASE WHEN internal_wallet THEN 0 ELSE 1 END, created_at ASC
+      LIMIT 1
+    `;
+    if (!accRows[0]) throw new Error("Nenhuma conta disponível para receber o valor.");
+    accountId = String(accRows[0].id);
+  }
+
+  const txId = crypto.randomUUID();
+  const date = meta.date ? String(meta.date) : new Date().toISOString().slice(0, 10);
+  const senderLabel = meta.senderUsername ? `@${meta.senderUsername}` : (meta.senderName ? String(meta.senderName) : "Amigo");
+  const payee = `Recebido de ${senderLabel} (${String(meta.payee ?? "Despesa dividida")})`;
+  const notes = meta.notes ? `Referente a: ${meta.notes}` : `Despesa compartilhada por ${senderLabel}`;
+
+  await sql.transaction([
+    sql`UPDATE mufinance.accounts SET balance = balance + ${amount}, updated_at = now() WHERE id = ${accountId} AND owner_uid = ${user.uid}`,
+    sql`INSERT INTO mufinance.transactions
+      (id, owner_uid, account_id, date, payee, category, amount, type, status, notes, source_type)
+      VALUES (${txId}, ${user.uid}, ${accountId}, ${date}, ${payee}, 'Transferência', ${amount}, 'income', 'completed', ${notes}, 'account')`,
+    sql`UPDATE mufinance.notifications
+      SET status = 'accepted', read = true, updated_at = now()
+      WHERE id = ${input.notificationId} AND owner_uid = ${user.uid}`,
+  ]);
+
+  revalidatePath("/");
+  return { success: true, status: "accepted" as const, transactionId: txId };
 }

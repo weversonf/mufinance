@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import type { Notification } from "@/data/seed"
 import { useFinanceData } from "@/components/finance/finance-provider"
 import { EmptyState } from "@/components/empty-state"
+import { markAllNotificationsAsRead, markNotificationAsRead, dismissNotification, respondToSharedExpense } from "@/actions/finance"
 import {
   ArrowDownLeftIcon,
   ShieldAlertIcon,
@@ -65,10 +66,11 @@ const filters: { label: string; value: FilterType }[] = [
 ]
 
 export function NotificationsPageClient() {
-  const { notifications } = useFinanceData()
+  const { notifications, refresh } = useFinanceData()
   const [readIds, setReadIds] = React.useState<string[]>([])
   const [dismissedIds, setDismissedIds] = React.useState<string[]>([])
   const [filter, setFilter] = React.useState<FilterType>("all")
+  const [processingId, setProcessingId] = React.useState<string | null>(null)
 
   const items: Notification[] = notifications
     .filter((notification) => !dismissedIds.includes(notification.id))
@@ -82,16 +84,38 @@ export function NotificationsPageClient() {
     return n.type === filter
   })
 
-  function markAllRead() {
+  async function markAllRead() {
     setReadIds((prev) => [...new Set([...prev, ...notifications.map((notification) => notification.id)])])
+    try {
+      await markAllNotificationsAsRead()
+    } catch {}
   }
 
-  function toggleRead(id: string) {
-    setReadIds((prev) => prev.includes(id) ? prev : [...prev, id])
+  async function toggleRead(id: string) {
+    if (readIds.includes(id)) return
+    setReadIds((prev) => [...prev, id])
+    try {
+      await markNotificationAsRead(id)
+    } catch {}
   }
 
-  function dismiss(id: string) {
+  async function dismiss(id: string) {
     setDismissedIds((prev) => prev.includes(id) ? prev : [...prev, id])
+    try {
+      await dismissNotification(id)
+    } catch {}
+  }
+
+  async function handleResponse(notificationId: string, action: "accept" | "decline") {
+    setProcessingId(notificationId)
+    try {
+      await respondToSharedExpense({ notificationId, action })
+      await refresh()
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Erro ao responder.")
+    } finally {
+      setProcessingId(null)
+    }
   }
 
   return (
@@ -184,6 +208,41 @@ export function NotificationsPageClient() {
                       <p className="mt-0.5 text-sm text-muted-foreground line-clamp-1">
                         {n.description}
                       </p>
+
+                      {/* Botões de Ação para despesa compartilhada */}
+                      {n.type === "request" && n.actionable && (
+                        <div className="mt-2.5 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                          <Button
+                            size="sm"
+                            className="h-8 gap-1.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white"
+                            disabled={processingId === n.id}
+                            onClick={() => handleResponse(n.id, "accept")}
+                          >
+                            <CheckCircleIcon className="size-3.5" />
+                            {processingId === n.id ? "Lançando..." : "Aceitar (Lançar Receita)"}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-8 text-xs"
+                            disabled={processingId === n.id}
+                            onClick={() => handleResponse(n.id, "decline")}
+                          >
+                            Recusar
+                          </Button>
+                        </div>
+                      )}
+
+                      {n.status === "accepted" && (
+                        <span className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                          <CheckCircleIcon className="size-3.5" /> Receita lançada na sua conta
+                        </span>
+                      )}
+                      {n.status === "declined" && (
+                        <span className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-muted-foreground">
+                          Recusada
+                        </span>
+                      )}
                     </div>
 
                     {/* Time + dismiss */}
