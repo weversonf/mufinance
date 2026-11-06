@@ -5,21 +5,25 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import type { FullTransaction } from "@/data/seed"
-import { CheckIcon, CopyIcon, TagIcon, CircleDollarSignIcon, ArrowDownLeftIcon, ArrowUpRightIcon, ClockIcon, SendIcon } from "lucide-react"
+import { CheckIcon, CopyIcon, TagIcon, CircleDollarSignIcon, ArrowDownLeftIcon, ArrowUpRightIcon, ClockIcon, SendIcon, WalletIcon } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { AmountCalculator } from "@/components/transactions/amount-calculator"
 import { DateField } from "@/components/transactions/date-field"
 import { SendToUserDialog } from "@/components/transactions/send-to-user-dialog"
+import { useFinanceData } from "@/components/finance/finance-provider"
 import { cn } from "@/lib/utils"
 
 type EditableTransaction = Omit<FullTransaction, "status"> & { status: FullTransaction["status"] | "planned"; accountId?: string | null; sourceType?: "account" | "credit-card" | null; sourceId?: string | null; installmentGroupId?: string | null; installmentNumber?: number | null; installmentTotal?: number | null; invoiceId?: string | null; destinationAccountId?: string | null }
 
 const fieldLabel = "grid gap-1.5 text-xs font-medium text-muted-foreground"
 const inputClass = "h-11 sm:h-10"
+const selectClass = "h-11 w-full rounded-lg border bg-background px-3 text-sm sm:h-10"
 
 export function EditTransactionDialog({ transaction, accountId, allTransactions, open, onOpenChange, onSaved }: { transaction: EditableTransaction | null; accountId: string; allTransactions: Array<Record<string, unknown> & { id: string }>; open: boolean; onOpenChange: (open: boolean) => void; onSaved: () => Promise<void> | void }) {
+  const { bankAccounts, cardsData, snapshot } = useFinanceData()
   const [payee, setPayee] = useState("")
   const [category, setCategory] = useState("")
+  const [selectedAccountId, setSelectedAccountId] = useState("")
   const [date, setDate] = useState("")
   const [amount, setValor] = useState("0")
   const [type, setType] = useState<"income" | "expense">("expense")
@@ -37,6 +41,7 @@ export function EditTransactionDialog({ transaction, accountId, allTransactions,
     if (!transaction) return
     setPayee(transaction.merchant)
     setCategory(transaction.category)
+    setSelectedAccountId(transaction.accountId || accountId || bankAccounts[0]?.id || "")
     setDate(transaction.date)
     setValor(String(Math.abs(transaction.amount)).replace(",", "."))
     setType(transaction.type === "income" ? "income" : "expense")
@@ -46,7 +51,12 @@ export function EditTransactionDialog({ transaction, accountId, allTransactions,
     setScope("one")
     setSelectedIds([])
     setCopied(false)
-  }, [transaction])
+  }, [transaction, accountId, bankAccounts])
+
+  const availableCategories = (snapshot?.categories ?? []).filter((c) => String(c.type) === type) as Array<Record<string, unknown> & { id: string; name: string }>
+  const fallbackCategories = type === "income"
+    ? ["Salário","Freelance","Investimentos","Reembolso","Vendas","Bônus","Presente","Aluguel Recebido","Outras receitas"]
+    : ["Alimentação","Casa","Mercado","Transporte","Saúde","Educação","Lazer","Compras","Serviços","Assinaturas","Impostos e Taxas","Dívidas e Empréstimos","Roupas","Cuidados Pessoais","Família e Filhos","Presentes e Doações","Viagem","Bares e Restaurantes","Outros"]
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -55,7 +65,31 @@ export function EditTransactionDialog({ transaction, accountId, allTransactions,
     setError("")
     try {
       if (scope === "selected" && selectedIds.length === 0) throw new Error("Selecione ao menos outra transação para alterar.")
-      const response = await fetch(`/api/finance/transactions/${transaction.id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ date, payee, category, accountId: transaction.accountId || accountId, amount: Number(amount), type, status, sourceType: transaction.sourceType || "account", sourceId: transaction.sourceId ?? undefined, invoiceId: transaction.invoiceId ?? undefined, destinationAccountId: transaction.destinationAccountId ?? undefined, installmentGroupId: transaction.installmentGroupId ?? undefined, installmentNumber: transaction.installmentNumber ?? undefined, installmentTotal: transaction.installmentTotal ?? undefined, notes: notes || undefined, scope, selectedIds }) })
+      const finalAccountId = selectedAccountId || transaction.accountId || accountId
+      const isCard = cardsData.some((c) => c.id === finalAccountId)
+      const response = await fetch(`/api/finance/transactions/${transaction.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          date,
+          payee,
+          category,
+          accountId: finalAccountId,
+          amount: Number(amount),
+          type,
+          status,
+          sourceType: isCard ? "credit-card" : "account",
+          sourceId: transaction.sourceId ?? undefined,
+          invoiceId: transaction.invoiceId ?? undefined,
+          destinationAccountId: transaction.destinationAccountId ?? undefined,
+          installmentGroupId: transaction.installmentGroupId ?? undefined,
+          installmentNumber: transaction.installmentNumber ?? undefined,
+          installmentTotal: transaction.installmentTotal ?? undefined,
+          notes: notes || undefined,
+          scope,
+          selectedIds,
+        }),
+      })
       const payload = await response.json()
       if (!response.ok) throw new Error(payload.error || "Não foi possível salvar a transação.")
       await onSaved()
@@ -151,7 +185,57 @@ export function EditTransactionDialog({ transaction, accountId, allTransactions,
 
           <label className={cn(fieldLabel, "col-span-1 sm:col-span-2")}>
             <span className="flex items-center gap-1.5"><TagIcon className="size-3.5" />Categoria</span>
-            <Input value={category} onChange={(event) => setCategory(event.target.value)} required className={inputClass} />
+            <select
+              value={category}
+              onChange={(event) => setCategory(event.target.value)}
+              required
+              className={selectClass}
+            >
+              {availableCategories.length > 0 ? (
+                availableCategories.map((cat) => (
+                  <option key={String(cat.id)} value={String(cat.name)}>
+                    {String(cat.name)}
+                  </option>
+                ))
+              ) : (
+                fallbackCategories.map((name) => (
+                  <option key={name} value={name}>
+                    {name}
+                  </option>
+                ))
+              )}
+              {/* Preserva a categoria atual caso seja personalizada */}
+              {category && !availableCategories.some((c) => c.name === category) && !fallbackCategories.includes(category) && (
+                <option value={category}>{category}</option>
+              )}
+            </select>
+          </label>
+
+          <label className={cn(fieldLabel, "col-span-1 sm:col-span-2")}>
+            <span className="flex items-center gap-1.5"><WalletIcon className="size-3.5" />Conta / Cartão</span>
+            <select
+              value={selectedAccountId}
+              onChange={(event) => setSelectedAccountId(event.target.value)}
+              required
+              className={selectClass}
+            >
+              <optgroup label="Contas Bancárias">
+                {bankAccounts.map((acc) => (
+                  <option key={acc.id} value={acc.id}>
+                    {acc.name} (R$ {acc.balance.toFixed(2).replace(".", ",")})
+                  </option>
+                ))}
+              </optgroup>
+              {cardsData.length > 0 && (
+                <optgroup label="Cartões de Crédito">
+                  {cardsData.map((card) => (
+                    <option key={card.id} value={card.id}>
+                      Cartão •••• {card.last4} ({card.name})
+                    </option>
+                  ))}
+                </optgroup>
+              )}
+            </select>
           </label>
 
           <label className={cn(fieldLabel, "col-span-1 sm:col-span-2")}>
