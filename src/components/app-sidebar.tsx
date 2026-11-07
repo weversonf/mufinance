@@ -32,6 +32,7 @@ import {
   BellIcon,
   LogInIcon,
   UserPlusIcon,
+  BikeIcon,
 } from "lucide-react"
 
 const navigation = {
@@ -40,6 +41,7 @@ const navigation = {
     { title: "Contas", url: "/accounts", icon: <WalletIcon /> },
     { title: "Transações", url: "/transactions", icon: <ArrowLeftRightIcon /> },
     { title: "Cartões", url: "/cards", icon: <CreditCardIcon /> },
+    { title: "MotoTrack", url: "/mototrack", icon: <BikeIcon /> },
   ],
   navMoney: [
     { title: "Transferências", url: "/transfers", icon: <SendIcon /> },
