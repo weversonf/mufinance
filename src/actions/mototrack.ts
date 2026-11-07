@@ -266,6 +266,99 @@ export async function syncMotoTrack() {
     }
   }
 
+  // 4. Exporta / Sincroniza Despesas de "Transporte" do MuFinance para o MotoTrack
+  const transportTxs = await sqlMu`
+    SELECT id, date, payee, category, amount, type, source_id, notes, status
+    FROM mufinance.transactions
+    WHERE owner_uid = ${user.uid}
+      AND status = 'completed'
+      AND type = 'expense'
+      AND (lower(category) = 'transporte' OR lower(category) = 'combustível' OR lower(category) = 'veículo')
+    ORDER BY date DESC
+  `;
+
+  let exportedToMotoCount = 0;
+  const activeMotoId = payload.activeMotorcycleId || payload.motorcycles?.[0]?.id || "moto-default";
+
+  for (const tx of transportTxs) {
+    const txId = String(tx.id);
+    const payeeLower = String(tx.payee || "").toLowerCase();
+    const isFromMoto = tx.source_id && String(tx.source_id).startsWith("mototrack-");
+    if (isFromMoto) continue; // Já veio do MotoTrack
+
+    const amountNum = Number(tx.amount);
+    const amountCents = Math.round(amountNum * 100);
+    const txDate = tx.date ? String(tx.date).split("T")[0] : new Date().toISOString().split("T")[0];
+
+    // Se o nome remeter a combustível ou posto, envia para fuelEntries
+    const isFuel =
+      payeeLower.includes("posto") ||
+      payeeLower.includes("gasolina") ||
+      payeeLower.includes("etanol") ||
+      payeeLower.includes("combustivel") ||
+      payeeLower.includes("combustível") ||
+      payeeLower.includes("abastecimento") ||
+      payeeLower.includes("shell") ||
+      payeeLower.includes("ipiranga") ||
+      payeeLower.includes("br branca") ||
+      payeeLower.includes("petrobras");
+
+    if (isFuel) {
+      const alreadyInMoto = fuelEntries.some(
+        (f: any) => f.mufinanceId === txId || (f.totalCents === amountCents && (f.date === txDate || f.dateLabel?.includes(txDate)))
+      );
+      if (!alreadyInMoto) {
+        fuelEntries.unshift({
+          id: `fuel-mu-${txId.slice(0, 8)}`,
+          mufinanceId: txId,
+          motorcycleId: activeMotoId,
+          station: tx.payee || "Abastecimento",
+          totalCents: amountCents,
+          date: txDate,
+          dateLabel: txDate,
+          liters: Number((amountNum / 5.89).toFixed(2)), // Estimativa média de litros
+          notes: tx.notes || "Lançado via MuFinance",
+        });
+        exportedToMotoCount++;
+      }
+    } else {
+      // Caso contrário, entra como Manutenção / Despesa de Moto
+      const alreadyInMoto = maintenance.some(
+        (m: any) => m.mufinanceId === txId || ((m.costCents === amountCents || m.cost === amountNum) && (m.doneAt === txDate || m.date === txDate))
+      );
+      if (!alreadyInMoto) {
+        maintenance.unshift({
+          id: `maint-mu-${txId.slice(0, 8)}`,
+          mufinanceId: txId,
+          motorcycleId: activeMotoId,
+          title: tx.payee || "Despesa Moto",
+          cost: amountNum,
+          costCents: amountCents,
+          date: txDate,
+          doneAt: txDate,
+          status: "completed",
+          category: "Outros",
+          description: tx.notes || "Lançado via MuFinance",
+          notes: tx.notes || "Lançado via MuFinance",
+        });
+        exportedToMotoCount++;
+      }
+    }
+  }
+
+  // Se houve novos lançamentos enviados para o MotoTrack, salva o snapshot atualizado no banco do MotoTrack
+  if (exportedToMotoCount > 0) {
+    payload.fuelEntries = fuelEntries;
+    payload.maintenance = maintenance;
+
+    await sqlMoto`
+      UPDATE motogarage.garage_snapshots
+      SET payload = ${JSON.stringify(payload)}::jsonb,
+          updated_at = now()
+      WHERE user_id = ${motoUserId}
+    `;
+  }
+
   revalidatePath("/");
   revalidatePath("/transactions");
   revalidatePath("/mototrack");
@@ -273,6 +366,7 @@ export async function syncMotoTrack() {
   return {
     ok: true,
     importedToMuCount,
-    message: `Sincronização concluída com sucesso! ${importedToMuCount > 0 ? `${importedToMuCount} novo(s) registro(s) sincronizado(s).` : "Tudo já está em dia."}`,
+    exportedToMotoCount,
+    message: `Sincronização bidirecional concluída! Recebidos do MotoTrack: ${importedToMuCount} | Enviados ao MotoTrack: ${exportedToMotoCount}.`,
   };
 }
