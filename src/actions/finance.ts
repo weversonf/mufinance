@@ -336,7 +336,9 @@ async function getNeonNotifications(ownerUid: string) {
   return rows.map((row) => mapNotification(row as Record<string, unknown>));
 }
 
-function accountDelta(type: string, amount: number) {
+function accountDelta(type: string, amount: number, status?: string) {
+  // Lançamentos planejados não afetam o saldo real em caixa da conta
+  if (status === "planned" || status === "pending") return 0;
   if (type === "income") return amount;
   if (type === "expense") return -amount;
   return 0;
@@ -455,10 +457,10 @@ export async function updateTransaction(id: string, input: unknown) {
     if (scope === "selected" && (current.installmentGroupId || current.destinationAccountId)) throw new Error("Não é possível agrupar esta transação.");
     if (data.accountId !== current.accountId || data.sourceType !== "account" || (current.sourceType && current.sourceType !== "account")) throw new Error("A edição da série não permite trocar a conta ou a origem.");
     const targetIds = JSON.stringify([id, ...ids]);
-    const nextDelta = accountDelta(data.type, data.amount);
+    const nextDelta = accountDelta(data.type, data.amount, data.status);
     await sql`
       WITH previous AS MATERIALIZED (
-        SELECT id, account_id, amount, type
+        SELECT id, account_id, amount, type, status
         FROM mufinance.transactions
         WHERE owner_uid = ${user.uid} AND (
           (${scope === "series"} AND installment_group_id = ${typeof group === "string" ? group : ""}) OR
@@ -477,9 +479,13 @@ export async function updateTransaction(id: string, input: unknown) {
             status = CASE WHEN t.id = ${id} THEN ${data.status} ELSE t.status END,
             updated_at = now()
         FROM previous p WHERE t.id = p.id AND t.owner_uid = ${user.uid}
-        RETURNING p.account_id, p.amount AS old_amount, p.type AS old_type
+        RETURNING p.account_id, p.amount AS old_amount, p.type AS old_type, p.status AS old_status, t.status AS new_status
       ), deltas AS (
-        SELECT account_id, sum(${nextDelta}::numeric - CASE old_type WHEN 'income' THEN old_amount WHEN 'expense' THEN -old_amount ELSE 0 END) AS delta
+        SELECT account_id, sum(
+          CASE WHEN new_status = 'completed' THEN (CASE old_type WHEN 'income' THEN ${data.amount}::numeric WHEN 'expense' THEN -${data.amount}::numeric ELSE 0 END) ELSE 0 END
+          -
+          CASE WHEN old_status = 'completed' THEN (CASE old_type WHEN 'income' THEN old_amount WHEN 'expense' THEN -old_amount ELSE 0 END) ELSE 0 END
+        ) AS delta
         FROM changed WHERE account_id IS NOT NULL GROUP BY account_id
       )
       UPDATE mufinance.accounts a SET balance = a.balance + d.delta, updated_at = now()
@@ -497,15 +503,17 @@ export async function updateTransaction(id: string, input: unknown) {
 
   if (!isOldCard && !isNewCard) {
     const newAccount = await getNeonAccount(data.accountId, user.uid);
-    const oldDelta = accountDelta(String(current.type), Number(current.amount));
-    const newDelta = accountDelta(data.type, data.amount);
+    const oldDelta = accountDelta(String(current.type), Number(current.amount), current.status);
+    const newDelta = accountDelta(data.type, data.amount, data.status);
 
     if (oldAccountId === data.accountId) {
-      queries.push(sql`
-        UPDATE mufinance.accounts
-        SET balance = balance + ${newDelta - oldDelta}, updated_at = now()
-        WHERE id = ${data.accountId} AND owner_uid = ${user.uid}
-      `);
+      if (newDelta - oldDelta !== 0) {
+        queries.push(sql`
+          UPDATE mufinance.accounts
+          SET balance = balance + ${newDelta - oldDelta}, updated_at = now()
+          WHERE id = ${data.accountId} AND owner_uid = ${user.uid}
+        `);
+      }
     } else {
       if (oldAccountId && oldDelta !== 0) {
         queries.push(sql`
@@ -561,39 +569,48 @@ export async function createTransaction(input: unknown) {
 
   if (data.type === "transfer" && data.destinationAccountId) {
     let destinationAccount;
+    const isCompleted = data.status === "completed";
     try {
       destinationAccount = await getNeonAccount(data.destinationAccountId, user.uid);
     } catch {
       // Pagamento de fatura: o destino é um cartão, não uma conta financeira.
       await getNeonCreditCard(data.destinationAccountId, user.uid);
-      await sql.transaction([
-        sql`UPDATE mufinance.accounts SET balance = balance - ${data.amount}, updated_at = now() WHERE id = ${account.id} AND owner_uid = ${user.uid}`,
-        sql`INSERT INTO mufinance.transactions
-          (id, owner_uid, account_id, destination_account_id, date, payee, category, amount, type, status, source_type, source_id, invoice_id, notes, installment_number, installment_total, installment_group_id)
-          VALUES (${id}, ${user.uid}, ${columns.accountId}, ${data.destinationAccountId}, ${columns.date}, ${columns.payee}, ${columns.category}, ${columns.amount}, 'expense', ${columns.status}, ${columns.sourceType}, ${columns.sourceId}, ${columns.invoiceId}, ${columns.notes}, ${columns.installmentNumber}, ${columns.installmentTotal}, ${columns.installmentGroupId})`,
-      ]);
+      const queries = [];
+      if (isCompleted) {
+        queries.push(sql`UPDATE mufinance.accounts SET balance = balance - ${data.amount}, updated_at = now() WHERE id = ${account.id} AND owner_uid = ${user.uid}`);
+      }
+      queries.push(sql`INSERT INTO mufinance.transactions
+        (id, owner_uid, account_id, destination_account_id, date, payee, category, amount, type, status, source_type, source_id, invoice_id, notes, installment_number, installment_total, installment_group_id)
+        VALUES (${id}, ${user.uid}, ${columns.accountId}, ${data.destinationAccountId}, ${columns.date}, ${columns.payee}, ${columns.category}, ${columns.amount}, 'expense', ${columns.status}, ${columns.sourceType}, ${columns.sourceId}, ${columns.invoiceId}, ${columns.notes}, ${columns.installmentNumber}, ${columns.installmentTotal}, ${columns.installmentGroupId})`);
+      await sql.transaction(queries);
     }
     if (destinationAccount) {
       const destinationId = crypto.randomUUID();
-      await sql.transaction([
-        sql`UPDATE mufinance.accounts SET balance = balance - ${data.amount}, updated_at = now() WHERE id = ${account.id} AND owner_uid = ${user.uid}`,
-        sql`UPDATE mufinance.accounts SET balance = balance + ${data.amount}, updated_at = now() WHERE id = ${destinationAccount.id} AND owner_uid = ${user.uid}`,
+      const queries = [];
+      if (isCompleted) {
+        queries.push(sql`UPDATE mufinance.accounts SET balance = balance - ${data.amount}, updated_at = now() WHERE id = ${account.id} AND owner_uid = ${user.uid}`);
+        queries.push(sql`UPDATE mufinance.accounts SET balance = balance + ${data.amount}, updated_at = now() WHERE id = ${destinationAccount.id} AND owner_uid = ${user.uid}`);
+      }
+      queries.push(
         sql`INSERT INTO mufinance.transactions
           (id, owner_uid, account_id, destination_account_id, date, payee, category, amount, type, status, source_type, source_id, invoice_id, notes, installment_number, installment_total, installment_group_id)
           VALUES (${id}, ${user.uid}, ${columns.accountId}, ${destinationAccount.id}, ${columns.date}, ${columns.payee}, ${columns.category}, ${columns.amount}, 'expense', ${columns.status}, ${columns.sourceType}, ${columns.sourceId}, ${columns.invoiceId}, ${columns.notes}, ${columns.installmentNumber}, ${columns.installmentTotal}, ${columns.installmentGroupId})`,
         sql`INSERT INTO mufinance.transactions
           (id, owner_uid, account_id, destination_account_id, date, payee, category, amount, type, status, source_type, source_id, invoice_id, notes, installment_number, installment_total, installment_group_id)
-          VALUES (${destinationId}, ${user.uid}, ${destinationAccount.id}, ${account.id}, ${columns.date}, ${columns.payee}, ${columns.category}, ${columns.amount}, 'income', ${columns.status}, ${columns.sourceType}, ${columns.sourceId}, ${columns.invoiceId}, ${columns.notes}, ${columns.installmentNumber}, ${columns.installmentTotal}, ${columns.installmentGroupId})`,
-      ]);
+          VALUES (${destinationId}, ${user.uid}, ${destinationAccount.id}, ${account.id}, ${columns.date}, ${columns.payee}, ${columns.category}, ${columns.amount}, 'income', ${columns.status}, ${columns.sourceType}, ${columns.sourceId}, ${columns.invoiceId}, ${columns.notes}, ${columns.installmentNumber}, ${columns.installmentTotal}, ${columns.installmentGroupId})`
+      );
+      await sql.transaction(queries);
     }
   } else if (data.type === "income" || data.type === "expense") {
-    const delta = accountDelta(data.type, data.amount);
-    await sql.transaction([
-      sql`UPDATE mufinance.accounts SET balance = balance + ${delta}, updated_at = now() WHERE id = ${account.id} AND owner_uid = ${user.uid}`,
-      sql`INSERT INTO mufinance.transactions
-        (id, owner_uid, account_id, destination_account_id, date, payee, category, amount, type, status, source_type, source_id, invoice_id, notes, installment_number, installment_total, installment_group_id)
-        VALUES (${id}, ${user.uid}, ${columns.accountId}, ${columns.destinationAccountId}, ${columns.date}, ${columns.payee}, ${columns.category}, ${columns.amount}, ${columns.type}, ${columns.status}, ${columns.sourceType}, ${columns.sourceId}, ${columns.invoiceId}, ${columns.notes}, ${columns.installmentNumber}, ${columns.installmentTotal}, ${columns.installmentGroupId})`,
-    ]);
+    const delta = accountDelta(data.type, data.amount, data.status);
+    const queries = [];
+    if (delta !== 0) {
+      queries.push(sql`UPDATE mufinance.accounts SET balance = balance + ${delta}, updated_at = now() WHERE id = ${account.id} AND owner_uid = ${user.uid}`);
+    }
+    queries.push(sql`INSERT INTO mufinance.transactions
+      (id, owner_uid, account_id, destination_account_id, date, payee, category, amount, type, status, source_type, source_id, invoice_id, notes, installment_number, installment_total, installment_group_id)
+      VALUES (${id}, ${user.uid}, ${columns.accountId}, ${columns.destinationAccountId}, ${columns.date}, ${columns.payee}, ${columns.category}, ${columns.amount}, ${columns.type}, ${columns.status}, ${columns.sourceType}, ${columns.sourceId}, ${columns.invoiceId}, ${columns.notes}, ${columns.installmentNumber}, ${columns.installmentTotal}, ${columns.installmentGroupId})`);
+    await sql.transaction(queries);
   } else {
     await sql`
       INSERT INTO mufinance.transactions
@@ -661,7 +678,7 @@ export async function deleteTransaction(id: string) {
   const user = await requireSessionUser();
   const current = await getNeonTransaction(id, user.uid);
   const accountId = String(current.accountId ?? "");
-  const delta = accountDelta(String(current.type), Number(current.amount));
+  const delta = accountDelta(String(current.type), Number(current.amount), current.status);
   const queries = [];
   const isCard = current.sourceType === "credit-card";
   if (!isCard && accountId && delta !== 0) {
